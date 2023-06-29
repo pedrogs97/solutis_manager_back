@@ -21,8 +21,6 @@ django-role-permissions = "*"
 
 [dev-packages]
 black = "*"
-pre-commit = "*"
-click = "*"
 certifi = "*"
 invoke = "*"
 

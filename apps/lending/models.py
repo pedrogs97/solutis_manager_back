@@ -41,6 +41,8 @@ class Material(BaseModel):
     )
     observation = models.CharField(max_length=150, default="")
     assurance = models.DateField(null=True)
+    original_value = models.DecimalField(max_digits=12, decimal_places=2)
+    depreciation = models.DecimalField(max_digits=5, decimal_places=2)
 
 
 class Document(BaseModel):
