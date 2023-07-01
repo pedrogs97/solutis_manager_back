@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "rolepermissions",
     "apps.authenticate",
+    "apps.lending",
     "utils",
 ]
 

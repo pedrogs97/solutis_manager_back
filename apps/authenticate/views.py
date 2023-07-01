@@ -100,7 +100,7 @@ class ForgotPasswordView(CreateAPIView):
 
 
 class UsersAdminViewset(ModelViewSet):
-    """All users views for admins."""
+    """Users views for admins."""
 
     authentication_classes = (TokenAuthentication,)
     permission_classes = IsAdminUser
@@ -109,7 +109,7 @@ class UsersAdminViewset(ModelViewSet):
 
 
 class UserViewset(ModelViewSet):
-    """All users views."""
+    """Users views."""
 
     authentication_classes = (TokenAuthentication,)
     permission_classes = (CustomDjangoModelPermissions,)
