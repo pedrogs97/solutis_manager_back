@@ -2,60 +2,60 @@
 from rest_framework.viewsets import ModelViewSet
 from knox.auth import TokenAuthentication
 from apps.lending.models import (
-    Material,
+    Asset,
     Tag,
     Document,
-    MaterialVerification,
-    MaterialVerificationAnswer,
-    MaterialHistorical,
+    AssetVerification,
+    AssetVerificationAnswer,
+    AssetHistorical,
 )
 from apps.lending.serializers import (
-    MaterialSerializer,
+    AssetSerializer,
     TagSerializer,
     DocumentSerializer,
-    MaterialVerificationSerializer,
-    MaterialVerificationAnswerSerializer,
-    MaterialHistoricalSerializer,
+    AssetVerificationSerializer,
+    AssetVerificationAnswerSerializer,
+    AssetHistoricalSerializer,
 )
 from utils.base.permissions import (
     CustomDjangoModelPermissions,
 )
 
 
-class MaterialVerificationViewset(ModelViewSet):
+class AssetVerificationViewset(ModelViewSet):
     """Question views."""
 
     authentication_classes = (TokenAuthentication,)
     permission_classes = (CustomDjangoModelPermissions,)
-    serializer_class = MaterialVerificationSerializer
-    queryset = MaterialVerification.objects.all()
+    serializer_class = AssetVerificationSerializer
+    queryset = AssetVerification.objects.all()
 
 
-class MaterialVerificationAnswerViewset(ModelViewSet):
+class AssetVerificationAnswerViewset(ModelViewSet):
     """Answer views."""
 
     authentication_classes = (TokenAuthentication,)
     permission_classes = (CustomDjangoModelPermissions,)
-    serializer_class = MaterialVerificationAnswerSerializer
-    queryset = MaterialVerificationAnswer.objects.all()
+    serializer_class = AssetVerificationAnswerSerializer
+    queryset = AssetVerificationAnswer.objects.all()
 
 
-class MaterialHistoricViewset(ModelViewSet):
-    """Material historic views."""
-
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (CustomDjangoModelPermissions,)
-    serializer_class = MaterialHistoricalSerializer
-    queryset = MaterialHistorical.objects.all()
-
-
-class MaterialViewset(ModelViewSet):
-    """Materials views."""
+class AssetHistoricViewset(ModelViewSet):
+    """Asset historic views."""
 
     authentication_classes = (TokenAuthentication,)
     permission_classes = (CustomDjangoModelPermissions,)
-    serializer_class = MaterialSerializer
-    queryset = Material.objects.all()
+    serializer_class = AssetHistoricalSerializer
+    queryset = AssetHistorical.objects.all()
+
+
+class AssetViewset(ModelViewSet):
+    """Assets views."""
+
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (CustomDjangoModelPermissions,)
+    serializer_class = AssetSerializer
+    queryset = Asset.objects.all()
 
 
 class TagViewset(ModelViewSet):

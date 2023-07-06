@@ -6,12 +6,12 @@ from rest_framework.serializers import (
 )
 from apps.lending.models import (
     Tag,
-    Material,
+    Asset,
     Document,
     Witness,
-    MaterialVerification,
-    MaterialVerificationAnswer,
-    MaterialHistorical,
+    AssetVerification,
+    AssetVerificationAnswer,
+    AssetHistorical,
 )
 
 
@@ -25,15 +25,15 @@ class TagSerializer(ModelSerializer):
         exclude = ["created_at", "updated_at"]
 
 
-class MaterialSerializer(ModelSerializer):
-    """Model serializer for Materials"""
+class AssetSerializer(ModelSerializer):
+    """Model serializer for Assets"""
 
     tag = SlugRelatedField(queryset=Tag.objects.all(), slug_field="code")
 
     class Meta:
         """Class Meta"""
 
-        model = Material
+        model = Asset
         exclude = ["created_at", "updated_at"]
 
 
@@ -63,35 +63,35 @@ class DocumentSerializer(ModelSerializer):
         return WitnessSerializer(obj.witnesses.all(), many=True).data
 
 
-class MaterialVerificationSerializer(ModelSerializer):
+class AssetVerificationSerializer(ModelSerializer):
     """Model serializer for Questions asked in the check"""
 
     class Meta:
         """Class Meta"""
 
-        model = MaterialVerification
+        model = AssetVerification
         exclude = ["created_at", "updated_at"]
 
 
-class MaterialVerificationAnswerSerializer(ModelSerializer):
+class AssetVerificationAnswerSerializer(ModelSerializer):
     """Model serializer for Questions asked in the check"""
 
     question = SlugRelatedField(
-        queryset=MaterialVerification.objects.all(), slug_field="field"
+        queryset=AssetVerification.objects.all(), slug_field="field"
     )
 
     class Meta:
         """Class Meta"""
 
-        model = MaterialVerificationAnswer
-        exclude = ["material_verification", "created_at", "updated_at"]
+        model = AssetVerificationAnswer
+        exclude = ["asset_verification", "created_at", "updated_at"]
 
 
-class MaterialHistoricalSerializer(ModelSerializer):
+class AssetHistoricalSerializer(ModelSerializer):
     """Model serializer for History of action performed on the equipment"""
 
     class Meta:
         """Class Meta"""
 
-        model = MaterialHistorical
+        model = AssetHistorical
         exclude = ["created_at", "updated_at"]
