@@ -1,4 +1,5 @@
-"""Lending module models"""
+"""Lending models"""
+from typing import List
 from sqlalchemy import (
     Column,
     Float,
@@ -9,10 +10,12 @@ from sqlalchemy import (
     Text,
     Integer,
     DateTime,
+    Table,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.sql import func
-from app.models.base import Base
+from app.database import Base
+from app.people.models import EmployeeModel
 
 
 class AssetTypeModel(Base):
@@ -42,7 +45,8 @@ class AssetTypeModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String, nullable=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.name}"
 
 
@@ -65,7 +69,8 @@ class AssetStatusModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String, nullable=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.name}"
 
 
@@ -86,7 +91,8 @@ class AssetClothingSizeModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String, nullable=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.name}"
 
 
@@ -97,16 +103,16 @@ class AssetModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
-    type = relationship("AssetTypeModel")
-    type_id = Column("type_id", ForeignKey("asset_types.id"), nullable=False)
+    type: Mapped[AssetTypeModel] = relationship()
+    type_id = Column("type_id", ForeignKey("asset_type.id"), nullable=False)
 
     status_id = Column("status_id", ForeignKey("asset_status.id"), nullable=False)
-    status = relationship("AssetStatusModel")
+    status: Mapped[AssetStatusModel] = relationship()
 
     clothing_size_id = Column(
-        "clothing_size_id", ForeignKey("asset_clothing_sizes.id"), nullable=False
+        "clothing_size_id", ForeignKey("asset_clothing_size.id"), nullable=False
     )
-    clothing_size = relationship("AssetClothingSizeModel")
+    clothing_size: Mapped[AssetClothingSizeModel] = relationship("")
 
     # tombo - registro patrimonial
     register_number = Column("register_number", String, nullable=True)
@@ -134,7 +140,8 @@ class AssetModel(Base):
     accessories = Column("accessories", String, nullable=True)
     configuration = Column("configuration", String, nullable=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.description}"
 
 
@@ -150,7 +157,8 @@ class DocumentTypeModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String(length=30), nullable=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.name}"
 
 
@@ -161,7 +169,7 @@ class DocumentTemplateModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
-    type = relationship("DocumentTypeModel")
+    type: Mapped[DocumentTypeModel] = relationship()
     type_id = Column("type_id", ForeignKey("document_type.id"), nullable=False)
 
     # caminho do arquivo
@@ -170,7 +178,8 @@ class DocumentTemplateModel(Base):
     # texto que vai ter no template
     content = Column("content", Text, nullable=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.file_name}"
 
 
@@ -180,7 +189,7 @@ class DocumentModel(Base):
     __tablename__ = "document"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    doc_template = relationship("DocumentTemplateModel")
+    doc_template: Mapped[DocumentTemplateModel] = relationship()
     doc_template_id = Column("doc_template_id", ForeignKey("document_template.id"))
 
     # caminho do arquivo
@@ -189,7 +198,8 @@ class DocumentModel(Base):
     # código gerado
     number = Column("number", String(length=30), nullable=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.number}"
 
 
@@ -206,44 +216,31 @@ class WorkloadModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String(length=12), nullable=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.name}"
 
 
-class LendingModel(Base):
-    """Lending model"""
+witnesses = Table(
+    "witnesses",
+    Base.metadata,
+    Column("lending_id", ForeignKey("lending.id")),
+    Column("witness_id", ForeignKey("witness.id")),
+)
 
-    __tablename__ = "lending"
+
+class CostCenterModel(Base):
+    """Cost center model"""
+
+    __tablename__ = "cost_center"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    employee = relationship("EmployeeModel")
-    employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=False)
+    code = Column("code", String, nullable=False)
+    name = Column("name", String, nullable=False)
 
-    asset = relationship("AssetModel")
-    asset_id = Column("asset_id", ForeignKey("asset.id"), nullable=False)
-
-    document = relationship("DocumentModel")
-    document_id = Column("document_id", ForeignKey("document.id"), nullable=False)
-    # lotação
-    workload = relationship("WorkloadModel")
-    workload_id = Column("workload_id", ForeignKey("workload.id"), nullable=False)
-
-    cost_center = Column("cost_center", String(length=50))
-    line_number = Column("line_number", String(length=255), nullable=True)
-    # modelo
-    model = Column("model", String(length=100), nullable=True)
-    # operadora
-    operator = Column("operator", String(length=100), nullable=True)
-    # pacote office
-    ms_office = Column("ms_office", Boolean, default=False)
-    operational_system = Column("operational_system", String(length=15), nullable=True)
-    # acessórios
-    accessories = Column("accessories", String(length=255), nullable=True)
-    signed_date = Column("signed_date", Date, nullable=True)
-    glpi_number = Column("glpi_number", String(length=25), nullable=True)
-
-    def __str__(self):
-        return f"{self.id}"
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.name}"
 
 
 class WitnessModel(Base):
@@ -252,61 +249,102 @@ class WitnessModel(Base):
     __tablename__ = "witness"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    lending = relationship("LendingModel")
-    lending_id = Column("lending_id", ForeignKey("lending.id"), nullable=False)
 
-    employee = relationship("EmployeeModel")
+    employee: Mapped[EmployeeModel] = relationship()
     employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=False)
 
     signed = Column("signed", Date, nullable=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.id}"
+
+
+class LendingModel(Base):
+    """Lending model"""
+
+    __tablename__ = "lending"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    employee: Mapped[EmployeeModel] = relationship()
+    employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=False)
+
+    asset: Mapped[AssetModel] = relationship()
+    asset_id = Column("asset_id", ForeignKey("asset.id"), nullable=False)
+
+    document: Mapped[DocumentModel] = relationship()
+    document_id = Column("document_id", ForeignKey("document.id"), nullable=False)
+    # lotação
+    workload: Mapped[WorkloadModel] = relationship()
+    workload_id = Column("workload_id", ForeignKey("workload.id"), nullable=False)
+
+    witnesses: Mapped[List[WitnessModel]] = relationship(
+        secondary=witnesses,
+        back_populates="lendings",
+    )
+
+    cost_center: Mapped[CostCenterModel] = relationship()
+    cost_center_id = Column(
+        "cost_center_id", ForeignKey("cost_center.id"), nullable=False
+    )
+
+    manager = Column("manager", String(length=50))
+    observations = Column("observations", String(length=255), nullable=True)
+    signed_date = Column("signed_date", Date, nullable=True)
+    glpi_number = Column("glpi_number", String(length=25), nullable=True)
+
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.id}"
 
 
 class MaintenanceActionModel(Base):
     """
     Maintenance action model
+
     * Manutenção externa
     * Manutenção interna
     """
 
-    __table__ = "maintenance_action"
+    __tablename__ = "maintenance_action"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String(length=20), nullable=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.name}"
 
 
 class MaintenanceStatusModel(Base):
     """
     Maintenance action model
+
     * Em progresso
     * Pendente
     * Finalizado
     """
 
-    __table__ = "maintenance_status"
+    __tablename__ = "maintenance_status"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String(length=15), nullable=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.name}"
 
 
 class MaintenanceModel(Base):
     """Maintenance model"""
 
-    __table__ = "maintenance"
+    __tablename__ = "maintenance"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    action = relationship("MaintenanceActionModel")
+    action: Mapped[MaintenanceActionModel] = relationship()
     action_id = Column("action_id", ForeignKey("maintenance_action.id"), nullable=False)
 
-    status = relationship("MaintenanceStatusModel")
+    status: Mapped[MaintenanceStatusModel] = relationship()
     status_id = Column("status_id", ForeignKey("maintenance_status.id"), nullable=False)
 
     open_date = Column("open_date", Date, server_default=func.now())
@@ -318,34 +356,36 @@ class MaintenanceModel(Base):
     supplier_number = Column("supplier_number", String(length=50), nullable=True)
     resolution = Column("resolution", String(length=255), nullable=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.id}"
 
 
 class MaintenanceAttachmentModel(Base):
     """Maintenance attachment model"""
 
-    __table__ = "maintenance_attachment"
+    __tablename__ = "maintenance_attachment"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
-    maintenance = relationship("MaintenanceModel")
+    maintenance: Mapped[MaintenanceModel] = relationship()
     maintenance_id = Column("maintenance_id", ForeignKey("maintenance.id"))
 
-    path = Column(String(length=255))
+    path = Column(String(length=255), nullable=True)
     file_name = Column(String(length=100))
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.file_name}"
 
 
 class UpgradeModel(Base):
     """Upgrade model"""
 
-    __table__ = "upgrade"
+    __tablename__ = "upgrade"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    status = relationship("MaintenanceStatusModel")
+    status: Mapped[MaintenanceStatusModel] = relationship()
     status_id = Column("status_id", ForeignKey("maintenance_status.id"))
 
     open_date = Column("open_date", Date, server_default=func.now())
@@ -355,7 +395,8 @@ class UpgradeModel(Base):
     supplier = Column("supplier", String(length=100), nullable=True)
     observations = Column("observations", String(length=255), nullable=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.id}"
 
 
@@ -367,8 +408,22 @@ class VerificationModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     question = Column("question", String(length=100))
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.question}"
+
+
+class VerificationTypeModel(Base):
+    """Verification type model"""
+
+    __tablename__ = "verification_type"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    name = Column("name", String(length=100))
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.name}"
 
 
 class VerificationAnswerModel(Base):
@@ -378,30 +433,18 @@ class VerificationAnswerModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
-    lendigin = relationship("LendingModel")
+    lending: Mapped[LendingModel] = relationship()
     lending_id = Column("lending_id", ForeignKey("lending.id"), nullable=False)
 
-    verification = relationship("VerificationModel")
+    verification: Mapped[VerificationModel] = relationship()
     verification_id = Column("verification_id", ForeignKey("verification.id"))
 
+    type: Mapped[VerificationTypeModel] = relationship()
+    type_id = Column("type_id", ForeignKey("verification_type.id"))
+
+    step = Column("step", String)
     answer = Column("answer", String(length=100))
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns model as string"""
         return f"{self.id}"
-
-
-class VerificationImageModel(Base):
-    """Verification answer image model"""
-
-    __table__ = "verification_image"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    verification_answer = relationship("VerificationAnswerModel")
-    verification_answer_id = Column(
-        "verification_answer_id", ForeignKey("verification_answer.id")
-    )
-    path = Column(String(length=255))
-    file_name = Column(String(length=100))
-
-    def __str__(self):
-        return f"{self.file_name}"

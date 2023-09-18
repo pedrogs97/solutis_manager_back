@@ -1,7 +1,7 @@
-"""Employee schemas"""
+"""People schemas"""
 from typing import Optional
 from datetime import date
-from datasync.schemas.base import BaseSchema
+from app.schemas import BaseSchema
 
 
 class EmployeeMatrimonialStatusSchema(BaseSchema):

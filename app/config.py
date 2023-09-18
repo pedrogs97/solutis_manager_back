@@ -5,26 +5,7 @@ from datetime import datetime
 # PostgresSQL config
 
 DATABASE_URL = os.environ.setdefault("DB_URL", "")
-
-
-# SQLServer configs
-
-HOST_DB = os.environ.setdefault("SQLSERVE_HOST_DB", "")
-NAME_DB = os.environ.setdefault("SQLSERVE_NAME_DB", "")
-USER_DB = os.environ.setdefault("SQLSERVE_USER_DB", "")
-PASSWORD_DB = os.environ.setdefault("SQLSERVE_PASSWORD_DB", "")
-
-CONNECTION_STRING = (
-    "DRIVER={ODBC Driver 17 for SQL Server};SERVER="
-    + HOST_DB
-    + ";DATABASE="
-    + NAME_DB
-    + ";ENCRYPT=yes;UID="
-    + USER_DB
-    + ";PWD="
-    + PASSWORD_DB
-    + ";TrustServerCertificate=yes"
-)
+PASSWORD_SUPER_USER = os.environ.setdefault("PASSWORD_SUPER_USER", "admin@123")
 
 # Logging config.
 
@@ -35,3 +16,16 @@ FORMAT = (
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 date_str = datetime.now().strftime("%Y-%m-%d")
 LOG_FILENAME = f"./logs/{date_str}.log"
+
+SECRET_KEY = "KlgH6AzYDeZeGwD288to79I3vTHT8wp7"
+ALGORITHM = "HS256"
+
+ACCESS_TOKEN_EXPIRE_HOURS = 10
+
+PERMISSIONS = {
+    "lending": ["asset", "lending", "mantenance"],
+    "people": [],
+    "auth": ["user", "permission", "role"],
+    "invoice": [],
+    "logs": [],
+}

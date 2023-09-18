@@ -12,13 +12,16 @@ from datasync.models.employee import (
     EmployeeGenderModel,
     EmployeeNationalityModel,
 )
-from datasync.schemas.employee import (
+from datasync.schemas import (
+    AssetSchema,
+    AssetTypeSchema,
+    BaseSchema,
+    CostCenterSchema,
     EmployeeSchema,
     EmployeeGenderSchema,
     EmployeeMatrimonialStatusSchema,
     EmployeeNationalitySchema,
 )
-from datasync.schemas.base import BaseSchema
 
 
 logger = logging.getLogger(__name__)
@@ -131,6 +134,72 @@ def totvs_to_nationality_schema(
         return EmployeeNationalitySchema(
             Id=None,
             Code=row[1] if row[1] is not None else "",
+            Description=row[0] if row[0] is not None else "",
+        )
+    except ValidationError as err:
+        error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
+        logger.warning("Error: Field: %s", error_msg)
+        return None
+
+
+def totvs_to_cost_center_schema(
+    row,
+) -> CostCenterSchema | None:
+    """Convert data from TOTVS to CostCenterSchema
+
+    From
+    CODREDUZIDO, NOME, DESCRICAO
+    """
+    try:
+        return CostCenterSchema(
+            Id=None,
+            Code=row[0] if row[0] is not None else "",
+            Code=row[1] if row[1] is not None else "",
+            classification=row[2] if row[2] is not None else "",
+        )
+    except ValidationError as err:
+        error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
+        logger.warning("Error: Field: %s", error_msg)
+        return None
+
+
+def totvs_to_asset_type_schema(
+    row,
+) -> AssetTypeSchema | None:
+    """Convert data from TOTVS to AssetTypeSchema
+
+    From
+    IDGRUPOPATRIMONIO, CODGRUPOPATRIMONIO, DESCRICAO
+    """
+    try:
+        return AssetTypeSchema(
+            Id=None,
+            Code=row[0] if row[0] is not None else "",
+            GroupCode=row[1] if row[1] is not None else "",
+            Name=row[2] if row[2] is not None else "",
+        )
+    except ValidationError as err:
+        error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
+        logger.warning("Error: Field: %s", error_msg)
+        return None
+
+
+def totvs_to_asset_schema(
+    row,
+) -> AssetSchema | None:
+    """Convert data from TOTVS to AssetSchema
+
+    From
+    IDPATRIMONIO, DESCRICAO, TIPO, ATIVO,
+    DATAAQUISICAO, PATRIMONIO, QUANTIDADE, UNIDADE, OBSERVACOES, CODIGOBARRA,
+    CENTROCUSTO, VALORBASE, VRDEPACUCORRIGIDA, SERIE, IMEI, ACESSORIOS,
+    OPERADORA, SISTEMAOPERACIONAL, PACOTEOFFICE, PADRAOEQUIP,
+    GARANTIA, LINHA
+    """
+    try:
+        return AssetSchema(
+            Id=None,
+            Code=row[1] if row[1] is not None else "",
             Description=row[1] if row[1] is not None else "",
         )
     except ValidationError as err:
@@ -149,7 +218,7 @@ def get_checksum(schema: BaseSchema) -> bytes:
             bytes_schema += bytes(item.isoformat(), "utf-8")
         else:
             bytes_schema += bytes(str(item), "utf-8")
-    return bytes
+    return bytes_schema
 
 
 def verify_changes_empolyee(employee: EmployeeSchema) -> bool:
@@ -174,7 +243,8 @@ def verify_changes_matrimonial_status(
     employee: EmployeeMatrimonialStatusSchema,
 ) -> bool:
     """
-    Check if the EmployeeMatrimonialStatusSchema object is different from the EmployeSchema in the database.
+    Check if the EmployeeMatrimonialStatusSchema object \
+        is different from the EmployeSchema in the database.
     Returns True if it does not exist in the database.
     """
     checksum_from_totvs = get_checksum(employee)

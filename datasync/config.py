@@ -4,7 +4,7 @@ from datetime import datetime
 
 # PostgresSQL config
 
-DATABASE_URL = os.environ.setdefault("DB_URL", "")
+DATABASE_URL = os.environ.setdefault("DB_URL_DATASYNC", "")
 
 
 # SQLServer configs

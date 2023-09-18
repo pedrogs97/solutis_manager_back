@@ -9,7 +9,7 @@ from apscheduler.schedulers import (
 )
 from datasync.db.external import ExternalDatabase
 from datasync.config import DATABASE_URL
-from datasync.services import (
+from datasync.service import (
     totvs_to_employee_schema,
     verify_changes_empolyee,
     insert_employee,
@@ -44,8 +44,36 @@ class SchedulerService:
     ON n.CODINTERNO = p.NACIONALIDADE ;"""
 
     SQL_PCODESTCIVIL = """SELECT DESCRICAO, CODINTERNO FROM PCODESTCIVIL;"""
+
     SQL_PCODESEXO = """SELECT DESCRICAO, CODINTERNO FROM PCODSEXO;"""
+
     SQL_PCODNACAO = """SELECT DESCRICAO, CODINTERNO FROM PCODNACAO;"""
+
+    SQL_GCCUSTO = """SELECT cc.CODREDUZIDO, cc.NOME, cls.DESCRICAO
+    FROM CorporeRM_SI.dbo.GCCUSTO cc 
+    LEFT JOIN CCLASSIFICACC AS cls 
+    ON cls.CODCLASSIFICA = cc.CODCLASSIFICA
+    WHERE cc.CODCOLIGADA = 1;"""
+
+    SQL_IPATRIMONIO = """SELECT p.IDPATRIMONIO, p.DESCRICAO, g.DESCRICAO AS TIPO, p.ATIVO,
+    p.DATAAQUISICAO, p.PATRIMONIO, p.QUANTIDADE, p.UNIDADE, p.OBSERVACOES, p.CODIGOBARRA,
+    c.NOME AS CENTROCUSTO, p.VALORBASE, p.VRDEPACUCORRIGIDA, pc.SERIE, pc.IMEI, pc.ACESSORIOS,
+    pc.OPERADORA, pc.SISTEMAOPERACIONAL, pc.PACOTEOFFICE, pc.PADRAOEQUIP,
+    ga.DESCRICAO AS GARANTIA, pc.MANUT5 AS LINHA
+    FROM CorporeRM_SI.dbo.IPATRIMONIO AS p
+    LEFT JOIN IGRUPOPATRIMONIO AS g
+    ON g.IDGRUPOPATRIMONIO = p.IDGRUPOPATRIMONIO 
+    LEFT JOIN GCCUSTO AS c
+    ON P.CODCENTROCUSTO = c.CODCCUSTO 
+    LEFT JOIN IPATRIMONIOCOMPL AS pc
+    ON pc.IDPATRIMONIO = p.IDPATRIMONIO 
+    LEFT JOIN IGARANTIA AS ga
+    ON ga.IDPATRIMONIO = p.IDPATRIMONIO 
+    WHERE (p.CODCOLIGADA = 1)"""
+
+    SQL_IGRUPOPATRIMONIO = """SELECT IDGRUPOPATRIMONIO, CODGRUPOPATRIMONIO, DESCRICAO
+    FROM IGRUPOPATRIMONIO 
+    WHERE CODCOLIGADA = 1"""
 
     _scheduler = None
 
@@ -156,6 +184,75 @@ class SchedulerService:
         logger.info("Execution time: %s ms", str(elapsed_time))
         set_last_sync(new_changes, elapsed_time, "nationality")
         logger.info("Retrive nationality from TOTVS end.")
+
+    def _get_cost_center_totvs(self):
+        """Excute procedure to retrive TOVTS cost center data"""
+        logger.info("Retrive cost center from TOTVS start.")
+        start = time()
+        external_db = ExternalDatabase()
+        cursor = external_db.get_cursor()
+        cursor.execute(self.SQL_GCCUSTO)
+        rows = cursor.fetchall()
+        new_changes = 0
+        for row in rows:
+            cost_center_totvs = totvs_to_cost_center_schema(row)
+            if not cost_center_totvs:
+                break
+            if verify_changes_cost_center(cost_center_totvs):
+                new_changes += 1
+                insert_cost_center(cost_center_totvs)
+
+        end = time()
+        elapsed_time = end - start
+        logger.info("Execution time: %s ms", str(elapsed_time))
+        set_last_sync(new_changes, elapsed_time, "cost_center")
+        logger.info("Retrive cost center from TOTVS end.")
+
+    def _get_asset_type_totvs(self):
+        """Excute procedure to retrive TOVTS asset type data"""
+        logger.info("Retrive asset type from TOTVS start.")
+        start = time()
+        external_db = ExternalDatabase()
+        cursor = external_db.get_cursor()
+        cursor.execute(self.SQL_IGRUPOPATRIMONIO)
+        rows = cursor.fetchall()
+        new_changes = 0
+        for row in rows:
+            asset_type_totvs = totvs_to_asset_type_schema(row)
+            if not asset_type_totvs:
+                break
+            if verify_changes_asset_type(asset_type_totvs):
+                new_changes += 1
+                insert_asset_type(asset_type_totvs)
+
+        end = time()
+        elapsed_time = end - start
+        logger.info("Execution time: %s ms", str(elapsed_time))
+        set_last_sync(new_changes, elapsed_time, "asset_type")
+        logger.info("Retrive asset type from TOTVS end.")
+
+    def _get_asset_totvs(self):
+        """Excute procedure to retrive TOVTS asset data"""
+        logger.info("Retrive asset from TOTVS start.")
+        start = time()
+        external_db = ExternalDatabase()
+        cursor = external_db.get_cursor()
+        cursor.execute(self.SQL_IPATRIMONIO)
+        rows = cursor.fetchall()
+        new_changes = 0
+        for row in rows:
+            asset_totvs = totvs_to_asset_schema(row)
+            if not asset_totvs:
+                break
+            if verify_changes_asset(asset_totvs):
+                new_changes += 1
+                insert_asset(asset_totvs)
+
+        end = time()
+        elapsed_time = end - start
+        logger.info("Execution time: %s ms", str(elapsed_time))
+        set_last_sync(new_changes, elapsed_time, "asset")
+        logger.info("Retrive asset from TOTVS end.")
 
     def _read_totvs_db(self):
         """Excute procedure to retrive TOVTS data"""

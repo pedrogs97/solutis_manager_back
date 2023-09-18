@@ -1,12 +1,6 @@
 """Employee models"""
 from sqlalchemy import Column, Integer, String, Date
 from datasync.models.base import Base
-from datasync.schemas.employee import (
-    EmployeeSchema,
-    EmployeeGenderSchema,
-    EmployeeMatrimonialStatusSchema,
-    EmployeeNationalitySchema,
-)
 
 
 class EmployeeMatrimonialStatusModel(Base):
@@ -29,12 +23,6 @@ class EmployeeMatrimonialStatusModel(Base):
     code = Column("code", String, nullable=False)
     description = Column("description", String, nullable=False)
 
-    def to_schema(self):
-        """Return model schema"""
-        return EmployeeMatrimonialStatusSchema(
-            Id=self.id, Code=self.code, Description=self.description
-        )
-
     def __str__(self):
         return f"{self.description}"
 
@@ -53,12 +41,6 @@ class EmployeeGenderModel(Base):
     code = Column("code", String, nullable=False)
     description = Column("description", String, nullable=False)
 
-    def to_schema(self):
-        """Return model schema"""
-        return EmployeeGenderSchema(
-            Id=self.id, Code=self.code, Description=self.description
-        )
-
     def __str__(self):
         return f"{self.description}"
 
@@ -75,12 +57,6 @@ class EmployeeNationalityModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     code = Column("code", String, nullable=False)
     description = Column("description", String, nullable=False)
-
-    def to_schema(self):
-        """Return model schema"""
-        return EmployeeNationalitySchema(
-            Id=self.id, Code=self.code, Description=self.description
-        )
 
     def __str__(self):
         return f"{self.description}"
@@ -109,27 +85,6 @@ class EmployeeModel(Base):
     cost_center_name = Column("cost_center_name", String, nullable=True)
     gender = Column("gender", String, nullable=False)
     birthday = Column("birthday", Date, nullable=False)
-
-    def to_schema(self) -> EmployeeSchema:
-        """Return model schema"""
-        return EmployeeSchema(
-            Id=self.id,
-            Code=self.code,
-            FullName=self.full_name,
-            Birthday=self.birthday,
-            MaritalStatus=self.marital_status,
-            Gender=self.gender,
-            Nationality=self.nationality,
-            Address=self.address,
-            TaxpayerIdentification=self.taxpayer_identification,
-            CellPhone=self.cell_phone,
-            NacionalIdentification=self.nacional_identification,
-            Email=self.email,
-            Role=self.role,
-            Manager=self.manager,
-            CostCenterNumber=self.cost_center_number,
-            CostCenterName=self.cost_center_name,
-        )
 
     def __str__(self) -> str:
         return f"{self.code} - {self.full_name}"

@@ -4,8 +4,8 @@ from logging.handlers import TimedRotatingFileHandler
 from fastapi import FastAPI
 from datasync.db.external import ExternalDatabase
 from datasync.config import FORMAT, DATE_FORMAT, LOG_FILENAME
+from datasync.router import router as fetch_router
 from datasync.scheduler import SchedulerService
-from datasync.routes.fetch_totvs_route import router as fetch_router
 
 app = FastAPI()
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def startup_scheduler():
     """
-    Instatialise the Scheduler Service
+    Instatialize the Scheduler Service
     This allows for persistent schedules across server restarts.
     """
     SchedulerService().start()
