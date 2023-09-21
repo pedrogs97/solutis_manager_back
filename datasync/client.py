@@ -1,7 +1,18 @@
 """Service client"""
+from typing import List
 import logging
 import requests
 from datasync.config import AGILE_HOST
+from datasync.schemas import (
+    CostCenterTotvsSchema,
+    AssetTypeTotvsSchema,
+    AssetTotvsSchema,
+    EmployeeMatrimonialStatusTotvsSchema,
+    EmployeeGenderTotvsSchema,
+    EmployeeNationalityTotvsSchema,
+    EmployeeRoleTotvsSchema,
+    EmployeeTotvsSchema,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -10,10 +21,116 @@ logger = logging.getLogger(__name__)
 class AgileClient:
     """Agile client"""
 
-    def send_updates(self, data: dict) -> None:
-        """Send update to Agile service"""
-        respose = requests.post(url=AGILE_HOST, data=data)
+    BASE_URL = f"{AGILE_HOST}/update/"
+
+    def send_cost_center_updates(
+        self, update_data: List[CostCenterTotvsSchema]
+    ) -> None:
+        """Send cost center updates to Agile"""
+        respose = requests.post(
+            url=f"{self.BASE_URL}cost-center/",
+            data=[cc.model_dump() for cc in update_data],
+            timeout=500,
+        )
         if respose.status_code == 200:
-            logger.info("Update sent succefuly")
-        else:
-            logger.warning("Update fail. Erro: %s", respose.json()["detail"])
+            logger.info("Cost center update sent successfully")
+            return
+
+        logger.warning("Cost center update fail. Erro: %s", respose.json()["detail"])
+
+    def send_asset_type_updates(self, update_data: List[AssetTypeTotvsSchema]) -> None:
+        """Send asset types updates to Agile"""
+        respose = requests.post(
+            url=f"{self.BASE_URL}asset-type/",
+            data=[cc.model_dump() for cc in update_data],
+            timeout=500,
+        )
+        if respose.status_code == 200:
+            logger.info("Asset types update sent successfully")
+            return
+
+        logger.warning("Asset types update fail. Erro: %s", respose.json()["detail"])
+
+    def send_asset_updates(self, update_data: List[AssetTotvsSchema]) -> None:
+        """Send asset updates to Agile"""
+        respose = requests.post(
+            url=f"{self.BASE_URL}asset/",
+            data=[cc.model_dump() for cc in update_data],
+            timeout=500,
+        )
+        if respose.status_code == 200:
+            logger.info("Asset update sent successfully")
+            return
+
+        logger.warning("Asset update fail. Erro: %s", respose.json()["detail"])
+
+    def send_matrimonial_status_updates(
+        self, update_data: List[EmployeeMatrimonialStatusTotvsSchema]
+    ) -> None:
+        """Send matrimonial status updates to Agile"""
+        respose = requests.post(
+            url=f"{self.BASE_URL}matrimonial-status/",
+            data=[cc.model_dump() for cc in update_data],
+            timeout=500,
+        )
+        if respose.status_code == 200:
+            logger.info("Matrimonial status update sent successfully")
+            return
+
+        logger.warning(
+            "Matrimonial status update fail. Erro: %s", respose.json()["detail"]
+        )
+
+    def send_gender_updates(self, update_data: List[EmployeeGenderTotvsSchema]) -> None:
+        """Send gender updates to Agile"""
+        respose = requests.post(
+            url=f"{self.BASE_URL}gender/",
+            data=[cc.model_dump() for cc in update_data],
+            timeout=500,
+        )
+        if respose.status_code == 200:
+            logger.info("Gender update sent successfully")
+            return
+
+        logger.warning("Gender update fail. Erro: %s", respose.json()["detail"])
+
+    def send_nationality_updates(
+        self, update_data: List[EmployeeNationalityTotvsSchema]
+    ) -> None:
+        """Send nationality updates to Agile"""
+        respose = requests.post(
+            url=f"{self.BASE_URL}nationality/",
+            data=[cc.model_dump() for cc in update_data],
+            timeout=500,
+        )
+        if respose.status_code == 200:
+            logger.info("Nationality update sent successfully")
+            return
+
+        logger.warning("Nationality update fail. Erro: %s", respose.json()["detail"])
+
+    def send_role_updates(self, update_data: List[EmployeeRoleTotvsSchema]) -> None:
+        """Send role updates to Agile"""
+        respose = requests.post(
+            url=f"{self.BASE_URL}role/",
+            data=[cc.model_dump() for cc in update_data],
+            timeout=500,
+        )
+        if respose.status_code == 200:
+            logger.info("Role update sent successfully")
+            return
+
+        logger.warning("Role update fail. Erro: %s", respose.json()["detail"])
+
+    def send_employee_updates(self, update_data: List[EmployeeTotvsSchema]) -> None:
+        """Send employee updates to Agile"""
+        respose = requests.post(
+            url=f"{self.BASE_URL}employee/",
+            data=[cc.model_dump() for cc in update_data],
+            timeout=500,
+        )
+        if respose.status_code == 200:
+            logger.info("Employee update sent successfully")
+            return
+
+        logger.warning("Employee update fail. Erro: %s", respose.json()["detail"])

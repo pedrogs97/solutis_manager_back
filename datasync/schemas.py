@@ -1,7 +1,6 @@
 """
 Base schemas
 """
-from typing import Optional
 from datetime import datetime, date
 from pydantic import BaseModel, ConfigDict
 
@@ -41,41 +40,41 @@ class AssetTypeTotvsSchema(BaseSchema):
 class AssetTotvsSchema(BaseSchema):
     """Asset schema"""
 
-    code: Optional[int]
-    type: Optional[str]
-    clothing_size: Optional[str] = None
-    cost_center: Optional[str]
+    code: int
+    type: str
+    clothing_size: str
+    cost_center: str
 
     # tombo - registro patrimonial
-    register_number: Optional[str]
-    description: Optional[str]
+    register_number: str
+    description: str
     # fornecedor
-    supplier: Optional[str] = None
+    supplier: str
     # garantia
-    assurance_date: Optional[datetime] = None
-    observations: Optional[str] = None
-    discard_reason: Optional[str] = None
+    assurance_date: datetime
+    observations: str
+    discard_reason: str
     # padrão
-    pattern: Optional[str] = None
-    operational_system: Optional[str] = None
-    serial_number: Optional[str] = None
-    imei: Optional[str] = None
-    acquisition_date: Optional[datetime] = None
-    value: Optional[float]
+    pattern: str
+    operational_system: str
+    serial_number: str
+    imei: str
+    acquisition_date: datetime
+    value: float
     # pacote office
-    ms_office: Optional[bool]
-    line_number: Optional[str] = None
+    ms_office: bool
+    line_number: str
     # operadora
-    operator: Optional[str] = None
+    operator: str
     # modelo
-    model: Optional[str] = None
+    model: str
     # acessórios
-    accessories: Optional[str] = None
+    accessories: str
     # quantidade do  ativo
-    quantity: Optional[int] = None
+    quantity: int
     # unidade da quantidade
-    unit: Optional[str] = None
-    active: Optional[bool] = None
+    unit: str
+    active: bool
 
 
 class EmployeeMatrimonialStatusTotvsSchema(BaseSchema):

@@ -1,4 +1,5 @@
 """Scheduler Service"""
+from typing import List
 import logging
 from time import time
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -35,6 +36,17 @@ from datasync.service import (
     insert_asset_type,
     insert_asset,
     insert_role,
+)
+from datasync.client import AgileClient
+from datasync.schemas import (
+    CostCenterTotvsSchema,
+    AssetTypeTotvsSchema,
+    AssetTotvsSchema,
+    EmployeeMatrimonialStatusTotvsSchema,
+    EmployeeGenderTotvsSchema,
+    EmployeeNationalityTotvsSchema,
+    EmployeeRoleTotvsSchema,
+    EmployeeTotvsSchema,
 )
 
 logger = logging.getLogger(__name__)
@@ -99,6 +111,7 @@ class SchedulerService:
     WHERE CODCOLIGADA = 1"""
 
     _scheduler = None
+    agile_client = AgileClient()
 
     def __init__(self, debug=False, force=False) -> None:
         self._force = force
@@ -124,19 +137,20 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PPESSOA)
         rows = cursor.fetchall()
-        new_changes = 0
+        new_changes: List[EmployeeTotvsSchema] = []
         for row in rows:
             employee_totvs = totvs_to_employee_schema(row)
             if not employee_totvs:
                 break
             if verify_changes_empolyee(employee_totvs):
-                new_changes += 1
+                new_changes.append(employee_totvs)
                 insert_employee(employee_totvs)
 
+        self.agile_client.send_employee_updates(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info("Execution time: %s ms", str(elapsed_time))
-        set_last_sync(new_changes, elapsed_time, "employee")
+        set_last_sync(len(new_changes), elapsed_time, "employee")
         logger.info("Retrive employee from TOTVS end.")
 
     def _get_matrimonial_status_totvs(self):
@@ -147,19 +161,20 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PCODESTCIVIL)
         rows = cursor.fetchall()
-        new_changes = 0
+        new_changes: List[EmployeeMatrimonialStatusTotvsSchema] = []
         for row in rows:
             matrimonial_status_totvs = totvs_to_matrimonial_status_schema(row)
             if not matrimonial_status_totvs:
                 break
             if verify_changes_matrimonial_status(matrimonial_status_totvs):
-                new_changes += 1
+                new_changes.append(matrimonial_status_totvs)
                 insert_matrimonial_status(matrimonial_status_totvs)
 
+        self.agile_client.send_matrimonial_status_updates(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info("Execution time: %s ms", str(elapsed_time))
-        set_last_sync(new_changes, elapsed_time, "matrimonial_status")
+        set_last_sync(len(new_changes), elapsed_time, "matrimonial_status")
         logger.info("Retrive matrimonial status from TOTVS end.")
 
     def _get_gender_totvs(self):
@@ -170,19 +185,20 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PCODESEXO)
         rows = cursor.fetchall()
-        new_changes = 0
+        new_changes: List[EmployeeGenderTotvsSchema] = []
         for row in rows:
             gender_totvs = totvs_to_gender_schema(row)
             if not gender_totvs:
                 break
             if verify_changes_gender(gender_totvs):
-                new_changes += 1
+                new_changes.append(gender_totvs)
                 insert_gender(gender_totvs)
 
+        self.agile_client.send_gender_updates(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info("Execution time: %s ms", str(elapsed_time))
-        set_last_sync(new_changes, elapsed_time, "gender")
+        set_last_sync(len(new_changes), elapsed_time, "gender")
         logger.info("Retrive gender from TOTVS end.")
 
     def _get_nacionality_totvs(self):
@@ -193,15 +209,16 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PCODNACAO)
         rows = cursor.fetchall()
-        new_changes = 0
+        new_changes: List[EmployeeNationalityTotvsSchema] = []
         for row in rows:
             nationality_totvs = totvs_to_nationality_schema(row)
             if not nationality_totvs:
                 break
             if verify_changes_nationality(nationality_totvs):
-                new_changes += 1
+                new_changes.append(nationality_totvs)
                 insert_nationality(nationality_totvs)
 
+        self.agile_client.send_nationality_updates(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info("Execution time: %s ms", str(elapsed_time))
@@ -216,19 +233,20 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_GCCUSTO)
         rows = cursor.fetchall()
-        new_changes = 0
+        new_changes: List[CostCenterTotvsSchema] = []
         for row in rows:
             cost_center_totvs = totvs_to_cost_center_schema(row)
             if not cost_center_totvs:
                 break
             if verify_changes_cost_center(cost_center_totvs):
-                new_changes += 1
+                new_changes.append(cost_center_totvs)
                 insert_cost_center(cost_center_totvs)
 
+        self.agile_client.send_cost_center_updates(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info("Execution time: %s ms", str(elapsed_time))
-        set_last_sync(new_changes, elapsed_time, "cost_center")
+        set_last_sync(len(new_changes), elapsed_time, "cost_center")
         logger.info("Retrive cost center from TOTVS end.")
 
     def _get_asset_type_totvs(self):
@@ -239,19 +257,20 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_IGRUPOPATRIMONIO)
         rows = cursor.fetchall()
-        new_changes = 0
+        new_changes: List[AssetTypeTotvsSchema] = []
         for row in rows:
             asset_type_totvs = totvs_to_asset_type_schema(row)
             if not asset_type_totvs:
                 break
             if verify_changes_asset_type(asset_type_totvs):
-                new_changes += 1
+                new_changes.append(asset_type_totvs)
                 insert_asset_type(asset_type_totvs)
 
+        self.agile_client.send_asset_type_updates(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info("Execution time: %s ms", str(elapsed_time))
-        set_last_sync(new_changes, elapsed_time, "asset_type")
+        set_last_sync(len(new_changes), elapsed_time, "asset_type")
         logger.info("Retrive asset type from TOTVS end.")
 
     def _get_asset_totvs(self):
@@ -262,19 +281,20 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_IPATRIMONIO)
         rows = cursor.fetchall()
-        new_changes = 0
+        new_changes: List[AssetTotvsSchema] = []
         for row in rows:
             asset_totvs = totvs_to_asset_schema(row)
             if not asset_totvs:
                 break
             if verify_changes_asset(asset_totvs):
-                new_changes += 1
+                new_changes.append(asset_totvs)
                 insert_asset(asset_totvs)
 
+        self.agile_client.send_asset_updates(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info("Execution time: %s ms", str(elapsed_time))
-        set_last_sync(new_changes, elapsed_time, "asset")
+        set_last_sync(len(new_changes), elapsed_time, "asset")
         logger.info("Retrive asset from TOTVS end.")
 
     def _get_role_totvs(self):
@@ -285,32 +305,33 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PFUNCAO)
         rows = cursor.fetchall()
-        new_changes = 0
+        new_changes: List[EmployeeRoleTotvsSchema] = []
         for row in rows:
             role_totvs = totvs_to_role_schema(row)
             if not role_totvs:
                 break
             if verify_changes_role(role_totvs):
-                new_changes += 1
+                new_changes.append(role_totvs)
                 insert_role(role_totvs)
 
+        self.agile_client.send_role_updates(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info("Execution time: %s ms", str(elapsed_time))
-        set_last_sync(new_changes, elapsed_time, "role")
+        set_last_sync(len(new_changes), elapsed_time, "role")
         logger.info("Retrive role from TOTVS end.")
 
     def _read_totvs_db(self):
         """Excute procedure to retrive TOVTS data"""
         logger.info("Retrive from TOTVS start.")
-        self._get_employees_totvs()
+        self._get_asset_type_totvs()
         self._get_matrimonial_status_totvs()
         self._get_gender_totvs()
         self._get_nacionality_totvs()
-        self._get_asset_totvs()
-        self._get_asset_type_totvs()
         self._get_cost_center_totvs()
         self._get_role_totvs()
+        self._get_asset_totvs()
+        self._get_employees_totvs()
         logger.info("Retrive from TOTVS end.")
 
     def start(self) -> None:

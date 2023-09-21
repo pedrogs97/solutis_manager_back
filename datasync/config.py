@@ -6,7 +6,7 @@ from datetime import datetime
 
 DATABASE_URL = os.environ.setdefault("DB_URL_DATASYNC", "")
 
-AGILE_HOST = os.environ.setdefault("AGILE_HOST", "http//localhost:8000/")
+AGILE_HOST = os.environ.setdefault("AGILE_HOST", "http//localhost:8000/api/v1/")
 
 
 # SQLServer configs
