@@ -1,3 +1,4 @@
+"""Alembic env file"""
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -5,10 +6,16 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from datasync.models.asset import *
-from datasync.models.employee import *
-from datasync.models.sync import *
-from datasync.models.base import Base
+from datasync.models import (
+    Base,
+    AssetModel,
+    AssetTypeModel,
+    EmployeeGenderModel,
+    EmployeeMatrimonialStatusModel,
+    EmployeeModel,
+    EmployeeNationalityModel,
+    SyncModel,
+)
 from datasync.config import DATABASE_URL
 
 # this is the Alembic Config object, which provides

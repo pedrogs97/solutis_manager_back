@@ -1,9 +1,22 @@
-"""
-Database external connection
-    - SQLServer Connection
-"""
+"""Service Database"""
 import pyodbc
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
 from datasync.config import CONNECTION_STRING
+from datasync.config import DATABASE_URL
+
+
+Engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+Session_db = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=Engine,
+)
+
+
+def get_db_session() -> Session:
+    """Return session"""
+    return Session_db()
 
 
 class ExternalDatabase:

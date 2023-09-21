@@ -4,7 +4,7 @@ from datetime import date
 from app.schemas import BaseSchema
 
 
-class EmployeeMatrimonialStatusSchema(BaseSchema):
+class EmployeeMatrimonialStatusTotvsSchema(BaseSchema):
     """
     Matrimonial status schema
 
@@ -23,7 +23,7 @@ class EmployeeMatrimonialStatusSchema(BaseSchema):
     description: str
 
 
-class EmployeeGenderSchema(BaseSchema):
+class EmployeeGenderTotvsSchema(BaseSchema):
     """
     Gender schema
 
@@ -36,7 +36,7 @@ class EmployeeGenderSchema(BaseSchema):
     description: str
 
 
-class EmployeeNationalitySchema(BaseSchema):
+class EmployeeNationalityTotvsSchema(BaseSchema):
     """
     Nationality schema
 
@@ -48,7 +48,7 @@ class EmployeeNationalitySchema(BaseSchema):
     description: str
 
 
-class EmployeeSchema(BaseSchema):
+class EmployeeTotvsSchema(BaseSchema):
     """Employee schema"""
 
     id: Optional[int]

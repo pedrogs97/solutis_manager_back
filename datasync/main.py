@@ -2,7 +2,7 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from fastapi import FastAPI
-from datasync.db.external import ExternalDatabase
+from datasync.database import ExternalDatabase
 from datasync.config import FORMAT, DATE_FORMAT, LOG_FILENAME
 from datasync.router import router as fetch_router
 from datasync.scheduler import SchedulerService

@@ -1,4 +1,4 @@
-"""TOTVS routes"""
+"""Service routes"""
 import json
 import logging
 from fastapi import BackgroundTasks, APIRouter, Response, Request

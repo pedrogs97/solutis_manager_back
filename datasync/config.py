@@ -1,10 +1,12 @@
-"""Global configs and constants"""
+"""Service configs and constants"""
 import os
 from datetime import datetime
 
 # PostgresSQL config
 
 DATABASE_URL = os.environ.setdefault("DB_URL_DATASYNC", "")
+
+AGILE_HOST = os.environ.setdefault("AGILE_HOST", "http//localhost:8000/")
 
 
 # SQLServer configs

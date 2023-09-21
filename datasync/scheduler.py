@@ -7,7 +7,7 @@ from apscheduler.schedulers import (
     SchedulerNotRunningError,
     SchedulerAlreadyRunningError,
 )
-from datasync.db.external import ExternalDatabase
+from datasync.database import ExternalDatabase
 from datasync.config import DATABASE_URL
 from datasync.service import (
     totvs_to_employee_schema,
@@ -17,12 +17,24 @@ from datasync.service import (
     totvs_to_gender_schema,
     totvs_to_matrimonial_status_schema,
     totvs_to_nationality_schema,
+    totvs_to_cost_center_schema,
+    totvs_to_asset_type_schema,
+    totvs_to_asset_schema,
+    totvs_to_role_schema,
     verify_changes_gender,
     verify_changes_matrimonial_status,
     verify_changes_nationality,
+    verify_changes_cost_center,
+    verify_changes_asset_type,
+    verify_changes_asset,
+    verify_changes_role,
     insert_gender,
     insert_matrimonial_status,
     insert_nationality,
+    insert_cost_center,
+    insert_asset_type,
+    insert_asset,
+    insert_role,
 )
 
 logger = logging.getLogger(__name__)
@@ -32,16 +44,21 @@ class SchedulerService:
     """Scheduler Service class"""
 
     SQL_PPESSOA = """SELECT
-	p.CODIGO, p.NOME, p.DTNASCIMENTO, c.DESCRICAO, s.DESCRICAO , n.DESCRICAO , p.RUA, p.NUMERO, p.COMPLEMENTO, 
-	p.BAIRRO, p.ESTADO, p.CIDADE, p.CEP, p.PAIS, p.CPF, p.TELEFONE1, p.CARTIDENTIDADE, p.UFCARTIDENT, 
-	p.ORGEMISSORIDENT, p.DTEMISSAOIDENT, p.EMAIL
+	p.CODIGO, p.NOME, p.DTNASCIMENTO, c.DESCRICAO AS CIVIL, s.DESCRICAO AS SEXO, 
+    n.DESCRICAO AS NACIONALIDADE, p.RUA, p.NUMERO, p.COMPLEMENTO, p.BAIRRO,
+    p.ESTADO, p.CIDADE, p.CEP, p.PAIS, p.CPF, p.TELEFONE1, p.CARTIDENTIDADE,
+    p.UFCARTIDENT, p.ORGEMISSORIDENT, p.DTEMISSAOIDENT, p.EMAIL, pf.NOME AS CARGO
     FROM CorporeRM_SI.dbo.PPESSOA as p 
     LEFT JOIN PCODESTCIVIL AS c
     ON p.ESTADOCIVIL = c.CODINTERNO
     LEFT JOIN PCODSEXO AS s
     ON p.SEXO = s.CODINTERNO
     LEFT JOIN PCODNACAO n
-    ON n.CODINTERNO = p.NACIONALIDADE ;"""
+    ON n.CODINTERNO = p.NACIONALIDADE 
+    LEFT JOIN PFUNC as f
+    ON f.CODPESSOA = p.CODIGO
+    LEFT JOIN PFUNCAO as pf
+    ON f.CODFUNCAO = pf.CODIGO ;"""
 
     SQL_PCODESTCIVIL = """SELECT DESCRICAO, CODINTERNO FROM PCODESTCIVIL;"""
 
@@ -55,11 +72,11 @@ class SchedulerService:
     ON cls.CODCLASSIFICA = cc.CODCLASSIFICA
     WHERE cc.CODCOLIGADA = 1;"""
 
-    SQL_IPATRIMONIO = """SELECT p.IDPATRIMONIO, p.DESCRICAO, g.DESCRICAO AS TIPO, p.ATIVO,
-    p.DATAAQUISICAO, p.PATRIMONIO, p.QUANTIDADE, p.UNIDADE, p.OBSERVACOES, p.CODIGOBARRA,
-    c.NOME AS CENTROCUSTO, p.VALORBASE, p.VRDEPACUCORRIGIDA, pc.SERIE, pc.IMEI, pc.ACESSORIOS,
-    pc.OPERADORA, pc.SISTEMAOPERACIONAL, pc.PACOTEOFFICE, pc.PADRAOEQUIP,
-    ga.DESCRICAO AS GARANTIA, pc.MANUT5 AS LINHA
+    SQL_IPATRIMONIO = """SELECT p.IDPATRIMONIO, p.DESCRICAO, g.DESCRICAO AS TIPO,
+    p.ATIVO, p.DATAAQUISICAO, p.PATRIMONIO, p.QUANTIDADE, p.UNIDADE, p.OBSERVACOES,
+    p.CODIGOBARRA, c.NOME AS CENTROCUSTO, p.VALORBASE, p.VRDEPACUCORRIGIDA, pc.SERIE,
+    pc.IMEI, pc.ACESSORIOS, pc.OPERADORA, pc.SISTEMAOPERACIONAL, pc.PACOTEOFFICE,
+    pc.PADRAOEQUIP, ga.DATAEXPIRACAO AS GARANTIA, pc.MANUT5 AS LINHA, f.NOMEFANTASIA as FORNECEDOR
     FROM CorporeRM_SI.dbo.IPATRIMONIO AS p
     LEFT JOIN IGRUPOPATRIMONIO AS g
     ON g.IDGRUPOPATRIMONIO = p.IDGRUPOPATRIMONIO 
@@ -69,10 +86,16 @@ class SchedulerService:
     ON pc.IDPATRIMONIO = p.IDPATRIMONIO 
     LEFT JOIN IGARANTIA AS ga
     ON ga.IDPATRIMONIO = p.IDPATRIMONIO 
+    LEFT JOIN FCFO as f
+    ON f.CODCFO = p.CODFORNECEDOR 
     WHERE (p.CODCOLIGADA = 1)"""
 
     SQL_IGRUPOPATRIMONIO = """SELECT IDGRUPOPATRIMONIO, CODGRUPOPATRIMONIO, DESCRICAO
     FROM IGRUPOPATRIMONIO 
+    WHERE CODCOLIGADA = 1"""
+
+    SQL_PFUNCAO = """SELECT CODIGO, NOME
+    FROM PFUNCAO 
     WHERE CODCOLIGADA = 1"""
 
     _scheduler = None
@@ -254,6 +277,29 @@ class SchedulerService:
         set_last_sync(new_changes, elapsed_time, "asset")
         logger.info("Retrive asset from TOTVS end.")
 
+    def _get_role_totvs(self):
+        """Excute procedure to retrive TOVTS role data"""
+        logger.info("Retrive role from TOTVS start.")
+        start = time()
+        external_db = ExternalDatabase()
+        cursor = external_db.get_cursor()
+        cursor.execute(self.SQL_PFUNCAO)
+        rows = cursor.fetchall()
+        new_changes = 0
+        for row in rows:
+            role_totvs = totvs_to_role_schema(row)
+            if not role_totvs:
+                break
+            if verify_changes_role(role_totvs):
+                new_changes += 1
+                insert_role(role_totvs)
+
+        end = time()
+        elapsed_time = end - start
+        logger.info("Execution time: %s ms", str(elapsed_time))
+        set_last_sync(new_changes, elapsed_time, "role")
+        logger.info("Retrive role from TOTVS end.")
+
     def _read_totvs_db(self):
         """Excute procedure to retrive TOVTS data"""
         logger.info("Retrive from TOTVS start.")
@@ -261,6 +307,10 @@ class SchedulerService:
         self._get_matrimonial_status_totvs()
         self._get_gender_totvs()
         self._get_nacionality_totvs()
+        self._get_asset_totvs()
+        self._get_asset_type_totvs()
+        self._get_cost_center_totvs()
+        self._get_role_totvs()
         logger.info("Retrive from TOTVS end.")
 
     def start(self) -> None:

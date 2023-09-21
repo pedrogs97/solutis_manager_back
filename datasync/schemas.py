@@ -12,16 +12,15 @@ class BaseSchema(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 
 
-class CostCenterSchema(BaseSchema):
+class CostCenterTotvsSchema(BaseSchema):
     """Cost center schema"""
 
-    id: Optional[int] = None
     code: str
     name: str
     classification: str
 
 
-class AssetTypeSchema(BaseSchema):
+class AssetTypeTotvsSchema(BaseSchema):
     """
     Asset type schema
 
@@ -34,63 +33,26 @@ class AssetTypeSchema(BaseSchema):
     * Softwares Admnistrativos
     """
 
-    id: Optional[int] = None
     code: int
     group_code: str
     name: str
 
 
-class AssetStatusSchema(BaseSchema):
-    """
-    Asset status schema
-
-    * Disponível
-    * Comodato
-    * Estoque SP
-    * Estoque BA
-    * Reservado
-    * Inativo
-    * Empréstimo
-    * Descarte
-    """
-
-    id: Optional[int] = None
-    name: str
-
-
-class AssetClothingSizeSchema(BaseSchema):
-    """
-    Asset clothing size schema
-
-    * PP
-    * P
-    * M
-    * G
-    * GG
-    * XG
-    """
-
-    id: Optional[int] = None
-    name: str
-
-
-class AssetSchema(BaseSchema):
+class AssetTotvsSchema(BaseSchema):
     """Asset schema"""
 
-    id: Optional[int] = None
-    code: str
-    type: AssetTypeSchema
-    status: AssetStatusSchema
-    clothing_size: Optional[AssetClothingSizeSchema] = None
-    cost_center: CostCenterSchema
+    code: Optional[int]
+    type: Optional[str]
+    clothing_size: Optional[str] = None
+    cost_center: Optional[str]
 
     # tombo - registro patrimonial
-    register_number: str
-    description: str
+    register_number: Optional[str]
+    description: Optional[str]
     # fornecedor
     supplier: Optional[str] = None
     # garantia
-    assurance_date: Optional[str] = None
+    assurance_date: Optional[datetime] = None
     observations: Optional[str] = None
     discard_reason: Optional[str] = None
     # padrão
@@ -98,8 +60,8 @@ class AssetSchema(BaseSchema):
     operational_system: Optional[str] = None
     serial_number: Optional[str] = None
     imei: Optional[str] = None
-    acquisition_date: datetime
-    value: float
+    acquisition_date: Optional[datetime] = None
+    value: Optional[float]
     # pacote office
     ms_office: Optional[bool]
     line_number: Optional[str] = None
@@ -110,12 +72,13 @@ class AssetSchema(BaseSchema):
     # acessórios
     accessories: Optional[str] = None
     # quantidade do  ativo
-    quantity: int
+    quantity: Optional[int] = None
     # unidade da quantidade
     unit: Optional[str] = None
+    active: Optional[bool] = None
 
 
-class EmployeeMatrimonialStatusSchema(BaseSchema):
+class EmployeeMatrimonialStatusTotvsSchema(BaseSchema):
     """
     Matrimonial status schema
 
@@ -129,12 +92,11 @@ class EmployeeMatrimonialStatusSchema(BaseSchema):
     * V - Viúvo
     """
 
-    id: Optional[int] = None
     code: str
     description: str
 
 
-class EmployeeGenderSchema(BaseSchema):
+class EmployeeGenderTotvsSchema(BaseSchema):
     """
     Gender schema
 
@@ -142,27 +104,31 @@ class EmployeeGenderSchema(BaseSchema):
     * F - Femino
     """
 
-    id: Optional[int] = None
     code: str
     description: str
 
 
-class EmployeeNationalitySchema(BaseSchema):
+class EmployeeNationalityTotvsSchema(BaseSchema):
     """
     Nationality schema
 
     All countries
     """
 
-    id: Optional[int] = None
     code: str
     description: str
 
 
-class EmployeeSchema(BaseSchema):
+class EmployeeRoleTotvsSchema(BaseSchema):
+    """Employee role schema"""
+
+    code: str
+    name: str
+
+
+class EmployeeTotvsSchema(BaseSchema):
     """Employee schema"""
 
-    id: Optional[int] = None
     code: int
     full_name: str
     birthday: date
@@ -171,10 +137,7 @@ class EmployeeSchema(BaseSchema):
     nationality: str
     marital_status: str
     role: str
-    manager: str
     address: str
     cell_phone: str
     email: str
-    cost_center_number: str
-    cost_center_name: str
     gender: str

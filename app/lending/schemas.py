@@ -2,10 +2,10 @@
 from typing import Optional, List
 from datetime import datetime, date
 from app.schemas import BaseSchema
-from app.people.schemas import EmployeeSchema
+from app.people.schemas import EmployeeTotvsSchema
 
 
-class AssetTypeSchema(BaseSchema):
+class AssetTypeTotvsSchema(BaseSchema):
     """
     Asset type
 
@@ -65,11 +65,11 @@ class AssetClothingSizeSchema(BaseSchema):
     name: str
 
 
-class AssetSchema(BaseSchema):
+class AssetTotvsSchema(BaseSchema):
     """Asset schema"""
 
     id: Optional[int]
-    type: AssetTypeSchema
+    type: AssetTypeTotvsSchema
     status: AssetStatusSchema
     clothing_size: AssetClothingSizeSchema
     # tombo - registro patrimonial
@@ -137,11 +137,11 @@ class WitnessSchema(BaseSchema):
     """Witness schema"""
 
     id: Optional[int]
-    employee: EmployeeSchema
+    employee: EmployeeTotvsSchema
     signed: date
 
 
-class CostCenterSchema(BaseSchema):
+class CostCenterTotvsSchema(BaseSchema):
     """Witness schema"""
 
     id: Optional[int]
@@ -153,12 +153,12 @@ class LendingSchema(BaseSchema):
     """Lending schema"""
 
     id: Optional[int]
-    employee: EmployeeSchema
-    asset: AssetSchema
+    employee: EmployeeTotvsSchema
+    asset: AssetTotvsSchema
     document: DocumentSchema
     workload: WorkloadSchema
     witnesses: List[WitnessSchema]
-    cost_center: CostCenterSchema
+    cost_center: CostCenterTotvsSchema
     manager: str
     observation: Optional[str]
     signed_date: date
