@@ -9,8 +9,11 @@ from app.auth.schemas import (
     LoginSchema,
     UserSerializer,
     UserUpdateSchema,
+    NewRoleSchema,
+    RoleSerializer,
+    PermissionSerializer,
 )
-from app.auth.service import create_user, get_users, update_user
+from app.auth.service import UserSerivce, RoleService, PermissionService
 from app.backends import (
     get_user,
     get_user_token,
@@ -20,9 +23,22 @@ from app.backends import (
     PermissionChecker,
     get_db_session,
 )
+from app.auth.config import (
+    PAGINATION_NUMBER,
+    MAX_PAGINATION_NUMBER,
+    PAGE_NUMBER_DESCRIPTION,
+    PAGE_SIZE_DESCRIPTION,
+    NOT_ALLOWED,
+)
 
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
+
+user_service = UserSerivce()
+
+role_service = RoleService()
+
+permission_serivce = PermissionService()
 
 
 @auth_router.post("/login/")
@@ -48,53 +64,44 @@ async def logout_route(
     return JSONResponse(content={"message": "logout"}, status_code=status.HTTP_200_OK)
 
 
-@auth_router.post("/users/", response_model=UserSerializer)
+@auth_router.post(
+    "/users/", response_model=UserSerializer, description="Creates new user"
+)
 async def create_user_route(
     data: NewUserSchema,
     authenticated: bool = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "method": "add"})
+        PermissionChecker({"module": "people", "model": "user", "method": "add"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
     """New user route"""
     if not authenticated:
         return JSONResponse(
-            content="Not allowed", status_code=status.HTTP_401_UNAUTHORIZED
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = create_user(data, db_session)
+    serializer = user_service.create_user(data, db_session)
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_201_CREATED
     )
 
 
-@auth_router.patch("/users/{user_id}/", response_model=UserSerializer)
-async def update_user_route(
-    data: UserUpdateSchema,
-    user_id: int,
-    authenticated: bool = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "method": "edit"})
-    ),
-    db_session: Session = Depends(get_db_session),
-) -> Response:
-    """New user route"""
-    if not authenticated:
-        return JSONResponse(
-            content="Not allowed", status_code=status.HTTP_401_UNAUTHORIZED
-        )
-    serializer = update_user(db_session, user_id, data)
-    return JSONResponse(
-        serializer.model_dump(by_alias=True), status_code=status.HTTP_201_CREATED
-    )
-
-
-@auth_router.get("/users/", response_model=Page[UserSerializer])
+@auth_router.get(
+    "/users/",
+    response_model=Page[UserSerializer],
+    description="Retrie list of users. Can apply filters",
+)
 async def get_list_user_route(
     authenticated: bool = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "method": "view"})
+        PermissionChecker({"module": "people", "model": "user", "method": "view"})
     ),
     search: str = "",
-    page: int = Query(1, ge=1, description="Page number"),
-    size: int = Query(50, ge=1, le=100, description="Page size"),
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
     active: bool = Query(True, description="Active user"),
     staff: Optional[bool] = Query(None, description="Staff user"),
     db_session: Session = Depends(get_db_session),
@@ -102,26 +109,178 @@ async def get_list_user_route(
     """List users route"""
     if not authenticated:
         return JSONResponse(
-            content="Not allowed", status_code=status.HTTP_401_UNAUTHORIZED
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    return get_users(db_session, page, size, search, active, staff)
+    return user_service.get_users(db_session, page, size, search, active, staff)
 
 
-@auth_router.post("/roles/", response_model=UserSerializer)
-async def create_user_route(
-    data: NewUserSchema,
+@auth_router.patch(
+    "/users/{user_id}/",
+    response_model=UserSerializer,
+    description="Updates an existing user",
+)
+async def update_user_route(
+    data: UserUpdateSchema,
+    user_id: int,
     authenticated: bool = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "method": "add"})
+        PermissionChecker({"module": "people", "model": "user", "method": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
-    """New user route"""
+    """Update user route"""
     if not authenticated:
         return JSONResponse(
-            content="Not allowed", status_code=status.HTTP_401_UNAUTHORIZED
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = create_user(data, db_session)
+    serializer = user_service.update_user(db_session, user_id, data)
+    return JSONResponse(
+        serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
+    )
+
+
+@auth_router.get(
+    "/users/{user_id}/",
+    response_model=UserSerializer,
+    description="Retrives an existing user",
+)
+async def get_user_route(
+    user_id: int,
+    authenticated: bool = Depends(
+        PermissionChecker({"module": "people", "model": "user", "method": "view"})
+    ),
+    db_session: Session = Depends(get_db_session),
+) -> Response:
+    """Get user route"""
+    if not authenticated:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer = user_service.get_user(user_id, db_session)
+    return JSONResponse(
+        serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
+    )
+
+
+@auth_router.post(
+    "/roles/", response_model=RoleSerializer, description="Creates a new role"
+)
+async def create_role_route(
+    data: NewRoleSchema,
+    authenticated: bool = Depends(
+        PermissionChecker({"module": "auth", "model": "role", "method": "add"})
+    ),
+    db_session: Session = Depends(get_db_session),
+) -> Response:
+    """New role route"""
+    if not authenticated:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer = role_service.create_role(data, db_session)
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_201_CREATED
     )
+
+
+@auth_router.get(
+    "/roles/",
+    response_model=Page[RoleSerializer],
+    description="Retrie list of roles. Can apply filters",
+)
+async def get_list_role_route(
+    authenticated: bool = Depends(
+        PermissionChecker({"module": "auth", "model": "role", "method": "view"})
+    ),
+    search: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    db_session: Session = Depends(get_db_session),
+):
+    """List roles route"""
+    if not authenticated:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    return role_service.get_roles(db_session, page, size, search)
+
+
+@auth_router.patch(
+    "/roles/{role_id}/",
+    response_model=RoleSerializer,
+    description="Updates an existing role",
+)
+async def update_role_route(
+    data: NewRoleSchema,
+    user_id: int,
+    authenticated: bool = Depends(
+        PermissionChecker({"module": "auth", "model": "role", "method": "edit"})
+    ),
+    db_session: Session = Depends(get_db_session),
+) -> Response:
+    """Update role route"""
+    if not authenticated:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer = role_service.update_role(db_session, user_id, data)
+    return JSONResponse(
+        serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
+    )
+
+
+@auth_router.get(
+    "/roles/{role_id}/",
+    response_model=RoleSerializer,
+    description="Retrives an existing role",
+)
+async def get_role_route(
+    role_id: int,
+    authenticated: bool = Depends(
+        PermissionChecker({"module": "auth", "model": "role", "method": "view"})
+    ),
+    db_session: Session = Depends(get_db_session),
+) -> Response:
+    """Get role route"""
+    if not authenticated:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer = role_service.get_role(role_id, db_session)
+    return JSONResponse(
+        serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
+    )
+
+
+@auth_router.get(
+    "/permissions/",
+    response_model=Page[PermissionSerializer],
+    description="Retrie list of permissions. Can apply filters",
+)
+async def get_list_permission_route(
+    authenticated: bool = Depends(
+        PermissionChecker({"module": "auth", "model": "permission", "method": "view"})
+    ),
+    search: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    db_session: Session = Depends(get_db_session),
+):
+    """List permissions route"""
+    if not authenticated:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    return permission_serivce.get_permissions(db_session, page, size, search)

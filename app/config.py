@@ -7,6 +7,8 @@ from datetime import datetime
 DATABASE_URL = os.environ.setdefault("DB_URL", "")
 PASSWORD_SUPER_USER = os.environ.setdefault("PASSWORD_SUPER_USER", "admin@123")
 
+TIMEZONE = os.environ.setdefault("TIMEZONE", "America/Bahia")
+
 # Logging config.
 
 FORMAT = (
@@ -23,9 +25,22 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 10
 
 PERMISSIONS = {
-    "lending": ["asset", "lending", "mantenance"],
-    "people": [],
-    "auth": ["user", "permission", "role"],
-    "invoice": [],
-    "logs": [],
+    "lending": {
+        "models": [
+            {"name": "asset", "label": "Ativo"},
+            {"name": "lending", "label": "Contrato de Comodato"},
+            {"name": "mantenance", "label": "Manutenção"},
+        ],
+        "label": "Comodato",
+    },
+    "people": {"models": [{"name": "user", "label": "Usuário"}], "label": "Pesosas"},
+    "auth": {
+        "models": [
+            {"name": "permission", "label": "Permissões"},
+            {"name": "role", "label": "Perfil de usuário"},
+        ],
+        "label": "Grupos e Permissões",
+    },
+    "invoice": {"models": [], "label": "Nota Fiscal"},
+    "logs": {"models": [], "label": "Log"},
 }

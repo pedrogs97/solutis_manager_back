@@ -6,9 +6,9 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.auth.models import *
-from app.models.base import Base
-from app.models.lending import *
-from app.models.people import *
+from app.database import Base
+from app.lending.models import *
+from app.people.models import *
 from app.config import DATABASE_URL
 
 # this is the Alembic Config object, which provides

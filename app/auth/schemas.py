@@ -15,7 +15,7 @@ class PermissionSchema(BaseSchema):
 
     module: str
     model: str
-    method: str
+    action: str
 
 
 class PermissionSerializer(BaseSchema):
@@ -31,7 +31,8 @@ class PermissionSerializer(BaseSchema):
     id: int
     module: str
     model: str
-    method: str
+    action: str
+    description: str
 
 
 class RoleSerializer(BaseSchema):
@@ -86,6 +87,13 @@ class RoleSchema(BaseSchema):
 
     name: str
     permissions: List[PermissionSchema]
+
+
+class NewRoleSchema(BaseSchema):
+    """New role schema"""
+
+    name: Optional[str] = None
+    permissions: Optional[List[int]] = None
 
 
 class LoginSchema(BaseSchema):

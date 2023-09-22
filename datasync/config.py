@@ -8,6 +8,8 @@ DATABASE_URL = os.environ.setdefault("DB_URL_DATASYNC", "")
 
 AGILE_HOST = os.environ.setdefault("AGILE_HOST", "http//localhost:8000/api/v1/")
 
+TIMEZONE = os.environ.setdefault("TIMEZONE", "America/Bahia")
+
 
 # SQLServer configs
 

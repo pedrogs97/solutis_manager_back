@@ -3,35 +3,35 @@ version: "3.1"
 services:
 
   # Backend principal
-  # app:
-  #   build:
-  #     context: .
-  #   environment:
-  #     TZ: "America/Salvador"
-  #   ports:
-  #     - 8000:8000
-  #   volumes:
-  #     - ./app:/app
-  #   command: sh -c "uvicorn main:app --host 0.0.0.0 --reload"
-  #   depends_on:
-  #     - postgresql
-  #   env_file:
-  #     - ./.env
-
-  # Serviço de consumo do SQL SERVER
-  datasync-totvs:
+  app:
     build:
       context: .
     # environment:
     #   TZ: "America/Salvador"
     ports:
-      - 8001:8001
+      - 8000:8000
     volumes:
-      - ./datasync:/datasync
-    working_dir: /datasync
-    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8001 --reload"
+      - ./app:/app
+    command: sh -c "uvicorn main:app --host 0.0.0.0 --reload"
+    depends_on:
+      - postgresql
     env_file:
       - ./.env
+
+  # Serviço de consumo do SQL SERVER
+  # datasync-totvs:
+  #   build:
+  #     context: .
+  #   # environment:
+  #   #   TZ: "America/Salvador"
+  #   ports:
+  #     - 8001:8001
+  #   volumes:
+  #     - ./datasync:/datasync
+  #   working_dir: /datasync
+  #   command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8001 --reload"
+  #   env_file:
+  #     - ./.env
 
   # Banco de dados que será utilizado
   postgresql:

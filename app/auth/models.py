@@ -26,10 +26,11 @@ class PermissionModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     module = Column("module", String, nullable=False)
     model = Column("model", String, nullable=False)
-    method = Column("method", String, nullable=False)
+    action = Column("action", String, nullable=False)
+    description = Column("description", String(length=150), nullable=False, default="")
 
     def __str__(self) -> str:
-        return f"{self.module}_{self.model}_{self.method}"
+        return f"{self.module}_{self.model}_{self.action}"
 
 
 class RoleModel(Base):

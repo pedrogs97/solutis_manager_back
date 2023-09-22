@@ -73,7 +73,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     )
 
     permissions = [
-        f"{perm.module}_{perm.model}_{perm.method}" for perm in user.role.permissions
+        f"{perm.module}_{perm.model}_{perm.action}" for perm in user.role.permissions
     ]
 
     if not is_valid_token(old_token):
@@ -153,7 +153,7 @@ class PermissionChecker:
             if (
                 perm.module == self.required_permissions.module
                 and perm.model == self.required_permissions.model
-                and perm.method == self.required_permissions.method
+                and perm.action == self.required_permissions.action
             ):
                 return True
 
