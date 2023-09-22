@@ -122,3 +122,9 @@ class TokenSchema(BaseSchema):
     user: UserSerializer
     token: str
     expires_in: datetime = Field(serialization_alias="expiresIn")
+
+
+class NewPasswordSchema(BaseSchema):
+    """New password schema"""
+
+    user_id: int

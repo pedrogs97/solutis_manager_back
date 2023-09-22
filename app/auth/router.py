@@ -12,6 +12,7 @@ from app.auth.schemas import (
     NewRoleSchema,
     RoleSerializer,
     PermissionSerializer,
+    NewPasswordSchema,
 )
 from app.auth.service import UserSerivce, RoleService, PermissionService
 from app.backends import (
@@ -70,7 +71,7 @@ async def logout_route(
 async def create_user_route(
     data: NewUserSchema,
     authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "user", "method": "add"})
+        PermissionChecker({"module": "people", "model": "user", "action": "add"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -92,7 +93,7 @@ async def create_user_route(
 )
 async def get_list_user_route(
     authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "user", "method": "view"})
+        PermissionChecker({"module": "people", "model": "user", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -124,7 +125,7 @@ async def update_user_route(
     data: UserUpdateSchema,
     user_id: int,
     authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "user", "method": "edit"})
+        PermissionChecker({"module": "people", "model": "user", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -147,7 +148,7 @@ async def update_user_route(
 async def get_user_route(
     user_id: int,
     authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "user", "method": "view"})
+        PermissionChecker({"module": "people", "model": "user", "action": "view"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -168,7 +169,7 @@ async def get_user_route(
 async def create_role_route(
     data: NewRoleSchema,
     authenticated: bool = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "method": "add"})
+        PermissionChecker({"module": "auth", "model": "role", "action": "add"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -190,7 +191,7 @@ async def create_role_route(
 )
 async def get_list_role_route(
     authenticated: bool = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "method": "view"})
+        PermissionChecker({"module": "auth", "model": "role", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -220,7 +221,7 @@ async def update_role_route(
     data: NewRoleSchema,
     user_id: int,
     authenticated: bool = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "method": "edit"})
+        PermissionChecker({"module": "auth", "model": "role", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -243,7 +244,7 @@ async def update_role_route(
 async def get_role_route(
     role_id: int,
     authenticated: bool = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "method": "view"})
+        PermissionChecker({"module": "auth", "model": "role", "action": "view"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -265,7 +266,7 @@ async def get_role_route(
 )
 async def get_list_permission_route(
     authenticated: bool = Depends(
-        PermissionChecker({"module": "auth", "model": "permission", "method": "view"})
+        PermissionChecker({"module": "auth", "model": "permission", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -284,3 +285,24 @@ async def get_list_permission_route(
         )
 
     return permission_serivce.get_permissions(db_session, page, size, search)
+
+
+@auth_router.post("/send-new-password/", description="Send new password to an user")
+async def post_send_new_password_route(
+    data: NewPasswordSchema,
+    authenticated: bool = Depends(
+        PermissionChecker(
+            {"module": "auth", "model": "permission", "action": "admin"}
+        )  # action admin não existe, isso garante que só role Administrador consiga acessar
+    ),
+    db_session: Session = Depends(get_db_session),
+) -> JSONResponse:
+    """Sends new password to the user"""
+    if not authenticated:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    user_service.send_new_password(data, db_session)
+
+    return JSONResponse(content="", status_code=status.HTTP_200_OK)
