@@ -62,7 +62,7 @@ async def patch_update_employee_route(
     data: UpdateEmployeeSchema,
     db_session: Session = Depends(get_db_session),
     authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "employee", "action": "add"})
+        PermissionChecker({"module": "people", "model": "employee", "action": "edit"})
     ),
 ):
     """Update employee route"""
@@ -97,7 +97,7 @@ async def get_list_employees_route(
     ),
     db_session: Session = Depends(get_db_session),
     authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "employee", "action": "add"})
+        PermissionChecker({"module": "people", "model": "employee", "action": "view"})
     ),
 ):
     """List employees and apply filters route"""
@@ -116,7 +116,7 @@ async def get_emplooyee_route(
     employee_id: int,
     db_session: Session = Depends(get_db_session),
     authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "employee", "action": "add"})
+        PermissionChecker({"module": "people", "model": "employee", "action": "view"})
     ),
 ):
     """Get an employee route"""
