@@ -134,7 +134,7 @@ class EmployeeTotvsSchema(BaseSchema):
     taxpayer_identification: str
     nacional_identification: str
     nationality: str
-    marital_status: str
+    matrimonial_status: str
     role: str
     address: str
     cell_phone: str

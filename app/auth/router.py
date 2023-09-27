@@ -24,7 +24,7 @@ from app.backends import (
     PermissionChecker,
     get_db_session,
 )
-from app.auth.config import (
+from app.config import (
     PAGINATION_NUMBER,
     MAX_PAGINATION_NUMBER,
     PAGE_NUMBER_DESCRIPTION,
@@ -68,7 +68,7 @@ async def logout_route(
 @auth_router.post(
     "/users/", response_model=UserSerializer, description="Creates new user"
 )
-async def create_user_route(
+async def post_create_user_route(
     data: NewUserSchema,
     authenticated: bool = Depends(
         PermissionChecker({"module": "people", "model": "user", "action": "add"})
@@ -140,6 +140,14 @@ async def update_user_route(
     )
 
 
+@auth_router.put("/users/{user_id}/")
+async def put_update_user_route():
+    """Update user not implemented"""
+    return JSONResponse(
+        content="Not Implemented", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
+    )
+
+
 @auth_router.get(
     "/users/{user_id}/",
     response_model=UserSerializer,
@@ -166,7 +174,7 @@ async def get_user_route(
 @auth_router.post(
     "/roles/", response_model=RoleSerializer, description="Creates a new role"
 )
-async def create_role_route(
+async def post_create_role_route(
     data: NewRoleSchema,
     authenticated: bool = Depends(
         PermissionChecker({"module": "auth", "model": "role", "action": "add"})
@@ -233,6 +241,14 @@ async def update_role_route(
     serializer = role_service.update_role(db_session, user_id, data)
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
+    )
+
+
+@auth_router.put("/roles/{role_id}/")
+async def put_update_role_route():
+    """Update role not implemented"""
+    return JSONResponse(
+        content="Not Implemented", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
     )
 
 

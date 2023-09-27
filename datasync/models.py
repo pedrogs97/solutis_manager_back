@@ -177,7 +177,7 @@ class EmployeeModel(Base):
         "nacional_identification", String(length=15), nullable=False
     )
     nationality = Column("nationality", String(length=50), nullable=False)
-    marital_status = Column("marital_status", String(length=50), nullable=False)
+    matrimonial_status = Column("matrimonial_status", String(length=50), nullable=False)
     role = Column("role", String(length=100), nullable=True)
     address = Column("address", String(length=255), nullable=False)
     cell_phone = Column("cell_phone", String(length=15), nullable=False)

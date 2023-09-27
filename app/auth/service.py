@@ -127,7 +127,7 @@ class UserSerivce:
                     UserModel.taxpayer_identification.ilike(f"%{search}"),
                 )
             )
-            user_list.filter(UserModel.is_staff == staff)
+            user_list = user_list.filter(UserModel.is_staff == staff)
         else:
             user_list = db_session.query(UserModel).filter(
                 or_(
@@ -138,7 +138,7 @@ class UserSerivce:
                 )
             )
 
-        user_list.filter(UserModel.is_active == active)
+        user_list = user_list.filter(UserModel.is_active == active)
 
         params = Params(page=page, size=size)
         paginated = paginate(
@@ -319,7 +319,7 @@ def create_permissions():
         db_session.commit()
     except Exception as exc:
         msg = f"{exc.args[0]}"
-        logger.warning("Could not create super user. Error: %s", msg)
+        logger.warning("Could not create permissions. Error: %s", msg)
     finally:
         db_session.close_all()
 

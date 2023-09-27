@@ -44,3 +44,13 @@ PERMISSIONS = {
     "invoice": {"models": [], "label": "Nota Fiscal"},
     "logs": {"models": [], "label": "Log"},
 }
+
+NOT_ALLOWED = "Not allowed"
+
+PAGE_NUMBER_DESCRIPTION = "Page number"
+
+PAGE_SIZE_DESCRIPTION = "Page size"
+
+PAGINATION_NUMBER = 15
+
+MAX_PAGINATION_NUMBER = 100

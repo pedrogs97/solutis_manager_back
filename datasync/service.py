@@ -71,7 +71,7 @@ def totvs_to_employee_schema(
             birthday=birthday_datetime.date(),
             taxpayer_identification=row[14] if row[14] is not None else "",
             nacional_identification=row[16] if row[16] is not None else "",
-            marital_status=row[3] if row[3] is not None else "",
+            matrimonial_status=row[3] if row[3] is not None else "",
             nationality=row[5] if row[5] is not None else "",
             role=row[21] if row[21] is not None else "",
             address=address,

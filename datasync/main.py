@@ -1,10 +1,9 @@
 """Main Service"""
 import logging
 from logging.handlers import TimedRotatingFileHandler
-from pytz import timezone
 from fastapi import FastAPI
 from datasync.database import ExternalDatabase
-from datasync.config import FORMAT, DATE_FORMAT, LOG_FILENAME, TIMEZONE
+from datasync.config import FORMAT, DATE_FORMAT, LOG_FILENAME
 from datasync.router import router as fetch_router
 from datasync.scheduler import SchedulerService
 
@@ -12,7 +11,6 @@ app = FastAPI()
 
 file_handler = TimedRotatingFileHandler(LOG_FILENAME, when="midnight")
 file_handler.suffix = "bkp"
-file_handler.formatter = timezone(TIMEZONE)
 logging.basicConfig(
     encoding="utf-8",
     level=logging.DEBUG,
