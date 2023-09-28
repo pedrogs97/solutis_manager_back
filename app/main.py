@@ -1,13 +1,18 @@
 """Main Service"""
 import logging
+import os
 from logging.handlers import TimedRotatingFileHandler
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.config import FORMAT, DATE_FORMAT, LOG_FILENAME, ORIGINS
-from app.auth.service import create_super_user, create_permissions
+
 from app.auth.router import auth_router
+from app.auth.service import create_permissions, create_super_user
+from app.config import DATE_FORMAT, FORMAT, LOG_FILENAME, ORIGINS
 from app.people.router import people_router
 
+if not os.path.exists("./logs/"):
+    os.makedirs("./logs/")
 file_handler = TimedRotatingFileHandler(LOG_FILENAME, when="midnight")
 file_handler.suffix = "bkp"
 logging.basicConfig(

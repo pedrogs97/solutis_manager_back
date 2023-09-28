@@ -2,12 +2,15 @@
 import os
 from datetime import datetime
 
+from dotenv import load_dotenv
+
+load_dotenv()
 # PostgresSQL config
 
-DATABASE_URL = os.environ.setdefault("DB_URL", "")
-PASSWORD_SUPER_USER = os.environ.setdefault("PASSWORD_SUPER_USER", "admin@123")
+DATABASE_URL = os.getenv("DB_URL")
+PASSWORD_SUPER_USER = os.getenv("PASSWORD_SUPER_USER")
 
-TIMEZONE = os.environ.setdefault("TIMEZONE", "America/Bahia")
+TIMEZONE = os.getenv("TIMEZONE", "America/Bahia")
 
 # Logging config.
 
