@@ -54,3 +54,9 @@ PAGE_SIZE_DESCRIPTION = "Page size"
 PAGINATION_NUMBER = 15
 
 MAX_PAGINATION_NUMBER = 100
+
+ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://datasync-totvs:8001"
+]
