@@ -42,7 +42,6 @@ class AssetTotvsSchema(BaseSchema):
 
     code: int
     type: str
-    clothing_size: str
     cost_center: str
 
     # tombo - registro patrimonial

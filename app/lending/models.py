@@ -22,27 +22,20 @@ class AssetTypeModel(Base):
     """
     Asset type model
 
-    * Desktop
-    * Notebook
-    * Monitor
-    * Impressora
-    * Tablet
-    * Telefonia
-    * Webcam
-    * Pendrive
-    * Mobiliário
-    * Kit Mouse e Teclado
-    * Teclado
-    * Kit Ferramentas
-    * Headset
-    * HD Externo
-    * Fardamento
-    * Chip
+    * Computadores e Periféricos
+    * Máquinas e equipamentos
+    * Móveis e utensilios
+    * Veículos
+    * Instalações
+    * Benfeitorias em Imóveis
+    * Softwares Admnistrativos
     """
 
     __tablename__ = "asset_type"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
+    code = Column("code", String, nullable=False)
+    group_code = Column("group_code", String, nullable=False)
     name = Column("name", String, nullable=False)
 
     def __str__(self) -> str:
@@ -114,6 +107,7 @@ class AssetModel(Base):
     )
     clothing_size: Mapped[AssetClothingSizeModel] = relationship("")
 
+    code = Column("code", String, nullable=True)
     # tombo - registro patrimonial
     register_number = Column("register_number", String, nullable=True)
     description = Column("description", String, nullable=True)
@@ -139,10 +133,13 @@ class AssetModel(Base):
     # acessórios
     accessories = Column("accessories", String, nullable=True)
     configuration = Column("configuration", String, nullable=True)
+    quantity = Column("quantity", Integer, nullable=True, default=1)
+    unit = Column("unit", String, nullable=True)
+    active = Column("active", Boolean, nullable=True, default=True)
 
     def __str__(self) -> str:
         """Returns model as string"""
-        return f"{self.description}"
+        return f"{self.code} - {self.description}"
 
 
 class DocumentTypeModel(Base):

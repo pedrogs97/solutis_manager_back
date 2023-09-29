@@ -67,7 +67,7 @@ class AgileClient:
     ) -> None:
         """Send matrimonial status updates to Agile"""
         respose = requests.post(
-            url=f"{AGILE_HOST}matrimonial-status/update/",
+            url=f"{AGILE_HOST}employee/matrimonial-status/update/",
             data=[cc.model_dump() for cc in update_data],
             timeout=500,
         )
@@ -82,7 +82,7 @@ class AgileClient:
     def send_gender_updates(self, update_data: List[EmployeeGenderTotvsSchema]) -> None:
         """Send gender updates to Agile"""
         respose = requests.post(
-            url=f"{AGILE_HOST}gender/update/",
+            url=f"{AGILE_HOST}employee/gender/update/",
             data=[cc.model_dump() for cc in update_data],
             timeout=500,
         )
@@ -97,7 +97,7 @@ class AgileClient:
     ) -> None:
         """Send nationality updates to Agile"""
         respose = requests.post(
-            url=f"{AGILE_HOST}nationality/update/",
+            url=f"{AGILE_HOST}employee/nationality/update/",
             data=[cc.model_dump() for cc in update_data],
             timeout=500,
         )
@@ -110,7 +110,7 @@ class AgileClient:
     def send_role_updates(self, update_data: List[EmployeeRoleTotvsSchema]) -> None:
         """Send role updates to Agile"""
         respose = requests.post(
-            url=f"{AGILE_HOST}role/update/",
+            url=f"{AGILE_HOST}employee/role/update/",
             data=[cc.model_dump() for cc in update_data],
             timeout=500,
         )

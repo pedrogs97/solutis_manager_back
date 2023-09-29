@@ -1,8 +1,11 @@
 from logging.config import fileConfig
 
 from alembic import context
-from config import DATABASE_URL
-from database import Base
+from app.config import DATABASE_URL
+from app.database import Base
+from app.people.models import *
+from app.auth.models import *
+from app.lending.models import *
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
@@ -65,8 +68,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection,
-                          target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

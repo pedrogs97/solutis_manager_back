@@ -48,7 +48,7 @@ PERMISSIONS = {
     "logs": {"models": [], "label": "Log"},
 }
 
-NOT_ALLOWED = "Not allowed"
+NOT_ALLOWED = "Não permitido"
 
 PAGE_NUMBER_DESCRIPTION = "Page number"
 
@@ -61,5 +61,5 @@ MAX_PAGINATION_NUMBER = 100
 ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://datasync-totvs:8001"
+    "http://datasync-totvs:8001",
 ]

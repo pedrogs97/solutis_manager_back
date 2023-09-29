@@ -13,6 +13,7 @@ from app.people.router import people_router
 
 if not os.path.exists("./logs/"):
     os.makedirs("./logs/")
+
 file_handler = TimedRotatingFileHandler(LOG_FILENAME, when="midnight")
 file_handler.suffix = "bkp"
 logging.basicConfig(

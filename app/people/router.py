@@ -11,6 +11,10 @@ from app.people.schemas import (
     EmployeeTotvsSchema,
     NewEmployeeSchema,
     UpdateEmployeeSchema,
+    EmployeeGenderTotvsSchema,
+    EmployeeMatrimonialStatusTotvsSchema,
+    EmployeeNationalityTotvsSchema,
+    EmployeeRoleTotvsSchema,
 )
 from app.people.service import EmployeeService
 from app.config import (
@@ -32,7 +36,47 @@ async def post_updates_route(
     db_session: Session = Depends(get_db_session),
 ):
     """Update employee from TOTVSroute"""
-    employee_service.update_employees(data, db_session)
+    employee_service.update_employee_totvs(data, db_session)
+    return JSONResponse(content="", status_code=status.HTTP_200_OK)
+
+
+@people_router.post("/employee/matrimonial-status/update/")
+async def post_matrimonial_status_updates_route(
+    data: List[EmployeeMatrimonialStatusTotvsSchema],
+    db_session: Session = Depends(get_db_session),
+):
+    """Update employee from TOTVSroute"""
+    employee_service.update_matrimonial_status_totvs(data, db_session)
+    return JSONResponse(content="", status_code=status.HTTP_200_OK)
+
+
+@people_router.post("/employee/gender/update/")
+async def post_gender_updates_route(
+    data: List[EmployeeGenderTotvsSchema],
+    db_session: Session = Depends(get_db_session),
+):
+    """Update employee from TOTVSroute"""
+    employee_service.update_gender_totvs(data, db_session)
+    return JSONResponse(content="", status_code=status.HTTP_200_OK)
+
+
+@people_router.post("/employee/nationality/update/")
+async def post_nationality_updates_route(
+    data: List[EmployeeNationalityTotvsSchema],
+    db_session: Session = Depends(get_db_session),
+):
+    """Update employee from TOTVSroute"""
+    employee_service.update_nationality_totvs(data, db_session)
+    return JSONResponse(content="", status_code=status.HTTP_200_OK)
+
+
+@people_router.post("/employee/role/update/")
+async def post_role_updates_route(
+    data: List[EmployeeRoleTotvsSchema],
+    db_session: Session = Depends(get_db_session),
+):
+    """Update employee from TOTVSroute"""
+    employee_service.update_role_totvs(data, db_session)
     return JSONResponse(content="", status_code=status.HTTP_200_OK)
 
 
@@ -78,9 +122,9 @@ async def patch_update_employee_route(
 
 @people_router.put("/employee/{employee_id}/")
 async def put_update_employee_route():
-    """Update employee not implemented"""
+    """Update employee Not Implemented"""
     return JSONResponse(
-        content="Not Implemented", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
+        content="Não implementado", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
     )
 
 

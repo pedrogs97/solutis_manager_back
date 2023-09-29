@@ -142,9 +142,9 @@ async def update_user_route(
 
 @auth_router.put("/users/{user_id}/")
 async def put_update_user_route():
-    """Update user not implemented"""
+    """Update user Not Implemented"""
     return JSONResponse(
-        content="Not Implemented", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
+        content="Não implementado", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
     )
 
 
@@ -246,9 +246,9 @@ async def update_role_route(
 
 @auth_router.put("/roles/{role_id}/")
 async def put_update_role_route():
-    """Update role not implemented"""
+    """Update role Not Implemented"""
     return JSONResponse(
-        content="Not Implemented", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
+        content="Não implementado", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
     )
 
 

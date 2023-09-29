@@ -1,39 +1,59 @@
 """Lending schemas"""
 from typing import Optional, List
 from datetime import datetime, date
+from pydantic import Field
 from app.schemas import BaseSchema
 from app.people.schemas import EmployeeTotvsSchema
 
 
+class CostCenterTotvsSchema(BaseSchema):
+    """Cost center schema"""
+
+    code: str
+    name: str
+    classification: str
+
+
 class AssetTypeTotvsSchema(BaseSchema):
     """
-    Asset type
+    Asset type schema
 
-    * Desktop
-    * Notebook
-    * Monitor
-    * Impressora
-    * Tablet
-    * Telefonia
-    * Webcam
-    * Pendrive
-    * Mobiliário
-    * Kit Mouse e Teclado
-    * Teclado
-    * Kit Ferramentas
-    * Headset
-    * HD Externo
-    * Fardamento
-    * Chip
+    * Computadores e Periféricos
+    * Máquinas e equipamentos
+    * Móveis e utensilios
+    * Veículos
+    * Instalações
+    * Benfeitorias em Imóveis
+    * Softwares Admnistrativos
     """
 
-    id: Optional[int]
+    code: int
+    group_code: str
     name: str
 
 
-class AssetStatusSchema(BaseSchema):
+class AssetTypeSerializer(BaseSchema):
     """
-    Asset status scehama
+    Asset type serializer schema
+
+    * Computadores e Periféricos
+    * Máquinas e equipamentos
+    * Móveis e utensilios
+    * Veículos
+    * Instalações
+    * Benfeitorias em Imóveis
+    * Softwares Admnistrativos
+    """
+
+    id: int
+    code: int
+    group_code: str
+    name: str
+
+
+class AssetStatusSerializer(BaseSchema):
+    """
+    Asset status serializer scehama
 
     * Disponível
     * Comodato
@@ -45,13 +65,13 @@ class AssetStatusSchema(BaseSchema):
     * Descarte
     """
 
-    id: Optional[int]
+    id: int
     name: str
 
 
-class AssetClothingSizeSchema(BaseSchema):
+class AssetClothingSizeSerializer(BaseSchema):
     """
-    Asset clothing size scehama
+    Asset clothing size serializer scehama
 
     * PP
     * P
@@ -61,42 +81,267 @@ class AssetClothingSizeSchema(BaseSchema):
     * XG
     """
 
-    id: Optional[int]
+    id: int
     name: str
 
 
 class AssetTotvsSchema(BaseSchema):
     """Asset schema"""
 
-    id: Optional[int]
-    type: AssetTypeTotvsSchema
-    status: AssetStatusSchema
-    clothing_size: AssetClothingSizeSchema
+    code: int
+    type: str
+
     # tombo - registro patrimonial
-    register_number: Optional[str]
-    description: Optional[str]
+    register_number: str
+    description: str
     # fornecedor
-    supplier: Optional[str]
-    assurance_date: Optional[str]
-    observations: Optional[str]
-    discard_reason: Optional[str]
+    supplier: str
+    # garantia
+    assurance_date: datetime
+    observations: str
+    discard_reason: str
     # padrão
-    pattern: Optional[str]
-    operational_system: Optional[str]
-    serial_number: Optional[str]
-    imei: Optional[str]
-    acquisition_date: Optional[datetime]
-    value: Optional[float]
+    pattern: str
+    operational_system: str
+    serial_number: str
+    imei: str
+    acquisition_date: datetime
+    value: float
     # pacote office
     ms_office: bool
-    line_number: Optional[str]
+    line_number: str
     # operadora
-    operator: Optional[str]
+    operator: str
     # modelo
-    model: Optional[str]
+    model: str
     # acessórios
-    accessories: Optional[str]
-    configuration: Optional[str]
+    accessories: str
+    configuration: str
+    # quantidade do  ativo
+    quantity: int
+    # unidade da quantidade
+    unit: str
+    active: bool
+
+
+class AssetSerializer(BaseSchema):
+    """Asset serializer schema"""
+
+    id: int
+    type: Optional[AssetTypeSerializer] = None
+    clothing_size: Optional[AssetClothingSizeSerializer] = Field(
+        serialization_alias="taxpayerIdentification",
+        default=None,
+    )
+    status: Optional[AssetStatusSerializer] = None
+
+    # tombo - regiOptional[str]o patrimonial
+    register_number: Optional[str] = Field(
+        serialization_alias="registerNumber",
+        default=None,
+    )
+    description: Optional[str] = None
+    # fornecedor
+    supplier: Optional[str] = None
+    # garantia
+    assurance_date: Optional[date] = Field(
+        serialization_alias="assuranceDate",
+        default=None,
+    )
+    observations: Optional[str] = None
+    discard_reason: Optional[str] = Field(
+        serialization_alias="discardReason",
+        default=None,
+    )
+    # padrão
+    pattern: Optional[str] = None
+    operational_system: Optional[str] = Field(
+        serialization_alias="operationalSystem",
+        default=None,
+    )
+    serial_number: Optional[str] = Field(
+        serialization_alias="serialNumber",
+        default=None,
+    )
+    imei: Optional[str] = None
+    acquisition_date: Optional[date] = Field(
+        serialization_alias="acquisitionDate",
+        default=None,
+    )
+    value: float
+    # pacote office
+    ms_office: Optional[bool] = Field(
+        serialization_alias="msOffice",
+        default=None,
+    )
+    line_number: Optional[str] = Field(
+        serialization_alias="lineNumber",
+        default=None,
+    )
+    # operadora
+    operator: Optional[str] = None
+    # modelo
+    model: Optional[str] = None
+    # acessórios
+    accessories: Optional[str] = None
+    configuration: Optional[str] = None
+    # quantidade do  ativo
+    quantity: Optional[int] = None
+    # unidade da quantidade
+    unit: Optional[str] = None
+
+
+class NewAssetSchema(BaseSchema):
+    """New asset schema"""
+
+    type: Optional[str] = None
+    clothing_size: Optional[str] = Field(
+        alias="clothingSize",
+        serialization_alias="clothing_size",
+        default=None,
+    )
+    status: Optional[str] = None
+
+    code: Optional[str] = None
+    # tombo - regiOptional[str]o patrimonial
+    register_number: Optional[str] = Field(
+        alias="registerNumber",
+        serialization_alias="register_number",
+        default=None,
+    )
+    description: Optional[str] = None
+    # fornecedor
+    supplier: Optional[str] = None
+    # garantia
+    assurance_date: Optional[date] = Field(
+        alias="assuranceDate",
+        serialization_alias="assurance_date",
+        default=None,
+    )
+    observations: Optional[str] = None
+    discard_reason: Optional[str] = Field(
+        alias="discardReason",
+        serialization_alias="discard_reason",
+        default=None,
+    )
+    # padrão
+    pattern: Optional[str] = None
+    operational_system: Optional[str] = Field(
+        alias="operationalSystem",
+        serialization_alias="operational_system",
+        default=None,
+    )
+    serial_number: Optional[str] = Field(
+        alias="serialNumber",
+        serialization_alias="serial_number",
+        default=None,
+    )
+    imei: Optional[str] = None
+    acquisition_date: Optional[date] = Field(
+        alias="acquisitionDate",
+        serialization_alias="acquisition_date",
+        default=None,
+    )
+    value: float
+    # pacote office
+    ms_office: Optional[bool] = Field(
+        alias="msOffice",
+        serialization_alias="ms_office",
+        default=None,
+    )
+    line_number: Optional[str] = Field(
+        alias="lineNumber",
+        serialization_alias="line_number",
+        default=None,
+    )
+    # operadora
+    operator: Optional[str] = None
+    # modelo
+    model: Optional[str] = None
+    # acessórios
+    accessories: Optional[str] = None
+    configuration: Optional[str] = None
+    # quantidade do  ativo
+    quantity: Optional[int] = None
+    # unidade da quantidade
+    unit: Optional[str] = None
+
+
+class UpdateAssetSchema(BaseSchema):
+    """Update asset schema"""
+
+    type: Optional[str] = None
+    clothing_size: Optional[str] = Field(
+        alias="clothingSize",
+        serialization_alias="clothing_size",
+        default=None,
+    )
+    status: Optional[str] = None
+
+    code: Optional[str] = None
+    # tombo - regiOptional[str]o patrimonial
+    register_number: Optional[str] = Field(
+        alias="registerNumber",
+        serialization_alias="register_number",
+        default=None,
+    )
+    description: Optional[str] = None
+    # fornecedor
+    supplier: Optional[str] = None
+    # garantia
+    assurance_date: Optional[date] = Field(
+        alias="assuranceDate",
+        serialization_alias="assurance_date",
+        default=None,
+    )
+    observations: Optional[str] = None
+    discard_reason: Optional[str] = Field(
+        alias="discardReason",
+        serialization_alias="discard_reason",
+        default=None,
+    )
+    # padrão
+    pattern: Optional[str] = None
+    operational_system: Optional[str] = Field(
+        alias="operationalSystem",
+        serialization_alias="operational_system",
+        default=None,
+    )
+    serial_number: Optional[str] = Field(
+        alias="serialNumber",
+        serialization_alias="serial_number",
+        default=None,
+    )
+    imei: Optional[str] = None
+    acquisition_date: Optional[date] = Field(
+        alias="acquisitionDate",
+        serialization_alias="acquisition_date",
+        default=None,
+    )
+    value: float
+    # pacote office
+    ms_office: Optional[bool] = Field(
+        alias="msOffice",
+        serialization_alias="ms_office",
+        default=None,
+    )
+    line_number: Optional[str] = Field(
+        alias="lineNumber",
+        serialization_alias="line_number",
+        default=None,
+    )
+    # operadora
+    operator: Optional[str] = None
+    # modelo
+    model: Optional[str] = None
+    # acessórios
+    accessories: Optional[str] = None
+    configuration: Optional[str] = None
+    # quantidade do  ativo
+    quantity: Optional[int] = None
+    # unidade da quantidade
+    unit: Optional[str] = None
+    active: Optional[bool] = None
 
 
 class DocumentTypeSchema(BaseSchema):
@@ -139,14 +384,6 @@ class WitnessSchema(BaseSchema):
     id: Optional[int]
     employee: EmployeeTotvsSchema
     signed: date
-
-
-class CostCenterTotvsSchema(BaseSchema):
-    """Witness schema"""
-
-    id: Optional[int]
-    code: str
-    name: str
 
 
 class LendingSchema(BaseSchema):

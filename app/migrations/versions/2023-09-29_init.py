@@ -1,8 +1,8 @@
-"""initial
+"""init
 
-Revision ID: 314b55307392
+Revision ID: c0f0ee986112
 Revises: 
-Create Date: 2023-09-16 23:44:15.891532
+Create Date: 2023-09-29 00:31:23.912645
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '314b55307392'
+revision: str = 'c0f0ee986112'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -32,6 +32,8 @@ def upgrade() -> None:
     )
     op.create_table('asset_type',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('code', sa.String(), nullable=False),
+    sa.Column('group_code', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
@@ -46,31 +48,16 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=30), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('employees',
+    op.create_table('employee_roles',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('code', sa.Integer(), nullable=False),
-    sa.Column('full_name', sa.String(), nullable=False),
-    sa.Column('taxpayer_identification', sa.String(), nullable=False),
-    sa.Column('nacional_identification', sa.String(), nullable=False),
-    sa.Column('nationality', sa.String(), nullable=False),
-    sa.Column('marital_status', sa.String(), nullable=False),
-    sa.Column('role', sa.String(), nullable=True),
-    sa.Column('manager', sa.String(), nullable=True),
-    sa.Column('address', sa.String(), nullable=False),
-    sa.Column('cell_phone', sa.String(), nullable=False),
-    sa.Column('email', sa.String(), nullable=False),
-    sa.Column('cost_center_number', sa.String(), nullable=True),
-    sa.Column('cost_center_name', sa.String(), nullable=True),
-    sa.Column('gender', sa.String(), nullable=False),
-    sa.Column('birthday', sa.Date(), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('code'),
-    sa.UniqueConstraint('taxpayer_identification')
+    sa.Column('code', sa.String(length=10), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('gender',
+    op.create_table('genders',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('code', sa.String(), nullable=False),
-    sa.Column('description', sa.String(), nullable=False),
+    sa.Column('code', sa.String(length=1), nullable=False),
+    sa.Column('description', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('maintenance_action',
@@ -85,21 +72,22 @@ def upgrade() -> None:
     )
     op.create_table('matrimonial_status',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('code', sa.String(), nullable=False),
-    sa.Column('description', sa.String(), nullable=False),
+    sa.Column('code', sa.String(length=1), nullable=False),
+    sa.Column('description', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('nationality',
+    op.create_table('nationalities',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('code', sa.String(), nullable=False),
-    sa.Column('description', sa.String(), nullable=False),
+    sa.Column('code', sa.String(length=3), nullable=False),
+    sa.Column('description', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('permission',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('module', sa.String(), nullable=False),
     sa.Column('model', sa.String(), nullable=False),
-    sa.Column('method', sa.String(), nullable=False),
+    sa.Column('action', sa.String(), nullable=False),
+    sa.Column('description', sa.String(length=150), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('role',
@@ -127,6 +115,7 @@ def upgrade() -> None:
     sa.Column('type_id', sa.Integer(), nullable=False),
     sa.Column('status_id', sa.Integer(), nullable=False),
     sa.Column('clothing_size_id', sa.Integer(), nullable=False),
+    sa.Column('code', sa.String(), nullable=True),
     sa.Column('register_number', sa.String(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('supplier', sa.String(), nullable=True),
@@ -145,6 +134,9 @@ def upgrade() -> None:
     sa.Column('model', sa.String(), nullable=True),
     sa.Column('accessories', sa.String(), nullable=True),
     sa.Column('configuration', sa.String(), nullable=True),
+    sa.Column('quantity', sa.Integer(), nullable=True),
+    sa.Column('unit', sa.String(), nullable=True),
+    sa.Column('active', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['clothing_size_id'], ['asset_clothing_size.id'], ),
     sa.ForeignKeyConstraint(['status_id'], ['asset_status.id'], ),
     sa.ForeignKeyConstraint(['type_id'], ['asset_type.id'], ),
@@ -158,6 +150,30 @@ def upgrade() -> None:
     sa.Column('content', sa.Text(), nullable=False),
     sa.ForeignKeyConstraint(['type_id'], ['document_type.id'], ),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('employees',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('role_id', sa.Integer(), nullable=True),
+    sa.Column('nationality_id', sa.Integer(), nullable=False),
+    sa.Column('marital_status_id', sa.Integer(), nullable=False),
+    sa.Column('gender_id', sa.Integer(), nullable=False),
+    sa.Column('code', sa.Integer(), nullable=False),
+    sa.Column('full_name', sa.String(length=120), nullable=False),
+    sa.Column('taxpayer_identification', sa.String(length=11), nullable=False),
+    sa.Column('nacional_identification', sa.String(length=15), nullable=False),
+    sa.Column('address', sa.String(length=255), nullable=False),
+    sa.Column('cell_phone', sa.String(length=15), nullable=False),
+    sa.Column('email', sa.String(length=60), nullable=False),
+    sa.Column('birthday', sa.Date(), nullable=False),
+    sa.Column('manger', sa.String(length=150), nullable=True),
+    sa.Column('legal_person', sa.Boolean(), nullable=False),
+    sa.ForeignKeyConstraint(['gender_id'], ['genders.id'], ),
+    sa.ForeignKeyConstraint(['marital_status_id'], ['matrimonial_status.id'], ),
+    sa.ForeignKeyConstraint(['nationality_id'], ['nationalities.id'], ),
+    sa.ForeignKeyConstraint(['role_id'], ['employee_roles.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code'),
+    sa.UniqueConstraint('taxpayer_identification')
     )
     op.create_table('maintenance',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -174,10 +190,10 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('role_permissions',
-    sa.Column('role', sa.Integer(), nullable=True),
-    sa.Column('permission', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['permission'], ['permission.id'], ),
-    sa.ForeignKeyConstraint(['role'], ['role.id'], )
+    sa.Column('role_id', sa.Integer(), nullable=True),
+    sa.Column('permission_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['permission_id'], ['permission.id'], ),
+    sa.ForeignKeyConstraint(['role_id'], ['role.id'], )
     )
     op.create_table('upgrade',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -208,13 +224,6 @@ def upgrade() -> None:
     sa.UniqueConstraint('taxpayer_identification'),
     sa.UniqueConstraint('username')
     )
-    op.create_table('witness',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('employee_id', sa.Integer(), nullable=False),
-    sa.Column('signed', sa.Date(), nullable=True),
-    sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('document',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('doc_template_id', sa.Integer(), nullable=True),
@@ -240,6 +249,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('token')
+    )
+    op.create_table('witness',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('employee_id', sa.Integer(), nullable=False),
+    sa.Column('signed', sa.Date(), nullable=True),
+    sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ),
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('lending',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -285,14 +301,15 @@ def downgrade() -> None:
     op.drop_table('witnesses')
     op.drop_table('verification_answer')
     op.drop_table('lending')
+    op.drop_table('witness')
     op.drop_table('token')
     op.drop_table('maintenance_attachment')
     op.drop_table('document')
-    op.drop_table('witness')
     op.drop_table('user')
     op.drop_table('upgrade')
     op.drop_table('role_permissions')
     op.drop_table('maintenance')
+    op.drop_table('employees')
     op.drop_table('document_template')
     op.drop_table('asset')
     op.drop_table('workload')
@@ -300,12 +317,12 @@ def downgrade() -> None:
     op.drop_table('verification')
     op.drop_table('role')
     op.drop_table('permission')
-    op.drop_table('nationality')
+    op.drop_table('nationalities')
     op.drop_table('matrimonial_status')
     op.drop_table('maintenance_status')
     op.drop_table('maintenance_action')
-    op.drop_table('gender')
-    op.drop_table('employees')
+    op.drop_table('genders')
+    op.drop_table('employee_roles')
     op.drop_table('document_type')
     op.drop_table('cost_center')
     op.drop_table('asset_type')
