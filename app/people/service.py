@@ -28,8 +28,11 @@ from app.people.schemas import (
     EmployeeNationalityTotvsSchema,
     EmployeeRoleTotvsSchema,
 )
+from app.auth.models import UserModel
+from app.log.services import LogService
 
 logger = logging.getLogger(__name__)
+service_log = LogService()
 
 
 class EmployeeService:
@@ -184,7 +187,10 @@ class EmployeeService:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def create_employee(
-        self, data: NewEmployeeSchema, db_session: Session
+        self,
+        data: NewEmployeeSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
     ) -> EmployeeSerializer:
         """Creates new employee"""
         if (
@@ -230,13 +236,32 @@ class EmployeeService:
         )
         db_session.add(new_emplyoee)
         db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "people",
+            "employee",
+            "Adição de Colaborador",
+            new_emplyoee.id,
+            authenticated_user,
+        )
+        logger.info("New Employee. %s", str(new_emplyoee))
         return self.serialize_employee(new_emplyoee)
 
     def update_employee(
-        self, employee_id: int, data: UpdateEmployeeSchema, db_session: Session
+        self,
+        employee_id: int,
+        data: UpdateEmployeeSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
     ) -> EmployeeSerializer:
         """Uptades new employee"""
         employee = self.__get_employee_or_404(employee_id, db_session)
+        if not employee.legal_person:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Este colaborador não pode ser editado.",
+            )
 
         (role, nationality, matrimonial_status, gender) = self.__validate_nested(
             data, db_session
@@ -270,6 +295,16 @@ class EmployeeService:
 
         db_session.add(employee)
         db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "people",
+            "employee",
+            "Edição de Colaborador",
+            employee.id,
+            authenticated_user,
+        )
+        logger.info("Updated Employee. %s", str(employee))
         return self.serialize_employee(employee)
 
     def get_employee(self, employee_id: int, db_session: Session) -> EmployeeSerializer:
@@ -281,7 +316,7 @@ class EmployeeService:
         self,
         db_session: Session,
         search: str = "",
-        filter: str = None,
+        filter_list: str = None,
         page: int = 1,
         size: int = 50,
     ) -> Page[EmployeeSerializer]:
@@ -299,12 +334,12 @@ class EmployeeService:
             )
         )
 
-        if filter:
+        if filter_list:
             employee_list = employee_list.join(
                 EmployeeModel.role,
             ).filter(
                 or_(
-                    EmployeeRoleModel.name == filter,
+                    EmployeeRoleModel.name == filter_list,
                 )
             )
 
@@ -312,7 +347,7 @@ class EmployeeService:
                 EmployeeModel.nationality,
             ).filter(
                 or_(
-                    EmployeeNationalityModel.description == filter,
+                    EmployeeNationalityModel.description == filter_list,
                 )
             )
 
@@ -320,7 +355,7 @@ class EmployeeService:
                 EmployeeModel.matrimonial_status,
             ).filter(
                 or_(
-                    EmployeeMatrimonialStatusModel.description == filter,
+                    EmployeeMatrimonialStatusModel.description == filter_list,
                 )
             )
 
@@ -328,7 +363,7 @@ class EmployeeService:
                 EmployeeModel.gender,
             ).filter(
                 or_(
-                    EmployeeGenderModel.description == filter,
+                    EmployeeGenderModel.description == filter_list,
                 )
             )
 
@@ -374,6 +409,10 @@ class EmployeeService:
 
             db_session.add_all(updates)
             db_session.commit()
+
+            logger.info(
+                "Update Matrimonial Status from TOTVS. Total=%s", str(len(updates))
+            )
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
@@ -400,6 +439,7 @@ class EmployeeService:
 
             db_session.add_all(updates)
             db_session.commit()
+            logger.info("Update Gender from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
@@ -430,6 +470,7 @@ class EmployeeService:
 
             db_session.add_all(updates)
             db_session.commit()
+            logger.info("Update Nationality from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
@@ -456,5 +497,6 @@ class EmployeeService:
 
             db_session.add_all(updates)
             db_session.commit()
+            logger.info("Update Role from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc

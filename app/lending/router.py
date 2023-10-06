@@ -1,5 +1,5 @@
 """Lending router"""
-from typing import List
+from typing import List, Union
 from fastapi import APIRouter, status, Depends, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -12,6 +12,7 @@ from app.lending.schemas import (
     AssetTypeTotvsSchema,
     NewAssetSchema,
     UpdateAssetSchema,
+    InactivateAssetSchema,
 )
 from app.lending.service import AssetService
 from app.config import (
@@ -21,6 +22,7 @@ from app.config import (
     PAGE_SIZE_DESCRIPTION,
     NOT_ALLOWED,
 )
+from app.auth.models import UserModel
 
 lending_router = APIRouter(prefix="/lending", tags=["lending"])
 
@@ -51,16 +53,16 @@ async def post_asset_type_updates_route(
 async def post_create_asset_route(
     data: NewAssetSchema,
     db_session: Session = Depends(get_db_session),
-    authenticated: bool = Depends(
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "asset", "action": "add"})
     ),
 ):
     """Creates asset route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = asset_service.create_asset(data, db_session)
+    serializer = asset_service.create_asset(data, db_session, authenticated_user)
     return JSONResponse(
         content=serializer.model_dump(by_alias=True),
         status_code=status.HTTP_201_CREATED,
@@ -72,16 +74,40 @@ async def patch_update_asset_route(
     asset_id: int,
     data: UpdateAssetSchema,
     db_session: Session = Depends(get_db_session),
-    authenticated: bool = Depends(
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "asset", "action": "edit"})
     ),
 ):
     """Update asset route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = asset_service.update_asset(asset_id, data, db_session)
+    serializer = asset_service.update_asset(
+        asset_id, data, db_session, authenticated_user
+    )
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
+    )
+
+
+@lending_router.patch("/assets/inactivate/{asset_id}/")
+async def patch_inactivate_asset_route(
+    asset_id: int,
+    data: InactivateAssetSchema,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "asset", "action": "edit"})
+    ),
+):
+    """Update asset route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer = asset_service.inactivate_asset(
+        asset_id, data, db_session, authenticated_user
+    )
     return JSONResponse(
         content=serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
     )
@@ -108,12 +134,12 @@ async def get_list_assets_route(
         description=PAGE_SIZE_DESCRIPTION,
     ),
     db_session: Session = Depends(get_db_session),
-    authenticated: bool = Depends(
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "asset", "action": "view"})
     ),
 ):
     """List assets and apply filters route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -129,12 +155,12 @@ async def get_list_assets_route(
 async def get_emplooyee_route(
     asset_id: int,
     db_session: Session = Depends(get_db_session),
-    authenticated: bool = Depends(
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "asset", "action": "view"})
     ),
 ):
     """Get an asset route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

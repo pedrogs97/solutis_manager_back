@@ -22,8 +22,11 @@ from app.auth.schemas import (
 from app.auth.models import UserModel, RoleModel, PermissionModel
 from app.config import PASSWORD_SUPER_USER, PERMISSIONS
 from app.database import Session_db
+from app.log.services import LogService
 
 logger = logging.getLogger(__name__)
+
+service_log = LogService()
 
 
 class UserSerivce:
@@ -59,7 +62,10 @@ class UserSerivce:
         return result_str
 
     def create_user(
-        self, new_user: NewUserSchema, db_session: Session
+        self,
+        new_user: NewUserSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
     ) -> UserSerializer:
         """Creates a new user"""
         role = (
@@ -103,7 +109,10 @@ class UserSerivce:
         new_user_db = UserModel(**user_dict)
         db_session.add(new_user_db)
         db_session.commit()
-
+        db_session.flush()
+        service_log.set_log(
+            "auth", "user", "Criação de usuário", new_user_db.id, authenticated_user
+        )
         logger.info("New user add. %s", str(new_user_db))
 
         return self.serialize_user(new_user_db)
@@ -169,6 +178,7 @@ class UserSerivce:
         db_session: Session,
         user_id: int,
         data: UserUpdateSchema,
+        authenticated_user: UserModel,
     ) -> Union[UserSerializer, None]:
         """Update user by id"""
         try:
@@ -219,6 +229,11 @@ class UserSerivce:
                 db_session.add(user)
                 db_session.commit()
 
+                service_log.set_log(
+                    "auth", "user", "Edição de usuário", user.id, authenticated_user
+                )
+                logger.info("Updates user. %s", str(user))
+
             return self.serialize_user(user)
 
         except Exception as exc:
@@ -232,10 +247,19 @@ class UserSerivce:
 
         return self.serialize_user(user)
 
-    def send_new_password(self, data: NewPasswordSchema, db_session: Session):
+    def send_new_password(
+        self,
+        data: NewPasswordSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ):
         """Sends new password"""
 
         user = self.__get_user_or_404(data.user_id, db_session)
+
+        service_log.set_log(
+            "auth", "user", "Envio de nova senha", user.id, authenticated_user
+        )
 
         # TODO serviço de envio de e-mail
 
@@ -339,7 +363,10 @@ class RoleService:
         return role
 
     def create_role(
-        self, new_role: NewRoleSchema, db_session: Session
+        self,
+        new_role: NewRoleSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
     ) -> RoleSerializer:
         """Creates a new role"""
 
@@ -366,7 +393,15 @@ class RoleService:
         new_role_db = RoleModel(**new_role.model_dump(exclude="permissions"))
         db_session.add(new_role_db)
         db_session.commit()
+        db_session.flush()
 
+        service_log.set_log(
+            "auth",
+            "user",
+            "Criação de perfil de usuário",
+            new_role_db.id,
+            authenticated_user,
+        )
         logger.info("New role add. %s", str(new_role_db))
 
         return self.serialize_role(new_role_db)
@@ -443,6 +478,7 @@ class RoleService:
         db_session: Session,
         role_id: int,
         data: NewRoleSchema,
+        authenticated_user: UserModel,
     ) -> Union[RoleSerializer, None]:
         """Update role by id"""
         try:
@@ -466,6 +502,10 @@ class RoleService:
                 db_session.add(role)
                 db_session.commit()
 
+                service_log.set_log(
+                    "auth", "user", "Criação de usuário", role.id, authenticated_user
+                )
+                logger.info("Updates role. %s", str(role))
             return self.serialize_role(role)
 
         except Exception as exc:

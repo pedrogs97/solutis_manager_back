@@ -136,6 +136,7 @@ class AssetModel(Base):
     quantity = Column("quantity", Integer, nullable=True, default=1)
     unit = Column("unit", String, nullable=True)
     active = Column("active", Boolean, nullable=True, default=True)
+    by_agile = Column("by_agile", Boolean, nullable=True, default=False)
 
     def __str__(self) -> str:
         """Returns model as string"""

@@ -144,10 +144,10 @@ class PermissionChecker:
         self,
         token: Annotated[str, Depends(oauth2_bearer)],
         db_session: Annotated[Session, Depends(get_db_session)],
-    ) -> bool:
+    ) -> Union[UserModel, None]:
         user = get_current_user(token, db_session)
         if user.role.name == "Administrador" and user.is_staff:
-            return True
+            return user
 
         for perm in user.role.permissions:
             if (
@@ -155,6 +155,6 @@ class PermissionChecker:
                 and perm.model == self.required_permissions.model
                 and perm.action == self.required_permissions.action
             ):
-                return True
+                return user
 
-        return False
+        return None

@@ -1,9 +1,10 @@
 """Auth router"""
-from typing import Optional
+from typing import Optional, Union
 from fastapi import Depends, APIRouter, Response, status, Query
 from fastapi.responses import JSONResponse
 from fastapi_pagination import Page
 from sqlalchemy.orm import Session
+from app.auth.models import UserModel
 from app.auth.schemas import (
     NewUserSchema,
     LoginSchema,
@@ -70,17 +71,17 @@ async def logout_route(
 )
 async def post_create_user_route(
     data: NewUserSchema,
-    authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "user", "action": "add"})
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "auth", "model": "user", "action": "add"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
     """New user route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = user_service.create_user(data, db_session)
+    serializer = user_service.create_user(data, db_session, authenticated_user)
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_201_CREATED
     )
@@ -92,8 +93,8 @@ async def post_create_user_route(
     description="Retrie list of users. Can apply filters",
 )
 async def get_list_user_route(
-    authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "user", "action": "view"})
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "auth", "model": "user", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -108,7 +109,7 @@ async def get_list_user_route(
     db_session: Session = Depends(get_db_session),
 ):
     """List users route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -124,17 +125,17 @@ async def get_list_user_route(
 async def update_user_route(
     data: UserUpdateSchema,
     user_id: int,
-    authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "user", "action": "edit"})
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "auth", "model": "user", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
     """Update user route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = user_service.update_user(db_session, user_id, data)
+    serializer = user_service.update_user(db_session, user_id, data, authenticated_user)
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
     )
@@ -155,13 +156,13 @@ async def put_update_user_route():
 )
 async def get_user_route(
     user_id: int,
-    authenticated: bool = Depends(
-        PermissionChecker({"module": "people", "model": "user", "action": "view"})
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "auth", "model": "user", "action": "view"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
     """Get user route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -176,17 +177,17 @@ async def get_user_route(
 )
 async def post_create_role_route(
     data: NewRoleSchema,
-    authenticated: bool = Depends(
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "role", "action": "add"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
     """New role route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = role_service.create_role(data, db_session)
+    serializer = role_service.create_role(data, db_session, authenticated_user)
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_201_CREATED
     )
@@ -198,7 +199,7 @@ async def post_create_role_route(
     description="Retrie list of roles. Can apply filters",
 )
 async def get_list_role_route(
-    authenticated: bool = Depends(
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "role", "action": "view"})
     ),
     search: str = "",
@@ -212,7 +213,7 @@ async def get_list_role_route(
     db_session: Session = Depends(get_db_session),
 ):
     """List roles route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -227,18 +228,18 @@ async def get_list_role_route(
 )
 async def update_role_route(
     data: NewRoleSchema,
-    user_id: int,
-    authenticated: bool = Depends(
+    role_id: int,
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "role", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
     """Update role route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = role_service.update_role(db_session, user_id, data)
+    serializer = role_service.update_role(db_session, role_id, data, authenticated_user)
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
     )
@@ -259,13 +260,13 @@ async def put_update_role_route():
 )
 async def get_role_route(
     role_id: int,
-    authenticated: bool = Depends(
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "role", "action": "view"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
     """Get role route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -281,7 +282,7 @@ async def get_role_route(
     description="Retrie list of permissions. Can apply filters",
 )
 async def get_list_permission_route(
-    authenticated: bool = Depends(
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "permission", "action": "view"})
     ),
     search: str = "",
@@ -295,7 +296,7 @@ async def get_list_permission_route(
     db_session: Session = Depends(get_db_session),
 ):
     """List permissions route"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -306,7 +307,7 @@ async def get_list_permission_route(
 @auth_router.post("/send-new-password/", description="Send new password to an user")
 async def post_send_new_password_route(
     data: NewPasswordSchema,
-    authenticated: bool = Depends(
+    authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker(
             {"module": "auth", "model": "permission", "action": "admin"}
         )  # action admin não existe, isso garante que só role Administrador consiga acessar
@@ -314,11 +315,11 @@ async def post_send_new_password_route(
     db_session: Session = Depends(get_db_session),
 ) -> JSONResponse:
     """Sends new password to the user"""
-    if not authenticated:
+    if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    user_service.send_new_password(data, db_session)
+    user_service.send_new_password(data, db_session, authenticated_user)
 
     return JSONResponse(content="", status_code=status.HTTP_200_OK)

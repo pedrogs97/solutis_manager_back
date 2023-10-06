@@ -30,22 +30,36 @@ ACCESS_TOKEN_EXPIRE_HOURS = 10
 PERMISSIONS = {
     "lending": {
         "models": [
-            {"name": "asset", "label": "Ativo"},
-            {"name": "lending", "label": "Contrato de Comodato"},
-            {"name": "mantenance", "label": "Manutenção"},
+            {"name": "asset", "label": "Ativos"},
+            {"name": "lending", "label": "Contratos de Comodato"},
+            {"name": "mantenance", "label": "Manutenções e Melhorias"},
         ],
         "label": "Comodato",
     },
-    "people": {"models": [{"name": "user", "label": "Usuário"}], "label": "Pesosas"},
+    "people": {
+        "models": [
+            {"name": "employee", "label": "Colaboradores"},
+        ],
+        "label": "Pessoas",
+    },
     "auth": {
         "models": [
             {"name": "permission", "label": "Permissões"},
             {"name": "role", "label": "Perfil de usuário"},
+            {"name": "user", "label": "Usuários"},
         ],
         "label": "Grupos e Permissões",
     },
-    "invoice": {"models": [], "label": "Nota Fiscal"},
-    "logs": {"models": [], "label": "Log"},
+    "invoice": {"models": [], "label": "Notas Fiscais"},
+    "logs": {
+        "models": [
+            {
+                "name": "log",
+                "label": "Logs",
+            },
+        ],
+        "label": "Logs",
+    },
 }
 
 NOT_ALLOWED = "Não permitido"
@@ -59,7 +73,7 @@ PAGINATION_NUMBER = 15
 MAX_PAGINATION_NUMBER = 100
 
 ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "http://datasync-totvs:8001",
 ]

@@ -1,1 +1,0 @@
-"""People utils"""

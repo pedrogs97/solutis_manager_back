@@ -22,9 +22,13 @@ from app.lending.schemas import (
     AssetStatusSerializer,
     AssetTypeTotvsSchema,
     UpdateAssetSchema,
+    InactivateAssetSchema,
 )
+from app.auth.models import UserModel
+from app.log.services import LogService
 
 logger = logging.getLogger(__name__)
+service_log = LogService()
 
 
 class AssetService:
@@ -114,7 +118,7 @@ class AssetService:
         )
 
     def create_asset(
-        self, data: NewAssetSchema, db_session: Session
+        self, data: NewAssetSchema, db_session: Session, authenticated_user: UserModel
     ) -> AssetSerializer:
         """Creates new asset"""
         if (
@@ -143,7 +147,7 @@ class AssetService:
             asset_status,
         ) = self.__validate_nested(data, db_session)
 
-        new_emplyoee = AssetModel(
+        new_asset = AssetModel(
             type=asset_type,
             clothing_size=clothing_size,
             status=asset_status,
@@ -169,73 +173,63 @@ class AssetService:
             quantity=data.quantity,
             unit=data.unit,
             active=True,
+            by_agile=True,
         )
-        db_session.add(new_emplyoee)
+        db_session.add(new_asset)
         db_session.commit()
-        return self.serialize_asset(new_emplyoee)
+        db_session.flush()
+
+        service_log.set_log(
+            "lending", "asset", "Criação de Ativo", new_asset.id, authenticated_user
+        )
+        logger.info("New Asset. %s", str(new_asset))
+
+        return self.serialize_asset(new_asset)
 
     def update_asset(
-        self, asset_id: int, data: UpdateAssetSchema, db_session: Session
+        self,
+        asset_id: int,
+        data: UpdateAssetSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
     ) -> AssetSerializer:
         """Uptades an asset"""
         asset = self.__get_asset_or_404(asset_id, db_session)
 
-        (
-            asset_type,
-            clothing_size,
-            asset_status,
-        ) = self.__validate_nested(data, db_session)
-        if data.type:
-            asset.type = asset_type
-        if data.clothing_size:
-            asset.clothing_size = clothing_size
-        if data.status:
-            asset.status = asset_status
-        if data.code:
-            asset.code = data.code
-        if data.register_number:
-            asset.register_number = data.register_number
-        if data.description:
-            asset.description = data.description
-        if data.supplier:
-            asset.supplier = data.supplier
-        if data.assurance_date:
-            asset.assurance_date = data.assurance_date
         if data.observations:
             asset.observations = data.observations
-        if data.discard_reason:
-            asset.discard_reason = data.discard_reason
-        if data.pattern:
-            asset.pattern = data.pattern
-        if data.operational_system:
-            asset.operational_system = data.operational_system
-        if data.serial_number:
-            asset.serial_number = data.serial_number
-        if data.imei:
-            asset.imei = data.imei
-        if data.value:
-            asset.value = data.value
-        if data.ms_office:
-            asset.ms_office = data.ms_office
-        if data.line_number:
-            asset.line_number = data.line_number
-        if data.operator:
-            asset.operator = data.operator
-        if data.model:
-            asset.model = data.model
-        if data.accessories:
-            asset.accessories = data.accessories
-        if data.configuration:
-            asset.configuration = data.configuration
-        if data.quantity:
-            asset.quantity = data.quantity
-        if data.unit:
-            asset.unit = data.unit
+
+        db_session.add(asset)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending", "asset", "Edição de Ativo", asset.id, authenticated_user
+        )
+        logger.info("Updated Asset. %s", str(asset))
+        return self.serialize_asset(asset)
+
+    def inactivate_asset(
+        self,
+        asset_id: int,
+        data: InactivateAssetSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> AssetSerializer:
+        """Uptades an asset"""
+        asset = self.__get_asset_or_404(asset_id, db_session)
+
         if data.active:
             asset.active = data.active
 
         db_session.add(asset)
         db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending", "asset", "Inativação de Ativo", asset.id, authenticated_user
+        )
+        logger.info("Inactivate Asset. %s", str(asset))
         return self.serialize_asset(asset)
 
     def get_asset(self, asset_id: int, db_session: Session) -> AssetSerializer:
@@ -336,6 +330,7 @@ class AssetService:
 
             db_session.add_all(updates)
             db_session.commit()
+            logger.info("Update Assets from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
@@ -363,5 +358,6 @@ class AssetService:
 
             db_session.add_all(updates)
             db_session.commit()
+            logger.info("Update Asset Types from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc

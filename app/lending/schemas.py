@@ -189,6 +189,10 @@ class AssetSerializer(BaseSchema):
     quantity: Optional[int] = None
     # unidade da quantidade
     unit: Optional[str] = None
+    by_agile: bool = Field(
+        serialization_alias="byAgile",
+        default=False,
+    )
 
 
 class NewAssetSchema(BaseSchema):
@@ -270,78 +274,13 @@ class NewAssetSchema(BaseSchema):
 class UpdateAssetSchema(BaseSchema):
     """Update asset schema"""
 
-    type: Optional[str] = None
-    clothing_size: Optional[str] = Field(
-        alias="clothingSize",
-        serialization_alias="clothing_size",
-        default=None,
-    )
-    status: Optional[str] = None
-
-    code: Optional[str] = None
-    # tombo - regiOptional[str]o patrimonial
-    register_number: Optional[str] = Field(
-        alias="registerNumber",
-        serialization_alias="register_number",
-        default=None,
-    )
-    description: Optional[str] = None
-    # fornecedor
-    supplier: Optional[str] = None
-    # garantia
-    assurance_date: Optional[date] = Field(
-        alias="assuranceDate",
-        serialization_alias="assurance_date",
-        default=None,
-    )
     observations: Optional[str] = None
-    discard_reason: Optional[str] = Field(
-        alias="discardReason",
-        serialization_alias="discard_reason",
-        default=None,
-    )
-    # padrão
-    pattern: Optional[str] = None
-    operational_system: Optional[str] = Field(
-        alias="operationalSystem",
-        serialization_alias="operational_system",
-        default=None,
-    )
-    serial_number: Optional[str] = Field(
-        alias="serialNumber",
-        serialization_alias="serial_number",
-        default=None,
-    )
-    imei: Optional[str] = None
-    acquisition_date: Optional[date] = Field(
-        alias="acquisitionDate",
-        serialization_alias="acquisition_date",
-        default=None,
-    )
-    value: float
-    # pacote office
-    ms_office: Optional[bool] = Field(
-        alias="msOffice",
-        serialization_alias="ms_office",
-        default=None,
-    )
-    line_number: Optional[str] = Field(
-        alias="lineNumber",
-        serialization_alias="line_number",
-        default=None,
-    )
-    # operadora
-    operator: Optional[str] = None
-    # modelo
-    model: Optional[str] = None
-    # acessórios
-    accessories: Optional[str] = None
-    configuration: Optional[str] = None
-    # quantidade do  ativo
-    quantity: Optional[int] = None
-    # unidade da quantidade
-    unit: Optional[str] = None
-    active: Optional[bool] = None
+
+
+class InactivateAssetSchema(BaseSchema):
+    """Inactivate asset schema"""
+
+    active: bool
 
 
 class DocumentTypeSchema(BaseSchema):
