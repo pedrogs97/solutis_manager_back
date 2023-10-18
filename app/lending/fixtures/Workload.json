@@ -1,0 +1,17 @@
+[
+    {
+        "table": "workload",
+        "id": 1,
+        "name": "Híbrido"
+    },
+    {
+        "table": "workload",
+        "id": 2,
+        "name": "Home Office"
+    },
+    {
+        "table": "workload",
+        "id": 3,
+        "name": "Presencial"
+    }
+]

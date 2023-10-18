@@ -390,7 +390,9 @@ def verify_changes_cost_center(cost_center: EmployeeNationalityTotvsSchema) -> b
 
 def verify_changes_asset_type(asset_type: AssetTypeTotvsSchema) -> bool:
     """
-    Check if the AssetTypeTotvsSchema object is different from the AssetTypeTotvsSchema in the database.
+    Check if the AssetTypeTotvsSchema object is different
+    from the AssetTypeTotvsSchema in the database.
+
     Returns True if it does not exist in the database.
     """
     checksum_from_totvs = get_checksum(asset_type)
@@ -431,7 +433,9 @@ def verify_changes_asset(asset: AssetTotvsSchema) -> bool:
 
 def verify_changes_role(role: EmployeeRoleTotvsSchema) -> bool:
     """
-    Check if the EmployeeRoleTotvsSchema object is different from the EmployeeRoleTotvsSchema in the database.
+    Check if the EmployeeRoleTotvsSchema object is different
+    from the EmployeeRoleTotvsSchema in the database.
+
     Returns True if it does not exist in the database.
     """
     checksum_from_totvs = get_checksum(role)

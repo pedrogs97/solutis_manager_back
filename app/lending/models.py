@@ -7,7 +7,6 @@ from sqlalchemy import (
     String,
     Date,
     ForeignKey,
-    Text,
     Integer,
     DateTime,
     Table,
@@ -37,6 +36,7 @@ class AssetTypeModel(Base):
     code = Column("code", String, nullable=False)
     group_code = Column("group_code", String, nullable=False)
     name = Column("name", String, nullable=False)
+    acronym = Column("acronym", String, nullable=True)
 
     def __str__(self) -> str:
         """Returns model as string"""
@@ -143,23 +143,6 @@ class AssetModel(Base):
         return f"{self.code} - {self.description}"
 
 
-class DocumentTypeModel(Base):
-    """
-    Document type model
-    * Contrato
-    * Termo de reponsabilidade
-    """
-
-    __tablename__ = "document_type"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    name = Column("name", String(length=30), nullable=False)
-
-    def __str__(self) -> str:
-        """Returns model as string"""
-        return f"{self.name}"
-
-
 class DocumentTemplateModel(Base):
     """Document template model"""
 
@@ -167,18 +150,37 @@ class DocumentTemplateModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
-    type: Mapped[DocumentTypeModel] = relationship()
-    type_id = Column("type_id", ForeignKey("document_type.id"), nullable=False)
-
     # caminho do arquivo
     path = Column("path", String(length=255), nullable=True)
     file_name = Column("file_name", String(length=100), nullable=False)
-    # texto que vai ter no template
-    content = Column("content", Text, nullable=False)
 
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.file_name}"
+
+
+class DocumentTypeModel(Base):
+    """
+    Document type model
+
+    * Contrato
+    * Termo de reponsabilidade
+    * Distrato
+    * Distrato de Termo de reponsabilidade
+    """
+
+    __tablename__ = "document_type"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    name = Column("name", String(length=40), nullable=False)
+    doc_template: Mapped[DocumentTemplateModel] = relationship()
+    doc_template_id = Column(
+        "doc_template_id", ForeignKey("document_template.id"), nullable=True
+    )
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.name}"
 
 
 class DocumentModel(Base):
@@ -187,18 +189,16 @@ class DocumentModel(Base):
     __tablename__ = "document"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    doc_template: Mapped[DocumentTemplateModel] = relationship()
-    doc_template_id = Column("doc_template_id", ForeignKey("document_template.id"))
+    doc_type: Mapped[DocumentTypeModel] = relationship()
+    doc_type_id = Column("doc_type_id", ForeignKey("document_type.id"), nullable=True)
 
     # caminho do arquivo
     path = Column("path", String(length=255), nullable=True)
     file_name = Column("file_name", String(length=100), nullable=False)
-    # código gerado
-    number = Column("number", String(length=30), nullable=False)
 
     def __str__(self) -> str:
         """Returns model as string"""
-        return f"{self.number}"
+        return f"{self.file_name}"
 
 
 class WorkloadModel(Base):
@@ -233,12 +233,12 @@ class CostCenterModel(Base):
     __tablename__ = "cost_center"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String, nullable=False)
-    name = Column("name", String, nullable=False)
+    code = Column("code", String(length=25), nullable=False)
+    name = Column("name", String(length=60), nullable=False)
+    classification = Column("group_name", String(length=60), nullable=False)
 
     def __str__(self) -> str:
-        """Returns model as string"""
-        return f"{self.name}"
+        return f"{self.name} - {self.code}"
 
 
 class WitnessModel(Base):
@@ -271,7 +271,7 @@ class LendingModel(Base):
     asset_id = Column("asset_id", ForeignKey("asset.id"), nullable=False)
 
     document: Mapped[DocumentModel] = relationship()
-    document_id = Column("document_id", ForeignKey("document.id"), nullable=False)
+    document_id = Column("document_id", ForeignKey("document.id"), nullable=True)
     # lotação
     workload: Mapped[WorkloadModel] = relationship()
     workload_id = Column("workload_id", ForeignKey("workload.id"), nullable=False)
@@ -286,6 +286,8 @@ class LendingModel(Base):
         "cost_center_id", ForeignKey("cost_center.id"), nullable=False
     )
 
+    # código gerado
+    number = Column("number", String(length=30), nullable=True)
     manager = Column("manager", String(length=50))
     observations = Column("observations", String(length=255), nullable=True)
     signed_date = Column("signed_date", Date, nullable=True)
@@ -293,7 +295,7 @@ class LendingModel(Base):
 
     def __str__(self) -> str:
         """Returns model as string"""
-        return f"{self.id}"
+        return f"{self.id} - {self.number}"
 
 
 class MaintenanceActionModel(Base):
@@ -412,7 +414,11 @@ class VerificationModel(Base):
 
 
 class VerificationTypeModel(Base):
-    """Verification type model"""
+    """Verification type model
+
+    * Envio
+    * Retorno
+    """
 
     __tablename__ = "verification_type"
 

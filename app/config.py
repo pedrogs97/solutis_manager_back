@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 # PostgresSQL config
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 DATABASE_URL = os.getenv("DB_URL")
 PASSWORD_SUPER_USER = os.getenv("PASSWORD_SUPER_USER")
 
@@ -26,12 +28,15 @@ SECRET_KEY = "KlgH6AzYDeZeGwD288to79I3vTHT8wp7"
 ALGORITHM = "HS256"
 
 ACCESS_TOKEN_EXPIRE_HOURS = 10
+UPLOAD_DIR = os.path.join(BASE_DIR, "contracts")
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 
 PERMISSIONS = {
     "lending": {
         "models": [
             {"name": "asset", "label": "Ativos"},
-            {"name": "lending", "label": "Contratos de Comodato"},
+            {"name": "lending", "label": "Comodato"},
+            {"name": "document", "label": "Contratos de Comodato"},
             {"name": "mantenance", "label": "Manutenções e Melhorias"},
         ],
         "label": "Comodato",

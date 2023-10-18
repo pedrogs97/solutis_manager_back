@@ -1,6 +1,6 @@
 """Lending router"""
-from typing import List, Union
-from fastapi import APIRouter, status, Depends, Query
+from typing import List, Union, Annotated
+from fastapi import APIRouter, status, Depends, Query, Form, UploadFile
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.backends import (
@@ -13,8 +13,10 @@ from app.lending.schemas import (
     NewAssetSchema,
     UpdateAssetSchema,
     InactivateAssetSchema,
+    CostCenterTotvsSchema,
+    NewLendingDocSchema,
 )
-from app.lending.service import AssetService
+from app.lending.service import AssetService, LendingService, DocumentService
 from app.config import (
     PAGINATION_NUMBER,
     MAX_PAGINATION_NUMBER,
@@ -27,6 +29,8 @@ from app.auth.models import UserModel
 lending_router = APIRouter(prefix="/lending", tags=["lending"])
 
 asset_service = AssetService()
+lending_service = LendingService()
+docuemnt_service = DocumentService()
 
 
 @lending_router.post("/assets/update/")
@@ -46,6 +50,16 @@ async def post_asset_type_updates_route(
 ):
     """Update asset from TOTVSroute"""
     asset_service.update_asset_type_totvs(data, db_session)
+    return JSONResponse(content="", status_code=status.HTTP_200_OK)
+
+
+@lending_router.post("/cost-center/update/")
+async def post_cost_center_updates_route(
+    data: List[CostCenterTotvsSchema],
+    db_session: Session = Depends(get_db_session),
+):
+    """Update asset from TOTVSroute"""
+    asset_service.update_cost_center_totvs(data, db_session)
     return JSONResponse(content="", status_code=status.HTTP_200_OK)
 
 
@@ -166,3 +180,48 @@ async def get_emplooyee_route(
         )
     asset_service.get_asset(asset_id, db_session)
     return JSONResponse(content="", status_code=status.HTTP_200_OK)
+
+
+@lending_router.post("/documents/create/")
+async def post_create_contract(
+    new_lending_doc: Annotated[NewLendingDocSchema, Form()],
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "add"})
+    ),
+):
+    """Creates a new contract"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    return JSONResponse(
+        content=docuemnt_service.create_contract(
+            new_lending_doc, db_session, authenticated_user
+        ),
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@lending_router.post("/documents/upload/")
+async def post_import_contract(
+    lending_id: Annotated[int, Form()],
+    file: UploadFile,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "edit"})
+    ),
+):
+    """Upload new contract"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    return JSONResponse(
+        content=docuemnt_service.upload_contract(
+            file, lending_id, db_session, authenticated_user
+        ),
+        status_code=status.HTTP_200_OK,
+    )

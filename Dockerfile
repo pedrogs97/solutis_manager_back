@@ -12,16 +12,13 @@ COPY ./datasync /datasync
 COPY ./openssl.cnf /etc/ssl/openssl.cnf
 
 RUN apt-get update -y && apt-get install curl -y \
+    && apt-get install wkhtmltopdf -y \
     && curl -sSL https://install.python-poetry.org | python3 - \
     && poetry config virtualenvs.create false \
     && poetry install \
     && curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc \
     #Download appropriate package for the OS version
     #Choose only ONE of the following, corresponding to your OS version
-    #Debian 9
-    && curl https://packages.microsoft.com/config/debian/9/prod.list | tee /etc/apt/sources.list.d/mssql-release.list \
-    #Debian 10
-    && curl https://packages.microsoft.com/config/debian/10/prod.list | tee /etc/apt/sources.list.d/mssql-release.list \
     #Debian 11
     && curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/mssql-release.list \
     && apt-get update \
@@ -44,5 +41,8 @@ WORKDIR /app
 
 ENV PATH="/scripts:$PATH"
 ENV PATH="/opt/mssql-tools17/bin:$PATH"
+
+ENV XDG_RUNTIME_DIR="/app"
+ENV RUNLEVEL=3
 
 # ENTRYPOINT "config-db.sh"

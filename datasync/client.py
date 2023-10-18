@@ -26,7 +26,7 @@ class AgileClient:
     ) -> None:
         """Send cost center updates to Agile"""
         respose = requests.post(
-            url=f"{AGILE_HOST}cost-center/update/",
+            url=f"{AGILE_HOST}lending/cost-center/update/",
             data=[cc.model_dump() for cc in update_data],
             timeout=500,
         )
@@ -39,7 +39,7 @@ class AgileClient:
     def send_asset_type_updates(self, update_data: List[AssetTypeTotvsSchema]) -> None:
         """Send asset types updates to Agile"""
         respose = requests.post(
-            url=f"{AGILE_HOST}asset-type/update/",
+            url=f"{AGILE_HOST}lending/asset-type/update/",
             data=[cc.model_dump() for cc in update_data],
             timeout=500,
         )
@@ -52,7 +52,7 @@ class AgileClient:
     def send_asset_updates(self, update_data: List[AssetTotvsSchema]) -> None:
         """Send asset updates to Agile"""
         respose = requests.post(
-            url=f"{AGILE_HOST}asset/update/",
+            url=f"{AGILE_HOST}lending/asset/update/",
             data=[cc.model_dump() for cc in update_data],
             timeout=500,
         )

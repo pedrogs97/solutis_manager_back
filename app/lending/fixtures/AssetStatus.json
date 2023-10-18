@@ -1,0 +1,42 @@
+[
+    {
+        "table": "asset_status",
+        "id": 1,        
+        "name": "Disponível"
+    },
+    {
+        "table": "asset_status",
+        "id": 2,
+        "name": "Comodato"
+    },
+    {
+        "table": "asset_status",
+        "id": 3,
+        "name": "Estoque SP"
+    },
+    {
+        "table": "asset_status",
+        "id": 4,
+        "name": "Estoque BA"
+    },
+    {
+        "table": "asset_status",
+        "id": 5,
+        "name": "Reservado"
+    },
+    {
+        "table": "asset_status",
+        "id": 6,
+        "name": "Inativo"
+    },
+    {
+        "table": "asset_status",
+        "id": 7,
+        "name": "Emprestimo"
+    },
+    {
+        "table": "asset_status",
+        "id": 8,
+        "name": "Descarte"
+    }
+]

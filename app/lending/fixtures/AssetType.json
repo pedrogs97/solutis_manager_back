@@ -1,0 +1,37 @@
+[
+    {
+        "table": "asset_type",
+        "id": 1,
+        "code": "0",
+        "group_code": "00",
+        "name": "NOTEBOOK"
+    },
+    {
+        "table": "asset_type",
+        "id": 2,
+        "code": "0",
+        "group_code": "00",
+        "name": "DESKTOP"
+    },
+    {
+        "table": "asset_type",
+        "id": 3,
+        "code": "0",
+        "group_code": "00",
+        "name": "MONITOR"
+    },
+    {
+        "table": "asset_type",
+        "id": 4,
+        "code": "0",
+        "group_code": "00",
+        "name": "WEBCAM"
+    },
+    {
+        "table": "asset_type",
+        "id": 5,
+        "code": "0",
+        "group_code": "00",
+        "name": "CELULAR"
+    }
+]

@@ -1,7 +1,8 @@
 """Lenging service"""
-from typing import List
+from datetime import date
+from typing import List, Union
 import logging
-from fastapi import status
+from fastapi import status, UploadFile
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -12,6 +13,12 @@ from app.lending.models import (
     AssetClothingSizeModel,
     AssetStatusModel,
     AssetTypeModel,
+    CostCenterModel,
+    LendingModel,
+    DocumentModel,
+    WorkloadModel,
+    WitnessModel,
+    DocumentTypeModel,
 )
 from app.lending.schemas import (
     AssetTotvsSchema,
@@ -23,9 +30,23 @@ from app.lending.schemas import (
     AssetTypeTotvsSchema,
     UpdateAssetSchema,
     InactivateAssetSchema,
+    CostCenterTotvsSchema,
+    LendingSerializerSchema,
+    WorkloadSerializerSchema,
+    WitnessSerializerSchema,
+    CostCenterSerializerSchema,
+    NewLendingSchema,
+    DocumentSerializerSchema,
+    NewLendingDocSchema,
+    NewLendingContextSchema,
+    WitnessContextSchema,
+    UploadSignedContractSchema,
 )
 from app.auth.models import UserModel
 from app.log.services import LogService
+from app.people.schemas import EmployeeSerializer
+from app.people.models import EmployeeModel
+from app.utils import upload_file, create_lending_contract
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -354,10 +375,506 @@ class AssetService:
                     updates.append(db_asset_type)
                     continue
 
-                updates.append(AssetTypeModel(**totvs_asset_type_item.model_dump()))
+                updates.append(
+                    AssetTypeModel(
+                        **totvs_asset_type_item.model_dump(),
+                        acronym=totvs_asset_type_item.name[:2].upper(),
+                    )
+                )
 
             db_session.add_all(updates)
             db_session.commit()
             logger.info("Update Asset Types from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+
+    def update_cost_center_totvs(
+        self,
+        totvs_cost_center: List[CostCenterTotvsSchema],
+        db_session: Session,
+    ):
+        """Updates asset type from totvs"""
+        try:
+            updates: List[CostCenterModel] = []
+            for totvs_cost_center_item in totvs_cost_center:
+                db_cost_center = (
+                    db_session.query(CostCenterModel)
+                    .filter(CostCenterModel.code == totvs_cost_center_item.code)
+                    .first()
+                )
+                if db_cost_center:
+                    db_cost_center.code = totvs_cost_center_item.code
+                    db_cost_center.classification = (
+                        totvs_cost_center_item.classification
+                    )
+                    db_cost_center.name = totvs_cost_center_item.name
+                    updates.append(db_cost_center)
+                    continue
+
+                updates.append(CostCenterModel(**totvs_cost_center_item.model_dump()))
+
+            db_session.add_all(updates)
+            db_session.commit()
+            logger.info("Update Cost Centers from TOTVS. Total=%s", str(len(updates)))
+        except Exception as exc:
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+
+
+class LendingService:
+    """Lending service"""
+
+    def __get_lending_or_404(
+        self, lending_id: int, db_session: Session
+    ) -> LendingModel:
+        """Get lending or 404"""
+        lending = (
+            db_session.query(LendingModel).filter(LendingModel.id == lending_id).first()
+        )
+        if not lending:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Contrato de Comodato não encontrado",
+            )
+
+        return lending
+
+    def serialize_lending(self, lending: LendingModel) -> LendingSerializerSchema:
+        """Serialize lending"""
+        witnesses_serialzier = []
+
+        for witness in lending.witnesses:
+            witnesses_serialzier.append(
+                WitnessSerializerSchema(
+                    id=witness.id,
+                    employee=EmployeeSerializer(**witness.employee),
+                    signed=witness.signed.isoformat(),
+                )
+            )
+
+        return LendingSerializerSchema(
+            id=lending.id,
+            employee=EmployeeSerializer(**lending.employee.__dict__),
+            asset=AssetSerializer(**lending.asset.__dict__),
+            document=lending.document.id,
+            workload=WorkloadSerializerSchema(**lending.workload.__dict__),
+            witnesses=witnesses_serialzier,
+            cost_center=CostCenterSerializerSchema(**lending.cost_center.__dict__),
+            manager=lending.manager,
+            observations=lending.observations,
+            signed_date=lending.signed_date.isoformat(),
+            glpi_number=lending.glpi_number,
+        )
+
+    def __validate_nested(self, data: NewLendingSchema, db_session: Session) -> tuple:
+        """Validates employee, asset, workload, cost center and document values"""
+        if data.employee:
+            employee = (
+                db_session.query(EmployeeModel)
+                .filter(EmployeeModel.id == data.employee)
+                .first()
+            )
+            if not employee:
+                raise HTTPException(
+                    detail=f"Tipo de Colaborador não existe. {employee}",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if data.asset:
+            asset = (
+                db_session.query(AssetModel).filter(AssetModel.id == data.asset).first()
+            )
+            if not asset:
+                raise HTTPException(
+                    detail=f"Ativo não existe. {asset}",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if data.document:
+            document = (
+                db_session.query(DocumentModel)
+                .filter(DocumentModel.id == data.document)
+                .first()
+            )
+            if not document:
+                raise HTTPException(
+                    detail=f"Documento não existe. {document}",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if data.workload:
+            workload = (
+                db_session.query(WorkloadModel)
+                .filter(WorkloadModel.id == data.workload)
+                .first()
+            )
+            if not workload:
+                raise HTTPException(
+                    detail=f"Lotação não existe. {workload}",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if data.cost_center:
+            cost_center = (
+                db_session.query(CostCenterModel)
+                .filter(CostCenterModel.id == data.cost_center)
+                .first()
+            )
+            if not cost_center:
+                raise HTTPException(
+                    detail=f"Centro de Custo não existe. {cost_center}",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if data.witnesses:
+            witnesses = []
+            for witness in data.witnesses:
+                witiness = (
+                    db_session.query(WitnessModel)
+                    .filter(WitnessModel.id == witness)
+                    .first()
+                )
+                if not witiness:
+                    raise HTTPException(
+                        detail=f"Testemunha não existe. {witiness}",
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                    )
+                witnesses.append(witness)
+
+        return (
+            employee,
+            asset,
+            document,
+            workload,
+            cost_center,
+            witnesses,
+        )
+
+    def create_lending(
+        self,
+        new_lending: NewLendingSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ):
+        """Creates new lending"""
+
+        (
+            employee,
+            asset,
+            document,
+            workload,
+            cost_center,
+            witnesses,
+        ) = self.__validate_nested(new_lending, db_session)
+
+        new_lending_db = LendingModel(
+            employee=employee,
+            asset=asset,
+            document=document,
+            workload=workload,
+            cost_center=cost_center,
+            manager=new_lending.manager,
+            observations=new_lending.observations,
+            signed_date=new_lending.signed_date,
+            glpi_number=new_lending.glpi_number,
+        )
+
+        new_lending_db.witnesses = witnesses
+        db_session.add(new_lending_db)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "asset",
+            "Criação de Contrato de Comodato",
+            new_lending_db.id,
+            authenticated_user,
+        )
+        logger.info("New Asset. %s", str(new_lending_db))
+
+        return self.serialize_lending(new_lending_db)
+
+    def get_lending(self, lending_id: int, db_session: Session) -> AssetSerializer:
+        """Get a lending"""
+        lending = self.__get_lending_or_404(lending_id, db_session)
+        return self.serialize_lending(lending)
+
+    def get_lendings(
+        self,
+        db_session: Session,
+        search: str = "",
+        filter_lending: str = None,
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[AssetSerializer]:
+        """Get lendings list"""
+
+        lending_list = (
+            db_session.query(LendingModel)
+            .join(
+                LendingModel.employee,
+            )
+            .filter(
+                or_(
+                    LendingModel.glpi_number.ilike(f"%{search}"),
+                    LendingModel.manager.ilike(f"%{search}%"),
+                    EmployeeModel.full_name == filter_lending,
+                )
+            )
+        )
+
+        if filter_lending:
+            lending_list = lending_list.filter(
+                LendingModel.signed_date == filter_lending,
+            )
+
+            lending_list = lending_list.join(
+                LendingModel.asset,
+            ).filter(
+                or_(
+                    AssetModel.code == filter_lending,
+                    AssetModel.description == filter_lending,
+                    AssetModel.register_number == filter_lending,
+                    AssetModel.serial_number == filter_lending,
+                )
+            )
+
+            lending_list = lending_list.join(
+                LendingModel.workload,
+            ).filter(
+                or_(
+                    WorkloadModel.name == filter_lending,
+                )
+            )
+
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            lending_list,
+            params=params,
+            transformer=lambda lending_list: [
+                self.serialize_lending(lending) for lending in lending_list
+            ],
+        )
+        return paginated
+
+
+class DocumentService:
+    """Document service"""
+
+    def __get_document_or_404(
+        self, document_id: int, db_session: Session
+    ) -> DocumentModel:
+        """Get document or 404"""
+        document = (
+            db_session.query(DocumentModel)
+            .filter(DocumentModel.id == document_id)
+            .first()
+        )
+        if not document:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Contrato de Comodato não encontrado",
+            )
+
+        return document
+
+    def __get_lending_or_404(
+        self, lending_id: int, db_session: Session
+    ) -> LendingModel:
+        """Get lending or 404"""
+        lending = (
+            db_session.query(LendingModel).filter(LendingModel.id == lending_id).first()
+        )
+        if not lending:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Contrato de Comodato não encontrado",
+            )
+
+        return lending
+
+    def __generate_code(
+        self, last_doc: Union[DocumentModel, None], asset: AssetModel
+    ) -> str:
+        """Generate new code for document"""
+        new_code = 1
+
+        if not asset:
+            raise HTTPException(404, "Ativo não encontrado")
+
+        if last_doc:
+            last_code = last_doc.id
+            new_code = last_code + 1
+        str_code = str(new_code)
+        return asset.type.acronym + str_code.zfill(6 - len(str_code))
+
+    def serialize_document(self, doc: DocumentModel) -> DocumentSerializerSchema:
+        """Serialize document"""
+        return DocumentSerializerSchema(
+            id=doc.id,
+            type=doc.doc_type.name,
+            path=doc.path,
+            file_name=doc.file_name,
+        )
+
+    def create_contract(
+        self,
+        new_lending_doc: NewLendingDocSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Create new contract, not signed"""
+        doc_type = db_session.query(DocumentTypeModel).filter(
+            DocumentTypeModel.name == "Contrato"
+        )
+
+        asset = (
+            db_session.query(AssetModel)
+            .filter(AssetModel.id == new_lending_doc.asset_id)
+            .first()
+        )
+
+        new_code = self.__generate_code(
+            db_session.query(DocumentModel).all()[-1], asset
+        )
+
+        current_lending = (
+            db_session.query(LendingModel)
+            .filter(LendingModel.id == new_lending_doc.lending_id)
+            .first()
+        )
+
+        workload = (
+            db_session.query(WorkloadModel)
+            .filter(WorkloadModel.id == new_lending_doc.workload_id)
+            .first()
+        )
+
+        employee = (
+            db_session.query(EmployeeModel)
+            .filter(EmployeeModel.id == new_lending_doc.employee_id)
+            .first()
+        )
+
+        witness1 = (
+            db_session.query(WitnessModel)
+            .filter(WitnessModel.id == new_lending_doc.witness1_id)
+            .first()
+        )
+
+        witness2 = (
+            db_session.query(WitnessModel)
+            .filter(WitnessModel.id == new_lending_doc.witness2_id)
+            .first()
+        )
+
+        contract_path = create_lending_contract(
+            NewLendingContextSchema(
+                number=new_code,
+                glpi_number=new_lending_doc.glpi_number,
+                full_name=employee.full_name,
+                taxpayer_identification=employee.taxpayer_identification,
+                nacional_identification=employee.nacional_identification,
+                address=employee.address,
+                nationality=employee.nationality.description,
+                role=employee.role.name,
+                matrimonial_status=employee.matrimonial_status.description,
+                cc=new_lending_doc.cc,
+                manager=new_lending_doc.manager,
+                business_executive=new_lending_doc.business_executive,
+                workload=workload.name,
+                register_number=asset.register_number,
+                serial_number=asset.serial_number,
+                description=asset.description,
+                accessories=asset.accessories,
+                ms_office="SIM" if asset.ms_office else "Não",
+                pattern=asset.pattern,
+                operational_system=asset.operational_system,
+                value=asset.value,
+                date=date.today().strftime("%d/%m/%Y"),
+                witnesses=[
+                    WitnessContextSchema(
+                        full_name=witness1.employee.full_name,
+                        taxpayer_identification=witness1.employee.taxpayer_identification,
+                    ),
+                    WitnessContextSchema(
+                        full_name=witness2.employee.full_name,
+                        taxpayer_identification=witness2.employee.taxpayer_identification,
+                    ),
+                ],
+            )
+        )
+
+        new_doc = DocumentModel(
+            doc_type=doc_type, path=contract_path, file_name=f"{new_code}.pdf"
+        )
+
+        db_session.add(new_doc)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            "Criação de Contrato de Comodato",
+            new_doc.id,
+            authenticated_user,
+        )
+        logger.info("New Document. %s", str(new_doc))
+
+        current_lending.document = new_doc
+        current_lending.number = new_code
+        current_lending.witnesses.append(witness1)
+        current_lending.witnesses.append(witness2)
+
+        db_session.add(current_lending)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "lending",
+            "Criação de Contrato de Comodato",
+            current_lending.id,
+            authenticated_user,
+        )
+        logger.info("New Document add to Lending. %s", str(current_lending))
+
+        return self.serialize_document(new_doc)
+
+    async def upload_contract(
+        self,
+        contract: UploadFile,
+        data: UploadSignedContractSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> Union[DocumentModel, None]:
+        """Upload contract"""
+
+        lending = self.__get_lending_or_404(data.lending_id, db_session)
+        document = self.__get_document_or_404(data.document_id, db_session)
+
+        code = lending.number
+
+        file_name = f"{code}.pdf"
+        file_path = await upload_file(file_name, "lending", contract.file.read())
+
+        document.path = file_path
+        document.file_name = file_name
+
+        db_session.add(document)
+        db_session.commit()
+
+        lending.signed_date = date.today()
+
+        db_session.add(lending)
+        db_session.commit()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            "Importação de Contrato de Comodato",
+            document.id,
+            authenticated_user,
+        )
+        logger.info("Upload Document signed. %s", str(document))

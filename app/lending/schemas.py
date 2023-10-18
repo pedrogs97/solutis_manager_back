@@ -3,12 +3,21 @@ from typing import Optional, List
 from datetime import datetime, date
 from pydantic import Field
 from app.schemas import BaseSchema
-from app.people.schemas import EmployeeTotvsSchema
+from app.people.schemas import EmployeeSerializer
 
 
 class CostCenterTotvsSchema(BaseSchema):
     """Cost center schema"""
 
+    code: str
+    name: str
+    classification: str
+
+
+class CostCenterSerializerSchema(BaseSchema):
+    """Cost center serializer schema"""
+
+    id: int
     code: str
     name: str
     classification: str
@@ -283,62 +292,75 @@ class InactivateAssetSchema(BaseSchema):
     active: bool
 
 
-class DocumentTypeSchema(BaseSchema):
-    """Document type schema"""
+class DocumentTemplateSerializerSchema(BaseSchema):
+    """Document template serializer schema"""
 
-    id: Optional[int]
+    id: int
+    path: Optional[str]
+    file_name: str
+
+
+class DocumentTypeSerializerSchema(BaseSchema):
+    """Document type serializer schema"""
+
+    id: int
+    name: str
+    doc_template: DocumentTemplateSerializerSchema
+
+
+class DocumentSerializerSchema(BaseSchema):
+    """Document serializer schema"""
+
+    id: int
+    type: str
+    path: Optional[str]
+    file_name: str = Field(serialization_alias="fileName")
+
+
+class WorkloadSerializerSchema(BaseSchema):
+    """Workload serializer schema"""
+
+    id: int
     name: str
 
 
-class DocumentTemplateSchema(BaseSchema):
-    """Document template schema"""
+class WitnessSerializerSchema(BaseSchema):
+    """Witness serializer schema"""
 
-    id: Optional[int]
-    type: DocumentTypeSchema
-    path: Optional[str]
-    file_name: str
-    content: str
+    id: int
+    employee: EmployeeSerializer
+    signed: str
 
 
-class DocumentSchema(BaseSchema):
-    """Document schema"""
+class LendingSerializerSchema(BaseSchema):
+    """Lending serializer schema"""
 
-    id: Optional[int]
-    doc_template: DocumentTemplateSchema
-    path: Optional[str]
-    file_name: str
-    number: str
-
-
-class WorkloadSchema(BaseSchema):
-    """Workload schema"""
-
-    id: Optional[int]
-    name: str
-
-
-class WitnessSchema(BaseSchema):
-    """Witness schema"""
-
-    id: Optional[int]
-    employee: EmployeeTotvsSchema
-    signed: date
-
-
-class LendingSchema(BaseSchema):
-    """Lending schema"""
-
-    id: Optional[int]
-    employee: EmployeeTotvsSchema
-    asset: AssetTotvsSchema
-    document: DocumentSchema
-    workload: WorkloadSchema
-    witnesses: List[WitnessSchema]
-    cost_center: CostCenterTotvsSchema
+    id: int
+    employee: EmployeeSerializer
+    asset: AssetSerializer
+    document: int
+    workload: WorkloadSerializerSchema
+    witnesses: List[WitnessSerializerSchema]
+    cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
     manager: str
-    observation: Optional[str]
-    signed_date: date
-    glpi_number: Optional[str]
+    observations: Optional[str]
+    signed_date: str = Field(serialization_alias="signedDate")
+    glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
+
+
+class NewLendingSchema(BaseSchema):
+    """New lending schema"""
+
+    employee: int
+    asset: int
+    document: Optional[int] = None
+    workload: int
+    witnesses: List[int]
+    cost_center: int = Field(alias="costCenter")
+    manager: str
+    observations: Optional[str] = None
+    signed_date: Optional[date] = Field(alias="signedDate", default=None)
+    glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
 
 
 class MaintenanceActionSchema(BaseSchema):
@@ -414,8 +436,68 @@ class VerificationAnswerSchema(BaseSchema):
     """Verification answer schema"""
 
     id: Optional[int]
-    lending: LendingSchema
+    lending: int
     verification: VerificationSchema
     type: VerificationTypeSchema
     step: str
     answer: str
+
+
+class NewLendingDocSchema(BaseSchema):
+    """New contract info schema"""
+
+    number: str
+    glpi_number: str
+    employee_id: int
+    asset_id: int
+    witness1_id: int
+    witness2_id: int
+    lending_id: int
+    workload_id: int
+    cc: str
+    manager: str
+    project: str
+    business_executive: str = Field(alias="businessExecutive")
+
+
+class WitnessContextSchema(BaseSchema):
+    """Witness context for template"""
+
+    full_name: str
+    taxpayer_identification: str
+
+
+class NewLendingContextSchema(BaseSchema):
+    """Context for contract template"""
+
+    number: str
+    glpi_number: str
+    full_name: str
+    taxpayer_identification: str
+    nacional_identification: str
+    address: str
+    nationality: str
+    role: str
+    matrimonial_status: str
+    cc: str
+    manager: str
+    business_executive: str
+    project: str
+    workload: str
+    register_number: str
+    serial_number: str
+    description: str
+    accessories: str
+    ms_office: str
+    pattern: str
+    operational_system: str
+    value: str
+    date: str
+    witnesses: List[WitnessContextSchema]
+
+
+class UploadSignedContractSchema(BaseSchema):
+    """Schema for upload contract signed"""
+
+    lending_id: int
+    document_id: int

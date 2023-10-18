@@ -1,0 +1,22 @@
+[
+    {
+        "table": "document_type",
+        "id": 1,
+        "name": "Contrato de Comodato"
+    },
+    {
+        "table": "document_type",
+        "id": 2,
+        "name": "Termo de Responsabilidade"
+    },
+    {
+        "table": "document_type",
+        "id": 3,
+        "name": "Distrato de Comodato"
+    },
+    {
+        "table": "document_type",
+        "id": 4,
+        "name": "Distrato de Termo de Responsabilidade"
+    }
+]

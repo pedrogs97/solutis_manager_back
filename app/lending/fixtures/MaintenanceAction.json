@@ -1,0 +1,12 @@
+[
+    {
+        "table": "maintenance_action",
+        "id": 1,
+        "name": "Manutenção Externa"
+    },
+    {
+        "table": "maintenance_action",
+        "id": 2,
+        "name": "Manutenção Interna"
+    }
+]

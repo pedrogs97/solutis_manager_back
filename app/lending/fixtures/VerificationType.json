@@ -1,0 +1,12 @@
+[
+    {
+        "table": "verification_type",
+        "id": 1,
+        "name": "Envio"
+    },
+    {
+        "table": "verification_type",
+        "id": 2,
+        "name": "Retorno"
+    }
+]

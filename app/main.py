@@ -2,10 +2,9 @@
 import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.staticfiles import StaticFiles
 from app.auth.router import auth_router
 from app.auth.service import create_permissions, create_super_user
 from app.config import DATE_FORMAT, FORMAT, LOG_FILENAME, ORIGINS
@@ -35,7 +34,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(people_router, prefix="/api/v1")
