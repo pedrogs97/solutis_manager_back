@@ -447,13 +447,13 @@ class NewLendingDocSchema(BaseSchema):
     """New contract info schema"""
 
     number: str
-    glpi_number: str
-    employee_id: int
-    asset_id: int
-    witness1_id: int
-    witness2_id: int
-    lending_id: int
-    workload_id: int
+    glpi_number: str = Field(alias="glpiNumber")
+    employee_id: int = Field(alias="employeeId")
+    asset_id: int = Field(alias="assetId")
+    witness1_id: int = Field(alias="witness1Id")
+    witness2_id: int = Field(alias="witness2Id")
+    lending_id: int = Field(alias="lendingId")
+    workload_id: int = Field(alias="workloadId")
     cc: str
     manager: str
     project: str
@@ -496,8 +496,42 @@ class NewLendingContextSchema(BaseSchema):
     witnesses: List[WitnessContextSchema]
 
 
+class NewLendingPjContextSchema(BaseSchema):
+    """Context for contract template"""
+
+    number: str
+    glpi_number: str
+    full_name: str
+    taxpayer_identification: str
+    nacional_identification: str
+    company: str
+    cnpj: str
+    company_address: str
+    address: str
+    nationality: str
+    role: str
+    matrimonial_status: str
+    cc: str
+    manager: str
+    business_executive: str
+    project: str
+    workload: str
+    date_confirm: str
+    goal: str
+    register_number: str
+    serial_number: str
+    description: str
+    accessories: str
+    ms_office: str
+    pattern: str
+    operational_system: str
+    value: str
+    date: str
+    witnesses: List[WitnessContextSchema]
+
+
 class UploadSignedContractSchema(BaseSchema):
     """Schema for upload contract signed"""
 
-    lending_id: int
-    document_id: int
+    lending_id: int = Field(alias="lendingId")
+    document_id: int = Field(alias="documentId")

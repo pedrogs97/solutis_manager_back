@@ -24,6 +24,8 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 date_str = datetime.now().strftime("%Y-%m-%d")
 LOG_FILENAME = f"./logs/{date_str}.log"
 
+DEFAULT_DATE_FORMAT = "%d/%m/%Y"
+
 SECRET_KEY = "KlgH6AzYDeZeGwD288to79I3vTHT8wp7"
 ALGORITHM = "HS256"
 

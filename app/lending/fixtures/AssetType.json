@@ -4,34 +4,39 @@
         "id": 1,
         "code": "0",
         "group_code": "00",
-        "name": "NOTEBOOK"
+        "name": "NOTEBOOK",
+        "acronym": "NTK"
     },
     {
         "table": "asset_type",
         "id": 2,
         "code": "0",
         "group_code": "00",
-        "name": "DESKTOP"
+        "name": "DESKTOP",
+        "acronym": "DTK"
     },
     {
         "table": "asset_type",
         "id": 3,
         "code": "0",
         "group_code": "00",
-        "name": "MONITOR"
+        "name": "MONITOR",
+        "acronym": "MOT"
     },
     {
         "table": "asset_type",
         "id": 4,
         "code": "0",
         "group_code": "00",
-        "name": "WEBCAM"
+        "name": "WEBCAM",
+        "acronym": "WCN"
     },
     {
         "table": "asset_type",
         "id": 5,
         "code": "0",
         "group_code": "00",
-        "name": "CELULAR"
+        "name": "CELULAR",
+        "acronym": "CLT"
     }
 ]

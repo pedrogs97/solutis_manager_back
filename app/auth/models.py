@@ -3,6 +3,7 @@ from typing import List
 from sqlalchemy import Boolean, String, ForeignKey, Integer, Table, Column, DateTime
 from sqlalchemy.orm import relationship, Mapped
 from app.database import Base
+from app.people.models import EmployeeModel
 
 
 role_permissions = Table(
@@ -58,6 +59,9 @@ class UserModel(Base):
     __tablename__ = "user"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
+
+    employee: Mapped[EmployeeModel] = relationship()
+    employee_id = Column("employee_id", ForeignKey("employee.id"), nullable=True)
 
     role: Mapped[RoleModel] = relationship()
     role_id = Column("role_id", ForeignKey("role.id"), nullable=False)

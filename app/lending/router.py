@@ -15,6 +15,7 @@ from app.lending.schemas import (
     InactivateAssetSchema,
     CostCenterTotvsSchema,
     NewLendingDocSchema,
+    UploadSignedContractSchema,
 )
 from app.lending.service import AssetService, LendingService, DocumentService
 from app.config import (
@@ -206,7 +207,7 @@ async def post_create_contract(
 
 @lending_router.post("/documents/upload/")
 async def post_import_contract(
-    lending_id: Annotated[int, Form()],
+    data: Annotated[UploadSignedContractSchema, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -221,7 +222,7 @@ async def post_import_contract(
 
     return JSONResponse(
         content=docuemnt_service.upload_contract(
-            file, lending_id, db_session, authenticated_user
+            file, data, db_session, authenticated_user
         ),
         status_code=status.HTTP_200_OK,
     )

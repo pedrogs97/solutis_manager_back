@@ -9,7 +9,7 @@ import jinja2
 import pdfkit
 from app.database import Session_db, Base, Engine
 from app.utils import get_file_paths, read_file
-from app.config import TEMPLATE_DIR, BASE_DIR, UPLOAD_DIR
+from app.config import TEMPLATE_DIR, DEFAULT_DATE_FORMAT, UPLOAD_DIR
 
 
 @task
@@ -66,12 +66,10 @@ def loaddata(cmd, module: str, fixture: str = None):
         cmd.run(f"echo fixture {fixture} not found")
 
 
-@task
-def test(cmd):
+def __contract():
     """
-    Convert html to pdf using pdfkit which is a wrapper of wkhtmltopdf
+    Contract
     """
-    cmd.run("echo conversion started")
     template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
     template_env = jinja2.Environment(loader=template_loader)
     template_file = "comodato.html"
@@ -99,7 +97,7 @@ def test(cmd):
         pattern="Studio",
         operational_system="MacOS",
         value="46.000,00",
-        date=date.today().isoformat(),
+        date=date.today().strftime(DEFAULT_DATE_FORMAT),
         witnesses=[
             {
                 "full_name": "Testemunha 1 teste",
@@ -128,4 +126,81 @@ def test(cmd):
             options=options,
         )
     os.remove(os.path.join(UPLOAD_DIR, "template_test.html"))
+
+
+def __contract_pj():
+    """
+    Contract
+    """
+    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    template_env = jinja2.Environment(loader=template_loader)
+    template_file = "comodato_pj.html"
+    template = template_env.get_template(template_file)
+    output_text = template.render(
+        number="35161343241",
+        glpi_number="GLPI 41325",
+        full_name="Abmael da Silva",
+        taxpayer_identification="222.222.222-22",
+        nacional_identification="22222222-22",
+        company="MEI teste",
+        cnpj="13.185.790/0001-79",
+        company_address="Rua da esquina, 31, Pituba, Salvador",
+        address="Rua da esquina, 31, Alpha Vile, Salvador",
+        nationality="BRASILEIRO",
+        role="Desenvolvedor",
+        matrimonial_status="CASADO",
+        cc="23412-1",
+        manager="Hericles Bitencurt",
+        business_executive="Janaina Bitencurt",
+        project="Solutis",
+        workload="Home Office",
+        date_confirm=date.today().strftime(DEFAULT_DATE_FORMAT),
+        goal="objetivo teste",
+        register_number="sa321431",
+        serial_number="2151232",
+        description="Macbook Air",
+        accessories="N/A",
+        ms_office="Sim",
+        pattern="Studio",
+        operational_system="MacOS",
+        value="46.000,00",
+        date=date.today().strftime(DEFAULT_DATE_FORMAT),
+        witnesses=[
+            {
+                "full_name": "Testemunha 1 teste",
+                "taxpayer_identification": "000.000.000-00",
+            },
+            {
+                "full_name": "Testemunha 2 teste",
+                "taxpayer_identification": "111.111.111-11",
+            },
+        ],
+    )
+
+    if not os.path.exists(UPLOAD_DIR):
+        os.mkdir(UPLOAD_DIR)
+
+    html_path = os.path.join(UPLOAD_DIR, "template_pj_test.html")
+    with open(html_path, "w", encoding="utf-8") as html_file:
+        html_file.write(output_text)
+
+    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
+
+    with open(os.path.join(UPLOAD_DIR, "template_pj_test.html"), encoding="utf-8") as f:
+        pdfkit.from_file(
+            f,
+            os.path.join(UPLOAD_DIR, "contract_pj_test.pdf"),
+            options=options,
+        )
+    os.remove(os.path.join(UPLOAD_DIR, "template_pj_test.html"))
+
+
+@task
+def test(cmd):
+    """
+    Convert html to pdf using pdfkit which is a wrapper of wkhtmltopdf
+    """
+    cmd.run("echo conversion started")
+    __contract()
+    __contract_pj()
     cmd.run("echo conversion finished")
