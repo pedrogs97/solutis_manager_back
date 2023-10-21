@@ -143,22 +143,6 @@ class AssetModel(Base):
         return f"{self.code} - {self.description}"
 
 
-class DocumentTemplateModel(Base):
-    """Document template model"""
-
-    __tablename__ = "document_template"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-
-    # caminho do arquivo
-    path = Column("path", String(length=255), nullable=True)
-    file_name = Column("file_name", String(length=100), nullable=False)
-
-    def __str__(self) -> str:
-        """Returns model as string"""
-        return f"{self.file_name}"
-
-
 class DocumentTypeModel(Base):
     """
     Document type model
@@ -173,10 +157,6 @@ class DocumentTypeModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String(length=40), nullable=False)
-    doc_template: Mapped[DocumentTemplateModel] = relationship()
-    doc_template_id = Column(
-        "doc_template_id", ForeignKey("document_template.id"), nullable=True
-    )
 
     def __str__(self) -> str:
         """Returns model as string"""

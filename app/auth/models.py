@@ -61,7 +61,7 @@ class UserModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
     employee: Mapped[EmployeeModel] = relationship()
-    employee_id = Column("employee_id", ForeignKey("employee.id"), nullable=True)
+    employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=True)
 
     role: Mapped[RoleModel] = relationship()
     role_id = Column("role_id", ForeignKey("role.id"), nullable=False)
