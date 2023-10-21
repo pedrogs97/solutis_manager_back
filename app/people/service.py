@@ -30,6 +30,9 @@ from app.people.schemas import (
 )
 from app.auth.models import UserModel
 from app.log.services import LogService
+from app.lending.models import LendingModel
+from app.lending.service import LendingService
+from app.lending.schemas import LendingSerializerSchema
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -311,6 +314,24 @@ class EmployeeService:
         """Get an employee"""
         employee = self.__get_employee_or_404(employee_id, db_session)
         return self.serialize_employee(employee)
+
+    def get_employee_lending_history(
+        self, employee_id: int, db_session: Session
+    ) -> List[LendingSerializerSchema]:
+        """Get an employee lending history"""
+        employee = self.__get_employee_or_404(employee_id, db_session)
+
+        historic_model = (
+            db_session.query(LendingModel)
+            .filter(LendingModel.employee_id == employee.id)
+            .all()
+        )
+
+        historic_serialize = [
+            LendingService().serialize_lending(h) for h in historic_model
+        ]
+
+        return historic_serialize
 
     def get_employees(
         self,

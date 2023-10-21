@@ -1,7 +1,7 @@
 """Lending router"""
 from typing import List, Union, Annotated
 from fastapi import APIRouter, status, Depends, Query, Form, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 from app.backends import (
     get_db_session,
@@ -167,7 +167,7 @@ async def get_list_assets_route(
 
 
 @lending_router.get("/assets/{asset_id}/")
-async def get_emplooyee_route(
+async def get_asset_route(
     asset_id: int,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -183,7 +183,7 @@ async def get_emplooyee_route(
     return JSONResponse(content="", status_code=status.HTTP_200_OK)
 
 
-@lending_router.post("/documents/create/")
+@lending_router.post("/documents/create/", response_class=FileResponse)
 async def post_create_contract(
     new_lending_doc: Annotated[NewLendingDocSchema, Form()],
     db_session: Session = Depends(get_db_session),
@@ -197,12 +197,11 @@ async def post_create_contract(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    return JSONResponse(
-        content=docuemnt_service.create_contract(
-            new_lending_doc, db_session, authenticated_user
-        ),
-        status_code=status.HTTP_200_OK,
+    new_doc = docuemnt_service.create_contract(
+        new_lending_doc, db_session, authenticated_user
     )
+
+    return FileResponse(new_doc.path)
 
 
 @lending_router.post("/documents/upload/")

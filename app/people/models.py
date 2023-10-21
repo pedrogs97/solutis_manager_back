@@ -112,6 +112,9 @@ class EmployeeModel(Base):
     birthday = Column("birthday", Date, nullable=False)
     manager = Column("manger", String(length=150), nullable=True)
     legal_person = Column("legal_person", Boolean, nullable=False, default=False)
+    employer_number = Column("employer_number", str, nullable=True)
+    employer_address = Column("employer_number", str, nullable=True)
+    employer_name = Column("employer_name", str, nullable=True)
 
     def __str__(self) -> str:
         return f"{self.code} - {self.full_name}"

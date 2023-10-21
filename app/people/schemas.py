@@ -90,6 +90,16 @@ class NewEmployeeSchema(BaseSchema):
     email: str
     birthday: date
     manager: Optional[str] = None
+    employer_number: Optional[str] = Field(
+        alias="employerNumber",
+        serialization_alias="employer_number",
+        default=None,
+    )
+    employer_address: Optional[str] = Field(
+        alias="employerAddress",
+        serialization_alias="employer_address",
+        default=None,
+    )
 
 
 class UpdateEmployeeSchema(BaseSchema):
@@ -124,6 +134,21 @@ class UpdateEmployeeSchema(BaseSchema):
     email: Optional[str] = None
     birthday: Optional[date] = None
     manager: Optional[str] = None
+    employer_number: Optional[str] = Field(
+        alias="employerNumber",
+        serialization_alias="employer_number",
+        default=None,
+    )
+    employer_address: Optional[str] = Field(
+        alias="employerAddress",
+        serialization_alias="employer_address",
+        default=None,
+    )
+    employer_name: Optional[str] = Field(
+        alias="employerName",
+        serialization_alias="employer_name",
+        default=None,
+    )
 
 
 class EmployeeSerializer(BaseSchema):
@@ -146,6 +171,18 @@ class EmployeeSerializer(BaseSchema):
     birthday: date
     manager: Optional[str] = None
     legal_person: bool = Field(serialization_alias="legalPerson")
+    employer_number: Optional[str] = Field(
+        serialization_alias="employerNumber",
+        default=None,
+    )
+    employer_address: Optional[str] = Field(
+        serialization_alias="employerAddress",
+        default=None,
+    )
+    employer_name: Optional[str] = Field(
+        serialization_alias="employerName",
+        default=None,
+    )
 
 
 class EmployeeMatrimonialStatusTotvsSchema(BaseSchema):

@@ -39,6 +39,7 @@ from app.lending.schemas import (
     DocumentSerializerSchema,
     NewLendingDocSchema,
     NewLendingContextSchema,
+    NewLendingPjContextSchema,
     WitnessContextSchema,
     UploadSignedContractSchema,
 )
@@ -46,7 +47,7 @@ from app.auth.models import UserModel
 from app.log.services import LogService
 from app.people.schemas import EmployeeSerializer
 from app.people.models import EmployeeModel
-from app.utils import upload_file, create_lending_contract
+from app.utils import upload_file, create_lending_contract, create_lending_contract_pj
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -725,7 +726,7 @@ class DocumentService:
     ) -> DocumentSerializerSchema:
         """Create new contract, not signed"""
         doc_type = db_session.query(DocumentTypeModel).filter(
-            DocumentTypeModel.name == "Contrato"
+            DocumentTypeModel.name == new_lending_doc.type_doc
         )
 
         asset = (
@@ -768,42 +769,86 @@ class DocumentService:
             .first()
         )
 
-        contract_path = create_lending_contract(
-            NewLendingContextSchema(
-                number=new_code,
-                glpi_number=new_lending_doc.glpi_number,
-                full_name=employee.full_name,
-                taxpayer_identification=employee.taxpayer_identification,
-                nacional_identification=employee.nacional_identification,
-                address=employee.address,
-                nationality=employee.nationality.description,
-                role=employee.role.name,
-                matrimonial_status=employee.matrimonial_status.description,
-                cc=new_lending_doc.cc,
-                manager=new_lending_doc.manager,
-                business_executive=new_lending_doc.business_executive,
-                workload=workload.name,
-                register_number=asset.register_number,
-                serial_number=asset.serial_number,
-                description=asset.description,
-                accessories=asset.accessories,
-                ms_office="SIM" if asset.ms_office else "Não",
-                pattern=asset.pattern,
-                operational_system=asset.operational_system,
-                value=asset.value,
-                date=date.today().strftime("%d/%m/%Y"),
-                witnesses=[
-                    WitnessContextSchema(
-                        full_name=witness1.employee.full_name,
-                        taxpayer_identification=witness1.employee.taxpayer_identification,
-                    ),
-                    WitnessContextSchema(
-                        full_name=witness2.employee.full_name,
-                        taxpayer_identification=witness2.employee.taxpayer_identification,
-                    ),
-                ],
+        if new_lending_doc.legal_person:
+            contract_path = create_lending_contract_pj(
+                NewLendingPjContextSchema(
+                    number=new_code,
+                    glpi_number=new_lending_doc.glpi_number,
+                    full_name=employee.full_name,
+                    taxpayer_identification=employee.taxpayer_identification,
+                    nacional_identification=employee.nacional_identification,
+                    address=employee.address,
+                    nationality=employee.nationality.description,
+                    role=employee.role.name,
+                    matrimonial_status=employee.matrimonial_status.description,
+                    cc=new_lending_doc.cc,
+                    manager=new_lending_doc.manager,
+                    business_executive=new_lending_doc.business_executive,
+                    workload=workload.name,
+                    register_number=asset.register_number,
+                    serial_number=asset.serial_number,
+                    description=asset.description,
+                    accessories=asset.accessories,
+                    ms_office="SIM" if asset.ms_office else "Não",
+                    pattern=asset.pattern,
+                    operational_system=asset.operational_system,
+                    value=asset.value,
+                    date=date.today().strftime("%d/%m/%Y"),
+                    witnesses=[
+                        WitnessContextSchema(
+                            full_name=witness1.employee.full_name,
+                            taxpayer_identification=witness1.employee.taxpayer_identification,
+                        ),
+                        WitnessContextSchema(
+                            full_name=witness2.employee.full_name,
+                            taxpayer_identification=witness2.employee.taxpayer_identification,
+                        ),
+                    ],
+                    cnpj=employee.employer_number,
+                    company_address=employee.employer_address,
+                    company=employee.employer_name,
+                    date_confirm=new_lending_doc.date_confirm,
+                    goal=new_lending_doc.goal,
+                    project=new_lending_doc.project,
+                )
             )
-        )
+        else:
+            contract_path = create_lending_contract(
+                NewLendingContextSchema(
+                    number=new_code,
+                    glpi_number=new_lending_doc.glpi_number,
+                    full_name=employee.full_name,
+                    taxpayer_identification=employee.taxpayer_identification,
+                    nacional_identification=employee.nacional_identification,
+                    address=employee.address,
+                    nationality=employee.nationality.description,
+                    role=employee.role.name,
+                    matrimonial_status=employee.matrimonial_status.description,
+                    cc=new_lending_doc.cc,
+                    manager=new_lending_doc.manager,
+                    business_executive=new_lending_doc.business_executive,
+                    workload=workload.name,
+                    register_number=asset.register_number,
+                    serial_number=asset.serial_number,
+                    description=asset.description,
+                    accessories=asset.accessories,
+                    ms_office="SIM" if asset.ms_office else "Não",
+                    pattern=asset.pattern,
+                    operational_system=asset.operational_system,
+                    value=asset.value,
+                    date=date.today().strftime("%d/%m/%Y"),
+                    witnesses=[
+                        WitnessContextSchema(
+                            full_name=witness1.employee.full_name,
+                            taxpayer_identification=witness1.employee.taxpayer_identification,
+                        ),
+                        WitnessContextSchema(
+                            full_name=witness2.employee.full_name,
+                            taxpayer_identification=witness2.employee.taxpayer_identification,
+                        ),
+                    ],
+                )
+            )
 
         new_doc = DocumentModel(
             doc_type=doc_type, path=contract_path, file_name=f"{new_code}.pdf"

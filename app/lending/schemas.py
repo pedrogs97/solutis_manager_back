@@ -458,6 +458,11 @@ class NewLendingDocSchema(BaseSchema):
     manager: str
     project: str
     business_executive: str = Field(alias="businessExecutive")
+    legal_person: bool = Field(alias="legalPerson", default=False)
+    date_confirm: Optional[str] = Field(alias="dateConfirm", default=None)
+    goal: Optional[str] = Field(alias="goal", default=None)
+    project: Optional[str] = Field(alias="project", default=None)
+    type_doc: str
 
 
 class WitnessContextSchema(BaseSchema):

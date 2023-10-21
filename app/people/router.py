@@ -175,3 +175,23 @@ async def get_emplooyee_route(
         )
     employee_service.get_employee(employee_id, db_session)
     return JSONResponse(content="", status_code=status.HTTP_200_OK)
+
+
+@people_router.get("/employees/history/lending/{employee_id}/")
+async def get_emplooyee_lending_history_route(
+    employee_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "people", "model": "employee", "action": "view"})
+    ),
+):
+    """Get an employee route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    employee_service.get_employee_lending_history(employee_id, db_session)
+    return JSONResponse(
+        content=employee_service.get_employee_lending_history(employee_id, db_session),
+        status_code=status.HTTP_200_OK,
+    )
