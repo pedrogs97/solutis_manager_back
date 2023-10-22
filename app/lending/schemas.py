@@ -292,20 +292,11 @@ class InactivateAssetSchema(BaseSchema):
     active: bool
 
 
-class DocumentTemplateSerializerSchema(BaseSchema):
-    """Document template serializer schema"""
-
-    id: int
-    path: Optional[str]
-    file_name: str
-
-
 class DocumentTypeSerializerSchema(BaseSchema):
     """Document type serializer schema"""
 
     id: int
     name: str
-    doc_template: DocumentTemplateSerializerSchema
 
 
 class DocumentSerializerSchema(BaseSchema):
@@ -413,34 +404,54 @@ class UpgradeSchema(BaseSchema):
     observations: Optional[str]
 
 
-class VerificationSchema(BaseSchema):
-    """Verification schema"""
+class NewVerificationSchema(BaseSchema):
+    """New verification schema"""
 
-    id: Optional[int]
     question: str
+    step: str
+    asset_type_id: int = Field(alias="assetTypeId")
 
 
-class VerificationTypeSchema(BaseSchema):
+class VerificationSerializerSchema(BaseSchema):
+    """Verification serializer schema"""
+
+    id: int
+    question: str
+    step: str
+    asset_type: str = Field(alias="assetType")
+
+
+class VerificationTypeSerializerSchema(BaseSchema):
     """
-    Verification type schema
+    Verification type serializer schema
 
     * Saída - envio para o colaborador
     * Retorno - envio para a empresa
     """
 
-    id: Optional[int]
+    id: int
     name: str
 
 
-class VerificationAnswerSchema(BaseSchema):
-    """Verification answer schema"""
+class NewVerificationAnswerSchema(BaseSchema):
+    """New verification answer schema"""
 
-    id: Optional[int]
-    lending: int
-    verification: VerificationSchema
-    type: VerificationTypeSchema
-    step: str
+    lending_id: int = Field(alias="lendingId")
+    verification_id: int = Field(alias="verificationId")
+    type_id: int = Field(alias="typeId")
     answer: str
+    observations: Optional[str] = None
+
+
+class VerificationAnswerSerializerSchema(BaseSchema):
+    """Verification answer serializer schema"""
+
+    id: int
+    lending_id: int = Field(serialization_alias="lendingId")
+    verification: VerificationSerializerSchema
+    type: VerificationTypeSerializerSchema
+    answer: str
+    observations: Optional[str] = None
 
 
 class NewLendingDocSchema(BaseSchema):

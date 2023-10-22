@@ -16,8 +16,15 @@ from app.lending.schemas import (
     CostCenterTotvsSchema,
     NewLendingDocSchema,
     UploadSignedContractSchema,
+    NewVerificationSchema,
+    NewVerificationAnswerSchema,
 )
-from app.lending.service import AssetService, LendingService, DocumentService
+from app.lending.service import (
+    AssetService,
+    LendingService,
+    DocumentService,
+    VerificationService,
+)
 from app.config import (
     PAGINATION_NUMBER,
     MAX_PAGINATION_NUMBER,
@@ -31,7 +38,8 @@ lending_router = APIRouter(prefix="/lending", tags=["lending"])
 
 asset_service = AssetService()
 lending_service = LendingService()
-docuemnt_service = DocumentService()
+document_service = DocumentService()
+verification_service = VerificationService()
 
 
 @lending_router.post("/assets/update/")
@@ -179,8 +187,10 @@ async def get_asset_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    asset_service.get_asset(asset_id, db_session)
-    return JSONResponse(content="", status_code=status.HTTP_200_OK)
+    return JSONResponse(
+        content=asset_service.get_asset(asset_id, db_session).model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
 
 
 @lending_router.post("/documents/create/", response_class=FileResponse)
@@ -197,7 +207,7 @@ async def post_create_contract(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    new_doc = docuemnt_service.create_contract(
+    new_doc = document_service.create_contract(
         new_lending_doc, db_session, authenticated_user
     )
 
@@ -219,9 +229,84 @@ async def post_import_contract(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
+    serializer = await document_service.upload_contract(
+        file, data, db_session, authenticated_user
+    )
+
     return JSONResponse(
-        content=docuemnt_service.upload_contract(
-            file, data, db_session, authenticated_user
-        ),
+        content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@lending_router.post("/verifications/")
+async def post_create_verifications(
+    data: NewVerificationSchema,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            {"module": "lending", "model": "verification", "action": "add"}
+        )
+    ),
+):
+    """Creates new verification"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    return JSONResponse(
+        content=verification_service.create_verification(
+            data, db_session, authenticated_user
+        ).model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@lending_router.get("/verifications/{asset_type_id}/")
+async def get_asset_type_verifications(
+    asset_type_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            {"module": "lending", "model": "verification", "action": "view"}
+        )
+    ),
+):
+    """Get asset type verifications"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    list_serializer = verification_service.get_asset_verifications(
+        asset_type_id, db_session, authenticated_user
+    )
+    return JSONResponse(
+        content=[
+            serializer.model_dump(by_alias=True) for serializer in list_serializer
+        ],
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@lending_router.post("/verifications/answer/")
+async def post_create_answer_verification(
+    data: NewVerificationAnswerSchema,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "answer", "action": "add"})
+    ),
+):
+    """Creates answer for a verification"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    return JSONResponse(
+        content=verification_service.create_verification(
+            data, db_session, authenticated_user
+        ).model_dump(by_alias=True),
         status_code=status.HTTP_200_OK,
     )

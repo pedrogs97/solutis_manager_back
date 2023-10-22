@@ -38,7 +38,8 @@ PERMISSIONS = {
         "models": [
             {"name": "asset", "label": "Ativos"},
             {"name": "lending", "label": "Comodato"},
-            {"name": "document", "label": "Contratos de Comodato"},
+            {"name": "verification", "label": "Verificação de Ativo"},
+            {"name": "document", "label": "Documentos"},
             {"name": "mantenance", "label": "Manutenções e Melhorias"},
         ],
         "label": "Comodato",

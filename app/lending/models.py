@@ -40,7 +40,7 @@ class AssetTypeModel(Base):
 
     def __str__(self) -> str:
         """Returns model as string"""
-        return f"{self.name}"
+        return f"{self.acronym} - {self.name}"
 
 
 class AssetStatusModel(Base):
@@ -386,7 +386,12 @@ class VerificationModel(Base):
     __tablename__ = "verification"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
+
+    asset_type: Mapped[AssetTypeModel] = relationship()
+    asset_type_id = Column("asset_type_id", ForeignKey("asset_type.id"), nullable=False)
+
     question = Column("question", String(length=100))
+    step = Column("step", String(length=2))
 
     def __str__(self) -> str:
         """Returns model as string"""
@@ -426,8 +431,8 @@ class VerificationAnswerModel(Base):
     type: Mapped[VerificationTypeModel] = relationship()
     type_id = Column("type_id", ForeignKey("verification_type.id"))
 
-    step = Column("step", String)
-    answer = Column("answer", String(length=100))
+    answer = Column("answer", String(length=100), nullable=False)
+    observations = Column("observations", String(length=255), nullable=True)
 
     def __str__(self) -> str:
         """Returns model as string"""

@@ -19,6 +19,9 @@ from app.lending.models import (
     WorkloadModel,
     WitnessModel,
     DocumentTypeModel,
+    VerificationModel,
+    VerificationAnswerModel,
+    VerificationTypeModel,
 )
 from app.lending.schemas import (
     AssetTotvsSchema,
@@ -42,6 +45,10 @@ from app.lending.schemas import (
     NewLendingPjContextSchema,
     WitnessContextSchema,
     UploadSignedContractSchema,
+    NewVerificationSchema,
+    VerificationSerializerSchema,
+    NewVerificationAnswerSchema,
+    VerificationAnswerSerializerSchema,
 )
 from app.auth.models import UserModel
 from app.log.services import LogService
@@ -53,7 +60,7 @@ logger = logging.getLogger(__name__)
 service_log = LogService()
 
 
-class AssetService:
+class AssetService():
     """Asset services"""
 
     def __get_asset_or_404(self, asset_id: int, db_session: Session) -> AssetModel:
@@ -421,7 +428,7 @@ class AssetService:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
 
-class LendingService:
+class LendingService():
     """Lending service"""
 
     def __get_lending_or_404(
@@ -659,7 +666,7 @@ class LendingService:
         return paginated
 
 
-class DocumentService:
+class DocumentService():
     """Document service"""
 
     def __get_document_or_404(
@@ -893,7 +900,7 @@ class DocumentService:
         data: UploadSignedContractSchema,
         db_session: Session,
         authenticated_user: UserModel,
-    ) -> Union[DocumentModel, None]:
+    ) -> DocumentSerializerSchema:
         """Upload contract"""
 
         lending = self.__get_lending_or_404(data.lending_id, db_session)
@@ -923,3 +930,155 @@ class DocumentService:
             authenticated_user,
         )
         logger.info("Upload Document signed. %s", str(document))
+
+        return self.serialize_document(document)
+
+
+class VerificationService():
+    """Verification service"""
+
+    def __get_verification_or_404(
+        self, verification_id: int, db_session: Session
+    ) -> VerificationModel:
+        """Get verification or 404"""
+        document = (
+            db_session.query(VerificationModel)
+            .filter(VerificationModel.id == verification_id)
+            .first()
+        )
+        if not document:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Pergunta de Verificação não encontrada."                                                                                                                                                                               ",
+            )
+
+        return document
+    
+    def __get_asset_type_or_404(
+        self, asset_type_id: int, db_session: Session
+    ) -> AssetTypeModel:
+        """Get asset type or 404"""
+        asset_type = db_session.query(AssetTypeModel).filter(AssetTypeModel.id == asset_type_id).first()
+
+        if not asset_type:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tipo do Ativo não encontrado."                                                                                                                                                                              ",
+            )
+        return asset_type
+
+    def __get_verification_type_or_404(
+        self, verification_type_id: int, db_session: Session
+    ) -> VerificationTypeModel:
+        """Get verification type or 404"""
+        vertification_type = db_session.query(VerificationTypeModel).filter(VerificationTypeModel.id == verification_type_id).first()
+
+        if not vertification_type:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tipo do Verificação não encontrado."                                                                                                                                                                              ",
+            )
+        return vertification_type
+    
+    def __get_lending_or_404(
+        self, lending_id: int, db_session: Session
+    ) -> LendingModel:
+        """Get lending or 404"""
+        lending = (
+            db_session.query(LendingModel).filter(LendingModel.id == lending_id).first()
+        )
+        if not lending:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Contrato de Comodato não encontrado",
+            )
+
+        return lending
+
+    def serialize_verification(self, verification: VerificationModel) -> VerificationSerializerSchema:
+        """Serialize verification"""
+        return VerificationSerializerSchema(
+            id=verification.id,
+            question=verification.question,
+            step=verification.step,
+        )
+    
+    def serialize_answer_verification(self, answer_verification: VerificationAnswerModel) -> VerificationAnswerSerializerSchema:
+        """Serialize answer verification"""
+        return VerificationAnswerSerializerSchema(
+            id=answer_verification.id,
+            type=answer_verification.type.name,
+            answer=answer_verification.answer,
+            lending_id=answer_verification.lending.id,
+            verification=self.serialize_verification(answer_verification.verification)
+        )
+
+
+    def create_verification(self, data: NewVerificationSchema, db_session: Session, authenticated_user: UserModel) -> VerificationSerializerSchema:
+        """Creates new asset verification"""
+
+        asset_type = self.__get_asset_type_or_404(data.asset_type_id, db_session)
+        
+        new_verification = VerificationModel(
+            question=data.question,
+            asset_type=asset_type,
+            step=data.step,
+        )
+
+        db_session.add(new_verification)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "verification",
+            f"Adição de nova pergunta de verificação para {str(asset_type)}",
+            new_verification.id,
+            authenticated_user,
+        )
+        logger.info("New verification. %s", str(new_verification))
+
+        return self.serialize_verification(new_verification)
+    
+    def get_asset_verifications(self, asset_type_id: int, db_session: Session) -> List[VerificationSerializerSchema]:
+        """Returns asset type verifications"""        
+        verifications = db_session.query(VerificationModel).filter(VerificationModel.asset_type_id == asset_type_id).all()
+
+        return [VerificationSerializerSchema(
+            id=verification.id,
+            question=verification.question,
+            asset_type=verification.asset_type.name,
+        ) for verification in verifications]
+    
+    def create_answer_verification(self, data: NewVerificationAnswerSchema, db_session: Session, authenticated_user: UserModel) -> VerificationAnswerSerializerSchema:
+        """Creates new answer verification"""
+
+        verification = self.__get_verification_or_404(data.verification_id, db_session)
+
+        verification_type = self.__get_verification_type_or_404(data.type_id, db_session)
+
+        lending = self.__get_lending_or_404(data.lending_id, db_session)
+        
+        new_answer_verification = VerificationAnswerModel(
+            lending=lending,
+            verification=verification,
+            type=verification_type,
+            step=data.step,
+            answer=data.answer,
+            observations=data.observations,
+        )
+
+        db_session.add(new_answer_verification)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "verification",
+            f"Adição de nova  resposta verificação",
+            new_answer_verification.id,
+            authenticated_user,
+        )
+        logger.info("New answer verification. %s", str(new_answer_verification))
+
+        return self.serialize_answer_verification(new_answer_verification)
