@@ -55,13 +55,12 @@ class UserUpdateSchema(BaseSchema):
     """
 
     role: Optional[str] = None
-    full_name: Optional[str] = None
+    employee_id: Optional[int] = None
     username: Optional[str] = None
     password: Optional[str] = None
     email: Optional[str] = None
-    taxpayer_identification: Optional[str] = None
-    is_staff: Optional[bool] = None
-    is_active: Optional[bool] = None
+    is_staff: Optional[bool] = Field(alias="isStaff", default=None)
+    is_active: Optional[bool] = Field(alias="isActive", default=None)
 
 
 class UserSerializer(BaseSchema):
@@ -76,7 +75,6 @@ class UserSerializer(BaseSchema):
     full_name: str = Field(serialization_alias="fullName")
     username: str
     email: str
-    taxpayer_identification: str = Field(serialization_alias="taxpayerIdentification")
     is_staff: bool = Field(serialization_alias="isStaff")
     is_active: bool = Field(serialization_alias="isActive")
     last_login_in: Optional[str] = Field(serialization_alias="lastLoginIn")
@@ -106,13 +104,12 @@ class LoginSchema(BaseSchema):
 class NewUserSchema(BaseSchema):
     """New user schema"""
 
-    full_name: str
     username: constr(to_lower=True, strip_whitespace=True)
     email: EmailStr
-    taxpayer_identification: str = Field(max_length=14)
-    is_staff: bool
-    is_active: bool
+    is_staff: bool = Field(alias="isAtaff")
+    is_active: bool = Field(alias="isActive")
     role: str
+    employee_id: int = Field(alias="employeeId")
 
 
 class TokenSchema(BaseSchema):
@@ -127,4 +124,4 @@ class TokenSchema(BaseSchema):
 class NewPasswordSchema(BaseSchema):
     """New password schema"""
 
-    user_id: int
+    user_id: int = Field(serialization_alias="userId")

@@ -20,9 +20,10 @@ from app.auth.schemas import (
     NewPasswordSchema,
 )
 from app.auth.models import UserModel, RoleModel, PermissionModel
-from app.config import PASSWORD_SUPER_USER, PERMISSIONS
+from app.config import PASSWORD_SUPER_USER, PERMISSIONS, DEBUG
 from app.database import Session_db
 from app.log.services import LogService
+from app.people.models import EmployeeModel
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class UserSerivce:
 
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado"
             )
 
         return user
@@ -59,6 +60,10 @@ class UserSerivce:
                 result_str = "".join(random.choice(letters))
             else:
                 result_str = "".join(random.choice(digits))
+
+        if DEBUG:
+            logger.debug("New pass. %s", result_str)
+
         return result_str
 
     def create_user(
@@ -74,7 +79,18 @@ class UserSerivce:
 
         if not role:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid role"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Perfil inválido"
+            )
+
+        employee = (
+            db_session.query(EmployeeModel)
+            .filter(EmployeeModel.id == new_user.employee_id)
+            .first()
+        )
+
+        if not employee:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Colaborador inválido"
             )
 
         user_test_username = (
@@ -85,7 +101,8 @@ class UserSerivce:
 
         if user_test_username:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Username alredy exist"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Nome de usuário já existe",
             )
 
         user_test_email = (
@@ -96,15 +113,17 @@ class UserSerivce:
 
         if user_test_email:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Email alredy exist"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Já existe este e-mail"
             )
 
         user_dict = {
             **new_user.model_dump(),
             "password": self.get_password_hash(self.make_new_random_password()),
         }
+
         user_dict["role_id"] = role.id
         del user_dict["role"]
+        user_dict["employee_id"] = employee.id
 
         new_user_db = UserModel(**user_dict)
         db_session.add(new_user_db)
@@ -128,22 +147,30 @@ class UserSerivce:
     ) -> Page[UserSerializer]:
         """Get user list"""
         if staff:
-            user_list = db_session.query(UserModel).filter(
-                or_(
-                    UserModel.full_name.ilike(f"%{search}%"),
-                    UserModel.email.ilike(f"%{search}"),
-                    UserModel.username.ilike(f"%{search}"),
-                    UserModel.taxpayer_identification.ilike(f"%{search}"),
+            user_list = (
+                db_session.query(UserModel)
+                .join(EmployeeModel)
+                .filter(
+                    or_(
+                        EmployeeModel.full_name.ilike(f"%{search}%"),
+                        UserModel.email.ilike(f"%{search}"),
+                        UserModel.username.ilike(f"%{search}"),
+                        EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
+                    )
                 )
             )
             user_list = user_list.filter(UserModel.is_staff == staff)
         else:
-            user_list = db_session.query(UserModel).filter(
-                or_(
-                    UserModel.full_name.ilike(f"%{search}%"),
-                    UserModel.email.ilike(f"%{search}"),
-                    UserModel.username.ilike(f"%{search}"),
-                    UserModel.taxpayer_identification.ilike(f"%{search}"),
+            user_list = (
+                db_session.query(UserModel)
+                .join(EmployeeModel)
+                .filter(
+                    or_(
+                        EmployeeModel.full_name.ilike(f"%{search}%"),
+                        UserModel.email.ilike(f"%{search}"),
+                        UserModel.username.ilike(f"%{search}"),
+                        EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
+                    )
                 )
             )
 
@@ -166,11 +193,11 @@ class UserSerivce:
             role=RoleService().serialize_role(user.role),
             username=user.username,
             email=user.email,
-            full_name=user.full_name,
-            taxpayer_identification=user.taxpayer_identification,
+            full_name=user.employee.full_name,
+            taxpayer_identification=user.employee.taxpayer_identification,
             is_active=user.is_active,
             is_staff=user.is_staff,
-            last_login_in=user.last_login_in.isoformat(),
+            last_login_in=user.last_login_in.strftime("%d/%m/%Y"),
         )
 
     def update_user(
@@ -192,14 +219,25 @@ class UserSerivce:
                 )
                 if not role:
                     raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND, detail="Role not found"
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Perfil de usuário não encontrado",
                     )
 
                 user.role = role
 
-            if data.full_name:
-                is_updated = True
-                user.full_name = data.full_name
+            if data.employee_id:
+                employee = (
+                    db_session.query(EmployeeModel)
+                    .filter(EmployeeModel.id == data.employee_id)
+                    .first()
+                )
+                if not employee:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Colaborador não encontrado",
+                    )
+
+                user.employee = employee
 
             if data.username:
                 is_updated = True
@@ -212,10 +250,6 @@ class UserSerivce:
             if data.email:
                 is_updated = True
                 user.email = data.email
-
-            if data.taxpayer_identification:
-                is_updated = True
-                user.taxpayer_identification = data.taxpayer_identification
 
             if data.is_active is not None:
                 is_updated = True
@@ -357,7 +391,8 @@ class RoleService:
 
         if not role:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Role not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Perfil de usuário não encontrado",
             )
 
         return role
@@ -378,7 +413,7 @@ class RoleService:
             ):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Permission does not exists. {id_perm}",
+                    detail=f"Permissão não existe. {id_perm}",
                 )
 
         role = (
@@ -387,7 +422,8 @@ class RoleService:
 
         if role:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Role alredy exists"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Perfil de usuário já existe",
             )
 
         new_role_db = RoleModel(**new_role.model_dump(exclude="permissions"))
@@ -453,7 +489,7 @@ class RoleService:
             if not permission:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Permission not found. id={perm}",
+                    detail=f"Permissão não encontrada. id={perm}",
                 )
             try:
                 current_permissions.index(permission)

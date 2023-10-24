@@ -66,13 +66,9 @@ class UserModel(Base):
     role: Mapped[RoleModel] = relationship()
     role_id = Column("role_id", ForeignKey("role.id"), nullable=False)
 
-    full_name = Column("full_name", String, nullable=False)
     password = Column("password", String, nullable=False)
     username = Column("username", String, nullable=False, unique=True)
     email = Column("email", String, nullable=False, unique=True)
-    taxpayer_identification = Column(
-        "taxpayer_identification", String(length=14), nullable=False, unique=True
-    )
     is_staff = Column("is_staff", Boolean, default=False)
     is_active = Column("is_active", Boolean, default=True)
     last_login_in = Column("last_login", DateTime, nullable=True)

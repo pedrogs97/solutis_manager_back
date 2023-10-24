@@ -190,8 +190,12 @@ async def get_emplooyee_lending_history_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    employee_service.get_employee_lending_history(employee_id, db_session)
+    serializer_list = employee_service.get_employee_lending_history(
+        employee_id, db_session
+    )
     return JSONResponse(
-        content=employee_service.get_employee_lending_history(employee_id, db_session),
+        content=[
+            serializer.model_copy(by_alias=True) for serializer in serializer_list
+        ],
         status_code=status.HTTP_200_OK,
     )
