@@ -2,8 +2,7 @@
 from typing import Union
 from fastapi import APIRouter, status, Depends, Query
 from fastapi import status
-from fastapi.exceptions import HTTPException
-from fastapi_pagination import Page, Params
+from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -21,9 +20,10 @@ from app.config import (
     NOT_ALLOWED,
 )
 from app.auth.models import UserModel
-from app.auth.schemas import UserSerializer
+from app.auth.service import UserSerivce
 from app.log.models import LogModel
 from app.log.schemas import LogSerializerSchema
+from app.people.models import EmployeeModel
 
 people_router = APIRouter(prefix="/logs", tags=["Log"])
 
@@ -52,11 +52,12 @@ async def get_list_logs_route(
 
     log_list = (
         db_session.query(LogModel)
-        .join(LogModel.user)
+        .join(UserModel)
+        .join(EmployeeModel)
         .filter(
             or_(
                 LogModel.operation.ilike(f"%{search}%"),
-                UserModel.full_name.ilike(f"%{search}%"),
+                EmployeeModel.full_name.ilike(f"%{search}%"),
                 UserModel.username.ilike(f"%{search}%"),
                 UserModel.email.ilike(f"%{search}%"),
                 LogModel.model.ilike(f"%{search}"),
@@ -75,17 +76,18 @@ async def get_list_logs_route(
             )
         )
 
+    user_service = UserSerivce()
+
     params = Params(page=page, size=size)
     paginated = paginate(
-        log_list,
+        log_list.all(),
         params=params,
         transformer=lambda log_list: [
-            LogSerializerSchema(**log.__dict__, user=UserSerializer(**log.user))
+            LogSerializerSchema(
+                **log.__dict__, user=user_service.serialize_user(**log.user)
+            )
             for log in log_list
         ],
     )
 
-    return JSONResponse(
-        content=paginated,
-        status_code=status.HTTP_200_OK,
-    )
+    return paginated

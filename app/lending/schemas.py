@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import datetime, date
 from pydantic import Field
 from app.schemas import BaseSchema
-from app.people.schemas import EmployeeSerializer
+from app.people.schemas import EmployeeSerializerSchema
 
 
 class CostCenterTotvsSchema(BaseSchema):
@@ -41,7 +41,7 @@ class AssetTypeTotvsSchema(BaseSchema):
     name: str
 
 
-class AssetTypeSerializer(BaseSchema):
+class AssetTypeSerializerSchema(BaseSchema):
     """
     Asset type serializer schema
 
@@ -56,11 +56,11 @@ class AssetTypeSerializer(BaseSchema):
 
     id: int
     code: int
-    group_code: str
+    group_code: str = Field(serialization_alias="groupCode")
     name: str
 
 
-class AssetStatusSerializer(BaseSchema):
+class AssetStatusSerializerSchema(BaseSchema):
     """
     Asset status serializer scehama
 
@@ -133,16 +133,16 @@ class AssetTotvsSchema(BaseSchema):
     active: bool
 
 
-class AssetSerializer(BaseSchema):
+class AssetSerializerSchema(BaseSchema):
     """Asset serializer schema"""
 
     id: int
-    type: Optional[AssetTypeSerializer] = None
+    type: Optional[AssetTypeSerializerSchema] = None
     clothing_size: Optional[AssetClothingSizeSerializer] = Field(
-        serialization_alias="taxpayerIdentification",
+        serialization_alias="clothingSize",
         default=None,
     )
-    status: Optional[AssetStatusSerializer] = None
+    status: Optional[AssetStatusSerializerSchema] = None
 
     # tombo - regiOptional[str]o patrimonial
     register_number: Optional[str] = Field(
@@ -319,7 +319,7 @@ class WitnessSerializerSchema(BaseSchema):
     """Witness serializer schema"""
 
     id: int
-    employee: EmployeeSerializer
+    employee: EmployeeSerializerSchema
     signed: str
 
 
@@ -327,8 +327,8 @@ class LendingSerializerSchema(BaseSchema):
     """Lending serializer schema"""
 
     id: int
-    employee: EmployeeSerializer
-    asset: AssetSerializer
+    employee: EmployeeSerializerSchema
+    asset: AssetSerializerSchema
     document: int
     workload: WorkloadSerializerSchema
     witnesses: List[WitnessSerializerSchema]
@@ -418,7 +418,7 @@ class VerificationSerializerSchema(BaseSchema):
     id: int
     question: str
     step: str
-    asset_type: str = Field(alias="assetType")
+    asset_type: str = Field(serialization_alias="assetType")
 
 
 class VerificationTypeSerializerSchema(BaseSchema):
@@ -472,8 +472,8 @@ class NewLendingDocSchema(BaseSchema):
     legal_person: bool = Field(alias="legalPerson", default=False)
     date_confirm: Optional[str] = Field(alias="dateConfirm", default=None)
     goal: Optional[str] = Field(alias="goal", default=None)
-    project: Optional[str] = Field(alias="project", default=None)
-    type_doc: str
+    project: Optional[str] = None
+    type_doc: str = Field(alias="typeDoc")
 
 
 class WitnessContextSchema(BaseSchema):

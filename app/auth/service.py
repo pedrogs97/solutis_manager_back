@@ -12,12 +12,13 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from app.backends import bcrypt_context
 from app.auth.schemas import (
     NewUserSchema,
-    UserSerializer,
-    PermissionSerializer,
-    RoleSerializer,
+    UserSerializerSchema,
+    PermissionSerializerSchema,
+    RoleSerializerSchema,
     UserUpdateSchema,
     NewRoleSchema,
     NewPasswordSchema,
+    UserChangePasswordSchema,
 )
 from app.auth.models import UserModel, RoleModel, PermissionModel
 from app.config import PASSWORD_SUPER_USER, PERMISSIONS, DEBUG
@@ -71,7 +72,7 @@ class UserSerivce:
         new_user: NewUserSchema,
         db_session: Session,
         authenticated_user: UserModel,
-    ) -> UserSerializer:
+    ) -> UserSerializerSchema:
         """Creates a new user"""
         role = (
             db_session.query(RoleModel).filter(RoleModel.name == new_user.role).first()
@@ -144,7 +145,7 @@ class UserSerivce:
         search: str = "",
         active: bool = True,
         staff: Optional[bool] = None,
-    ) -> Page[UserSerializer]:
+    ) -> Page[UserSerializerSchema]:
         """Get user list"""
         if staff:
             user_list = (
@@ -186,9 +187,9 @@ class UserSerivce:
         )
         return paginated
 
-    def serialize_user(self, user: UserModel) -> UserSerializer:
-        """Convert UserModel to UserSerializer"""
-        return UserSerializer(
+    def serialize_user(self, user: UserModel) -> UserSerializerSchema:
+        """Convert UserModel to UserSerializerSchema"""
+        return UserSerializerSchema(
             id=user.id,
             role=RoleService().serialize_role(user.role),
             username=user.username,
@@ -206,7 +207,7 @@ class UserSerivce:
         user_id: int,
         data: UserUpdateSchema,
         authenticated_user: UserModel,
-    ) -> Union[UserSerializer, None]:
+    ) -> Union[UserSerializerSchema, None]:
         """Update user by id"""
         try:
             user = self.__get_user_or_404(user_id, db_session)
@@ -243,10 +244,6 @@ class UserSerivce:
                 is_updated = True
                 user.username = data.username
 
-            if data.password:
-                is_updated = True
-                user.password = self.get_password_hash(data.password)
-
             if data.email:
                 is_updated = True
                 user.email = data.email
@@ -275,7 +272,36 @@ class UserSerivce:
             logger.warning("Could not update user. Error: %s", msg)
         return None
 
-    def get_user(self, user_id: int, db_session: Session) -> UserSerializer:
+    def update_password(
+        self,
+        data: UserChangePasswordSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ):
+        """Update user password"""
+        if not bcrypt_context.verify(
+            data.current_password, authenticated_user.password
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Senha atual inválida",
+            )
+
+        authenticated_user.password = self.get_password_hash(data.password)
+        db_session.add(authenticated_user)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "auth",
+            "user",
+            "Atualização de senha",
+            authenticated_user.id,
+            authenticated_user,
+        )
+        logger.info("Password updated. %s", str(authenticated_user))
+
+    def get_user(self, user_id: int, db_session: Session) -> UserSerializerSchema:
         """Get user by id"""
         user = self.__get_user_or_404(user_id, db_session)
 
@@ -402,7 +428,7 @@ class RoleService:
         new_role: NewRoleSchema,
         db_session: Session,
         authenticated_user: UserModel,
-    ) -> RoleSerializer:
+    ) -> RoleSerializerSchema:
         """Creates a new role"""
 
         for id_perm in new_role.permissions:
@@ -442,14 +468,14 @@ class RoleService:
 
         return self.serialize_role(new_role_db)
 
-    def serialize_role(self, role: RoleModel) -> RoleSerializer:
+    def serialize_role(self, role: RoleModel) -> RoleSerializerSchema:
         """Serialize role"""
         dict_role = role.__dict__
         serializer_permissions = []
         for perm in role.permissions:
-            serializer_permissions.append(PermissionSerializer(**perm.__dict__))
+            serializer_permissions.append(PermissionSerializerSchema(**perm.__dict__))
         dict_role.update({"permissions": serializer_permissions})
-        return RoleSerializer(**dict_role)
+        return RoleSerializerSchema(**dict_role)
 
     def get_roles(
         self,
@@ -457,7 +483,7 @@ class RoleService:
         page: int = 1,
         size: int = 50,
         search: str = "",
-    ) -> Page[RoleSerializer]:
+    ) -> Page[RoleSerializerSchema]:
         """Get role list"""
         role_list = db_session.query(RoleModel).filter(
             RoleModel.name.ilike(f"%{search}%")
@@ -515,7 +541,7 @@ class RoleService:
         role_id: int,
         data: NewRoleSchema,
         authenticated_user: UserModel,
-    ) -> Union[RoleSerializer, None]:
+    ) -> Union[RoleSerializerSchema, None]:
         """Update role by id"""
         try:
             is_updated = False
@@ -549,7 +575,7 @@ class RoleService:
             logger.warning("Could not update role. Error: %s", msg)
         return None
 
-    def get_role(self, role_id: int, db_session: Session) -> RoleSerializer:
+    def get_role(self, role_id: int, db_session: Session) -> RoleSerializerSchema:
         """Get role by id"""
         role = self.__get_role_or_404(role_id, db_session)
         return self.serialize_role(role)
@@ -558,9 +584,11 @@ class RoleService:
 class PermissionService:
     """Permission services"""
 
-    def serialize_permission(self, permission: PermissionModel) -> PermissionSerializer:
+    def serialize_permission(
+        self, permission: PermissionModel
+    ) -> PermissionSerializerSchema:
         """Serialize permission"""
-        return PermissionSerializer(**permission.__dict__)
+        return PermissionSerializerSchema(**permission.__dict__)
 
     def get_permissions(
         self,
@@ -568,7 +596,7 @@ class PermissionService:
         page: int = 1,
         size: int = 50,
         search: str = "",
-    ) -> Page[PermissionSerializer]:
+    ) -> Page[PermissionSerializerSchema]:
         """Get permission list"""
         permission_list = db_session.query(PermissionModel).filter(
             or_(

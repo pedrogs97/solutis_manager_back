@@ -79,7 +79,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     if not is_valid_token(old_token):
         encode = {"username": user.username, "id": user.id, "role": str(user.role)}
         expire = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
-        encode.update({"expires": expire.isoformat()})
+        encode.update({"expires": expire.strftime("%d/%m/%Y")})
         token = jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
         token_db = TokenModel(user=user, token=token, expires_in=expire)

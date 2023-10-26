@@ -26,10 +26,10 @@ from app.lending.models import (
 from app.lending.schemas import (
     AssetTotvsSchema,
     NewAssetSchema,
-    AssetSerializer,
-    AssetTypeSerializer,
+    AssetSerializerSchema,
+    AssetTypeSerializerSchema,
     AssetClothingSizeSerializer,
-    AssetStatusSerializer,
+    AssetStatusSerializerSchema,
     AssetTypeTotvsSchema,
     UpdateAssetSchema,
     InactivateAssetSchema,
@@ -52,7 +52,7 @@ from app.lending.schemas import (
 )
 from app.auth.models import UserModel
 from app.log.services import LogService
-from app.people.schemas import EmployeeSerializer
+from app.people.schemas import EmployeeSerializerSchema
 from app.people.models import EmployeeModel
 from app.utils import upload_file, create_lending_contract, create_lending_contract_pj
 
@@ -117,13 +117,13 @@ class AssetService():
             asset_status,
         )
 
-    def serialize_asset(self, asset: AssetModel) -> AssetSerializer:
+    def serialize_asset(self, asset: AssetModel) -> AssetSerializerSchema:
         """Serialize asset"""
-        return AssetSerializer(
+        return AssetSerializerSchema(
             id=asset.id,
-            type=AssetTypeSerializer(**asset.type.__dict__),
+            type=AssetTypeSerializerSchema(**asset.type.__dict__),
             clothing_size=AssetClothingSizeSerializer(**asset.clothing_size.__dict__),
-            status=AssetStatusSerializer(**asset.status),
+            status=AssetStatusSerializerSchema(**asset.status),
             register_number=asset.register_number,
             description=asset.description,
             supplier=asset.supplier,
@@ -148,7 +148,7 @@ class AssetService():
 
     def create_asset(
         self, data: NewAssetSchema, db_session: Session, authenticated_user: UserModel
-    ) -> AssetSerializer:
+    ) -> AssetSerializerSchema:
         """Creates new asset"""
         if (
             data.code
@@ -221,7 +221,7 @@ class AssetService():
         data: UpdateAssetSchema,
         db_session: Session,
         authenticated_user: UserModel,
-    ) -> AssetSerializer:
+    ) -> AssetSerializerSchema:
         """Uptades an asset"""
         asset = self.__get_asset_or_404(asset_id, db_session)
 
@@ -244,7 +244,7 @@ class AssetService():
         data: InactivateAssetSchema,
         db_session: Session,
         authenticated_user: UserModel,
-    ) -> AssetSerializer:
+    ) -> AssetSerializerSchema:
         """Uptades an asset"""
         asset = self.__get_asset_or_404(asset_id, db_session)
 
@@ -261,7 +261,7 @@ class AssetService():
         logger.info("Inactivate Asset. %s", str(asset))
         return self.serialize_asset(asset)
 
-    def get_asset(self, asset_id: int, db_session: Session) -> AssetSerializer:
+    def get_asset(self, asset_id: int, db_session: Session) -> AssetSerializerSchema:
         """Get an asset"""
         asset = self.__get_asset_or_404(asset_id, db_session)
         return self.serialize_asset(asset)
@@ -274,7 +274,7 @@ class AssetService():
         active: bool = True,
         page: int = 1,
         size: int = 50,
-    ) -> Page[AssetSerializer]:
+    ) -> Page[AssetSerializerSchema]:
         """Get assets list"""
 
         asset_list = db_session.query(AssetModel).filter(
@@ -454,22 +454,22 @@ class LendingService():
             witnesses_serialzier.append(
                 WitnessSerializerSchema(
                     id=witness.id,
-                    employee=EmployeeSerializer(**witness.employee),
-                    signed=witness.signed.isoformat(),
+                    employee=EmployeeSerializerSchema(**witness.employee),
+                    signed=witness.signed.strftime("%d/%m/%Y"),
                 )
             )
 
         return LendingSerializerSchema(
             id=lending.id,
-            employee=EmployeeSerializer(**lending.employee.__dict__),
-            asset=AssetSerializer(**lending.asset.__dict__),
+            employee=EmployeeSerializerSchema(**lending.employee.__dict__),
+            asset=AssetSerializerSchema(**lending.asset.__dict__),
             document=lending.document.id,
             workload=WorkloadSerializerSchema(**lending.workload.__dict__),
             witnesses=witnesses_serialzier,
             cost_center=CostCenterSerializerSchema(**lending.cost_center.__dict__),
             manager=lending.manager,
             observations=lending.observations,
-            signed_date=lending.signed_date.isoformat(),
+            signed_date=lending.signed_date.strftime("%d/%m/%Y"),
             glpi_number=lending.glpi_number,
         )
 
@@ -602,7 +602,7 @@ class LendingService():
 
         return self.serialize_lending(new_lending_db)
 
-    def get_lending(self, lending_id: int, db_session: Session) -> AssetSerializer:
+    def get_lending(self, lending_id: int, db_session: Session) -> AssetSerializerSchema:
         """Get a lending"""
         lending = self.__get_lending_or_404(lending_id, db_session)
         return self.serialize_lending(lending)
@@ -614,7 +614,7 @@ class LendingService():
         filter_lending: str = None,
         page: int = 1,
         size: int = 50,
-    ) -> Page[AssetSerializer]:
+    ) -> Page[AssetSerializerSchema]:
         """Get lendings list"""
 
         lending_list = (

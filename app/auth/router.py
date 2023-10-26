@@ -8,12 +8,13 @@ from app.auth.models import UserModel
 from app.auth.schemas import (
     NewUserSchema,
     LoginSchema,
-    UserSerializer,
+    UserSerializerSchema,
     UserUpdateSchema,
     NewRoleSchema,
-    RoleSerializer,
-    PermissionSerializer,
+    RoleSerializerSchema,
+    PermissionSerializerSchema,
     NewPasswordSchema,
+    UserChangePasswordSchema,
 )
 from app.auth.service import UserSerivce, RoleService, PermissionService
 from app.backends import (
@@ -67,7 +68,7 @@ async def logout_route(
 
 
 @auth_router.post(
-    "/users/", response_model=UserSerializer, description="Creates new user"
+    "/users/", response_model=UserSerializerSchema, description="Creates new user"
 )
 async def post_create_user_route(
     data: NewUserSchema,
@@ -89,7 +90,7 @@ async def post_create_user_route(
 
 @auth_router.get(
     "/users/",
-    response_model=Page[UserSerializer],
+    response_model=Page[UserSerializerSchema],
     description="Retrie list of users. Can apply filters",
 )
 async def get_list_user_route(
@@ -119,7 +120,7 @@ async def get_list_user_route(
 
 @auth_router.patch(
     "/users/{user_id}/",
-    response_model=UserSerializer,
+    response_model=UserSerializerSchema,
     description="Updates an existing user",
 )
 async def update_user_route(
@@ -141,6 +142,26 @@ async def update_user_route(
     )
 
 
+@auth_router.patch(
+    "/users/change_password/",
+    description="Updates a user's password",
+)
+async def update_user_password_route(
+    data: UserChangePasswordSchema,
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "auth", "model": "user", "action": "edit"})
+    ),
+    db_session: Session = Depends(get_db_session),
+) -> Response:
+    """Update user's password route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    user_service.update_password(data, db_session, authenticated_user)
+    return JSONResponse("", status_code=status.HTTP_200_OK)
+
+
 @auth_router.put("/users/{user_id}/")
 async def put_update_user_route():
     """Update user Not Implemented"""
@@ -151,7 +172,7 @@ async def put_update_user_route():
 
 @auth_router.get(
     "/users/{user_id}/",
-    response_model=UserSerializer,
+    response_model=UserSerializerSchema,
     description="Retrives an existing user",
 )
 async def get_user_route(
@@ -173,7 +194,7 @@ async def get_user_route(
 
 
 @auth_router.post(
-    "/roles/", response_model=RoleSerializer, description="Creates a new role"
+    "/roles/", response_model=RoleSerializerSchema, description="Creates a new role"
 )
 async def post_create_role_route(
     data: NewRoleSchema,
@@ -195,7 +216,7 @@ async def post_create_role_route(
 
 @auth_router.get(
     "/roles/",
-    response_model=Page[RoleSerializer],
+    response_model=Page[RoleSerializerSchema],
     description="Retrie list of roles. Can apply filters",
 )
 async def get_list_role_route(
@@ -223,7 +244,7 @@ async def get_list_role_route(
 
 @auth_router.patch(
     "/roles/{role_id}/",
-    response_model=RoleSerializer,
+    response_model=RoleSerializerSchema,
     description="Updates an existing role",
 )
 async def update_role_route(
@@ -255,7 +276,7 @@ async def put_update_role_route():
 
 @auth_router.get(
     "/roles/{role_id}/",
-    response_model=RoleSerializer,
+    response_model=RoleSerializerSchema,
     description="Retrives an existing role",
 )
 async def get_role_route(
@@ -278,7 +299,7 @@ async def get_role_route(
 
 @auth_router.get(
     "/permissions/",
-    response_model=Page[PermissionSerializer],
+    response_model=Page[PermissionSerializerSchema],
     description="Retrie list of permissions. Can apply filters",
 )
 async def get_list_permission_route(

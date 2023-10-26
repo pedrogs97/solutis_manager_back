@@ -18,7 +18,7 @@ class PermissionSchema(BaseSchema):
     action: str
 
 
-class PermissionSerializer(BaseSchema):
+class PermissionSerializerSchema(BaseSchema):
     """
     Permission serializer
 
@@ -35,7 +35,7 @@ class PermissionSerializer(BaseSchema):
     description: str
 
 
-class RoleSerializer(BaseSchema):
+class RoleSerializerSchema(BaseSchema):
     """
     Role schema
 
@@ -44,7 +44,7 @@ class RoleSerializer(BaseSchema):
 
     id: int
     name: str
-    permissions: List[PermissionSerializer]
+    permissions: List[PermissionSerializerSchema]
 
 
 class UserUpdateSchema(BaseSchema):
@@ -57,13 +57,23 @@ class UserUpdateSchema(BaseSchema):
     role: Optional[str] = None
     employee_id: Optional[int] = None
     username: Optional[str] = None
-    password: Optional[str] = None
     email: Optional[str] = None
     is_staff: Optional[bool] = Field(alias="isStaff", default=None)
     is_active: Optional[bool] = Field(alias="isActive", default=None)
 
 
-class UserSerializer(BaseSchema):
+class UserChangePasswordSchema(BaseSchema):
+    """
+    User change password schema
+
+    Change only password
+    """
+
+    password: str
+    current_password: str = Field(alias="currentPassword")
+
+
+class UserSerializerSchema(BaseSchema):
     """
     User serializer
 
@@ -71,7 +81,7 @@ class UserSerializer(BaseSchema):
     """
 
     id: int
-    role: RoleSerializer
+    role: RoleSerializerSchema
     full_name: str = Field(serialization_alias="fullName")
     username: str
     email: str
@@ -106,17 +116,17 @@ class NewUserSchema(BaseSchema):
 
     username: constr(to_lower=True, strip_whitespace=True)
     email: EmailStr
-    is_staff: bool = Field(alias="isAtaff")
-    is_active: bool = Field(alias="isActive")
+    is_staff: bool = Field(alias="isAtaff", serialization_alias="is_staff")
+    is_active: bool = Field(alias="isActive", serialization_alias="is_active")
     role: str
-    employee_id: int = Field(alias="employeeId")
+    employee_id: int = Field(alias="employeeId", serialization_alias="employee_id")
 
 
 class TokenSchema(BaseSchema):
     """Token schema"""
 
     id: Optional[int]
-    user: UserSerializer
+    user: UserSerializerSchema
     token: str
     expires_in: datetime = Field(serialization_alias="expiresIn")
 

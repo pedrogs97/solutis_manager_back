@@ -22,4 +22,5 @@ class LogModel(Base):
     logged_in = Column("logged_in", DateTime, nullable=False, server_default=func.now())
 
     def __str__(self):
-        return f"{self.module}:{self.operation} - {self.logged_in.isoformat()}"
+        date_str = self.logged_in.strftime("%d/%m/%Y")
+        return f"{self.module}:{self.operation} - {date_str}"

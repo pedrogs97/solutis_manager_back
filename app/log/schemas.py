@@ -1,14 +1,14 @@
 """Log schemas"""
 from pydantic import Field
 from app.schemas import BaseSchema
-from app.auth.schemas import UserSerializer
+from app.auth.schemas import UserSerializerSchema
 
 
 class LogSerializerSchema(BaseSchema):
     """Log serializer schema"""
 
     id: int
-    user: UserSerializer
+    user: UserSerializerSchema
     module: str
     model: str
     operation: str

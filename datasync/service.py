@@ -261,7 +261,7 @@ def get_checksum(schema: BaseSchema) -> bytes:
     bytes_schema = bytes(0)
     for item in values:
         if isinstance(item, date):
-            bytes_schema += bytes(item.isoformat(), "utf-8")
+            bytes_schema += bytes(item.strftime("%d/%m/%Y"), "utf-8")
         else:
             bytes_schema += bytes(str(item), "utf-8")
     return bytes_schema

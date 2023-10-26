@@ -5,7 +5,7 @@ from pydantic import Field
 from app.schemas import BaseSchema
 
 
-class EmployeeMatrimonialStatusSerializer(BaseSchema):
+class EmployeeMatrimonialStatusSerializerSchema(BaseSchema):
     """
     Matrimonial status serializer schema
 
@@ -24,7 +24,7 @@ class EmployeeMatrimonialStatusSerializer(BaseSchema):
     description: str
 
 
-class EmployeeGenderSerializer(BaseSchema):
+class EmployeeGenderSerializerSchema(BaseSchema):
     """
     Gender serializer schema
 
@@ -37,7 +37,7 @@ class EmployeeGenderSerializer(BaseSchema):
     description: str
 
 
-class EmployeeNationalitySerializer(BaseSchema):
+class EmployeeNationalitySerializerSchema(BaseSchema):
     """
     Nationality serializer schema
 
@@ -49,7 +49,7 @@ class EmployeeNationalitySerializer(BaseSchema):
     description: str
 
 
-class EmployeeRoleSerializer(BaseSchema):
+class EmployeeRoleSerializerSchema(BaseSchema):
     """
     Role serializer schema
     """
@@ -151,16 +151,16 @@ class UpdateEmployeeSchema(BaseSchema):
     )
 
 
-class EmployeeSerializer(BaseSchema):
+class EmployeeSerializerSchema(BaseSchema):
     """Employee serializer schema"""
 
     id: int
-    role: EmployeeRoleSerializer
-    nationality: EmployeeNationalitySerializer
-    matrimonial_status: EmployeeMatrimonialStatusSerializer = Field(
+    role: EmployeeRoleSerializerSchema
+    nationality: EmployeeNationalitySerializerSchema
+    matrimonial_status: EmployeeMatrimonialStatusSerializerSchema = Field(
         serialization_alias="marimonialStatus"
     )
-    gender: EmployeeGenderSerializer
+    gender: EmployeeGenderSerializerSchema
     code: Optional[int] = None
     full_name: str = Field(serialization_alias="fullName")
     taxpayer_identification: str = Field(serialization_alias="taxpayerIdentification")

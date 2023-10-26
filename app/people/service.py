@@ -17,11 +17,11 @@ from app.people.models import (
 from app.people.schemas import (
     EmployeeTotvsSchema,
     NewEmployeeSchema,
-    EmployeeSerializer,
-    EmployeeRoleSerializer,
-    EmployeeNationalitySerializer,
-    EmployeeGenderSerializer,
-    EmployeeMatrimonialStatusSerializer,
+    EmployeeSerializerSchema,
+    EmployeeRoleSerializerSchema,
+    EmployeeNationalitySerializerSchema,
+    EmployeeGenderSerializerSchema,
+    EmployeeMatrimonialStatusSerializerSchema,
     UpdateEmployeeSchema,
     EmployeeMatrimonialStatusTotvsSchema,
     EmployeeGenderTotvsSchema,
@@ -112,16 +112,16 @@ class EmployeeService:
 
         return (role, nationality, matrimonial_status, gender)
 
-    def serialize_employee(self, employee: EmployeeModel) -> EmployeeSerializer:
+    def serialize_employee(self, employee: EmployeeModel) -> EmployeeSerializerSchema:
         """Serialize employee"""
-        return EmployeeSerializer(
+        return EmployeeSerializerSchema(
             id=employee.id,
-            role=EmployeeRoleSerializer(**employee.role),
-            nationality=EmployeeNationalitySerializer(**employee.nationality),
-            matrimonial_status=EmployeeMatrimonialStatusSerializer(
+            role=EmployeeRoleSerializerSchema(**employee.role),
+            nationality=EmployeeNationalitySerializerSchema(**employee.nationality),
+            matrimonial_status=EmployeeMatrimonialStatusSerializerSchema(
                 **employee.matrimonial_status
             ),
-            gender=EmployeeGenderSerializer(**employee.gender),
+            gender=EmployeeGenderSerializerSchema(**employee.gender),
             manager=employee.manager,
             address=employee.address,
             birthday=employee.birthday,
@@ -194,7 +194,7 @@ class EmployeeService:
         data: NewEmployeeSchema,
         db_session: Session,
         authenticated_user: UserModel,
-    ) -> EmployeeSerializer:
+    ) -> EmployeeSerializerSchema:
         """Creates new employee"""
         if (
             data.code
@@ -257,7 +257,7 @@ class EmployeeService:
         data: UpdateEmployeeSchema,
         db_session: Session,
         authenticated_user: UserModel,
-    ) -> EmployeeSerializer:
+    ) -> EmployeeSerializerSchema:
         """Uptades new employee"""
         employee = self.__get_employee_or_404(employee_id, db_session)
         if not employee.legal_person:
@@ -310,7 +310,9 @@ class EmployeeService:
         logger.info("Updated Employee. %s", str(employee))
         return self.serialize_employee(employee)
 
-    def get_employee(self, employee_id: int, db_session: Session) -> EmployeeSerializer:
+    def get_employee(
+        self, employee_id: int, db_session: Session
+    ) -> EmployeeSerializerSchema:
         """Get an employee"""
         employee = self.__get_employee_or_404(employee_id, db_session)
         return self.serialize_employee(employee)
@@ -340,7 +342,7 @@ class EmployeeService:
         filter_list: str = None,
         page: int = 1,
         size: int = 50,
-    ) -> Page[EmployeeSerializer]:
+    ) -> Page[EmployeeSerializerSchema]:
         """Get employees list"""
 
         employee_list = db_session.query(EmployeeModel).filter(
