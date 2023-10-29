@@ -24,7 +24,7 @@ FORMAT = (
 )
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 date_str = datetime.now().strftime("%Y-%m-%d")
-LOG_FILENAME = f"./logs/{date_str}.log"
+LOG_FILENAME = f"{BASE_DIR}/logs/{date_str}.log"
 
 DEFAULT_DATE_FORMAT = "%d/%m/%Y"
 

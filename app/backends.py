@@ -1,16 +1,18 @@
 """Base backends"""
 import logging
-from typing import Union, Annotated
 from datetime import datetime, timedelta
-from passlib.context import CryptContext
-from jose import jwt, JWTError
+from typing import Annotated, Union
+
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from app.auth.models import UserModel, TokenModel
+
+from app.auth.models import TokenModel, UserModel
 from app.auth.schemas import PermissionSchema
+from app.config import ACCESS_TOKEN_EXPIRE_HOURS, ALGORITHM, SECRET_KEY
 from app.database import Session_db
-from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_HOURS
 from app.exceptions import get_user_exception, token_exception
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -89,7 +91,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         return {
             "role": user.role.name,
             "email": user.email,
-            "full_name": user.full_name,
+            "full_name": user.employee.full_name,
             "token": token,
             "permissions": permissions,
         }
@@ -97,7 +99,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     return {
         "role": user.role.name,
         "email": user.email,
-        "full_name": user.full_name,
+        "full_name": user.employee.full_name,
         "token": old_token.token,
         "permissions": permissions,
     }
