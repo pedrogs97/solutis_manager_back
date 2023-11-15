@@ -9,7 +9,8 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from src.auth.router import auth_router
-from src.auth.service import create_permissions, create_super_user
+from src.auth.service import (create_initial_data, create_permissions,
+                              create_super_user)
 from src.config import BASE_DIR, DATE_FORMAT, FORMAT, LOG_FILENAME, ORIGINS
 from src.people.router import people_router
 
@@ -49,6 +50,7 @@ def health_check():
     """Check server up"""
     return True
 
+
 @app.get("/", tags=["Service"])
 def root():
     """Redirect to docs"""
@@ -62,3 +64,4 @@ async def startup_base_data():
     """
     create_super_user()
     create_permissions()
+    create_initial_data()

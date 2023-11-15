@@ -32,13 +32,13 @@ async def post_updates_route(
     return JSONResponse(content="", status_code=status.HTTP_200_OK)
 
 
-@people_router.post("/employee/matrimonial-status/update/")
-async def post_matrimonial_status_updates_route(
+@people_router.post("/employee/marital-status/update/")
+async def post_marital_status_updates_route(
     data: List[EmployeeMatrimonialStatusTotvsSchema],
     db_session: Session = Depends(get_db_session),
 ):
     """Update employee from TOTVSroute"""
-    employee_service.update_matrimonial_status_totvs(data, db_session)
+    employee_service.update_marital_status_totvs(data, db_session)
     return JSONResponse(content="", status_code=status.HTTP_200_OK)
 
 
@@ -77,7 +77,8 @@ async def post_create_employee_route(
     data: NewEmployeeSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "people", "model": "employee", "action": "add"})
+        PermissionChecker(
+            {"module": "people", "model": "employee", "action": "add"})
     ),
 ):
     """Creates employee route"""
@@ -85,7 +86,8 @@ async def post_create_employee_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = employee_service.create_employee(data, db_session, authenticated_user)
+    serializer = employee_service.create_employee(
+        data, db_session, authenticated_user)
     return JSONResponse(
         content=serializer.model_dump(by_alias=True),
         status_code=status.HTTP_201_CREATED,
@@ -98,7 +100,8 @@ async def patch_update_employee_route(
     data: UpdateEmployeeSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "people", "model": "employee", "action": "edit"})
+        PermissionChecker(
+            {"module": "people", "model": "employee", "action": "edit"})
     ),
 ):
     """Update employee route"""
@@ -135,7 +138,8 @@ async def get_list_employees_route(
     ),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "people", "model": "employee", "action": "view"})
+        PermissionChecker(
+            {"module": "people", "model": "employee", "action": "view"})
     ),
 ):
     """List employees and apply filters route"""
@@ -143,12 +147,10 @@ async def get_list_employees_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    return JSONResponse(
-        content=employee_service.get_employees(
-            db_session, search, filter_list, page, size
-        ),
-        status_code=status.HTTP_200_OK,
+    employees = employee_service.get_employees(
+        db_session, search, filter_list, page, size
     )
+    return employees
 
 
 @people_router.get("/employees/{employee_id}/")
@@ -156,7 +158,8 @@ async def get_emplooyee_route(
     employee_id: int,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "people", "model": "employee", "action": "view"})
+        PermissionChecker(
+            {"module": "people", "model": "employee", "action": "view"})
     ),
 ):
     """Get an employee route"""
@@ -173,7 +176,8 @@ async def get_emplooyee_lending_history_route(
     employee_id: int,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "people", "model": "employee", "action": "view"})
+        PermissionChecker(
+            {"module": "people", "model": "employee", "action": "view"})
     ),
 ):
     """Get an employee route"""

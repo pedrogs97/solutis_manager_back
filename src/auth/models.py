@@ -1,7 +1,8 @@
 """Authenticate models"""
 from typing import List
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table
+from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
+                        Table)
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -29,7 +30,8 @@ class PermissionModel(Base):
     module = Column("module", String(length=25), nullable=False)
     model = Column("model", String(length=100), nullable=False)
     action = Column("action", String(length=10), nullable=False)
-    description = Column("description", String(length=150), nullable=False, default="")
+    description = Column("description", String(
+        length=150), nullable=False, default="")
 
     def __str__(self) -> str:
         return f"{self.module}_{self.model}_{self.action}"
@@ -62,13 +64,15 @@ class UserModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
     employee: Mapped[EmployeeModel] = relationship()
-    employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=True)
+    employee_id = Column("employee_id", ForeignKey(
+        "employees.id"), nullable=True)
 
     role: Mapped[RoleModel] = relationship()
     role_id = Column("role_id", ForeignKey("role.id"), nullable=False)
 
     password = Column("password", String(length=255), nullable=False)
-    username = Column("username", String(length=255), nullable=False, unique=True)
+    username = Column("username", String(length=255),
+                      nullable=False, unique=True)
     email = Column("email", String(length=255), nullable=False, unique=True)
     is_staff = Column("is_staff", Boolean, default=False)
     is_active = Column("is_active", Boolean, default=True)

@@ -334,7 +334,8 @@ class LendingSerializerSchema(BaseSchema):
     document: int
     workload: WorkloadSerializerSchema
     witnesses: List[WitnessSerializerSchema]
-    cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
+    cost_center: CostCenterSerializerSchema = Field(
+        serialization_alias="costCenter")
     manager: str
     observations: Optional[str]
     signed_date: str = Field(serialization_alias="signedDate")
@@ -492,11 +493,11 @@ class NewLendingContextSchema(BaseSchema):
     glpi_number: str
     full_name: str
     taxpayer_identification: str
-    nacional_identification: str
+    national_identification: str
     address: str
     nationality: str
     role: str
-    matrimonial_status: str
+    marital_status: str
     cc: str
     manager: str
     business_executive: str
@@ -521,14 +522,14 @@ class NewLendingPjContextSchema(BaseSchema):
     glpi_number: str
     full_name: str
     taxpayer_identification: str
-    nacional_identification: str
+    national_identification: str
     company: str
     cnpj: str
     company_address: str
     address: str
     nationality: str
     role: str
-    matrimonial_status: str
+    marital_status: str
     cc: str
     manager: str
     business_executive: str

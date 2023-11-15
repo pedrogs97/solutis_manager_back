@@ -66,9 +66,9 @@ class NewEmployeeSchema(BaseSchema):
 
     role: str
     nationality: str
-    matrimonial_status: str = Field(
-        alias="matrimonialStatus",
-        serialization_alias="matrimonial_status",
+    marital_status: str = Field(
+        alias="maritalStatus",
+        serialization_alias="marital_status",
     )
     gender: str
     code: Optional[int] = None
@@ -80,9 +80,9 @@ class NewEmployeeSchema(BaseSchema):
         alias="taxpayerIdentification",
         serialization_alias="taxpayer_identification",
     )
-    nacional_identification: str = Field(
-        alias="nacionalIdentification",
-        serialization_alias="nacional_identification",
+    national_identification: str = Field(
+        alias="nationalIdentification",
+        serialization_alias="national_identification",
     )
     address: str
     cell_phone: str = Field(
@@ -109,9 +109,9 @@ class UpdateEmployeeSchema(BaseSchema):
 
     role: Optional[str] = None
     nationality: Optional[str] = None
-    matrimonial_status: Optional[str] = Field(
-        alias="matrimonialStatus",
-        serialization_alias="matrimonial_status",
+    marital_status: Optional[str] = Field(
+        alias="maritalStatus",
+        serialization_alias="marital_status",
         default=None,
     )
     gender: Optional[str] = None
@@ -124,9 +124,9 @@ class UpdateEmployeeSchema(BaseSchema):
         serialization_alias="taxpayer_identification",
         default=None,
     )
-    nacional_identification: Optional[str] = Field(
-        alias="nacionalIdentification",
-        serialization_alias="nacional_identification",
+    national_identification: Optional[str] = Field(
+        alias="nationalIdentification",
+        serialization_alias="national_identification",
         default=None,
     )
     address: Optional[str] = None
@@ -159,14 +159,16 @@ class EmployeeSerializerSchema(BaseSchema):
     id: int
     role: EmployeeRoleSerializerSchema
     nationality: EmployeeNationalitySerializerSchema
-    matrimonial_status: EmployeeMatrimonialStatusSerializerSchema = Field(
+    marital_status: EmployeeMatrimonialStatusSerializerSchema = Field(
         serialization_alias="marimonialStatus"
     )
     gender: EmployeeGenderSerializerSchema
     code: Optional[int] = None
     full_name: str = Field(serialization_alias="fullName")
-    taxpayer_identification: str = Field(serialization_alias="taxpayerIdentification")
-    nacional_identification: str = Field(serialization_alias="nacionalIdentification")
+    taxpayer_identification: str = Field(
+        serialization_alias="taxpayerIdentification")
+    national_identification: str = Field(
+        serialization_alias="nationalIdentification")
     address: str
     cell_phone: str = Field(serialization_alias="cellPhone")
     email: str
@@ -242,9 +244,9 @@ class EmployeeTotvsSchema(BaseSchema):
     full_name: str
     birthday: date
     taxpayer_identification: str
-    nacional_identification: str
+    national_identification: str
     nationality: str
-    matrimonial_status: str
+    marital_status: str
     role: str
     address: str
     cell_phone: str

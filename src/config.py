@@ -15,7 +15,7 @@ def get_database_url():
     user = os.getenv("MYSQL_USER", "postgres")
     password = os.getenv("MYSQL_PASSWORD", "")
     port = os.getenv("MYSQL_PORT", "3306")
-    return f"mysql+mysqlconnector://{server}/{db}?user={user}&password={password}&port={port}"
+    return f"mysql+mysqldb://{user}:{password}@{server}:{port}/{db}"
 
 
 PASSWORD_SUPER_USER = os.getenv("PASSWORD_SUPER_USER")

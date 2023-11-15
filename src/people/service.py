@@ -14,9 +14,9 @@ from src.lending.models import LendingModel
 from src.lending.schemas import LendingSerializerSchema
 from src.lending.service import LendingService
 from src.log.services import LogService
-from src.people.models import (EmployeeGenderModel,
-                               EmployeeMatrimonialStatusModel, EmployeeModel,
-                               EmployeeNationalityModel, EmployeeRoleModel)
+from src.people.models import (EmployeeGenderModel, EmployeeMaritalStatusModel,
+                               EmployeeModel, EmployeeNationalityModel,
+                               EmployeeRoleModel)
 from src.people.schemas import (EmployeeGenderSerializerSchema,
                                 EmployeeGenderTotvsSchema,
                                 EmployeeMatrimonialStatusSerializerSchema,
@@ -48,11 +48,10 @@ class EmployeeService:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found"
             )
-
         return employee
 
     def __validate_nested(self, data: NewEmployeeSchema, db_session: Session) -> tuple:
-        """Validates role, nationality, matrimonial status and gender values"""
+        """Validates role, nationality, marital status and gender values"""
         if data.role:
             role = (
                 db_session.query(EmployeeRoleModel)
@@ -77,16 +76,16 @@ class EmployeeService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
-        if data.matrimonial_status:
-            matrimonial_status = (
-                db_session.query(EmployeeMatrimonialStatusModel)
+        if data.marital_status:
+            marital_status = (
+                db_session.query(EmployeeMaritalStatusModel)
                 .filter(
-                    EmployeeMatrimonialStatusModel.description
-                    == data.matrimonial_status
+                    EmployeeMaritalStatusModel.description
+                    == data.marital_status
                 )
                 .first()
             )
-            if not matrimonial_status:
+            if not marital_status:
                 raise HTTPException(
                     detail="Matrimonial status does not extists",
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -104,16 +103,17 @@ class EmployeeService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
-        return (role, nationality, matrimonial_status, gender)
+        return (role, nationality, marital_status, gender)
 
-    def serialize_employee(self, employee: EmployeeModel) -> EmployeeSerializerSchema:
+    def serialize_employee(self, employee: any) -> EmployeeSerializerSchema:
         """Serialize employee"""
         return EmployeeSerializerSchema(
             id=employee.id,
             role=EmployeeRoleSerializerSchema(**employee.role),
-            nationality=EmployeeNationalitySerializerSchema(**employee.nationality),
-            matrimonial_status=EmployeeMatrimonialStatusSerializerSchema(
-                **employee.matrimonial_status
+            nationality=EmployeeNationalitySerializerSchema(
+                **employee.nationality),
+            marital_status=EmployeeMatrimonialStatusSerializerSchema(
+                **employee.marital_status
             ),
             gender=EmployeeGenderSerializerSchema(**employee.gender),
             manager=employee.manager,
@@ -124,7 +124,7 @@ class EmployeeService:
             email=employee.email,
             full_name=employee.full_name,
             legal_person=employee.legal_person,
-            nacional_identification=employee.nacional_identification,
+            national_identification=employee.national_identification,
             taxpayer_identification=employee.taxpayer_identification,
         )
 
@@ -152,10 +152,10 @@ class EmployeeService:
                     .filter(EmployeeNationalityModel.description == totvs_employee.role)
                     .first()
                 )
-                matrimonial_status = (
-                    db_session.query(EmployeeMatrimonialStatusModel)
+                marital_status = (
+                    db_session.query(EmployeeMaritalStatusModel)
                     .filter(
-                        EmployeeMatrimonialStatusModel.description
+                        EmployeeMaritalStatusModel.description
                         == totvs_employee.role
                     )
                     .first()
@@ -168,11 +168,12 @@ class EmployeeService:
 
                 dict_employee = {
                     **totvs_employee.model_dump(
-                        exclude={"role", "nationality", "matrimonial_status", "gender"}
+                        exclude={"role", "nationality",
+                                 "marital_status", "gender"}
                     ),
                     "role": role,
                     "nationality": nationality,
-                    "matrimonial_status": matrimonial_status,
+                    "marital_status": marital_status,
                     "gender": gender,
                 }
 
@@ -181,7 +182,8 @@ class EmployeeService:
             db_session.add_all(updates)
             db_session.commit()
         except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def create_employee(
         self,
@@ -211,19 +213,19 @@ class EmployeeService:
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
-        (role, nationality, matrimonial_status, gender) = self.__validate_nested(
+        (role, nationality, marital_status, gender) = self.__validate_nested(
             data, db_session
         )
 
         new_emplyoee = EmployeeModel(
             role=role,
             nationality=nationality,
-            matrimonial_status=matrimonial_status,
+            marital_status=marital_status,
             gender=gender,
             code=data.code,
             full_name=data.full_name,
             taxpayer_identification=data.taxpayer_identification,
-            nacional_identification=data.nacional_identification,
+            national_identification=data.national_identification,
             address=data.address,
             cell_phone=data.cell_phone,
             email=data.email,
@@ -260,15 +262,15 @@ class EmployeeService:
                 detail="Este colaborador não pode ser editado.",
             )
 
-        (role, nationality, matrimonial_status, gender) = self.__validate_nested(
+        (role, nationality, marital_status, gender) = self.__validate_nested(
             data, db_session
         )
         if data.role:
             employee.role = role
         if data.nationality:
             employee.nationality = nationality
-        if data.matrimonial_status:
-            employee.matrimonial_status = matrimonial_status
+        if data.marital_status:
+            employee.marital_status = marital_status
         if data.gender:
             employee.gender = gender
         if data.code:
@@ -277,8 +279,8 @@ class EmployeeService:
             employee.full_name = data.full_name
         if data.taxpayer_identification:
             employee.taxpayer_identification = data.taxpayer_identification
-        if data.nacional_identification:
-            employee.nacional_identification = data.nacional_identification
+        if data.national_identification:
+            employee.national_identification = data.national_identification
         if data.address:
             employee.address = data.address
         if data.cell_phone:
@@ -309,6 +311,7 @@ class EmployeeService:
     ) -> EmployeeSerializerSchema:
         """Get an employee"""
         employee = self.__get_employee_or_404(employee_id, db_session)
+
         return self.serialize_employee(employee)
 
     def get_employee_lending_history(
@@ -343,7 +346,7 @@ class EmployeeService:
             or_(
                 EmployeeModel.full_name.ilike(f"%{search}%"),
                 EmployeeModel.email.ilike(f"%{search}"),
-                EmployeeModel.nacional_identification.ilike(f"%{search}"),
+                EmployeeModel.national_identification.ilike(f"%{search}"),
                 EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
                 EmployeeModel.cell_phone.ilike(f"%{search}"),
                 EmployeeModel.manager.ilike(f"%{search}"),
@@ -356,7 +359,7 @@ class EmployeeService:
                 EmployeeModel.role,
             ).filter(
                 or_(
-                    EmployeeRoleModel.name == filter_list,
+                    EmployeeRoleModel.name.in_(filter_list),
                 )
             )
 
@@ -364,15 +367,16 @@ class EmployeeService:
                 EmployeeModel.nationality,
             ).filter(
                 or_(
-                    EmployeeNationalityModel.description == filter_list,
+                    EmployeeNationalityModel.description.in_(filter_list),
                 )
             )
 
             employee_list = employee_list.join(
-                EmployeeModel.matrimonial_status,
+                EmployeeModel.marital_status,
             ).filter(
                 or_(
-                    EmployeeMatrimonialStatusModel.description == filter_list,
+                    EmployeeMaritalStatusModel.description.in_(
+                        filter_list),
                 )
             )
 
@@ -380,7 +384,7 @@ class EmployeeService:
                 EmployeeModel.gender,
             ).filter(
                 or_(
-                    EmployeeGenderModel.description == filter_list,
+                    EmployeeGenderModel.description.in_(filter_list),
                 )
             )
 
@@ -392,35 +396,36 @@ class EmployeeService:
                 self.serialize_employee(employee) for employee in employee_list
             ],
         )
+
         return paginated
 
-    def update_matrimonial_status_totvs(
+    def update_marital_status_totvs(
         self,
-        totvs_matrimonial_status: List[EmployeeMatrimonialStatusTotvsSchema],
+        totvs_marital_status: List[EmployeeMatrimonialStatusTotvsSchema],
         db_session: Session,
     ):
-        """Updates matrimonial_status from totvs"""
+        """Updates marital_status from totvs"""
         try:
-            updates: List[EmployeeMatrimonialStatusModel] = []
-            for totvs_matrimonial_status_item in totvs_matrimonial_status:
-                db_matrimonial_status = (
-                    db_session.query(EmployeeMatrimonialStatusModel)
+            updates: List[EmployeeMaritalStatusModel] = []
+            for totvs_marital_status_item in totvs_marital_status:
+                db_marital_status = (
+                    db_session.query(EmployeeMaritalStatusModel)
                     .filter(
-                        EmployeeMatrimonialStatusModel.code
-                        == totvs_matrimonial_status_item.code
+                        EmployeeMaritalStatusModel.code
+                        == totvs_marital_status_item.code
                     )
                     .first()
                 )
-                if db_matrimonial_status:
-                    db_matrimonial_status.description = (
-                        totvs_matrimonial_status_item.description
+                if db_marital_status:
+                    db_marital_status.description = (
+                        totvs_marital_status_item.description
                     )
-                    updates.append(db_matrimonial_status)
+                    updates.append(db_marital_status)
                     continue
 
                 updates.append(
-                    EmployeeMatrimonialStatusModel(
-                        **totvs_matrimonial_status_item.model_dump()
+                    EmployeeMaritalStatusModel(
+                        **totvs_marital_status_item.model_dump()
                     )
                 )
 
@@ -428,10 +433,12 @@ class EmployeeService:
             db_session.commit()
 
             logger.info(
-                "Update Matrimonial Status from TOTVS. Total=%s", str(len(updates))
+                "Update Matrimonial Status from TOTVS. Total=%s", str(
+                    len(updates))
             )
         except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def update_gender_totvs(
         self,
@@ -452,13 +459,16 @@ class EmployeeService:
                     updates.append(db_gender)
                     continue
 
-                updates.append(EmployeeGenderModel(**totvs_gender_item.model_dump()))
+                updates.append(EmployeeGenderModel(
+                    **totvs_gender_item.model_dump()))
 
             db_session.add_all(updates)
             db_session.commit()
-            logger.info("Update Gender from TOTVS. Total=%s", str(len(updates)))
+            logger.info("Update Gender from TOTVS. Total=%s",
+                        str(len(updates)))
         except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def update_nationality_totvs(
         self,
@@ -482,14 +492,17 @@ class EmployeeService:
                     continue
 
                 updates.append(
-                    EmployeeNationalityModel(**totvs_nationality_item.model_dump())
+                    EmployeeNationalityModel(
+                        **totvs_nationality_item.model_dump())
                 )
 
             db_session.add_all(updates)
             db_session.commit()
-            logger.info("Update Nationality from TOTVS. Total=%s", str(len(updates)))
+            logger.info("Update Nationality from TOTVS. Total=%s",
+                        str(len(updates)))
         except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def update_role_totvs(
         self,
@@ -510,10 +523,12 @@ class EmployeeService:
                     updates.append(db_role)
                     continue
 
-                updates.append(EmployeeRoleModel(**totvs_role_item.model_dump()))
+                updates.append(EmployeeRoleModel(
+                    **totvs_role_item.model_dump()))
 
             db_session.add_all(updates)
             db_session.commit()
             logger.info("Update Role from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc

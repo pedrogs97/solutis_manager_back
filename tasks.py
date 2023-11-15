@@ -26,6 +26,12 @@ def migrate(cmd):
 
 
 @task
+def run(cmd):
+    """Run application"""
+    cmd.run("uvicorn src.main:app --port 8000 --reload")
+
+
+@task
 def loaddata(cmd, module: str, fixture: str = None):
     """Load fixtures to database"""
     fixtures_directory: str = dirname(__file__) + f"/{module}/fixtures/"
@@ -49,20 +55,23 @@ def loaddata(cmd, module: str, fixture: str = None):
         else:
             file_paths: list = get_file_paths(fixtures_directory)
             for file_path in file_paths:
-                fixtures: list = read_file(file_path=fixtures_directory + file_path)
+                fixtures: list = read_file(
+                    file_path=fixtures_directory + file_path)
                 for item in fixtures:
                     table_name = item.pop("table", "")
                     if table_name == "":
                         cmd.run("echo table not found")
                         return
-                    table = Table(table_name, Base.metadata, autoload_with=Engine)
+                    table = Table(table_name, Base.metadata,
+                                  autoload_with=Engine)
                     with Session_db() as session:
                         if not session.execute(
                             table.select().where(table.c.id == item["id"])
                         ).first():
                             session.execute(table.insert().values(item))
                             session.commit()
-                cmd.run(f"echo {len(fixtures)} fixtures applied on {table_name}")
+                cmd.run(
+                    f"echo {len(fixtures)} fixtures applied on {table_name}")
     except FileNotFoundError:
         cmd.run(f"echo fixture {fixture} not found")
 
@@ -80,11 +89,11 @@ def __contract():
         glpi_number="GLPI 41325",
         full_name="Abmael da Silva",
         taxpayer_identification="222.222.222-22",
-        nacional_identification="22222222-22",
+        national_identification="22222222-22",
         address="Rua da esquina, 31, Alpha Vile, Salvador",
         nationality="BRASILEIRO",
         role="Desenvolvedor",
-        matrimonial_status="CASADO",
+        marital_status="CASADO",
         cc="23412-1",
         manager="Hericles Bitencurt",
         business_executive="Janaina Bitencurt",
@@ -118,7 +127,8 @@ def __contract():
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
+    options = {"page-size": "A4",
+               "enable-local-file-access": None, "encoding": "utf-8"}
 
     with open(os.path.join(UPLOAD_DIR, "template_test.html"), encoding="utf-8") as f:
         pdfkit.from_file(
@@ -142,14 +152,14 @@ def __contract_pj():
         glpi_number="GLPI 41325",
         full_name="Abmael da Silva",
         taxpayer_identification="222.222.222-22",
-        nacional_identification="22222222-22",
+        national_identification="22222222-22",
         company="MEI teste",
         cnpj="13.185.790/0001-79",
         company_address="Rua da esquina, 31, Pituba, Salvador",
         address="Rua da esquina, 31, Alpha Vile, Salvador",
         nationality="BRASILEIRO",
         role="Desenvolvedor",
-        matrimonial_status="CASADO",
+        marital_status="CASADO",
         cc="23412-1",
         manager="Hericles Bitencurt",
         business_executive="Janaina Bitencurt",
@@ -185,7 +195,8 @@ def __contract_pj():
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
+    options = {"page-size": "A4",
+               "enable-local-file-access": None, "encoding": "utf-8"}
 
     with open(os.path.join(UPLOAD_DIR, "template_pj_test.html"), encoding="utf-8") as f:
         pdfkit.from_file(

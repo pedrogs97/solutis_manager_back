@@ -1,17 +1,8 @@
 """Lending models"""
 from typing import List
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    Date,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    Table,
-)
+from sqlalchemy import (Boolean, Column, Date, DateTime, Float, ForeignKey,
+                        Integer, String, Table)
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -100,7 +91,8 @@ class AssetModel(Base):
     type: Mapped[AssetTypeModel] = relationship()
     type_id = Column("type_id", ForeignKey("asset_type.id"), nullable=False)
 
-    status_id = Column("status_id", ForeignKey("asset_status.id"), nullable=False)
+    status_id = Column("status_id", ForeignKey(
+        "asset_status.id"), nullable=False)
     status: Mapped[AssetStatusModel] = relationship()
 
     clothing_size_id = Column(
@@ -110,16 +102,20 @@ class AssetModel(Base):
 
     code = Column("code", String(length=255), nullable=True)
     # tombo - registro patrimonial
-    register_number = Column("register_number", String(length=255), nullable=True)
+    register_number = Column(
+        "register_number", String(length=255), nullable=True)
     description = Column("description", String(length=255), nullable=True)
     # fornecedor
     supplier = Column("supplier", String(length=100), nullable=True)
-    assurance_date = Column("assurance_date", String(length=150), nullable=True)
+    assurance_date = Column(
+        "assurance_date", String(length=150), nullable=True)
     observations = Column("observations", String(length=255), nullable=True)
-    discard_reason = Column("discard_reason", String(length=255), nullable=True)
+    discard_reason = Column(
+        "discard_reason", String(length=255), nullable=True)
     # padrão
     pattern = Column("pattern", String(length=100), nullable=True)
-    operational_system = Column("operational_system", String(length=100), nullable=True)
+    operational_system = Column(
+        "operational_system", String(length=100), nullable=True)
     serial_number = Column("serial_number", String(length=255), nullable=True)
     imei = Column("imei", String(length=255), nullable=True)
     acquisition_date = Column("acquisition_date", DateTime, nullable=True)
@@ -171,7 +167,8 @@ class DocumentModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     doc_type: Mapped[DocumentTypeModel] = relationship()
-    doc_type_id = Column("doc_type_id", ForeignKey("document_type.id"), nullable=True)
+    doc_type_id = Column("doc_type_id", ForeignKey(
+        "document_type.id"), nullable=True)
 
     # caminho do arquivo
     path = Column("path", String(length=255), nullable=True)
@@ -200,8 +197,8 @@ class WorkloadModel(Base):
         return f"{self.name}"
 
 
-witnesses = Table(
-    "witnesses",
+lending_witnesses = Table(
+    "lending_witnesses",
     Base.metadata,
     Column("lending_id", ForeignKey("lending.id")),
     Column("witness_id", ForeignKey("witness.id")),
@@ -230,9 +227,10 @@ class WitnessModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
     employee: Mapped[EmployeeModel] = relationship()
-    employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=False)
+    employee_id = Column("employee_id", ForeignKey(
+        "employees.id"), nullable=False)
     lendings = relationship(
-        "LendingModel", secondary=witnesses, back_populates="witnesses"
+        "LendingModel", secondary=lending_witnesses, back_populates="witnesses"
     )
 
     signed = Column("signed", Date, nullable=True)
@@ -249,19 +247,22 @@ class LendingModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     employee: Mapped[EmployeeModel] = relationship()
-    employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=False)
+    employee_id = Column("employee_id", ForeignKey(
+        "employees.id"), nullable=False)
 
     asset: Mapped[AssetModel] = relationship()
     asset_id = Column("asset_id", ForeignKey("asset.id"), nullable=False)
 
     document: Mapped[DocumentModel] = relationship()
-    document_id = Column("document_id", ForeignKey("document.id"), nullable=True)
+    document_id = Column("document_id", ForeignKey(
+        "document.id"), nullable=True)
     # lotação
     workload: Mapped[WorkloadModel] = relationship()
-    workload_id = Column("workload_id", ForeignKey("workload.id"), nullable=False)
+    workload_id = Column("workload_id", ForeignKey(
+        "workload.id"), nullable=False)
 
     witnesses: Mapped[List[WitnessModel]] = relationship(
-        secondary=witnesses,
+        secondary=lending_witnesses,
         back_populates="lendings",
     )
 
@@ -326,10 +327,12 @@ class MaintenanceModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     action: Mapped[MaintenanceActionModel] = relationship()
-    action_id = Column("action_id", ForeignKey("maintenance_action.id"), nullable=False)
+    action_id = Column("action_id", ForeignKey(
+        "maintenance_action.id"), nullable=False)
 
     status: Mapped[MaintenanceStatusModel] = relationship()
-    status_id = Column("status_id", ForeignKey("maintenance_status.id"), nullable=False)
+    status_id = Column("status_id", ForeignKey(
+        "maintenance_status.id"), nullable=False)
 
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)
@@ -337,7 +340,8 @@ class MaintenanceModel(Base):
     supplier_service_order = Column(
         "supplier_service_order", String(length=50), nullable=True
     )
-    supplier_number = Column("supplier_number", String(length=50), nullable=True)
+    supplier_number = Column(
+        "supplier_number", String(length=50), nullable=True)
     resolution = Column("resolution", String(length=255), nullable=True)
 
     def __str__(self) -> str:
@@ -392,7 +396,8 @@ class VerificationModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
     asset_type: Mapped[AssetTypeModel] = relationship()
-    asset_type_id = Column("asset_type_id", ForeignKey("asset_type.id"), nullable=False)
+    asset_type_id = Column("asset_type_id", ForeignKey(
+        "asset_type.id"), nullable=False)
 
     question = Column("question", String(length=100))
     step = Column("step", String(length=2))

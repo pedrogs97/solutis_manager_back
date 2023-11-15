@@ -79,7 +79,8 @@ async def post_create_user_route(
 )
 async def get_list_user_route(
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "user", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -111,7 +112,8 @@ async def update_user_route(
     data: UserUpdateSchema,
     user_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "action": "edit"})
+        PermissionChecker(
+            {"module": "auth", "model": "user", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -120,7 +122,8 @@ async def update_user_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = user_service.update_user(db_session, user_id, data, authenticated_user)
+    serializer = user_service.update_user(
+        db_session, user_id, data, authenticated_user)
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
     )
@@ -133,7 +136,8 @@ async def update_user_route(
 async def update_user_password_route(
     data: UserChangePasswordSchema,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "action": "edit"})
+        PermissionChecker(
+            {"module": "auth", "model": "user", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -162,7 +166,8 @@ async def put_update_user_route():
 async def get_user_route(
     user_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "user", "action": "view"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -205,7 +210,8 @@ async def post_create_role_route(
 )
 async def get_list_role_route(
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "role", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -235,7 +241,8 @@ async def update_role_route(
     data: NewRoleSchema,
     role_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "edit"})
+        PermissionChecker(
+            {"module": "auth", "model": "role", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -244,7 +251,8 @@ async def update_role_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = role_service.update_role(db_session, role_id, data, authenticated_user)
+    serializer = role_service.update_role(
+        db_session, role_id, data, authenticated_user)
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
     )
@@ -266,7 +274,8 @@ async def put_update_role_route():
 async def get_role_route(
     role_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "role", "action": "view"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -288,7 +297,8 @@ async def get_role_route(
 )
 async def get_list_permission_route(
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "permission", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "permission", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -314,7 +324,7 @@ async def post_send_new_password_route(
     data: NewPasswordSchema,
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker(
-            {"module": "auth", "model": "permission", "action": "admin"}
+            {"module": "auth", "model": "permissions", "action": "admin"}
         )  # action admin não existe, isso garante que só role Administrador consiga acessar
     ),
     db_session: Session = Depends(get_db_session),
