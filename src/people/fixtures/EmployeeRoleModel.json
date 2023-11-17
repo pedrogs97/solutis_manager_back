@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "table": "employee_roles",
+        "code": "ADS",
+        "name": "Analista de Sistemas"
+    },
+    {
+        "id": 2,
+        "table": "employee_roles",
+        "code": "ADM",
+        "name": "Administrador"
+    }
+]

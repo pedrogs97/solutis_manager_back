@@ -7,9 +7,8 @@ import aiofiles
 import jinja2
 import pdfkit
 
-from src.config import TEMPLATE_DIR, UPLOAD_DIR
-from src.lending.schemas import (NewLendingContextSchema,
-                                 NewLendingPjContextSchema)
+from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR
+from src.lending.schemas import NewLendingContextSchema, NewLendingPjContextSchema
 
 
 def get_file_paths(directory: str):
@@ -26,9 +25,11 @@ def read_file(file_path: str):
     return loads(open(file_path, "r", encoding="utf-8").read())
 
 
-async def upload_file(file_name: str, type_file: str, data: bytes) -> str:
+async def upload_file(
+    file_name: str, type_file: str, data: bytes, base_dir: str
+) -> str:
     """Upload a file and returns file path"""
-    folder_file = os.path.join(UPLOAD_DIR, type_file)
+    folder_file = os.path.join(base_dir, type_file)
 
     if not os.path.isdir(folder_file):
         os.mkdir(folder_file)
@@ -74,20 +75,18 @@ def create_lending_contract(context: NewLendingContextSchema) -> str:
         witnesses=[witness.model_dump() for witness in context.witnesses],
     )
 
-    lending_path = os.path.join(UPLOAD_DIR, "lending")
+    lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
 
     if not os.path.exists(lending_path):
         os.mkdir(lending_path)
 
-    template_path = os.path.join(
-        lending_path, f"template_{context.number}.html")
+    template_path = os.path.join(lending_path, f"template_{context.number}.html")
     contract_path = os.path.join(lending_path, f"{context.number}.pdf")
 
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4",
-               "enable-local-file-access": None, "encoding": "utf-8"}
+    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
 
     with open(template_path, encoding="utf-8") as template_file:
         pdfkit.from_file(
@@ -138,20 +137,18 @@ def create_lending_contract_pj(context: NewLendingPjContextSchema) -> str:
         witnesses=[witness.model_dump() for witness in context.witnesses],
     )
 
-    lending_path = os.path.join(UPLOAD_DIR, "lending")
+    lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
 
     if not os.path.exists(lending_path):
         os.mkdir(lending_path)
 
-    template_path = os.path.join(
-        lending_path, f"template_{context.number}.html")
+    template_path = os.path.join(lending_path, f"template_{context.number}.html")
     contract_path = os.path.join(lending_path, f"{context.number}.pdf")
 
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4",
-               "enable-local-file-access": None, "encoding": "utf-8"}
+    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
 
     with open(template_path, encoding="utf-8") as template_file:
         pdfkit.from_file(

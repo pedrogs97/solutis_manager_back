@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: solutis
+  labels:
+    name: solutis
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: env-agile
+  namespace: solutis
+data:
+  DB_URL_DATASYNC: bXlzcWwrbXlzcWxjb25uZWN0b3I6Ly9ERVNLVE9QLTRWVVBCN0MubG9jYWwvZGF0YXN5bmM/dXNlcj13c2xfdXNlciZwYXNzd29yZD1kYXRhc3luY0AxMjMmcG9ydD0zMzA2
+  AGILE_HOST: aHR0cC8vbG9jYWxob3N0OjgwMDAvYXBpL3YxLw==
+  SQLSERVE_HOST_DB: MTcyLjI5LjAuMTI3
+  SQLSERVE_NAME_DB: Q29ycG9yZVJNX1NJ
+  SQLSERVE_USER_DB: cGFyYW1ldHJpemUucGVkcm8=
+  SQLSERVE_PASSWORD_DB: U29sdXRpc0AxMjMh
+  ACCEPT_EULA: WQ==
+  MSSQL_PID: U3RhbmRhcmQ=
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: agile-app
+  namespace: solutis
+  labels:
+    app: agile-app
+spec:
+  containers:
+    - name: agile-app
+      image: pedrogls/agile:latest
+      env:
+        - name: DB_URL_DATASYNC
+          valueFrom:
+            secretKeyRef:
+              name: env-agile
+              key: DB_URL_DATASYNC
+        - name: AGILE_HOST
+          valueFrom:
+            secretKeyRef:
+              name: env-agile
+              key: AGILE_HOST
+        - name: SQLSERVE_HOST_DB
+          valueFrom:
+            secretKeyRef:
+              name: env-agile
+              key: SQLSERVE_HOST_DB
+        - name: SQLSERVE_NAME_DB
+          valueFrom:
+            secretKeyRef:
+              name: env-agile
+              key: SQLSERVE_NAME_DB
+        - name: SQLSERVE_USER_DB
+          valueFrom:
+            secretKeyRef:
+              name: env-agile
+              key: SQLSERVE_USER_DB
+        - name: SQLSERVE_PASSWORD_DB
+          valueFrom:
+            secretKeyRef:
+              name: env-agile
+              key: SQLSERVE_PASSWORD_DB
+        - name: ACCEPT_EULA
+          valueFrom:
+            secretKeyRef:
+              name: env-agile
+              key: ACCEPT_EULA
+        - name: MSSQL_PID
+          valueFrom:
+            secretKeyRef:
+              name: env-agile
+              key: MSSQL_PID
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: agile-service
+  namespace: solutis
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8001
+  selector:
+    app: agile-app

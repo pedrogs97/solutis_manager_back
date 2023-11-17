@@ -157,7 +157,7 @@ class EmployeeSerializerSchema(BaseSchema):
     """Employee serializer schema"""
 
     id: int
-    role: EmployeeRoleSerializerSchema
+    role: Optional[EmployeeRoleSerializerSchema]
     nationality: EmployeeNationalitySerializerSchema
     marital_status: EmployeeMatrimonialStatusSerializerSchema = Field(
         serialization_alias="marimonialStatus"
@@ -165,10 +165,8 @@ class EmployeeSerializerSchema(BaseSchema):
     gender: EmployeeGenderSerializerSchema
     code: Optional[int] = None
     full_name: str = Field(serialization_alias="fullName")
-    taxpayer_identification: str = Field(
-        serialization_alias="taxpayerIdentification")
-    national_identification: str = Field(
-        serialization_alias="nationalIdentification")
+    taxpayer_identification: str = Field(serialization_alias="taxpayerIdentification")
+    national_identification: str = Field(serialization_alias="nationalIdentification")
     address: str
     cell_phone: str = Field(serialization_alias="cellPhone")
     email: str

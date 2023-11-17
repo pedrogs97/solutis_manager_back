@@ -11,49 +11,64 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
-from src.lending.models import (AssetClothingSizeModel, AssetModel,
-                                AssetStatusModel, AssetTypeModel,
-                                CostCenterModel, DocumentModel,
-                                DocumentTypeModel, LendingModel,
-                                VerificationAnswerModel, VerificationModel,
-                                VerificationTypeModel, WitnessModel,
-                                WorkloadModel)
-from src.lending.schemas import (AssetClothingSizeSerializer,
-                                 AssetSerializerSchema,
-                                 AssetStatusSerializerSchema, AssetTotvsSchema,
-                                 AssetTypeSerializerSchema,
-                                 AssetTypeTotvsSchema,
-                                 CostCenterSerializerSchema,
-                                 CostCenterTotvsSchema,
-                                 DocumentSerializerSchema,
-                                 InactivateAssetSchema,
-                                 LendingSerializerSchema, NewAssetSchema,
-                                 NewLendingContextSchema, NewLendingDocSchema,
-                                 NewLendingPjContextSchema, NewLendingSchema,
-                                 NewVerificationAnswerSchema,
-                                 NewVerificationSchema, UpdateAssetSchema,
-                                 UploadSignedContractSchema,
-                                 VerificationAnswerSerializerSchema,
-                                 VerificationSerializerSchema,
-                                 WitnessContextSchema, WitnessSerializerSchema,
-                                 WorkloadSerializerSchema)
+from src.config import CONTRACT_UPLOAD_DIR
+from src.lending.models import (
+    AssetClothingSizeModel,
+    AssetModel,
+    AssetStatusModel,
+    AssetTypeModel,
+    CostCenterModel,
+    DocumentModel,
+    DocumentTypeModel,
+    LendingModel,
+    VerificationAnswerModel,
+    VerificationModel,
+    VerificationTypeModel,
+    WitnessModel,
+    WorkloadModel,
+)
+from src.lending.schemas import (
+    AssetClothingSizeSerializer,
+    AssetSerializerSchema,
+    AssetStatusSerializerSchema,
+    AssetTotvsSchema,
+    AssetTypeSerializerSchema,
+    AssetTypeTotvsSchema,
+    CostCenterSerializerSchema,
+    CostCenterTotvsSchema,
+    DocumentSerializerSchema,
+    InactivateAssetSchema,
+    LendingSerializerSchema,
+    NewAssetSchema,
+    NewLendingContextSchema,
+    NewLendingDocSchema,
+    NewLendingPjContextSchema,
+    NewLendingSchema,
+    NewVerificationAnswerSchema,
+    NewVerificationSchema,
+    UpdateAssetSchema,
+    UploadSignedContractSchema,
+    VerificationAnswerSerializerSchema,
+    VerificationSerializerSchema,
+    WitnessContextSchema,
+    WitnessSerializerSchema,
+    WorkloadSerializerSchema,
+)
 from src.log.services import LogService
 from src.people.models import EmployeeModel
 from src.people.schemas import EmployeeSerializerSchema
-from src.utils import (create_lending_contract, create_lending_contract_pj,
-                       upload_file)
+from src.utils import create_lending_contract, create_lending_contract_pj, upload_file
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
 
 
-class AssetService():
+class AssetService:
     """Asset services"""
 
     def __get_asset_or_404(self, asset_id: int, db_session: Session) -> AssetModel:
         """Get asset or 404"""
-        asset = db_session.query(AssetModel).filter(
-            AssetModel.id == asset_id).first()
+        asset = db_session.query(AssetModel).filter(AssetModel.id == asset_id).first()
         if not asset:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Ativo não encontrado"
@@ -110,9 +125,8 @@ class AssetService():
         return AssetSerializerSchema(
             id=asset.id,
             type=AssetTypeSerializerSchema(**asset.type.__dict__),
-            clothing_size=AssetClothingSizeSerializer(
-                **asset.clothing_size.__dict__),
-            status=AssetStatusSerializerSchema(**asset.status),
+            clothing_size=AssetClothingSizeSerializer(**asset.clothing_size.__dict__),
+            status=AssetStatusSerializerSchema(**asset.status.__dict__),
             register_number=asset.register_number,
             description=asset.description,
             supplier=asset.supplier,
@@ -283,25 +297,19 @@ class AssetService():
         )
 
         if filter_asset:
-            asset_list = asset_list.join(
-                AssetModel.type,
-            ).filter(
+            asset_list = asset_list.join(AssetModel.type,).filter(
                 or_(
                     AssetTypeModel.name == filter_asset,
                 )
             )
 
-            asset_list = asset_list.join(
-                AssetModel.status,
-            ).filter(
+            asset_list = asset_list.join(AssetModel.status,).filter(
                 or_(
                     AssetStatusModel.name == filter_asset,
                 )
             )
 
-            asset_list = asset_list.join(
-                AssetModel.clothing_size,
-            ).filter(
+            asset_list = asset_list.join(AssetModel.clothing_size,).filter(
                 or_(
                     AssetClothingSizeModel.name == filter_asset,
                 )
@@ -348,11 +356,9 @@ class AssetService():
 
             db_session.add_all(updates)
             db_session.commit()
-            logger.info("Update Assets from TOTVS. Total=%s",
-                        str(len(updates)))
+            logger.info("Update Assets from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def update_asset_type_totvs(
         self,
@@ -383,11 +389,9 @@ class AssetService():
 
             db_session.add_all(updates)
             db_session.commit()
-            logger.info("Update Asset Types from TOTVS. Total=%s",
-                        str(len(updates)))
+            logger.info("Update Asset Types from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def update_cost_center_totvs(
         self,
@@ -412,19 +416,16 @@ class AssetService():
                     updates.append(db_cost_center)
                     continue
 
-                updates.append(CostCenterModel(
-                    **totvs_cost_center_item.model_dump()))
+                updates.append(CostCenterModel(**totvs_cost_center_item.model_dump()))
 
             db_session.add_all(updates)
             db_session.commit()
-            logger.info("Update Cost Centers from TOTVS. Total=%s",
-                        str(len(updates)))
+            logger.info("Update Cost Centers from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
 
-class LendingService():
+class LendingService:
     """Lending service"""
 
     def __get_lending_or_404(
@@ -432,8 +433,7 @@ class LendingService():
     ) -> LendingModel:
         """Get lending or 404"""
         lending = (
-            db_session.query(LendingModel).filter(
-                LendingModel.id == lending_id).first()
+            db_session.query(LendingModel).filter(LendingModel.id == lending_id).first()
         )
         if not lending:
             raise HTTPException(
@@ -451,7 +451,7 @@ class LendingService():
             witnesses_serialzier.append(
                 WitnessSerializerSchema(
                     id=witness.id,
-                    employee=EmployeeSerializerSchema(**witness.employee),
+                    employee=EmployeeSerializerSchema(**witness.employee.__dict__),
                     signed=witness.signed.strftime("%d/%m/%Y"),
                 )
             )
@@ -463,8 +463,7 @@ class LendingService():
             document=lending.document.id,
             workload=WorkloadSerializerSchema(**lending.workload.__dict__),
             witnesses=witnesses_serialzier,
-            cost_center=CostCenterSerializerSchema(
-                **lending.cost_center.__dict__),
+            cost_center=CostCenterSerializerSchema(**lending.cost_center.__dict__),
             manager=lending.manager,
             observations=lending.observations,
             signed_date=lending.signed_date.strftime("%d/%m/%Y"),
@@ -487,8 +486,7 @@ class LendingService():
 
         if data.asset:
             asset = (
-                db_session.query(AssetModel).filter(
-                    AssetModel.id == data.asset).first()
+                db_session.query(AssetModel).filter(AssetModel.id == data.asset).first()
             )
             if not asset:
                 raise HTTPException(
@@ -601,7 +599,9 @@ class LendingService():
 
         return self.serialize_lending(new_lending_db)
 
-    def get_lending(self, lending_id: int, db_session: Session) -> AssetSerializerSchema:
+    def get_lending(
+        self, lending_id: int, db_session: Session
+    ) -> AssetSerializerSchema:
         """Get a lending"""
         lending = self.__get_lending_or_404(lending_id, db_session)
         return self.serialize_lending(lending)
@@ -635,9 +635,7 @@ class LendingService():
                 LendingModel.signed_date == filter_lending,
             )
 
-            lending_list = lending_list.join(
-                LendingModel.asset,
-            ).filter(
+            lending_list = lending_list.join(LendingModel.asset,).filter(
                 or_(
                     AssetModel.code == filter_lending,
                     AssetModel.description == filter_lending,
@@ -646,9 +644,7 @@ class LendingService():
                 )
             )
 
-            lending_list = lending_list.join(
-                LendingModel.workload,
-            ).filter(
+            lending_list = lending_list.join(LendingModel.workload,).filter(
                 or_(
                     WorkloadModel.name == filter_lending,
                 )
@@ -665,7 +661,7 @@ class LendingService():
         return paginated
 
 
-class DocumentService():
+class DocumentService:
     """Document service"""
 
     def __get_document_or_404(
@@ -690,8 +686,7 @@ class DocumentService():
     ) -> LendingModel:
         """Get lending or 404"""
         lending = (
-            db_session.query(LendingModel).filter(
-                LendingModel.id == lending_id).first()
+            db_session.query(LendingModel).filter(LendingModel.id == lending_id).first()
         )
         if not lending:
             raise HTTPException(
@@ -909,7 +904,9 @@ class DocumentService():
         code = lending.number
 
         file_name = f"{code}.pdf"
-        file_path = await upload_file(file_name, "lending", contract.file.read())
+        file_path = await upload_file(
+            file_name, "lending", contract.file.read(), CONTRACT_UPLOAD_DIR
+        )
 
         document.path = file_path
         document.file_name = file_name
@@ -934,7 +931,7 @@ class DocumentService():
         return self.serialize_document(document)
 
 
-class VerificationService():
+class VerificationService:
     """Verification service"""
 
     def __get_verification_or_404(
@@ -949,7 +946,7 @@ class VerificationService():
         if not document:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Pergunta de Verificação não encontrada."
+                detail="Pergunta de Verificação não encontrada.",
             )
 
         return document
@@ -958,13 +955,16 @@ class VerificationService():
         self, asset_type_id: int, db_session: Session
     ) -> AssetTypeModel:
         """Get asset type or 404"""
-        asset_type = db_session.query(AssetTypeModel).filter(
-            AssetTypeModel.id == asset_type_id).first()
+        asset_type = (
+            db_session.query(AssetTypeModel)
+            .filter(AssetTypeModel.id == asset_type_id)
+            .first()
+        )
 
         if not asset_type:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Tipo do Ativo não encontrado."
+                detail="Tipo do Ativo não encontrado.",
             )
         return asset_type
 
@@ -972,13 +972,16 @@ class VerificationService():
         self, verification_type_id: int, db_session: Session
     ) -> VerificationTypeModel:
         """Get verification type or 404"""
-        vertification_type = db_session.query(VerificationTypeModel).filter(
-            VerificationTypeModel.id == verification_type_id).first()
+        vertification_type = (
+            db_session.query(VerificationTypeModel)
+            .filter(VerificationTypeModel.id == verification_type_id)
+            .first()
+        )
 
         if not vertification_type:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Tipo do Verificação não encontrado."
+                detail="Tipo do Verificação não encontrado.",
             )
         return vertification_type
 
@@ -987,8 +990,7 @@ class VerificationService():
     ) -> LendingModel:
         """Get lending or 404"""
         lending = (
-            db_session.query(LendingModel).filter(
-                LendingModel.id == lending_id).first()
+            db_session.query(LendingModel).filter(LendingModel.id == lending_id).first()
         )
         if not lending:
             raise HTTPException(
@@ -998,7 +1000,9 @@ class VerificationService():
 
         return lending
 
-    def serialize_verification(self, verification: VerificationModel) -> VerificationSerializerSchema:
+    def serialize_verification(
+        self, verification: VerificationModel
+    ) -> VerificationSerializerSchema:
         """Serialize verification"""
         return VerificationSerializerSchema(
             id=verification.id,
@@ -1006,22 +1010,27 @@ class VerificationService():
             step=verification.step,
         )
 
-    def serialize_answer_verification(self, answer_verification: VerificationAnswerModel) -> VerificationAnswerSerializerSchema:
+    def serialize_answer_verification(
+        self, answer_verification: VerificationAnswerModel
+    ) -> VerificationAnswerSerializerSchema:
         """Serialize answer verification"""
         return VerificationAnswerSerializerSchema(
             id=answer_verification.id,
             type=answer_verification.type.name,
             answer=answer_verification.answer,
             lending_id=answer_verification.lending.id,
-            verification=self.serialize_verification(
-                answer_verification.verification)
+            verification=self.serialize_verification(answer_verification.verification),
         )
 
-    def create_verification(self, data: NewVerificationSchema, db_session: Session, authenticated_user: UserModel) -> VerificationSerializerSchema:
+    def create_verification(
+        self,
+        data: NewVerificationSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> VerificationSerializerSchema:
         """Creates new asset verification"""
 
-        asset_type = self.__get_asset_type_or_404(
-            data.asset_type_id, db_session)
+        asset_type = self.__get_asset_type_or_404(data.asset_type_id, db_session)
 
         new_verification = VerificationModel(
             question=data.question,
@@ -1044,25 +1053,38 @@ class VerificationService():
 
         return self.serialize_verification(new_verification)
 
-    def get_asset_verifications(self, asset_type_id: int, db_session: Session) -> List[VerificationSerializerSchema]:
+    def get_asset_verifications(
+        self, asset_type_id: int, db_session: Session
+    ) -> List[VerificationSerializerSchema]:
         """Returns asset type verifications"""
-        verifications = db_session.query(VerificationModel).filter(
-            VerificationModel.asset_type_id == asset_type_id).all()
+        verifications = (
+            db_session.query(VerificationModel)
+            .filter(VerificationModel.asset_type_id == asset_type_id)
+            .all()
+        )
 
-        return [VerificationSerializerSchema(
-            id=verification.id,
-            question=verification.question,
-            asset_type=verification.asset_type.name,
-        ) for verification in verifications]
+        return [
+            VerificationSerializerSchema(
+                id=verification.id,
+                question=verification.question,
+                asset_type=verification.asset_type.name,
+            )
+            for verification in verifications
+        ]
 
-    def create_answer_verification(self, data: NewVerificationAnswerSchema, db_session: Session, authenticated_user: UserModel) -> VerificationAnswerSerializerSchema:
+    def create_answer_verification(
+        self,
+        data: NewVerificationAnswerSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> VerificationAnswerSerializerSchema:
         """Creates new answer verification"""
 
-        verification = self.__get_verification_or_404(
-            data.verification_id, db_session)
+        verification = self.__get_verification_or_404(data.verification_id, db_session)
 
         verification_type = self.__get_verification_type_or_404(
-            data.type_id, db_session)
+            data.type_id, db_session
+        )
 
         lending = self.__get_lending_or_404(data.lending_id, db_session)
 
@@ -1086,7 +1108,6 @@ class VerificationService():
             new_answer_verification.id,
             authenticated_user,
         )
-        logger.info("New answer verification. %s",
-                    str(new_answer_verification))
+        logger.info("New answer verification. %s", str(new_answer_verification))
 
         return self.serialize_answer_verification(new_answer_verification)

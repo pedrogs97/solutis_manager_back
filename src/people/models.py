@@ -34,7 +34,7 @@ class EmployeeGenderModel(Base):
     Gender model
 
     * M - Masculino
-    * F - Femino
+    * F - Feminino
     """
 
     __tablename__ = "genders"
@@ -82,8 +82,7 @@ class EmployeeModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     role: Mapped[EmployeeRoleModel] = relationship()
-    role_id = Column("role_id", ForeignKey(
-        EmployeeRoleModel.id), nullable=True)
+    role_id = Column("role_id", ForeignKey(EmployeeRoleModel.id), nullable=True)
 
     nationality: Mapped[EmployeeNationalityModel] = relationship()
     nationality_id = Column(
@@ -98,8 +97,7 @@ class EmployeeModel(Base):
     )
 
     gender: Mapped[EmployeeGenderModel] = relationship()
-    gender_id = Column("gender_id", ForeignKey(
-        EmployeeGenderModel.id), nullable=False)
+    gender_id = Column("gender_id", ForeignKey(EmployeeGenderModel.id), nullable=False)
 
     code = Column("code", Integer, nullable=False, unique=True)
     full_name = Column("full_name", String(length=120), nullable=False)
@@ -114,12 +112,9 @@ class EmployeeModel(Base):
     email = Column("email", String(length=60), nullable=False)
     birthday = Column("birthday", Date, nullable=False)
     manager = Column("manager", String(length=150), nullable=True)
-    legal_person = Column("legal_person", Boolean,
-                          nullable=False, default=False)
-    employer_number = Column(
-        "employer_number", String(length=255), nullable=True)
-    employer_address = Column(
-        "employer_address", String(length=255), nullable=True)
+    legal_person = Column("legal_person", Boolean, nullable=False, default=False)
+    employer_number = Column("employer_number", String(length=255), nullable=True)
+    employer_address = Column("employer_address", String(length=255), nullable=True)
     employer_name = Column("employer_name", String(length=255), nullable=True)
 
     def __str__(self) -> str:

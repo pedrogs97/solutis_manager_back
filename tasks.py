@@ -8,7 +8,7 @@ import pdfkit
 from invoke import task
 from sqlalchemy import Table
 
-from src.config import DEFAULT_DATE_FORMAT, TEMPLATE_DIR, UPLOAD_DIR
+from src.config import CONTRACT_UPLOAD_DIR, DEFAULT_DATE_FORMAT, TEMPLATE_DIR
 from src.database import Base, Engine, Session_db
 from src.utils import get_file_paths, read_file
 
@@ -34,7 +34,7 @@ def run(cmd):
 @task
 def loaddata(cmd, module: str, fixture: str = None):
     """Load fixtures to database"""
-    fixtures_directory: str = dirname(__file__) + f"/{module}/fixtures/"
+    fixtures_directory: str = dirname(__file__) + f"/src/{module}/fixtures/"
     try:
         if fixture:
             file_path: str = fixtures_directory + fixture + ".json"
@@ -55,23 +55,20 @@ def loaddata(cmd, module: str, fixture: str = None):
         else:
             file_paths: list = get_file_paths(fixtures_directory)
             for file_path in file_paths:
-                fixtures: list = read_file(
-                    file_path=fixtures_directory + file_path)
+                fixtures: list = read_file(file_path=fixtures_directory + file_path)
                 for item in fixtures:
                     table_name = item.pop("table", "")
                     if table_name == "":
                         cmd.run("echo table not found")
                         return
-                    table = Table(table_name, Base.metadata,
-                                  autoload_with=Engine)
+                    table = Table(table_name, Base.metadata, autoload_with=Engine)
                     with Session_db() as session:
                         if not session.execute(
                             table.select().where(table.c.id == item["id"])
                         ).first():
                             session.execute(table.insert().values(item))
                             session.commit()
-                cmd.run(
-                    f"echo {len(fixtures)} fixtures applied on {table_name}")
+                cmd.run(f"echo {len(fixtures)} fixtures applied on {table_name}")
     except FileNotFoundError:
         cmd.run(f"echo fixture {fixture} not found")
 
@@ -120,23 +117,24 @@ def __contract():
         ],
     )
 
-    if not os.path.exists(UPLOAD_DIR):
-        os.mkdir(UPLOAD_DIR)
+    if not os.path.exists(CONTRACT_UPLOAD_DIR):
+        os.mkdir(CONTRACT_UPLOAD_DIR)
 
-    html_path = os.path.join(UPLOAD_DIR, "template_test.html")
+    html_path = os.path.join(CONTRACT_UPLOAD_DIR, "template_test.html")
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4",
-               "enable-local-file-access": None, "encoding": "utf-8"}
+    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
 
-    with open(os.path.join(UPLOAD_DIR, "template_test.html"), encoding="utf-8") as f:
+    with open(
+        os.path.join(CONTRACT_UPLOAD_DIR, "template_test.html"), encoding="utf-8"
+    ) as f:
         pdfkit.from_file(
             f,
-            os.path.join(UPLOAD_DIR, "contract_test.pdf"),
+            os.path.join(CONTRACT_UPLOAD_DIR, "contract_test.pdf"),
             options=options,
         )
-    os.remove(os.path.join(UPLOAD_DIR, "template_test.html"))
+    os.remove(os.path.join(CONTRACT_UPLOAD_DIR, "template_test.html"))
 
 
 def __contract_pj():
@@ -188,23 +186,24 @@ def __contract_pj():
         ],
     )
 
-    if not os.path.exists(UPLOAD_DIR):
-        os.mkdir(UPLOAD_DIR)
+    if not os.path.exists(CONTRACT_UPLOAD_DIR):
+        os.mkdir(CONTRACT_UPLOAD_DIR)
 
-    html_path = os.path.join(UPLOAD_DIR, "template_pj_test.html")
+    html_path = os.path.join(CONTRACT_UPLOAD_DIR, "template_pj_test.html")
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4",
-               "enable-local-file-access": None, "encoding": "utf-8"}
+    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
 
-    with open(os.path.join(UPLOAD_DIR, "template_pj_test.html"), encoding="utf-8") as f:
+    with open(
+        os.path.join(CONTRACT_UPLOAD_DIR, "template_pj_test.html"), encoding="utf-8"
+    ) as f:
         pdfkit.from_file(
             f,
-            os.path.join(UPLOAD_DIR, "contract_pj_test.pdf"),
+            os.path.join(CONTRACT_UPLOAD_DIR, "contract_pj_test.pdf"),
             options=options,
         )
-    os.remove(os.path.join(UPLOAD_DIR, "template_pj_test.html"))
+    os.remove(os.path.join(CONTRACT_UPLOAD_DIR, "template_pj_test.html"))
 
 
 @task

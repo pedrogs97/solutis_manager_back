@@ -10,6 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def get_database_url():
+    """Return database url"""
     server = os.getenv("MYSQL_SERVER", "localhost")
     db = os.getenv("MYSQL_DATABASE", "app")
     user = os.getenv("MYSQL_USER", "postgres")
@@ -40,7 +41,10 @@ SECRET_KEY = "KlgH6AzYDeZeGwD288to79I3vTHT8wp7"
 ALGORITHM = "HS256"
 
 ACCESS_TOKEN_EXPIRE_HOURS = 1
-UPLOAD_DIR = os.path.join(BASE_DIR, "contracts")
+CONTRACT_UPLOAD_DIR = os.path.join(BASE_DIR, "contracts")
+
+MEDIA_UPLOAD_DIR = os.path.join(BASE_DIR, "media")
+
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 
 PERMISSIONS = {

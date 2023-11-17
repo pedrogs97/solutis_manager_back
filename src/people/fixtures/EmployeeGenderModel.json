@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "table": "genders",
+        "code": "F",
+        "description": "Feminino"
+    },
+    {
+        "id": 2,
+        "table": "genders",
+        "code": "M",
+        "description": "Masculino"
+    }
+]

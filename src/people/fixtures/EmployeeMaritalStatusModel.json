@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "table": "marital_status",
+        "code": "C",
+        "description": "Casado"
+    },
+    {
+        "id": 2,
+        "table": "marital_status",
+        "code": "S",
+        "description": "Solteiro"
+    }
+]
