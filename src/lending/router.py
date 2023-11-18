@@ -7,17 +7,31 @@ from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
 from src.backends import PermissionChecker, get_db_session
-from src.config import (MAX_PAGINATION_NUMBER, NOT_ALLOWED,
-                        PAGE_NUMBER_DESCRIPTION, PAGE_SIZE_DESCRIPTION,
-                        PAGINATION_NUMBER)
-from src.lending.schemas import (AssetTotvsSchema, AssetTypeTotvsSchema,
-                                 CostCenterTotvsSchema, InactivateAssetSchema,
-                                 NewAssetSchema, NewLendingDocSchema,
-                                 NewVerificationAnswerSchema,
-                                 NewVerificationSchema, UpdateAssetSchema,
-                                 UploadSignedContractSchema)
-from src.lending.service import (AssetService, DocumentService, LendingService,
-                                 VerificationService)
+from src.config import (
+    MAX_PAGINATION_NUMBER,
+    NOT_ALLOWED,
+    PAGE_NUMBER_DESCRIPTION,
+    PAGE_SIZE_DESCRIPTION,
+    PAGINATION_NUMBER,
+)
+from src.lending.schemas import (
+    AssetTotvsSchema,
+    AssetTypeTotvsSchema,
+    CostCenterTotvsSchema,
+    InactivateAssetSchema,
+    NewAssetSchema,
+    NewLendingDocSchema,
+    NewVerificationAnswerSchema,
+    NewVerificationSchema,
+    UpdateAssetSchema,
+    UploadSignedContractSchema,
+)
+from src.lending.service import (
+    AssetService,
+    DocumentService,
+    LendingService,
+    VerificationService,
+)
 
 lending_router = APIRouter(prefix="/lending", tags=["lending"])
 
@@ -265,7 +279,7 @@ async def get_asset_type_verifications(
         )
 
     list_serializer = verification_service.get_asset_verifications(
-        asset_type_id, db_session, authenticated_user
+        asset_type_id, db_session
     )
     return JSONResponse(
         content=[
