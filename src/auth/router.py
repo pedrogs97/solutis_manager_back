@@ -3,14 +3,15 @@ from typing import Optional, Union
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from fastapi.responses import JSONResponse
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm as LoginSchema
 from fastapi_pagination import Page
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
-from src.auth.schemas import (LoginSchema, NewPasswordSchema, NewRoleSchema,
-                              NewUserSchema, PermissionSerializerSchema,
-                              RoleSerializerSchema, UserChangePasswordSchema,
-                              UserSerializerSchema, UserUpdateSchema)
+from src.auth.schemas import (NewPasswordSchema, NewRoleSchema, NewUserSchema,
+                              PermissionSerializerSchema, RoleSerializerSchema,
+                              UserChangePasswordSchema, UserSerializerSchema,
+                              UserUpdateSchema)
 from src.auth.service import PermissionService, RoleService, UserSerivce
 from src.backends import (PermissionChecker, get_db_session, get_user,
                           get_user_token, logout_user, oauth2_bearer,
@@ -30,7 +31,7 @@ permission_serivce = PermissionService()
 
 @auth_router.post("/login/")
 async def login_route(
-    data: LoginSchema,
+    data: LoginSchema = Depends(),
     db_session: Session = Depends(get_db_session),
 ):
     """Login user route"""

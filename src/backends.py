@@ -17,7 +17,7 @@ from src.exceptions import get_user_exception, token_exception
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login/")
 
 logger = logging.Logger(__name__)
 
@@ -81,8 +81,6 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         f"{perm.module}_{perm.model}_{perm.action}" for perm in user.role.permissions
     ]
 
-    full_name = user.employee.full_name if user.employee else ""
-
     if not is_valid_token(old_token):
         encode = {"username": user.username,
                   "id": user.id, "role": str(user.role)}
@@ -102,16 +100,18 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         return {
             "role": user.role.name,
             "email": user.email,
-            "full_name": user.employee.full_name if user.employee else "Administrador",
-            "token": token,
+            "full_name": user.employee.full_name if user.employee else "Usuário",
+            "access_token": token,
+            "token_type": 'Bearer',
             "permissions": permissions,
         }
 
     return {
         "role": user.role.name,
         "email": user.email,
-        "full_name": user.employee.full_name if user.employee else "Administrador",
-        "token": old_token.token,
+        "full_name": user.employee.full_name if user.employee else "Usuário",
+        "access_token": old_token.token,
+        "token_type": 'Bearer',
         "permissions": permissions,
     }
 

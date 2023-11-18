@@ -106,22 +106,16 @@ class NewRoleSchema(BaseSchema):
     permissions: Optional[List[int]] = None
 
 
-class LoginSchema(BaseSchema):
-    """Login schema"""
-
-    username: str
-    password: str
-
-
 class NewUserSchema(BaseSchema):
     """New user schema"""
 
     username: constr(to_lower=True, strip_whitespace=True)
     email: EmailStr
-    is_staff: bool = Field(alias="isAtaff", serialization_alias="is_staff")
+    is_staff: bool = Field(alias="isStaff", serialization_alias="is_staff")
     is_active: bool = Field(alias="isActive", serialization_alias="is_active")
     role: str
-    employee_id: int = Field(alias="employeeId", serialization_alias="employee_id")
+    employee_id: int = Field(
+        alias="employeeId", serialization_alias="employee_id")
 
 
 class TokenSchema(BaseSchema):
