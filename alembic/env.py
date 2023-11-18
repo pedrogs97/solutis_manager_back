@@ -6,7 +6,9 @@ from alembic import context
 from src.auth.models import *
 from src.config import get_database_url
 from src.database import Base
+from src.invoice.models import *
 from src.lending.models import *
+from src.log.models import *
 from src.people.models import *
 
 # this is the Alembic Config object, which provides
@@ -69,8 +71,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection,
-                          target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

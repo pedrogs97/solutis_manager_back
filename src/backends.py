@@ -24,8 +24,8 @@ logger = logging.Logger(__name__)
 
 def get_db_session():
     """Return session"""
+    database = Session_db()
     try:
-        database = Session_db()
         yield database
     finally:
         database.close()
@@ -40,8 +40,7 @@ def get_user(
     username: str, password: str, db_session: Session
 ) -> Union[UserModel, None]:
     """Returns authenticated user if exists"""
-    user = db_session.query(UserModel).filter(
-        UserModel.username == username).first()
+    user = db_session.query(UserModel).filter(UserModel.username == username).first()
 
     if not user:
         return None
@@ -54,8 +53,7 @@ def logout_user(token: str, db_session: Session) -> None:
     """Logouts user"""
     user = get_current_user(token, db_session)
     old_token = (
-        db_session.query(TokenModel).filter(
-            TokenModel.user_id == user.id).first()
+        db_session.query(TokenModel).filter(TokenModel.user_id == user.id).first()
     )
 
     if not old_token:
@@ -73,8 +71,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     db_session.commit()
 
     old_token = (
-        db_session.query(TokenModel).filter(
-            TokenModel.user_id == user.id).first()
+        db_session.query(TokenModel).filter(TokenModel.user_id == user.id).first()
     )
 
     permissions = [
@@ -82,8 +79,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     ]
 
     if not is_valid_token(old_token):
-        encode = {"username": user.username,
-                  "id": user.id, "role": str(user.role)}
+        encode = {"username": user.username, "id": user.id, "role": str(user.role)}
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_HOURS)
         encode.update({"expires": expire.strftime("%d/%m/%Y")})
         token = jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -102,7 +98,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
             "email": user.email,
             "full_name": user.employee.full_name if user.employee else "Usuário",
             "access_token": token,
-            "token_type": 'Bearer',
+            "token_type": "Bearer",
             "permissions": permissions,
         }
 
@@ -111,7 +107,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         "email": user.email,
         "full_name": user.employee.full_name if user.employee else "Usuário",
         "access_token": old_token.token,
-        "token_type": 'Bearer',
+        "token_type": "Bearer",
         "permissions": permissions,
     }
 

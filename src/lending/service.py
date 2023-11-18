@@ -212,7 +212,12 @@ class AssetService:
         db_session.flush()
 
         service_log.set_log(
-            "lending", "asset", "Criação de Ativo", new_asset.id, authenticated_user
+            "lending",
+            "asset",
+            "Criação de Ativo",
+            new_asset.id,
+            authenticated_user,
+            db_session,
         )
         logger.info("New Asset. %s", str(new_asset))
 
@@ -236,7 +241,12 @@ class AssetService:
         db_session.flush()
 
         service_log.set_log(
-            "lending", "asset", "Edição de Ativo", asset.id, authenticated_user
+            "lending",
+            "asset",
+            "Edição de Ativo",
+            asset.id,
+            authenticated_user,
+            db_session,
         )
         logger.info("Updated Asset. %s", str(asset))
         return self.serialize_asset(asset)
@@ -259,7 +269,12 @@ class AssetService:
         db_session.flush()
 
         service_log.set_log(
-            "lending", "asset", "Inativação de Ativo", asset.id, authenticated_user
+            "lending",
+            "asset",
+            "Inativação de Ativo",
+            asset.id,
+            authenticated_user,
+            db_session,
         )
         logger.info("Inactivate Asset. %s", str(asset))
         return self.serialize_asset(asset)
@@ -594,6 +609,7 @@ class LendingService:
             "Criação de Contrato de Comodato",
             new_lending_db.id,
             authenticated_user,
+            db_session,
         )
         logger.info("New Asset. %s", str(new_lending_db))
 
@@ -866,6 +882,7 @@ class DocumentService:
             "Criação de Contrato de Comodato",
             new_doc.id,
             authenticated_user,
+            db_session,
         )
         logger.info("New Document. %s", str(new_doc))
 
@@ -884,6 +901,7 @@ class DocumentService:
             "Criação de Contrato de Comodato",
             current_lending.id,
             authenticated_user,
+            db_session,
         )
         logger.info("New Document add to Lending. %s", str(current_lending))
 
@@ -925,6 +943,7 @@ class DocumentService:
             "Importação de Contrato de Comodato",
             document.id,
             authenticated_user,
+            db_session,
         )
         logger.info("Upload Document signed. %s", str(document))
 
@@ -1048,6 +1067,7 @@ class VerificationService:
             f"Adição de nova pergunta de verificação para {str(asset_type)}",
             new_verification.id,
             authenticated_user,
+            db_session,
         )
         logger.info("New verification. %s", str(new_verification))
 
@@ -1104,9 +1124,10 @@ class VerificationService:
         service_log.set_log(
             "lending",
             "verification",
-            f"Adição de nova  resposta verificação",
+            "Adição de nova resposta verificação",
             new_answer_verification.id,
             authenticated_user,
+            db_session,
         )
         logger.info("New answer verification. %s", str(new_answer_verification))
 

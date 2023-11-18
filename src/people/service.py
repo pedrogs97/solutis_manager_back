@@ -14,19 +14,27 @@ from src.lending.models import LendingModel
 from src.lending.schemas import LendingSerializerSchema
 from src.lending.service import LendingService
 from src.log.services import LogService
-from src.people.models import (EmployeeGenderModel, EmployeeMaritalStatusModel,
-                               EmployeeModel, EmployeeNationalityModel,
-                               EmployeeRoleModel)
-from src.people.schemas import (EmployeeGenderSerializerSchema,
-                                EmployeeGenderTotvsSchema,
-                                EmployeeMatrimonialStatusSerializerSchema,
-                                EmployeeMatrimonialStatusTotvsSchema,
-                                EmployeeNationalitySerializerSchema,
-                                EmployeeNationalityTotvsSchema,
-                                EmployeeRoleSerializerSchema,
-                                EmployeeRoleTotvsSchema,
-                                EmployeeSerializerSchema, EmployeeTotvsSchema,
-                                NewEmployeeSchema, UpdateEmployeeSchema)
+from src.people.models import (
+    EmployeeGenderModel,
+    EmployeeMaritalStatusModel,
+    EmployeeModel,
+    EmployeeNationalityModel,
+    EmployeeRoleModel,
+)
+from src.people.schemas import (
+    EmployeeGenderSerializerSchema,
+    EmployeeGenderTotvsSchema,
+    EmployeeMatrimonialStatusSerializerSchema,
+    EmployeeMatrimonialStatusTotvsSchema,
+    EmployeeNationalitySerializerSchema,
+    EmployeeNationalityTotvsSchema,
+    EmployeeRoleSerializerSchema,
+    EmployeeRoleTotvsSchema,
+    EmployeeSerializerSchema,
+    EmployeeTotvsSchema,
+    NewEmployeeSchema,
+    UpdateEmployeeSchema,
+)
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -167,8 +175,7 @@ class EmployeeService:
 
                 dict_employee = {
                     **totvs_employee.model_dump(
-                        exclude={"role", "nationality",
-                                 "marital_status", "gender"}
+                        exclude={"role", "nationality", "marital_status", "gender"}
                     ),
                     "role": role,
                     "nationality": nationality,
@@ -181,8 +188,7 @@ class EmployeeService:
             db_session.add_all(updates)
             db_session.commit()
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def create_employee(
         self,
@@ -242,6 +248,7 @@ class EmployeeService:
             "Adição de Colaborador",
             new_emplyoee.id,
             authenticated_user,
+            db_session,
         )
         logger.info("New Employee. %s", str(new_emplyoee))
         return self.serialize_employee(new_emplyoee)
@@ -301,6 +308,7 @@ class EmployeeService:
             "Edição de Colaborador",
             employee.id,
             authenticated_user,
+            db_session,
         )
         logger.info("Updated Employee. %s", str(employee))
         return self.serialize_employee(employee)
@@ -414,20 +422,17 @@ class EmployeeService:
                     continue
 
                 updates.append(
-                    EmployeeMaritalStatusModel(
-                        **totvs_marital_status_item.model_dump())
+                    EmployeeMaritalStatusModel(**totvs_marital_status_item.model_dump())
                 )
 
             db_session.add_all(updates)
             db_session.commit()
 
             logger.info(
-                "Update Matrimonial Status from TOTVS. Total=%s", str(
-                    len(updates))
+                "Update Matrimonial Status from TOTVS. Total=%s", str(len(updates))
             )
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def update_gender_totvs(
         self,
@@ -448,16 +453,13 @@ class EmployeeService:
                     updates.append(db_gender)
                     continue
 
-                updates.append(EmployeeGenderModel(
-                    **totvs_gender_item.model_dump()))
+                updates.append(EmployeeGenderModel(**totvs_gender_item.model_dump()))
 
             db_session.add_all(updates)
             db_session.commit()
-            logger.info("Update Gender from TOTVS. Total=%s",
-                        str(len(updates)))
+            logger.info("Update Gender from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def update_nationality_totvs(
         self,
@@ -481,17 +483,14 @@ class EmployeeService:
                     continue
 
                 updates.append(
-                    EmployeeNationalityModel(
-                        **totvs_nationality_item.model_dump())
+                    EmployeeNationalityModel(**totvs_nationality_item.model_dump())
                 )
 
             db_session.add_all(updates)
             db_session.commit()
-            logger.info("Update Nationality from TOTVS. Total=%s",
-                        str(len(updates)))
+            logger.info("Update Nationality from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def update_role_totvs(
         self,
@@ -512,12 +511,10 @@ class EmployeeService:
                     updates.append(db_role)
                     continue
 
-                updates.append(EmployeeRoleModel(
-                    **totvs_role_item.model_dump()))
+                updates.append(EmployeeRoleModel(**totvs_role_item.model_dump()))
 
             db_session.add_all(updates)
             db_session.commit()
             logger.info("Update Role from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc

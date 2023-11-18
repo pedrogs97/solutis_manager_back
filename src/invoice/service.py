@@ -94,6 +94,7 @@ class InvoiceService:
             "Criação de Nota Fiscal",
             new_invoice_db.id,
             authenticated_user,
+            db_session,
         )
         logger.info("New Invoice. %s", str(new_invoice_db))
 
@@ -177,6 +178,7 @@ class InvoiceService:
             "Importação de Nota Fiscal",
             invoice.id,
             authenticated_user,
+            db_session,
         )
         logger.info("Upload Invoice file. %s", str(invoice))
 

@@ -11,9 +11,13 @@ from sqlalchemy.orm import Session
 from src.auth.models import UserModel
 from src.auth.service import UserSerivce
 from src.backends import PermissionChecker, get_db_session
-from src.config import (MAX_PAGINATION_NUMBER, NOT_ALLOWED,
-                        PAGE_NUMBER_DESCRIPTION, PAGE_SIZE_DESCRIPTION,
-                        PAGINATION_NUMBER)
+from src.config import (
+    MAX_PAGINATION_NUMBER,
+    NOT_ALLOWED,
+    PAGE_NUMBER_DESCRIPTION,
+    PAGE_SIZE_DESCRIPTION,
+    PAGINATION_NUMBER,
+)
 from src.log.models import LogModel
 from src.log.schemas import LogSerializerSchema
 from src.people.models import EmployeeModel
@@ -22,7 +26,7 @@ people_router = APIRouter(prefix="/logs", tags=["Log"])
 
 
 @people_router.get("/")
-async def get_list_logs_route(
+def get_list_logs_route(
     search: str = "",
     filter_list: str = None,
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -60,9 +64,7 @@ async def get_list_logs_route(
     )
 
     if filter_list:
-        log_list = log_list.join(
-            LogModel.user,
-        ).filter(
+        log_list = log_list.join(LogModel.user,).filter(
             or_(
                 UserModel.is_active == filter_list,
                 UserModel.is_staff == filter_list,
@@ -82,5 +84,5 @@ async def get_list_logs_route(
             for log in log_list
         ],
     )
-
+    db_session.close()
     return paginated
