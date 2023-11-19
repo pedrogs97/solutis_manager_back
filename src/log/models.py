@@ -3,6 +3,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, relationship
 
 from src.auth.models import UserModel
+from src.config import DEFAULT_DATE_TIME_FORMAT
 from src.database import Base
 
 
@@ -23,5 +24,5 @@ class LogModel(Base):
     logged_in = Column("logged_in", DateTime, nullable=False, server_default=func.now())
 
     def __str__(self):
-        date_str = self.logged_in.strftime("%d/%m/%Y")
+        date_str = self.logged_in.strftime(DEFAULT_DATE_TIME_FORMAT)
         return f"{self.module}:{self.operation} - {date_str}"

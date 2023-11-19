@@ -11,7 +11,12 @@ from sqlalchemy.orm import Session
 
 from src.auth.models import TokenModel, UserModel
 from src.auth.schemas import PermissionSchema
-from src.config import ACCESS_TOKEN_EXPIRE_HOURS, ALGORITHM, SECRET_KEY
+from src.config import (
+    ACCESS_TOKEN_EXPIRE_HOURS,
+    ALGORITHM,
+    DEFAULT_DATE_FORMAT,
+    SECRET_KEY,
+)
 from src.database import Session_db
 from src.exceptions import get_user_exception, token_exception
 
@@ -81,7 +86,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     if not is_valid_token(old_token):
         encode = {"username": user.username, "id": user.id, "role": str(user.role)}
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_HOURS)
-        encode.update({"expires": expire.strftime("%d/%m/%Y")})
+        encode.update({"expires": expire.strftime(DEFAULT_DATE_FORMAT)})
         token = jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
         token_db = TokenModel(user=user, token=token, expires_in=expire)

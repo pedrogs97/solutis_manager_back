@@ -12,6 +12,7 @@ from src.auth.models import UserModel
 from src.auth.service import UserSerivce
 from src.backends import PermissionChecker, get_db_session
 from src.config import (
+    DEFAULT_DATE_TIME_FORMAT,
     MAX_PAGINATION_NUMBER,
     NOT_ALLOWED,
     PAGE_NUMBER_DESCRIPTION,
@@ -22,10 +23,10 @@ from src.log.models import LogModel
 from src.log.schemas import LogSerializerSchema
 from src.people.models import EmployeeModel
 
-people_router = APIRouter(prefix="/logs", tags=["Log"])
+log_router = APIRouter(prefix="/logs", tags=["Log"])
 
 
-@people_router.get("/")
+@log_router.get("/")
 def get_list_logs_route(
     search: str = "",
     filter_list: str = None,
@@ -46,22 +47,24 @@ def get_list_logs_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-
-    log_list = (
-        db_session.query(LogModel)
-        .join(UserModel)
-        .join(EmployeeModel)
-        .filter(
-            or_(
-                LogModel.operation.ilike(f"%{search}%"),
-                EmployeeModel.full_name.ilike(f"%{search}%"),
-                UserModel.username.ilike(f"%{search}%"),
-                UserModel.email.ilike(f"%{search}%"),
-                LogModel.model.ilike(f"%{search}"),
-                LogModel.module.ilike(f"%{search}"),
+    if search != "":
+        log_list = (
+            db_session.query(LogModel)
+            .join(UserModel)
+            .join(EmployeeModel)
+            .filter(
+                or_(
+                    LogModel.operation.ilike(f"%{search}%"),
+                    EmployeeModel.full_name.ilike(f"%{search}%"),
+                    UserModel.username.ilike(f"%{search}%"),
+                    UserModel.email.ilike(f"%{search}%"),
+                    LogModel.model.ilike(f"%{search}"),
+                    LogModel.module.ilike(f"%{search}"),
+                )
             )
         )
-    )
+    else:
+        log_list = db_session.query(LogModel)
 
     if filter_list:
         log_list = log_list.join(LogModel.user,).filter(
@@ -75,11 +78,17 @@ def get_list_logs_route(
 
     params = Params(page=page, size=size)
     paginated = paginate(
-        log_list.all(),
+        log_list,
         params=params,
         transformer=lambda log_list: [
             LogSerializerSchema(
-                **log.__dict__, user=user_service.serialize_user(**log.user)
+                id=log.id,
+                identifier=log.identifier,
+                module=log.module,
+                model=log.model,
+                operation=log.operation,
+                logged_in=log.logged_in.strftime(DEFAULT_DATE_TIME_FORMAT),
+                user=user_service.serialize_user(log.user),
             )
             for log in log_list
         ],

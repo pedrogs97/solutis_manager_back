@@ -33,7 +33,7 @@ from src.lending.service import (
     VerificationService,
 )
 
-lending_router = APIRouter(prefix="/lending", tags=["lending"])
+lending_router = APIRouter(prefix="/lending", tags=["Lending"])
 
 asset_service = AssetService()
 lending_service = LendingService()

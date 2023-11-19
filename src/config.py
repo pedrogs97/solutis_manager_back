@@ -36,6 +36,7 @@ date_str = datetime.now().strftime("%Y-%m-%d")
 LOG_FILENAME = f"{BASE_DIR}/logs/{date_str}.log"
 
 DEFAULT_DATE_FORMAT = "%d/%m/%Y"
+DEFAULT_DATE_TIME_FORMAT = "%d/%m/%Y %H:%M:%S"
 
 SECRET_KEY = "KlgH6AzYDeZeGwD288to79I3vTHT8wp7"
 ALGORITHM = "HS256"
@@ -46,6 +47,8 @@ CONTRACT_UPLOAD_DIR = os.path.join(BASE_DIR, "contracts")
 MEDIA_UPLOAD_DIR = os.path.join(BASE_DIR, "media")
 
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+
+BASE_API = "/api/v1"
 
 PERMISSIONS = {
     "lending": {
@@ -72,7 +75,10 @@ PERMISSIONS = {
         ],
         "label": "Grupos e Permissões",
     },
-    "invoice": {"models": [], "label": "Notas Fiscais"},
+    "invoice": {
+        "models": [{"name": "invoice", "label": "Nota Fiscal"}],
+        "label": "Notas Fiscais",
+    },
     "logs": {
         "models": [
             {

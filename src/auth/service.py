@@ -23,7 +23,7 @@ from src.auth.schemas import (
     UserUpdateSchema,
 )
 from src.backends import bcrypt_context
-from src.config import DEBUG, PASSWORD_SUPER_USER, PERMISSIONS
+from src.config import DEBUG, DEFAULT_DATE_FORMAT, PASSWORD_SUPER_USER, PERMISSIONS
 from src.database import Session_db
 from src.log.services import LogService
 from src.people.models import (
@@ -214,7 +214,7 @@ class UserSerivce:
             email=user.email,
             is_active=user.is_active,
             is_staff=user.is_staff,
-            last_login_in=user.last_login_in.strftime("%d/%m/%Y")
+            last_login_in=user.last_login_in.strftime(DEFAULT_DATE_FORMAT)
             if user.last_login_in
             else None,
         )

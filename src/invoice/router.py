@@ -18,7 +18,7 @@ from src.invoice.schemas import NewInvoiceSchema, UploadInvoiceSchema
 from src.invoice.service import InvoiceService
 
 invoice_service = InvoiceService()
-invoice_router = APIRouter(prefix="/invoice", tags=["invoice"])
+invoice_router = APIRouter(prefix="/invoice", tags=["Invoice"])
 
 
 @invoice_router.post("/invoices/")

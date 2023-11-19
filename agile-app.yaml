@@ -11,14 +11,16 @@ metadata:
   name: env-agile
   namespace: solutis
 data:
-  DB_URL_DATASYNC: bXlzcWwrbXlzcWxjb25uZWN0b3I6Ly9ERVNLVE9QLTRWVVBCN0MubG9jYWwvZGF0YXN5bmM/dXNlcj13c2xfdXNlciZwYXNzd29yZD1kYXRhc3luY0AxMjMmcG9ydD0zMzA2
-  AGILE_HOST: aHR0cC8vbG9jYWxob3N0OjgwMDAvYXBpL3YxLw==
-  SQLSERVE_HOST_DB: MTcyLjI5LjAuMTI3
-  SQLSERVE_NAME_DB: Q29ycG9yZVJNX1NJ
-  SQLSERVE_USER_DB: cGFyYW1ldHJpemUucGVkcm8=
-  SQLSERVE_PASSWORD_DB: U29sdXRpc0AxMjMh
-  ACCEPT_EULA: WQ==
-  MSSQL_PID: U3RhbmRhcmQ=
+  SECRET_KEY: PSV1OHQjJClycXR1XiViJSklcyR4bz11IXB3dik0NF9kKCVed2MpNTF3YSEpb29nZCo=
+  TIMEZONE: QW1lcmljYS9CYWhpYQ==
+  # Banco Solutis Agile
+  MYSQL_SERVER: MTcyLjIzLjk2LjE=
+  # MYSQL_SERVER: host.docker.internal
+  MYSQL_DATABASE: YWdpbGU=
+  MYSQL_USER: bG9jYWxfdXNlcg==
+  MYSQL_PASSWORD: c29sdXRpczEyMw==
+  PASSWORD_SUPER_USER: c2FnaWxlQGFkbWluMTIz
+  DEBUG: VHJ1ZQ==
 ---
 apiVersion: v1
 kind: Pod
@@ -32,46 +34,46 @@ spec:
     - name: agile-app
       image: pedrogls/agile:latest
       env:
-        - name: DB_URL_DATASYNC
+        - name: SECRET_KEY
           valueFrom:
             secretKeyRef:
               name: env-agile
-              key: DB_URL_DATASYNC
-        - name: AGILE_HOST
+              key: SECRET_KEY
+        - name: TIMEZONE
           valueFrom:
             secretKeyRef:
               name: env-agile
-              key: AGILE_HOST
-        - name: SQLSERVE_HOST_DB
+              key: TIMEZONE
+        - name: MYSQL_SERVER
           valueFrom:
             secretKeyRef:
               name: env-agile
-              key: SQLSERVE_HOST_DB
-        - name: SQLSERVE_NAME_DB
+              key: MYSQL_SERVER
+        - name: MYSQL_DATABASE
           valueFrom:
             secretKeyRef:
               name: env-agile
-              key: SQLSERVE_NAME_DB
-        - name: SQLSERVE_USER_DB
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
           valueFrom:
             secretKeyRef:
               name: env-agile
-              key: SQLSERVE_USER_DB
-        - name: SQLSERVE_PASSWORD_DB
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
               name: env-agile
-              key: SQLSERVE_PASSWORD_DB
-        - name: ACCEPT_EULA
+              key: MYSQL_PASSWORD
+        - name: PASSWORD_SUPER_USER
           valueFrom:
             secretKeyRef:
               name: env-agile
-              key: ACCEPT_EULA
-        - name: MSSQL_PID
+              key: PASSWORD_SUPER_USER
+        - name: DEBUG
           valueFrom:
             secretKeyRef:
               name: env-agile
-              key: MSSQL_PID
+              key: DEBUG
 ---
 kind: Service
 apiVersion: v1
