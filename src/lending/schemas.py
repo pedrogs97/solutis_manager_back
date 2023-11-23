@@ -334,8 +334,7 @@ class LendingSerializerSchema(BaseSchema):
     document: int
     workload: WorkloadSerializerSchema
     witnesses: List[WitnessSerializerSchema]
-    cost_center: CostCenterSerializerSchema = Field(
-        serialization_alias="costCenter")
+    cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
     manager: str
     observations: Optional[str]
     signed_date: str = Field(serialization_alias="signedDate")
@@ -357,51 +356,77 @@ class NewLendingSchema(BaseSchema):
     glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
 
 
-class MaintenanceActionSchema(BaseSchema):
-    """Maintenance action schema"""
+class MaintenanceActionSerializerSchema(BaseSchema):
+    """Maintenance action serializer schema"""
 
-    id: Optional[int]
+    id: int
     name: str
 
 
-class MaintenanceStatusSchema(BaseSchema):
+class MaintenanceStatusSerializerSchema(BaseSchema):
     """Maintenance status schema"""
 
-    id: Optional[int]
+    id: int
     name: str
 
 
-class MaintenanceSchema(BaseSchema):
-    """Maintenance schema"""
+class NewMaintenanceSchema(BaseSchema):
+    """New Maintenance schema"""
 
-    id: Optional[int]
-    action: str
-    status: MaintenanceStatusSchema
-    open_date: date
-    close_date: Optional[date]
-    glpi_number: Optional[str]
-    supplier_service_order: Optional[str]
-    supplier_number: Optional[str]
-    resolution: Optional[str]
+    action_id: int
+    glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
+    supplier_service_order: Optional[str] = Field(
+        alias="supplierServiceOrder", default=None
+    )
+    supplier_number: Optional[str] = Field(alias="supplierNumber", default=None)
 
 
-class MaintenanceAttachmentSchema(BaseSchema):
-    """Maintenance attachment schema"""
+class UpdateMaintenanceSchema(BaseSchema):
+    """Update Maintenance schema"""
 
-    id: Optional[int]
-    maintenance: MaintenanceSchema
+    status_id: int
+    close_date: Optional[date] = Field(alias="closeDate", default=None)
+    glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
+    supplier_service_order: Optional[str] = Field(
+        alias="supplierServiceOrder", default=None
+    )
+    supplier_number: Optional[str] = Field(alias="supplierNumber", default=None)
+    resolution: Optional[str] = None
+
+
+class MaintenanceAttachmentSerializerSchema(BaseSchema):
+    """Maintenance attachment serializer schema"""
+
+    id: int
     path: Optional[str]
-    file_name: str
+    file_name: str = Field(alias="fileName")
 
 
-class UpgradeSchema(BaseSchema):
-    """Upgrade schema"""
+class MaintenanceSerializerSchema(BaseSchema):
+    """Maintenance serializer schema"""
 
-    id: Optional[int]
-    status: MaintenanceStatusSchema
-    open_date: date
-    close_date: Optional[date]
-    glpi_number: Optional[str]
+    id: int
+    action: str
+    status: str
+    open_date: date = Field(alias="openDate")
+    close_date: Optional[date] = Field(alias="closeDate", default=None)
+    glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
+    supplier_service_order: Optional[str] = Field(
+        alias="supplierServiceOrder", default=None
+    )
+    supplier_number: Optional[str] = Field(alias="supplierNumber", default=None)
+    resolution: Optional[str] = None
+    attachments: List[MaintenanceAttachmentSerializerSchema] = []
+
+
+class UpgradeSerializerSchema(BaseSchema):
+    """Upgrade serializer schema"""
+
+    id: int
+    status: str
+    open_date: date = Field(alias="openDate")
+    close_date: Optional[date] = Field(alias="closeDate", default=None)
+    glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
     detailing: Optional[str]
     supplier: Optional[str]
     observations: Optional[str]

@@ -21,6 +21,10 @@ from src.lending.models import (
     DocumentModel,
     DocumentTypeModel,
     LendingModel,
+    MaintenanceActionModel,
+    MaintenanceAttachmentModel,
+    MaintenanceModel,
+    MaintenanceStatusModel,
     VerificationAnswerModel,
     VerificationModel,
     VerificationTypeModel,
@@ -39,14 +43,20 @@ from src.lending.schemas import (
     DocumentSerializerSchema,
     InactivateAssetSchema,
     LendingSerializerSchema,
+    MaintenanceActionSerializerSchema,
+    MaintenanceAttachmentSerializerSchema,
+    MaintenanceSerializerSchema,
+    MaintenanceStatusSerializerSchema,
     NewAssetSchema,
     NewLendingContextSchema,
     NewLendingDocSchema,
     NewLendingPjContextSchema,
     NewLendingSchema,
+    NewMaintenanceSchema,
     NewVerificationAnswerSchema,
     NewVerificationSchema,
     UpdateAssetSchema,
+    UpdateMaintenanceSchema,
     UploadSignedContractSchema,
     VerificationAnswerSerializerSchema,
     VerificationSerializerSchema,
@@ -467,7 +477,7 @@ class LendingService:
                 WitnessSerializerSchema(
                     id=witness.id,
                     employee=EmployeeSerializerSchema(**witness.employee.__dict__),
-                    signed=witness.signed.strftime("%d/%m/%Y"),
+                    signed=witness.signed.strftime("DEFAULT_DATE_FORMAT"),
                 )
             )
 
@@ -481,7 +491,7 @@ class LendingService:
             cost_center=CostCenterSerializerSchema(**lending.cost_center.__dict__),
             manager=lending.manager,
             observations=lending.observations,
-            signed_date=lending.signed_date.strftime("%d/%m/%Y"),
+            signed_date=lending.signed_date.strftime("DEFAULT_DATE_FORMAT"),
             glpi_number=lending.glpi_number,
         )
 
@@ -692,7 +702,7 @@ class DocumentService:
         if not document:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Contrato de Comodato não encontrado",
+                detail="Contrato não encontrado",
             )
 
         return document
@@ -811,7 +821,7 @@ class DocumentService:
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
                     value=asset.value,
-                    date=date.today().strftime("%d/%m/%Y"),
+                    date=date.today().strftime("DEFAULT_DATE_FORMAT"),
                     witnesses=[
                         WitnessContextSchema(
                             full_name=witness1.employee.full_name,
@@ -854,7 +864,7 @@ class DocumentService:
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
                     value=asset.value,
-                    date=date.today().strftime("%d/%m/%Y"),
+                    date=date.today().strftime("DEFAULT_DATE_FORMAT"),
                     witnesses=[
                         WitnessContextSchema(
                             full_name=witness1.employee.full_name,
@@ -879,7 +889,7 @@ class DocumentService:
         service_log.set_log(
             "lending",
             "document",
-            "Criação de Contrato de Comodato",
+            "Criação de Contrato",
             new_doc.id,
             authenticated_user,
             db_session,
@@ -898,7 +908,7 @@ class DocumentService:
         service_log.set_log(
             "lending",
             "lending",
-            "Criação de Contrato de Comodato",
+            "Vinculação do Contrato ao Comodato",
             current_lending.id,
             authenticated_user,
             db_session,
@@ -1132,3 +1142,263 @@ class VerificationService:
         logger.info("New answer verification. %s", str(new_answer_verification))
 
         return self.serialize_answer_verification(new_answer_verification)
+
+
+class MaintenanceService:
+    """Maintenance service"""
+
+    def __get_maintenance_or_404(
+        self, maintenance_id: int, db_session: Session
+    ) -> MaintenanceModel:
+        """Get maintenance or 404"""
+        maintenance = (
+            db_session.query(MaintenanceModel)
+            .filter(MaintenanceModel.id == maintenance_id)
+            .first()
+        )
+        if not maintenance:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Manutenção não encontrada.",
+            )
+
+        return maintenance
+
+    def __get_maintenance_action_or_404(
+        self, maintenance_action_id: int, db_session: Session
+    ) -> MaintenanceActionModel:
+        """Get maintenance action or 404"""
+        vertification_type = (
+            db_session.query(MaintenanceActionModel)
+            .filter(MaintenanceActionModel.id == maintenance_action_id)
+            .first()
+        )
+
+        if not vertification_type:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Ação de Manutenção não encontrada.",
+            )
+        return vertification_type
+
+    def __get_maintenance_status_or_404(
+        self, maintenance_status_id: int, db_session: Session
+    ) -> MaintenanceStatusModel:
+        """Get maintenance status or 404"""
+        maintenance_status = (
+            db_session.query(MaintenanceStatusModel)
+            .filter(MaintenanceStatusModel.id == maintenance_status_id)
+            .first()
+        )
+        if not maintenance_status:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Status de manutenção não encontrado",
+            )
+
+        return maintenance_status
+
+    def serialize_maintenance_attachment(
+        self, maintenance_attachment: MaintenanceAttachmentModel
+    ) -> MaintenanceAttachmentSerializerSchema:
+        """Serialize maintenance attachement"""
+        return MaintenanceAttachmentSerializerSchema(**maintenance_attachment.__dict__)
+
+    def serialize_maintenance(
+        self, maintenance: MaintenanceModel
+    ) -> MaintenanceSerializerSchema:
+        """Serialize maintenance"""
+        if maintenance.attachments:
+            attachements = [
+                self.serialize_maintenance_attachment(attachement)
+                for attachement in maintenance.attachments
+            ]
+        else:
+            attachements = []
+
+        return MaintenanceSerializerSchema(
+            **maintenance.__dict__,
+            action=maintenance.action.name,
+            attachments=attachements,
+        )
+
+    def serialize_maintenance_action(
+        self, maintenance_action: MaintenanceActionModel
+    ) -> MaintenanceActionSerializerSchema:
+        """Serialize maintenance action"""
+        return MaintenanceActionSerializerSchema(**maintenance_action.__dict__)
+
+    def serialize_maintenance_status(
+        self, maintenance_status: MaintenanceActionModel
+    ) -> MaintenanceStatusSerializerSchema:
+        """Serialize maintenance status"""
+        return MaintenanceStatusSerializerSchema(**maintenance_status.__dict__)
+
+    def create_maintenance(
+        self,
+        data: NewMaintenanceSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> MaintenanceSerializerSchema:
+        """Creates new asset maintenance"""
+
+        action_type = self.__get_maintenance_action_or_404(data.action_id, db_session)
+
+        pending_status = (
+            db_session.query(MaintenanceStatusModel)
+            .filter(MaintenanceStatusModel.name == "Pendente")
+            .first()
+        )
+
+        if not pending_status:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Sem Status de Manutenção.",
+            )
+
+        new_maintenance = MaintenanceModel(
+            action=action_type,
+            status=pending_status,
+            open_date=date.today(),
+            glpi_number=data.glpi_number,
+            supplier_service_order=data.supplier_service_order,
+            supplier_number=data.supplier_number,
+        )
+
+        db_session.add(new_maintenance)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "maintenance",
+            "Adição de Manutenção",
+            new_maintenance.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New maintenance. %s", str(new_maintenance))
+
+        return self.serialize_maintenance(new_maintenance)
+
+    def get_maintenance(
+        self, maintenance_id: int, db_session: Session
+    ) -> MaintenanceSerializerSchema:
+        """Get a maintenance"""
+        maintenance = self.__get_maintenance_or_404(maintenance_id, db_session)
+        return self.serialize_maintenance(maintenance)
+
+    def get_maintenances(
+        self,
+        db_session: Session,
+        search: str = "",
+        filter_maintenance: str = None,
+        inital_date: str = None,
+        final_date: str = None,
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[MaintenanceSerializerSchema]:
+        """Get maintenance list"""
+
+        maintenance_list = db_session.query(MaintenanceModel).filter(
+            MaintenanceModel.supplier_number.ilike(f"%{search}"),
+            MaintenanceModel.glpi_number.ilike(f"%{search}"),
+            MaintenanceModel.supplier_service_order.ilike(f"%{search}"),
+        )
+
+        if filter_maintenance:
+            maintenance_list = maintenance_list.join(
+                MaintenanceModel.action,
+                MaintenanceModel.status,
+            ).filter(
+                or_(
+                    MaintenanceActionModel.name == filter_maintenance,
+                    MaintenanceStatusModel.name == filter_maintenance,
+                )
+            )
+
+        if inital_date:
+            maintenance_list = maintenance_list.filter(
+                MaintenanceModel.open_date <= inital_date
+            )
+
+        if final_date:
+            maintenance_list = maintenance_list.filter(
+                MaintenanceModel.close_date >= final_date
+            )
+
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            maintenance_list,
+            params=params,
+            transformer=lambda maintenance_list: [
+                self.serialize_maintenance(lending) for lending in maintenance_list
+            ],
+        )
+        return paginated
+
+    def update_maintenance(
+        self,
+        data: UpdateMaintenanceSchema,
+        maintenance_id: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> MaintenanceSerializerSchema:
+        """Update a maintenance"""
+        maintenance = self.__get_maintenance_or_404(maintenance_id, db_session)
+
+        status_maintenance = self.__get_maintenance_status_or_404(
+            data.status_id, db_session
+        )
+
+        maintenance.status = status_maintenance
+
+        if data.close_date:
+            maintenance.close_date = data.close_date
+
+        if data.glpi_number:
+            maintenance.glpi_number = data.glpi_number
+
+        if data.supplier_service_order:
+            maintenance.supplier_service_order = data.supplier_service_order
+
+        if data.supplier_number:
+            maintenance.supplier_number = data.supplier_number
+
+        if data.resolution:
+            maintenance.resolution = data.resolution
+
+        db_session.add(maintenance)
+        db_session.commit()
+
+        service_log.set_log(
+            "lending",
+            "maintenance",
+            "Atualiação de Manutenção",
+            maintenance.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Update maintenance. %s", str(maintenance))
+
+        return self.serialize_maintenance(maintenance)
+
+    def get_maintenance_actions(
+        self, db_session: Session
+    ) -> List[MaintenanceActionSerializerSchema]:
+        """Get maintenance actions"""
+
+        maintenance_actions = db_session.query(MaintenanceActionModel).all()
+        return [
+            self.serialize_maintenance_action(action) for action in maintenance_actions
+        ]
+
+    def get_maintenance_status(
+        self, db_session: Session
+    ) -> List[MaintenanceStatusSerializerSchema]:
+        """Get maintenance status"""
+
+        maintenance_status = db_session.query(MaintenanceActionModel).all()
+        return [
+            self.serialize_maintenance_status(status) for status in maintenance_status
+        ]
