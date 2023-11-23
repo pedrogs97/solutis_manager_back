@@ -54,7 +54,8 @@ class EmployeeService:
         )
         if not employee:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"employee": "Colaborador não encontrado"},
             )
         return employee
 
@@ -68,7 +69,7 @@ class EmployeeService:
             )
             if not role:
                 raise HTTPException(
-                    detail="Role does not extists",
+                    detail={"role": "Perfil não existe"},
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -80,7 +81,7 @@ class EmployeeService:
             )
             if not nationality:
                 raise HTTPException(
-                    detail="Nationatily does not extists",
+                    detail={"nationality": "Nacionalidade não existe"},
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -92,7 +93,7 @@ class EmployeeService:
             )
             if not marital_status:
                 raise HTTPException(
-                    detail="Matrimonial status does not extists",
+                    detail={"maritalStatus": "Estado civil não existe"},
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -104,7 +105,7 @@ class EmployeeService:
             )
             if not gender:
                 raise HTTPException(
-                    detail="Gender does not extists",
+                    detail={"gender": "Genero não existe"},
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -197,24 +198,25 @@ class EmployeeService:
         authenticated_user: UserModel,
     ) -> EmployeeSerializerSchema:
         """Creates new employee"""
-        if (
-            data.code
-            and (
-                db_session.query(EmployeeModel)
-                .filter(EmployeeModel.code == data.code)
-                .first()
-            )
-            or (
-                db_session.query(EmployeeModel)
-                .filter(
-                    EmployeeModel.taxpayer_identification
-                    == data.taxpayer_identification
-                )
-                .first()
-            )
+        if data.code and (
+            db_session.query(EmployeeModel)
+            .filter(EmployeeModel.code == data.code)
+            .first()
         ):
             raise HTTPException(
-                detail="Employee already extists",
+                detail={"code": "Colaborador já existe"},
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if (
+            db_session.query(EmployeeModel)
+            .filter(
+                EmployeeModel.taxpayer_identification == data.taxpayer_identification
+            )
+            .first()
+        ):
+            raise HTTPException(
+                detail={"taxpayer_identification": "Colaborador já existe"},
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 

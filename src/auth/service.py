@@ -47,7 +47,8 @@ class UserSerivce:
 
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"userId": "Usuário não encontrado"},
             )
 
         return user
@@ -87,7 +88,8 @@ class UserSerivce:
 
         if not role:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Perfil inválido"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"role": "Perfil inválido"},
             )
 
         employee = (
@@ -98,7 +100,8 @@ class UserSerivce:
 
         if not employee:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Colaborador inválido"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"employee": "Colaborador inválido"},
             )
 
         user_test_username = (
@@ -110,7 +113,7 @@ class UserSerivce:
         if user_test_username:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Nome de usuário já existe",
+                detail={"username": "Nome de usuário já existe"},
             )
 
         user_test_email = (
@@ -121,7 +124,8 @@ class UserSerivce:
 
         if user_test_email:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Já existe este e-mail"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"email": "Já existe este e-mail"},
             )
 
         user_dict = {
@@ -239,7 +243,7 @@ class UserSerivce:
                 if not role:
                     raise HTTPException(
                         status_code=status.HTTP_404_NOT_FOUND,
-                        detail="Perfil de usuário não encontrado",
+                        detail={"role": "Perfil de usuário não encontrado"},
                     )
 
                 user.role = role
@@ -253,7 +257,7 @@ class UserSerivce:
                 if not employee:
                     raise HTTPException(
                         status_code=status.HTTP_404_NOT_FOUND,
-                        detail="Colaborador não encontrado",
+                        detail={"employee": "Colaborador não encontrado"},
                     )
 
                 user.employee = employee
@@ -307,7 +311,7 @@ class UserSerivce:
         ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Senha atual inválida",
+                detail={"password": "Senha atual inválida"},
             )
         authenticated_user.password = self.get_password_hash(data.password)
         db_session.add(authenticated_user)
@@ -519,7 +523,7 @@ class RoleService:
         if not role:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Perfil de usuário não encontrado",
+                detail={"role": "Perfil de usuário não encontrado"},
             )
 
         return role
@@ -540,7 +544,7 @@ class RoleService:
             ):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Permissão não existe. {id_perm}",
+                    detail={"permissions": f"Permissão não existe. {id_perm}"},
                 )
 
         role = (
@@ -550,7 +554,7 @@ class RoleService:
         if role:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Perfil de usuário já existe",
+                detail={"role": "Perfil de usuário já existe"},
             )
 
         new_role_db = RoleModel(**new_role.model_dump(exclude="permissions"))
@@ -617,7 +621,7 @@ class RoleService:
             if not permission:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Permissão não encontrada. id={perm}",
+                    detail={"permissions": f"Permissão não encontrada. id={perm}"},
                 )
             try:
                 current_permissions.index(permission)

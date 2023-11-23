@@ -336,6 +336,10 @@ class MaintenanceModel(Base):
     status: Mapped[MaintenanceStatusModel] = relationship()
     status_id = Column("status_id", ForeignKey("maintenance_status.id"), nullable=False)
 
+    attachments = relationship(
+        "MaintenanceAttachmentModel", back_populates="maintenance"
+    )
+
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)
     glpi_number = Column("gpli_number", String(length=50), nullable=True)
@@ -357,7 +361,7 @@ class MaintenanceAttachmentModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
-    maintenance: Mapped[MaintenanceModel] = relationship()
+    maintenance: Mapped[MaintenanceModel] = relationship(back_populates="attachments")
     maintenance_id = Column("maintenance_id", ForeignKey("maintenance.id"))
 
     path = Column(String(length=255), nullable=True)
