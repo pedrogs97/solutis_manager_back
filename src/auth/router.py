@@ -1,5 +1,5 @@
 """Auth router"""
-from typing import Optional, Union
+from typing import Annotated, Optional, Union
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from fastapi.responses import JSONResponse
@@ -13,6 +13,7 @@ from src.auth.schemas import (
     NewRoleSchema,
     NewUserSchema,
     PermissionSerializerSchema,
+    RefreshTokenSchema,
     RoleSerializerSchema,
     UserChangePasswordSchema,
     UserSerializerSchema,
@@ -23,9 +24,11 @@ from src.backends import (
     PermissionChecker,
     get_db_session,
     get_user,
+    get_user_from_refresh,
     get_user_token,
     logout_user,
     oauth2_bearer,
+    refresh_token_has_expired,
     token_exception,
 )
 from src.config import (
@@ -59,9 +62,35 @@ def login_route(
     return JSONResponse(content=token, status_code=status.HTTP_200_OK)
 
 
+@auth_router.post("/refresh/token/")
+def refresh_token_route(
+    data: RefreshTokenSchema,
+    db_session: Session = Depends(get_db_session),
+):
+    """Refresh token route"""
+
+    if refresh_token_has_expired(data.refresh_token):
+        return JSONResponse(
+            content={"refreshToken": "Token inválido"},
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    user = get_user_from_refresh(data.refresh_token, db_session)
+
+    if not user:
+        return JSONResponse(
+            content="Usuário não encontrado", status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    token = get_user_token(user, db_session)
+    db_session.close()
+    return JSONResponse(content=token, status_code=status.HTTP_200_OK)
+
+
 @auth_router.post("/logout/")
 def logout_route(
-    token: str = Depends(oauth2_bearer), db_session: Session = Depends(get_db_session)
+    token: Annotated[str, Depends(oauth2_bearer)],
+    db_session: Session = Depends(get_db_session),
 ):
     """Logout user route"""
     logout_user(token, db_session)

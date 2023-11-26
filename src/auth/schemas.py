@@ -7,6 +7,12 @@ from pydantic import EmailStr, Field, constr
 from src.schemas import BaseSchema
 
 
+class RefreshTokenSchema(BaseSchema):
+    """Refresh token schema"""
+
+    refresh_token: str = Field(alias="refreshToken")
+
+
 class PermissionSchema(BaseSchema):
     """
     Permission schema
@@ -114,8 +120,7 @@ class NewUserSchema(BaseSchema):
     is_staff: bool = Field(alias="isStaff", serialization_alias="is_staff")
     is_active: bool = Field(alias="isActive", serialization_alias="is_active")
     role: str
-    employee_id: int = Field(
-        alias="employeeId", serialization_alias="employee_id")
+    employee_id: int = Field(alias="employeeId", serialization_alias="employee_id")
 
 
 class TokenSchema(BaseSchema):
