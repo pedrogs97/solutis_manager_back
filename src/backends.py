@@ -222,21 +222,25 @@ class PermissionChecker:
         token: Annotated[str, Depends(oauth2_bearer)],
         db_session: Annotated[Session, Depends(get_db_session)],
     ) -> Union[UserModel, None]:
-        token_decoded = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        try:
+            token_decoded = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
 
-        if not token_has_expired(token_decoded):
-            return None
+            if token_has_expired(token_decoded):
+                return None
 
-        user = get_current_user(token_decoded, db_session)
-        if user.role.name == "Administrador" and user.is_staff:
-            return user
-
-        for perm in user.role.permissions:
-            if (
-                perm.module == self.required_permissions.module
-                and perm.model == self.required_permissions.model
-                and perm.action == self.required_permissions.action
-            ):
+            user = get_current_user(token_decoded, db_session)
+            if user.role.name == "Administrador" and user.is_staff:
                 return user
 
-        return None
+            for perm in user.role.permissions:
+                if (
+                    perm.module == self.required_permissions.module
+                    and perm.model == self.required_permissions.model
+                    and perm.action == self.required_permissions.action
+                ):
+                    return user
+
+            return None
+        except JWTError:
+            logger.warning("Invalid token")
+            return None
