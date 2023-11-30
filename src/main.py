@@ -9,8 +9,10 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from src.auth.router import auth_router
-from src.auth.service import create_initial_data, create_permissions, create_super_user
-from src.config import BASE_API, BASE_DIR, DATE_FORMAT, FORMAT, LOG_FILENAME, ORIGINS
+from src.auth.service import (create_initial_data, create_permissions,
+                              create_super_user)
+from src.config import (BASE_API, BASE_DIR, DATE_FORMAT, FORMAT, LOG_FILENAME,
+                        ORIGINS)
 from src.invoice.router import invoice_router
 from src.lending.router import lending_router
 from src.log.router import log_router
@@ -40,7 +42,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/static", StaticFiles(directory=f"{BASE_DIR}/src/static"), name="static")
+app.mount(
+    "/static", StaticFiles(directory=f"{BASE_DIR}/src/static"), name="static")
 
 app.include_router(auth_router, prefix=BASE_API)
 app.include_router(invoice_router, prefix=BASE_API)

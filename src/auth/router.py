@@ -8,36 +8,18 @@ from fastapi_pagination import Page
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
-from src.auth.schemas import (
-    NewPasswordSchema,
-    NewRoleSchema,
-    NewUserSchema,
-    PermissionSerializerSchema,
-    RefreshTokenSchema,
-    RoleSerializerSchema,
-    UserChangePasswordSchema,
-    UserSerializerSchema,
-    UserUpdateSchema,
-)
+from src.auth.schemas import (NewPasswordSchema, NewRoleSchema, NewUserSchema,
+                              PermissionSerializerSchema, RefreshTokenSchema,
+                              RoleSerializerSchema, UserChangePasswordSchema,
+                              UserSerializerSchema, UserUpdateSchema)
 from src.auth.service import PermissionService, RoleService, UserSerivce
-from src.backends import (
-    PermissionChecker,
-    get_db_session,
-    get_user,
-    get_user_from_refresh,
-    get_user_token,
-    logout_user,
-    oauth2_bearer,
-    refresh_token_has_expired,
-    token_exception,
-)
-from src.config import (
-    MAX_PAGINATION_NUMBER,
-    NOT_ALLOWED,
-    PAGE_NUMBER_DESCRIPTION,
-    PAGE_SIZE_DESCRIPTION,
-    PAGINATION_NUMBER,
-)
+from src.backends import (PermissionChecker, get_db_session, get_user,
+                          get_user_from_refresh, get_user_token, logout_user,
+                          oauth2_bearer, refresh_token_has_expired,
+                          token_exception)
+from src.config import (MAX_PAGINATION_NUMBER, NOT_ALLOWED,
+                        PAGE_NUMBER_DESCRIPTION, PAGE_SIZE_DESCRIPTION,
+                        PAGINATION_NUMBER)
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -68,7 +50,6 @@ def refresh_token_route(
     db_session: Session = Depends(get_db_session),
 ):
     """Refresh token route"""
-
     if refresh_token_has_expired(data.refresh_token):
         return JSONResponse(
             content={"refreshToken": "Token inválido"},
@@ -127,7 +108,8 @@ def post_create_user_route(
 )
 def get_list_user_route(
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "user", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -142,12 +124,14 @@ def get_list_user_route(
     db_session: Session = Depends(get_db_session),
 ):
     """List users route"""
+    print("authenticated_user", authenticated_user)
     if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    users = user_service.get_users(db_session, page, size, search, active, staff)
+    users = user_service.get_users(
+        db_session, page, size, search, active, staff)
     db_session.close()
     return users
 
@@ -161,7 +145,8 @@ def update_user_route(
     data: UserUpdateSchema,
     user_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "action": "edit"})
+        PermissionChecker(
+            {"module": "auth", "model": "user", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -170,7 +155,8 @@ def update_user_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = user_service.update_user(db_session, user_id, data, authenticated_user)
+    serializer = user_service.update_user(
+        db_session, user_id, data, authenticated_user)
     db_session.close()
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
@@ -184,7 +170,8 @@ def update_user_route(
 def update_user_password_route(
     data: UserChangePasswordSchema,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "action": "edit"})
+        PermissionChecker(
+            {"module": "auth", "model": "user", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -214,7 +201,8 @@ def put_update_user_route():
 def get_user_route(
     user_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "user", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "user", "action": "view"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -259,7 +247,8 @@ def post_create_role_route(
 )
 def get_list_role_route(
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "role", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -290,7 +279,8 @@ def update_role_route(
     data: NewRoleSchema,
     role_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "edit"})
+        PermissionChecker(
+            {"module": "auth", "model": "role", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -299,7 +289,8 @@ def update_role_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = role_service.update_role(db_session, role_id, data, authenticated_user)
+    serializer = role_service.update_role(
+        db_session, role_id, data, authenticated_user)
     db_session.close()
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
@@ -322,7 +313,8 @@ def put_update_role_route():
 def get_role_route(
     role_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "role", "action": "view"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
@@ -345,7 +337,8 @@ def get_role_route(
 )
 def get_list_permission_route(
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "permission", "action": "view"})
+        PermissionChecker(
+            {"module": "auth", "model": "permission", "action": "view"})
     ),
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
@@ -363,7 +356,8 @@ def get_list_permission_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    permissions = permission_serivce.get_permissions(db_session, page, size, search)
+    permissions = permission_serivce.get_permissions(
+        db_session, page, size, search)
     db_session.close()
     return permissions
 

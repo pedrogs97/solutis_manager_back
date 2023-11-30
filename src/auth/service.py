@@ -12,26 +12,17 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from src.auth.models import PermissionModel, RoleModel, UserModel
-from src.auth.schemas import (
-    NewPasswordSchema,
-    NewRoleSchema,
-    NewUserSchema,
-    PermissionSerializerSchema,
-    RoleSerializerSchema,
-    UserChangePasswordSchema,
-    UserSerializerSchema,
-    UserUpdateSchema,
-)
+from src.auth.schemas import (NewPasswordSchema, NewRoleSchema, NewUserSchema,
+                              PermissionSerializerSchema, RoleSerializerSchema,
+                              UserChangePasswordSchema, UserSerializerSchema,
+                              UserUpdateSchema)
 from src.backends import bcrypt_context
-from src.config import DEBUG, DEFAULT_DATE_FORMAT, PASSWORD_SUPER_USER, PERMISSIONS
+from src.config import (DEBUG, DEFAULT_DATE_FORMAT, PASSWORD_SUPER_USER,
+                        PERMISSIONS)
 from src.database import Session_db
 from src.log.services import LogService
-from src.people.models import (
-    EmployeeGenderModel,
-    EmployeeMaritalStatusModel,
-    EmployeeModel,
-    EmployeeNationalityModel,
-)
+from src.people.models import (EmployeeGenderModel, EmployeeMaritalStatusModel,
+                               EmployeeModel, EmployeeNationalityModel)
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +34,8 @@ class UserSerivce:
 
     def __get_user_or_404(self, user_id: int, db_session: Session) -> UserModel:
         """Get user or rais not found"""
-        user = db_session.query(UserModel).filter(UserModel.id == user_id).first()
+        user = db_session.query(UserModel).filter(
+            UserModel.id == user_id).first()
 
         if not user:
             raise HTTPException(
@@ -83,7 +75,8 @@ class UserSerivce:
     ) -> UserSerializerSchema:
         """Creates a new user"""
         role = (
-            db_session.query(RoleModel).filter(RoleModel.name == new_user.role).first()
+            db_session.query(RoleModel).filter(
+                RoleModel.name == new_user.role).first()
         )
 
         if not role:
@@ -172,7 +165,8 @@ class UserSerivce:
                         EmployeeModel.full_name.ilike(f"%{search}%"),
                         UserModel.email.ilike(f"%{search}"),
                         UserModel.username.ilike(f"%{search}"),
-                        EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
+                        EmployeeModel.taxpayer_identification.ilike(
+                            f"%{search}"),
                     )
                 )
             )
@@ -186,7 +180,8 @@ class UserSerivce:
                         EmployeeModel.full_name.ilike(f"%{search}%"),
                         UserModel.email.ilike(f"%{search}"),
                         UserModel.username.ilike(f"%{search}"),
-                        EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
+                        EmployeeModel.taxpayer_identification.ilike(
+                            f"%{search}"),
                     )
                 )
             )
@@ -450,7 +445,8 @@ def create_initial_data():
             .first()
         )
         if not nationality:
-            nationality = EmployeeNationalityModel(code="BR", description="Brasil")
+            nationality = EmployeeNationalityModel(
+                code="BR", description="Brasil")
             db_session.add(nationality)
             db_session.commit()
             db_session.flush()
@@ -518,7 +514,8 @@ class RoleService:
 
     def __get_role_or_404(self, role_id: int, db_session: Session) -> RoleModel:
         """Get role or raise 404"""
-        role = db_session.query(RoleModel).filter(RoleModel.id == role_id).first()
+        role = db_session.query(RoleModel).filter(
+            RoleModel.id == role_id).first()
 
         if not role:
             raise HTTPException(
@@ -548,7 +545,8 @@ class RoleService:
                 )
 
         role = (
-            db_session.query(RoleModel).filter(RoleModel.name == new_role.name).first()
+            db_session.query(RoleModel).filter(
+                RoleModel.name == new_role.name).first()
         )
 
         if role:
@@ -579,7 +577,8 @@ class RoleService:
         dict_role = role.__dict__
         serializer_permissions = []
         for perm in role.permissions:
-            serializer_permissions.append(PermissionSerializerSchema(**perm.__dict__))
+            serializer_permissions.append(
+                PermissionSerializerSchema(**perm.__dict__))
         dict_role.update({"permissions": serializer_permissions})
         return RoleSerializerSchema(**dict_role)
 
@@ -661,7 +660,8 @@ class RoleService:
                 is_updated = True
 
                 # verifica novas inclusões
-                self.__check_new_perms(data.permissions, role.permissions, db_session)
+                self.__check_new_perms(
+                    data.permissions, role.permissions, db_session)
 
                 # verifica exclusão
                 self.__check_remove_perms(data.permissions, role.permissions)
