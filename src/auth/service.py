@@ -79,11 +79,10 @@ class UserSerivce:
                 RoleModel.name == new_user.role).first()
         )
 
+        errors = []
+
         if not role:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"role": "Perfil inválido"},
-            )
+            errors.append({"role": "Perfil inválido"})
 
         employee = (
             db_session.query(EmployeeModel)
@@ -92,10 +91,7 @@ class UserSerivce:
         )
 
         if not employee:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"employee": "Colaborador inválido"},
-            )
+            errors.append({"employee": "Colaborador inválido"})
 
         user_test_username = (
             db_session.query(UserModel)
@@ -104,10 +100,7 @@ class UserSerivce:
         )
 
         if user_test_username:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"username": "Nome de usuário já existe"},
-            )
+            errors.append({"username": "Nome de usuário já existe"})
 
         user_test_email = (
             db_session.query(UserModel)
@@ -116,15 +109,17 @@ class UserSerivce:
         )
 
         if user_test_email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"email": "Já existe este e-mail"},
-            )
+            errors.append({"email": "Já existe este e-mail"})
 
         user_dict = {
             **new_user.model_dump(),
             "password": self.get_password_hash(self.make_new_random_password()),
         }
+
+        if len(errors) > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=errors
+            )
 
         user_dict["role_id"] = role.id
         del user_dict["role"]
