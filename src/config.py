@@ -16,7 +16,25 @@ def get_database_url():
     user = os.getenv("MYSQL_USER", "postgres")
     password = os.getenv("MYSQL_PASSWORD", "")
     port = os.getenv("MYSQL_PORT", "3306")
-    return f"mysql+mysqldb://{user}:{password}@{server}:{port}/{db}"
+    return f"mysql+mysqlconnector://{user}:{password}@{server}:{port}/{db}"
+
+
+HOST_DB = os.environ.get("SQLSERVE_HOST_DB", "")
+NAME_DB = os.environ.get("SQLSERVE_NAME_DB", "")
+USER_DB = os.environ.get("SQLSERVE_USER_DB", "")
+PASSWORD_DB = os.environ.get("SQLSERVE_PASSWORD_DB", "")
+
+CONNECTION_STRING = (
+    "DRIVER={ODBC Driver 17 for SQL Server};SERVER="
+    + HOST_DB
+    + ";DATABASE="
+    + NAME_DB
+    + ";ENCRYPT=yes;UID="
+    + USER_DB
+    + ";PWD="
+    + PASSWORD_DB
+    + ";TrustServerCertificate=yes"
+)
 
 
 PASSWORD_SUPER_USER = os.getenv("PASSWORD_SUPER_USER")

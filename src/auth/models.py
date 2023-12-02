@@ -65,7 +65,7 @@ class UserModel(Base):
     employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=True)
 
     role: Mapped[RoleModel] = relationship()
-    role_id = Column("role_id", ForeignKey("role.id"), nullable=False)
+    role_id = Column("role_id", ForeignKey("role.id"), nullable=True)
 
     password = Column("password", String(length=255), nullable=False)
     username = Column("username", String(length=255), nullable=False, unique=True)

@@ -1,4 +1,4 @@
-FROM python:3.11.4-slim-bullseye
+FROM python:3.9.18-slim-bullseye
 
 USER 0
 
@@ -15,10 +15,10 @@ ENV RUNLEVEL=3
 
 COPY ./poetry.lock /solutis-agile
 COPY ./pyproject.toml /solutis-agile
+COPY ./openssl.cnf /etc/ssl/openssl.cnf
 COPY ./nginx/config.json /docker-entrypoint.d/config.json
 COPY ./README.md /solutis-agile/README.md
 COPY ./src /solutis-agile/src
-COPY ./logs /solutis-agile/logs
 COPY ./alembic /solutis-agile/alembic
 COPY ./alembic.ini /solutis-agile
 COPY ./tasks.py /solutis-agile
@@ -30,10 +30,29 @@ RUN apt-get update -y && apt-get install curl -y \
     && apt-get install python3-dev python3.9-dev default-libmysqlclient-dev build-essential -y \
     && curl -sSL https://install.python-poetry.org | python3 - \
     && poetry export -f requirements.txt --output requirements.txt --without-hashes \
+    && pip install --upgrade pip \
     && pip install --no-cache-dir --upgrade -r requirements.txt \
+    && curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc \
+    #Download appropriate package for the OS version
+    #Choose only ONE of the following, corresponding to your OS version
+    #Debian 11
+    && curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update -y \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql17 \
+    # optional: for bcp and sqlcmd
+    # && ACCEPT_EULA=Y apt-get install -y mssql-tools17 \
+    # optional: for unixODBC development headers
+    && apt-get install -y unixodbc \
+    && apt-get install -y unixodbc-dev \
+    # optional: kerberos library for debian-slim distributions
+    && apt-get install -y libgssapi-krb5-2 \
+    && chmod -R 755 /var \
+    && apt-get auto-remove -y \
     && apt-get remove curl -y \
     && pip uninstall poetry \
     && rm requirements.txt
 
-EXPOSE 8000
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV PATH="/opt/mssql-tools17/bin:$PATH"
+
+# EXPOSE 8000
+# CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

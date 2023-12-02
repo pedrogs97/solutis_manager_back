@@ -117,9 +117,13 @@ class NewUserSchema(BaseSchema):
 
     username: constr(to_lower=True, strip_whitespace=True)
     email: EmailStr
-    is_staff: bool = Field(alias="isStaff", serialization_alias="is_staff")
-    is_active: bool = Field(alias="isActive", serialization_alias="is_active")
-    role: str
+    is_staff: bool = Field(
+        alias="isStaff", serialization_alias="is_staff", default=False
+    )
+    is_active: bool = Field(
+        alias="isActive", serialization_alias="is_active", default=True
+    )
+    role: Optional[str] = None
     employee_id: int = Field(alias="employeeId", serialization_alias="employee_id")
 
 
