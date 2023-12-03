@@ -1,23 +1,20 @@
 """Base backends"""
 import logging
+import time
 from datetime import datetime, timedelta
 from typing import Annotated, Union
 
+import jwt
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from src.auth.models import TokenModel, UserModel
 from src.auth.schemas import PermissionSchema
-from src.config import (
-    ACCESS_TOKEN_EXPIRE_HOURS,
-    ALGORITHM,
-    DEFAULT_DATE_TIME_FORMAT,
-    REFRESH_TOKEN_EXPIRE_DAYS,
-    SECRET_KEY,
-)
+from src.config import (ACCESS_TOKEN_EXPIRE_HOURS, ALGORITHM,
+                        DEFAULT_DATE_TIME_FORMAT, REFRESH_TOKEN_EXPIRE_DAYS,
+                        SECRET_KEY, TIMEZONE)
 from src.database import Session_db
 from src.exceptions import get_user_exception, token_exception
 
@@ -46,7 +43,8 @@ def get_user(
     username: str, password: str, db_session: Session
 ) -> Union[UserModel, None]:
     """Returns authenticated user if exists"""
-    user = db_session.query(UserModel).filter(UserModel.username == username).first()
+    user = db_session.query(UserModel).filter(
+        UserModel.username == username).first()
 
     if not user:
         return None
@@ -63,8 +61,7 @@ def get_user_from_refresh(
     user = (
         db_session.query(UserModel)
         .filter(
-            UserModel.username == token_decoded["username"],
-            UserModel.id == token_decoded["id"],
+            UserModel.id == token_decoded["sub"],
         )
         .first()
     )
@@ -77,7 +74,8 @@ def logout_user(token: str, db_session: Session) -> None:
         token_decoded = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         user = get_current_user(token_decoded, db_session)
         old_token = (
-            db_session.query(TokenModel).filter(TokenModel.user_id == user.id).first()
+            db_session.query(TokenModel).filter(
+                TokenModel.user_id == user.id).first()
         )
 
         if not old_token:
@@ -97,40 +95,43 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     db_session.commit()
 
     old_token = (
-        db_session.query(TokenModel).filter(TokenModel.user_id == user.id).first()
+        db_session.query(TokenModel).filter(
+            TokenModel.user_id == user.id).first()
     )
 
     permissions = [
         f"{perm.module}_{perm.model}_{perm.action}" for perm in user.role.permissions
     ]
 
-    if not token_has_expired(old_token):
+    access_expire_in = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    access_expire_timestamp = int(time.mktime(access_expire_in.timetuple()))
+
+    refresh_expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    refresh_expire_timestamp = time.mktime(refresh_expire.timetuple())
+    if not token_is_valid(old_token):
         encode = {
-            "username": user.username,
-            "id": user.id,
-            "role": str(user.role),
+            "iat": datetime.now().timestamp(),
+            "exp": access_expire_timestamp,
+            "sub": user.id,
             "type": "access",
         }
-        expire = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
-        encode.update({"expires": expire.strftime(DEFAULT_DATE_TIME_FORMAT)})
+
         token = jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
         refresh_encode = {
-            "username": user.username,
-            "id": user.id,
-            "role": str(user.role),
+            "iat": datetime.now().timestamp(),
+            "exp": refresh_expire_timestamp,
+            "sub": user.id,
             "type": "refresh",
         }
-        refresh_expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-        refresh_encode.update(
-            {"refresh_expires": refresh_expire.strftime(DEFAULT_DATE_TIME_FORMAT)}
-        )
-        refresh_token = jwt.encode(refresh_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+        refresh_token = jwt.encode(
+            refresh_encode, SECRET_KEY, algorithm=ALGORITHM)
 
         token_db = TokenModel(
             user=user,
             token=token,
-            expires_in=expire,
+            expires_in=access_expire_in,
             refresh_token=refresh_token,
             refresh_expires_in=refresh_expire,
         )
@@ -145,20 +146,22 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         return {
             "role": user.role.name,
             "email": user.email,
-            "fullName": user.employee.full_name if user.employee else "Usuário",
-            "accessToken": token,
-            "refreshToken": refresh_token,
-            "tokenType": "Bearer",
+            "full_name": user.employee.full_name if user.employee else "Usuário",
+            "access_token": token,
+            "refresh_token": refresh_token,
+            "token_type": "Bearer",
+            "expires_in": access_expire_timestamp,
             "permissions": permissions,
         }
 
     return {
         "role": user.role.name,
         "email": user.email,
-        "fullName": user.employee.full_name if user.employee else "Usuário",
-        "accessToken": old_token.token,
-        "refreshToken": old_token.refresh_token,
-        "tokenType": "Bearer",
+        "full_name": user.employee.full_name if user.employee else "Usuário",
+        "access_token": old_token.token,
+        "refresh_token": old_token.refresh_token,
+        "token_type": "Bearer",
+        "expires_in": old_token.expires_in.timestamp(),
         "permissions": permissions,
     }
 
@@ -166,15 +169,13 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
 def get_current_user(token: dict, db_session: Session) -> UserModel:
     """Returns current user from token"""
     try:
-        username: str = token.get("username")
-        user_id: int = token.get("id")
-        role: int = token.get("id")
-        if username is None or user_id is None or role is None:
+        user_id: int = token.get("sub")
+        if user_id is None:
             raise get_user_exception()
 
         user_db = (
             db_session.query(UserModel)
-            .filter(UserModel.id == user_id, UserModel.username == username)
+            .filter(UserModel.id == user_id)
             .first()
         )
 
@@ -182,31 +183,34 @@ def get_current_user(token: dict, db_session: Session) -> UserModel:
             raise get_user_exception()
 
         return user_db
-    except JWTError as exc:
+    except jwt.ExpiredSignatureError as exc:
+        print("exc", exc)
         raise get_user_exception() from exc
 
 
-def token_has_expired(token: Union[TokenModel, dict]) -> bool:
+def token_is_valid(token: Union[TokenModel, dict]) -> bool:
     """Verifies token validity"""
     if isinstance(token, TokenModel):
+        print("token 1", token)
         if not token:
             return False
         return token.expires_in > datetime.utcnow()
 
     if isinstance(token, dict):
-        if not token or "expires_in" not in token:
+        print("token 2", token)
+        if not token or "exp" not in token:
             return False
-        return token["expires_in"] > datetime.utcnow() and token["type"] == "access"
+        return token["exp"] > int(datetime.utcnow().timestamp()) and token["type"] == "access"
 
 
 def refresh_token_has_expired(token_str: str) -> bool:
     """Verifies refresh token validity"""
     token_decoded = jwt.decode(token_str, SECRET_KEY, algorithms=ALGORITHM)
 
-    if "expires_in" not in token_decoded:
+    if "exp" not in token_decoded:
         return False
     return (
-        token_decoded["expires_in"] > datetime.utcnow()
+        token_decoded["exp"] > datetime.utcnow()
         and token_decoded["type"] == "refresh"
     )
 
@@ -223,12 +227,12 @@ class PermissionChecker:
         db_session: Annotated[Session, Depends(get_db_session)],
     ) -> Union[UserModel, None]:
         try:
-            token_decoded = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-
-            if token_has_expired(token_decoded):
+            token_decoded = jwt.decode(
+                str(token), SECRET_KEY, algorithms=ALGORITHM)
+            if not token_is_valid(token_decoded):
                 return None
-
             user = get_current_user(token_decoded, db_session)
+
             if user.role.name == "Administrador" and user.is_staff:
                 return user
 
@@ -239,8 +243,7 @@ class PermissionChecker:
                     and perm.action == self.required_permissions.action
                 ):
                     return user
-
             return None
-        except JWTError:
+        except jwt.ExpiredSignatureError as expired:
             logger.warning("Invalid token")
             return None
