@@ -5,6 +5,20 @@ from sqlalchemy.orm import Mapped, relationship
 from src.database import Base
 
 
+class CostCenterModel(Base):
+    """Cost center model"""
+
+    __tablename__ = "cost_center"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    code = Column("code", String(length=25), nullable=False)
+    name = Column("name", String(length=60), nullable=False)
+    classification = Column("group_name", String(length=60), nullable=False)
+
+    def __str__(self) -> str:
+        return f"{self.name} - {self.code}"
+
+
 class EmployeeMaritalStatusModel(Base):
     """
     Matrimonial status model

@@ -73,6 +73,8 @@ PERMISSIONS = {
     "lending": {
         "models": [
             {"name": "asset", "label": "Ativos"},
+            {"name": "asset_type", "label": "Ativos"},
+            {"name": "asset_status", "label": "Ativos"},
             {"name": "lending", "label": "Comodato"},
             {"name": "verification", "label": "Verificação de Ativo"},
             {"name": "document", "label": "Documentos"},
@@ -83,6 +85,9 @@ PERMISSIONS = {
     "people": {
         "models": [
             {"name": "employee", "label": "Colaboradores"},
+            {"name": "nationality", "label": "Nacionalidades"},
+            {"name": "matrial_status", "label": "Estado Civil"},
+            {"name": "gender", "label": "Genero"},
         ],
         "label": "Pessoas",
     },

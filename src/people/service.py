@@ -11,10 +11,11 @@ from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
 from src.lending.models import LendingModel
-from src.lending.schemas import LendingSerializerSchema
+from src.lending.schemas import CostCenterSerializerSchema, LendingSerializerSchema
 from src.lending.service import LendingService
 from src.log.services import LogService
 from src.people.models import (
+    CostCenterModel,
     EmployeeGenderModel,
     EmployeeMaritalStatusModel,
     EmployeeModel,
@@ -345,7 +346,8 @@ class EmployeeService:
         self,
         db_session: Session,
         search: str = "",
-        filter_list: str = None,
+        filter_list: str = "",
+        fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[EmployeeSerializerSchema]:
@@ -363,7 +365,7 @@ class EmployeeService:
             )
         )
 
-        if filter_list:
+        if filter_list != "":
             employee_list = employee_list.join(EmployeeModel.role,).filter(
                 or_(
                     EmployeeRoleModel.name.in_(filter_list),
@@ -387,15 +389,26 @@ class EmployeeService:
                     EmployeeGenderModel.description.in_(filter_list),
                 )
             )
-
-        params = Params(page=page, size=size)
-        paginated = paginate(
-            employee_list,
-            params=params,
-            transformer=lambda employee_list: [
-                self.serialize_employee(employee) for employee in employee_list
-            ],
-        )
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                employee_list,
+                params=params,
+                transformer=lambda employee_list: [
+                    self.serialize_employee(employee) for employee in employee_list
+                ],
+            )
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                employee_list,
+                params=params,
+                transformer=lambda employee_list: [
+                    self.serialize_employee(employee).model_dump(include={*list_fields})
+                    for employee in employee_list
+                ],
+            )
 
         return paginated
 
@@ -520,3 +533,202 @@ class EmployeeService:
             logger.info("Update Role from TOTVS. Total=%s", str(len(updates)))
         except Exception as exc:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
+
+
+class EmpleoyeeGeneralSerivce:
+    """Employee general services"""
+
+    def serialize_nationality(
+        self, nationality: EmployeeNationalityModel
+    ) -> EmployeeNationalitySerializerSchema:
+        """Serialize nationality"""
+        return EmployeeNationalitySerializerSchema(**nationality.__dict__)
+
+    def serialize_matrial_status(
+        self, matrial_status: EmployeeMaritalStatusModel
+    ) -> EmployeeMatrimonialStatusSerializerSchema:
+        """Serialize matrial status"""
+        return EmployeeMatrimonialStatusSerializerSchema(**matrial_status.__dict__)
+
+    def serialize_centre_cost(
+        self, centre_cost: CostCenterModel
+    ) -> CostCenterSerializerSchema:
+        """Serialize centre cost"""
+        return CostCenterSerializerSchema(**centre_cost.__dict__)
+
+    def serialize_gender(
+        self, gender: EmployeeGenderModel
+    ) -> EmployeeGenderSerializerSchema:
+        """Serialize gender"""
+        return EmployeeGenderSerializerSchema(**gender.__dict__)
+
+    def get_nationalities(
+        self,
+        db_session: Session,
+        search: str = "",
+        fields: str = "",
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[EmployeeNationalitySerializerSchema]:
+        """Get nationalities list"""
+
+        nationalities_list = db_session.query(EmployeeNationalityModel).filter(
+            or_(
+                EmployeeNationalityModel.description.ilike(f"%{search}%"),
+                EmployeeNationalityModel.code.ilike(f"%{search}"),
+            )
+        )
+
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                nationalities_list,
+                params=params,
+                transformer=lambda nationalities_list: [
+                    self.serialize_nationality(nationality)
+                    for nationality in nationalities_list
+                ],
+            )
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                nationalities_list,
+                params=params,
+                transformer=lambda nationalities_list: [
+                    self.serialize_nationality(nationality).model_dump(
+                        include={*list_fields}
+                    )
+                    for nationality in nationalities_list
+                ],
+            )
+
+        return paginated
+
+    def get_matrial_status(
+        self,
+        db_session: Session,
+        search: str = "",
+        fields: str = "",
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[EmployeeMatrimonialStatusSerializerSchema]:
+        """Get matrial status list"""
+
+        matrial_status_list = db_session.query(EmployeeMaritalStatusModel).filter(
+            or_(
+                EmployeeMaritalStatusModel.description.ilike(f"%{search}%"),
+                EmployeeMaritalStatusModel.code.ilike(f"%{search}"),
+            )
+        )
+
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                matrial_status_list,
+                params=params,
+                transformer=lambda matrial_status_list: [
+                    self.serialize_matrial_status(matrial_status)
+                    for matrial_status in matrial_status_list
+                ],
+            )
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                matrial_status_list,
+                params=params,
+                transformer=lambda matrial_status_list: [
+                    self.serialize_matrial_status(matrial_status).model_dump(
+                        include={*list_fields}
+                    )
+                    for matrial_status in matrial_status_list
+                ],
+            )
+
+        return paginated
+
+    def get_center_cost(
+        self,
+        db_session: Session,
+        search: str = "",
+        fields: str = "",
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[CostCenterSerializerSchema]:
+        """Get center cost list"""
+
+        center_cost_list = db_session.query(CostCenterModel).filter(
+            or_(
+                CostCenterModel.classification.ilike(f"%{search}%"),
+                CostCenterModel.code.ilike(f"%{search}"),
+            )
+        )
+
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                center_cost_list,
+                params=params,
+                transformer=lambda center_cost_list: [
+                    self.serialize_nationality(center_cost)
+                    for center_cost in center_cost_list
+                ],
+            )
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                center_cost_list,
+                params=params,
+                transformer=lambda center_cost_list: [
+                    self.serialize_nationality(center_cost).model_dump(
+                        include={*list_fields}
+                    )
+                    for center_cost in center_cost_list
+                ],
+            )
+
+        return paginated
+
+    def get_genders(
+        self,
+        db_session: Session,
+        search: str = "",
+        fields: str = "",
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[EmployeeGenderSerializerSchema]:
+        """Get genders list"""
+
+        genders_list = db_session.query(EmployeeGenderModel).filter(
+            or_(
+                EmployeeGenderModel.description.ilike(f"%{search}%"),
+                EmployeeGenderModel.code.ilike(f"%{search}"),
+            )
+        )
+
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                genders_list,
+                params=params,
+                transformer=lambda genders_list: [
+                    self.serialize_nationality(gender) for gender in genders_list
+                ],
+            )
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                genders_list,
+                params=params,
+                transformer=lambda genders_list: [
+                    self.serialize_nationality(gender).model_dump(
+                        include={*list_fields}
+                    )
+                    for gender in genders_list
+                ],
+            )
+
+        return paginated

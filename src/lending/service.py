@@ -17,7 +17,6 @@ from src.lending.models import (
     AssetModel,
     AssetStatusModel,
     AssetTypeModel,
-    CostCenterModel,
     DocumentModel,
     DocumentTypeModel,
     LendingModel,
@@ -65,7 +64,7 @@ from src.lending.schemas import (
     WorkloadSerializerSchema,
 )
 from src.log.services import LogService
-from src.people.models import EmployeeModel
+from src.people.models import CostCenterModel, EmployeeModel
 from src.people.schemas import EmployeeSerializerSchema
 from src.utils import create_lending_contract, create_lending_contract_pj, upload_file
 
@@ -305,6 +304,7 @@ class AssetService:
         search: str = "",
         filter_asset: str = None,
         active: bool = True,
+        fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[AssetSerializerSchema]:
@@ -347,15 +347,129 @@ class AssetService:
 
         asset_list = asset_list.filter(AssetModel.active == active)
 
-        params = Params(page=page, size=size)
-        paginated = paginate(
-            asset_list,
-            params=params,
-            transformer=lambda asset_list: [
-                self.serialize_asset(asset) for asset in asset_list
-            ],
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                asset_list,
+                params=params,
+                transformer=lambda asset_list: [
+                    self.serialize_asset(asset) for asset in asset_list
+                ],
+            )
+            return paginated
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                asset_list,
+                params=params,
+                transformer=lambda asset_list: [
+                    self.serialize_asset(asset).model_dump(include={*list_fields})
+                    for asset in asset_list
+                ],
+            )
+            return paginated
+
+    def get_asset_types(
+        self,
+        db_session: Session,
+        search: str = "",
+        filter_asset_type: str = None,
+        fields: str = "",
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[AssetTypeSerializerSchema]:
+        """Get asset types list"""
+
+        asset_type_list = db_session.query(AssetTypeModel).filter(
+            or_(
+                AssetTypeModel.code.ilike(f"%{search}"),
+                AssetTypeModel.name.ilike(f"%{search}%"),
+                AssetTypeModel.acronym.ilike(f"%{search}"),
+            )
         )
-        return paginated
+
+        if filter_asset_type:
+            asset_type_list = asset_type_list.filter(
+                or_(
+                    AssetTypeModel.acronym == filter_asset_type,
+                )
+            )
+
+            asset_type_list = asset_type_list.filter(
+                or_(
+                    AssetStatusModel.name == filter_asset_type,
+                )
+            )
+
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                asset_type_list,
+                params=params,
+                transformer=lambda asset_type_list: [
+                    self.serialize_asset(asset_type) for asset_type in asset_type_list
+                ],
+            )
+            return paginated
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                asset_type_list,
+                params=params,
+                transformer=lambda asset_type_list: [
+                    self.serialize_asset(asset_type).model_dump(include={*list_fields})
+                    for asset_type in asset_type_list
+                ],
+            )
+            return paginated
+
+    def get_asset_status(
+        self,
+        db_session: Session,
+        filter_asset_status: str = None,
+        fields: str = "",
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[AssetTypeSerializerSchema]:
+        """Get asset status list"""
+
+        asset_type_status = db_session.query(AssetTypeModel)
+
+        if filter_asset_status:
+
+            asset_type_status = asset_type_status.filter(
+                or_(
+                    AssetStatusModel.name == filter_asset_status,
+                )
+            )
+
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                asset_type_status,
+                params=params,
+                transformer=lambda asset_type_status: [
+                    self.serialize_asset(asset_status)
+                    for asset_status in asset_type_status
+                ],
+            )
+            return paginated
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                asset_type_status,
+                params=params,
+                transformer=lambda asset_type_status: [
+                    self.serialize_asset(asset_status).model_dump(
+                        include={*list_fields}
+                    )
+                    for asset_status in asset_type_status
+                ],
+            )
+            return paginated
 
     def update_asset_totvs(
         self, totvs_assets: List[AssetTotvsSchema], db_session: Session

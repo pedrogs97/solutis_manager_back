@@ -1,5 +1,5 @@
 """Lending router"""
-from typing import Annotated, List, Union
+from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
@@ -15,9 +15,6 @@ from src.config import (
     PAGINATION_NUMBER,
 )
 from src.lending.schemas import (
-    AssetTotvsSchema,
-    AssetTypeTotvsSchema,
-    CostCenterTotvsSchema,
     InactivateAssetSchema,
     NewAssetSchema,
     NewLendingDocSchema,
@@ -43,39 +40,6 @@ lending_service = LendingService()
 document_service = DocumentService()
 verification_service = VerificationService()
 maintenance_service = MaintenanceService()
-
-
-@lending_router.post("/assets/update/")
-def post_updates_route(
-    data: List[AssetTotvsSchema],
-    db_session: Session = Depends(get_db_session),
-):
-    """Update asset from TOTVS route"""
-    asset_service.update_asset_totvs(data, db_session)
-    db_session.close()
-    return JSONResponse(content="", status_code=status.HTTP_200_OK)
-
-
-@lending_router.post("/asset-type/update/")
-def post_asset_type_updates_route(
-    data: List[AssetTypeTotvsSchema],
-    db_session: Session = Depends(get_db_session),
-):
-    """Update asset from TOTVSroute"""
-    asset_service.update_asset_type_totvs(data, db_session)
-    db_session.close()
-    return JSONResponse(content="", status_code=status.HTTP_200_OK)
-
-
-@lending_router.post("/cost-center/update/")
-def post_cost_center_updates_route(
-    data: List[CostCenterTotvsSchema],
-    db_session: Session = Depends(get_db_session),
-):
-    """Update asset from TOTVSroute"""
-    asset_service.update_cost_center_totvs(data, db_session)
-    db_session.close()
-    return JSONResponse(content="", status_code=status.HTTP_200_OK)
 
 
 @lending_router.post("/assets/")
@@ -158,6 +122,7 @@ def get_list_assets_route(
     search: str = "",
     filter_asset: str = None,
     active: bool = True,
+    fields: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -176,7 +141,7 @@ def get_list_assets_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     assets = asset_service.get_assets(
-        db_session, search, filter_asset, active, page, size
+        db_session, search, filter_asset, active, fields, page, size
     )
     db_session.close()
     return JSONResponse(
@@ -202,6 +167,73 @@ def get_asset_route(
     db_session.close()
     return JSONResponse(
         content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@lending_router.get("/assets-types/")
+def get_list_asset_types_route(
+    search: str = "",
+    filter_asset_type: str = None,
+    fields: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            {"module": "lending", "model": "asset_type", "action": "view"}
+        )
+    ),
+):
+    """List asset types and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    assets_types = asset_service.get_asset_types(
+        db_session, search, filter_asset_type, fields, page, size
+    )
+    db_session.close()
+    return JSONResponse(
+        content=assets_types,
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@lending_router.get("/assets-status/")
+def get_list_asset_status_route(
+    filter_asset_status: str = None,
+    fields: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            {"module": "lending", "model": "asset_status", "action": "view"}
+        )
+    ),
+):
+    """List asset status and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    assets_status = asset_service.get_asset_status(
+        db_session, filter_asset_status, fields, page, size
+    )
+    db_session.close()
+    return JSONResponse(
+        content=assets_status,
         status_code=status.HTTP_200_OK,
     )
 

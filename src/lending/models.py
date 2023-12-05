@@ -16,7 +16,7 @@ from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
 from src.invoice.models import InvoiceModel, invoice_assets
-from src.people.models import EmployeeModel
+from src.people.models import CostCenterModel, EmployeeModel
 
 
 class AssetTypeModel(Base):
@@ -211,20 +211,6 @@ lending_witnesses = Table(
     Column("lending_id", ForeignKey("lending.id")),
     Column("witness_id", ForeignKey("witness.id")),
 )
-
-
-class CostCenterModel(Base):
-    """Cost center model"""
-
-    __tablename__ = "cost_center"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=25), nullable=False)
-    name = Column("name", String(length=60), nullable=False)
-    classification = Column("group_name", String(length=60), nullable=False)
-
-    def __str__(self) -> str:
-        return f"{self.name} - {self.code}"
 
 
 class WitnessModel(Base):

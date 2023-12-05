@@ -1,5 +1,5 @@
 """People routes"""
-from typing import List, Union
+from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import JSONResponse
@@ -14,75 +14,13 @@ from src.config import (
     PAGE_SIZE_DESCRIPTION,
     PAGINATION_NUMBER,
 )
-from src.people.schemas import (
-    EmployeeGenderTotvsSchema,
-    EmployeeMatrimonialStatusTotvsSchema,
-    EmployeeNationalityTotvsSchema,
-    EmployeeRoleTotvsSchema,
-    EmployeeTotvsSchema,
-    NewEmployeeSchema,
-    UpdateEmployeeSchema,
-)
-from src.people.service import EmployeeService
+from src.people.schemas import NewEmployeeSchema, UpdateEmployeeSchema
+from src.people.service import EmpleoyeeGeneralSerivce, EmployeeService
 
 people_router = APIRouter(prefix="/people", tags=["People"])
 
 employee_service = EmployeeService()
-
-
-@people_router.post("/employee/update/")
-def post_updates_route(
-    data: List[EmployeeTotvsSchema],
-    db_session: Session = Depends(get_db_session),
-):
-    """Update employee from TOTVSroute"""
-    employee_service.update_employee_totvs(data, db_session)
-    db_session.close()
-    return JSONResponse(content="", status_code=status.HTTP_200_OK)
-
-
-@people_router.post("/employee/marital-status/update/")
-def post_marital_status_updates_route(
-    data: List[EmployeeMatrimonialStatusTotvsSchema],
-    db_session: Session = Depends(get_db_session),
-):
-    """Update employee from TOTVSroute"""
-    employee_service.update_marital_status_totvs(data, db_session)
-    db_session.close()
-    return JSONResponse(content="", status_code=status.HTTP_200_OK)
-
-
-@people_router.post("/employee/gender/update/")
-def post_gender_updates_route(
-    data: List[EmployeeGenderTotvsSchema],
-    db_session: Session = Depends(get_db_session),
-):
-    """Update employee from TOTVSroute"""
-    employee_service.update_gender_totvs(data, db_session)
-    db_session.close()
-    return JSONResponse(content="", status_code=status.HTTP_200_OK)
-
-
-@people_router.post("/employee/nationality/update/")
-def post_nationality_updates_route(
-    data: List[EmployeeNationalityTotvsSchema],
-    db_session: Session = Depends(get_db_session),
-):
-    """Update employee from TOTVSroute"""
-    employee_service.update_nationality_totvs(data, db_session)
-    db_session.close()
-    return JSONResponse(content="", status_code=status.HTTP_200_OK)
-
-
-@people_router.post("/employee/role/update/")
-def post_role_updates_route(
-    data: List[EmployeeRoleTotvsSchema],
-    db_session: Session = Depends(get_db_session),
-):
-    """Update employee from TOTVSroute"""
-    employee_service.update_role_totvs(data, db_session)
-    db_session.close()
-    return JSONResponse(content="", status_code=status.HTTP_200_OK)
+general_service = EmpleoyeeGeneralSerivce()
 
 
 @people_router.post("/employees/")
@@ -140,7 +78,7 @@ def put_update_employee_route():
 @people_router.get("/employees/")
 def get_list_employees_route(
     search: str = "",
-    filter_list: str = None,
+    filter_list: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -148,6 +86,7 @@ def get_list_employees_route(
         le=MAX_PAGINATION_NUMBER,
         description=PAGE_SIZE_DESCRIPTION,
     ),
+    fields: str = "",
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "people", "model": "employee", "action": "view"})
@@ -159,7 +98,7 @@ def get_list_employees_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     employees = employee_service.get_employees(
-        db_session, search, filter_list, page, size
+        db_session, search, filter_list, fields, page, size
     )
     db_session.close()
     return employees
@@ -206,3 +145,119 @@ def get_emplooyee_lending_history_route(
         ],
         status_code=status.HTTP_200_OK,
     )
+
+
+@people_router.get("/nationalities/")
+def get_list_nationalities_route(
+    search: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    fields: str = "",
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            {"module": "people", "model": "nationality", "action": "view"}
+        )
+    ),
+):
+    """List nationalities and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    nationalities = general_service.get_nationalities(
+        db_session, search, fields, page, size
+    )
+    db_session.close()
+    return nationalities
+
+
+@people_router.get("/matrial-status/")
+def get_list_matrial_status_route(
+    search: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    fields: str = "",
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            {"module": "people", "model": "matrial_status", "action": "view"}
+        )
+    ),
+):
+    """List matrial status and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    matrial_status = general_service.get_matrial_status(
+        db_session, search, fields, page, size
+    )
+    db_session.close()
+    return matrial_status
+
+
+@people_router.get("/center-cost/")
+def get_list_center_cost_route(
+    search: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    fields: str = "",
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            {"module": "people", "model": "center_cost", "action": "view"}
+        )
+    ),
+):
+    """List center cost and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    center_cost = general_service.get_center_cost(
+        db_session, search, fields, page, size
+    )
+    db_session.close()
+    return center_cost
+
+
+@people_router.get("/genders/")
+def get_list_genders_route(
+    search: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    fields: str = "",
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "people", "model": "gender", "action": "view"})
+    ),
+):
+    """List genders and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    genders = general_service.get_genders(db_session, search, fields, page, size)
+    db_session.close()
+    return genders
