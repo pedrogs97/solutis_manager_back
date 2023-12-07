@@ -64,14 +64,13 @@ def sqlserver_check():
     response = "Not connected"
     try:
         external_db = ExternalDatabase()
-        cnxn = external_db.get_connection()
-        cursor = external_db.get_cursor()
+        cnxn = external_db.get_connection(as_dict=False)
+        cursor = external_db.get_cursor(as_dict=False)
         cursor.execute("SELECT @@version;")
         row = cursor.fetchone()
         while row:
             response = row[0]
             row = cursor.fetchone()
-        cursor.close()
         cnxn.close()
         return response
     except AttributeError:

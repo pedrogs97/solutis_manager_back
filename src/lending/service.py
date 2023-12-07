@@ -34,11 +34,8 @@ from src.lending.schemas import (
     AssetClothingSizeSerializer,
     AssetSerializerSchema,
     AssetStatusSerializerSchema,
-    AssetTotvsSchema,
     AssetTypeSerializerSchema,
-    AssetTypeTotvsSchema,
     CostCenterSerializerSchema,
-    CostCenterTotvsSchema,
     DocumentSerializerSchema,
     InactivateAssetSchema,
     LendingSerializerSchema,
@@ -438,7 +435,6 @@ class AssetService:
         asset_type_status = db_session.query(AssetTypeModel)
 
         if filter_asset_status:
-
             asset_type_status = asset_type_status.filter(
                 or_(
                     AssetStatusModel.name == filter_asset_status,
@@ -470,103 +466,6 @@ class AssetService:
                 ],
             )
             return paginated
-
-    def update_asset_totvs(
-        self, totvs_assets: List[AssetTotvsSchema], db_session: Session
-    ):
-        """Updates assets from totvs"""
-        try:
-            updates: List[AssetModel] = []
-            for totvs_asset in totvs_assets:
-                if (
-                    db_session.query(AssetModel)
-                    .filter(AssetModel.code == totvs_asset.code)
-                    .first()
-                ):
-                    continue
-
-                asset_type = (
-                    db_session.query(AssetTypeModel)
-                    .filter(AssetTypeModel.name == totvs_asset.type)
-                    .first()
-                )
-
-                dict_asset = {
-                    **totvs_asset.model_dump(exclude={"asset_type"}),
-                    "type": asset_type,
-                }
-
-                updates.append(AssetModel(**dict_asset))
-
-            db_session.add_all(updates)
-            db_session.commit()
-            logger.info("Update Assets from TOTVS. Total=%s", str(len(updates)))
-        except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
-
-    def update_asset_type_totvs(
-        self,
-        totvs_asset_type: List[AssetTypeTotvsSchema],
-        db_session: Session,
-    ):
-        """Updates asset type from totvs"""
-        try:
-            updates: List[AssetTypeModel] = []
-            for totvs_asset_type_item in totvs_asset_type:
-                db_asset_type = (
-                    db_session.query(AssetTypeModel)
-                    .filter(AssetTypeModel.code == totvs_asset_type_item.code)
-                    .first()
-                )
-                if db_asset_type:
-                    db_asset_type.group_code = totvs_asset_type_item.group_code
-                    db_asset_type.name = totvs_asset_type_item.name
-                    updates.append(db_asset_type)
-                    continue
-
-                updates.append(
-                    AssetTypeModel(
-                        **totvs_asset_type_item.model_dump(),
-                        acronym=totvs_asset_type_item.name[:2].upper(),
-                    )
-                )
-
-            db_session.add_all(updates)
-            db_session.commit()
-            logger.info("Update Asset Types from TOTVS. Total=%s", str(len(updates)))
-        except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
-
-    def update_cost_center_totvs(
-        self,
-        totvs_cost_center: List[CostCenterTotvsSchema],
-        db_session: Session,
-    ):
-        """Updates asset type from totvs"""
-        try:
-            updates: List[CostCenterModel] = []
-            for totvs_cost_center_item in totvs_cost_center:
-                db_cost_center = (
-                    db_session.query(CostCenterModel)
-                    .filter(CostCenterModel.code == totvs_cost_center_item.code)
-                    .first()
-                )
-                if db_cost_center:
-                    db_cost_center.code = totvs_cost_center_item.code
-                    db_cost_center.classification = (
-                        totvs_cost_center_item.classification
-                    )
-                    db_cost_center.name = totvs_cost_center_item.name
-                    updates.append(db_cost_center)
-                    continue
-
-                updates.append(CostCenterModel(**totvs_cost_center_item.model_dump()))
-
-            db_session.add_all(updates)
-            db_session.commit()
-            logger.info("Update Cost Centers from TOTVS. Total=%s", str(len(updates)))
-        except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
 
 class LendingService:

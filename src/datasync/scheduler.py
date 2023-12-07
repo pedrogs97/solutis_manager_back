@@ -10,9 +10,18 @@ from apscheduler.schedulers import (
 )
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from src.backends import get_db_session
 from src.config import get_database_url
 from src.database import ExternalDatabase
+from src.datasync.models import (
+    AssetTOTVSModel,
+    AssetTypeTOTVSModel,
+    CostCenterTOTVSModel,
+    EmployeeGenderTOTVSModel,
+    EmployeeMaritalStatusTOTVSModel,
+    EmployeeNationalityTOTVSModel,
+    EmployeeRoleTOTVSModel,
+    EmployeeTOTVSModel,
+)
 from src.datasync.schemas import (
     AssetTotvsSchema,
     AssetTypeTotvsSchema,
@@ -41,25 +50,16 @@ from src.datasync.service import (
     totvs_to_marital_status_schema,
     totvs_to_nationality_schema,
     totvs_to_role_schema,
-    verify_changes_asset,
-    verify_changes_asset_type,
-    verify_changes_cost_center,
-    verify_changes_empolyee,
-    verify_changes_gender,
-    verify_changes_marital_status,
-    verify_changes_nationality,
-    verify_changes_role,
+    verify_changes,
 )
-from src.lending.service import AssetService
-from src.people.service import EmployeeService
 
 logger = logging.getLogger(__name__)
-asset_serivce = AssetService()
-employee_serivce = EmployeeService()
 
 
 class SchedulerService:
     """Scheduler Service class"""
+
+    TIME_INFO = "Execution time: %s ms"
 
     SQL_PPESSOA = """SELECT
 	p.CODIGO, p.NOME, p.DTNASCIMENTO, c.DESCRICAO AS CIVIL, s.DESCRICAO AS SEXO,
@@ -134,7 +134,7 @@ class SchedulerService:
                 self._hour = "12-18"
                 self._minute = "0"
 
-    def _get_employees_totvs(self, db_session):
+    def _get_employees_totvs(self):
         """Excute procedure to retrive TOVTS emplyoee data"""
         logger.info("Retrive employee from TOTVS start.")
         start = time()
@@ -147,18 +147,17 @@ class SchedulerService:
             employee_totvs = totvs_to_employee_schema(row)
             if not employee_totvs:
                 break
-            if verify_changes_empolyee(employee_totvs):
+            if verify_changes(employee_totvs, EmployeeTotvsSchema, EmployeeTOTVSModel):
                 new_changes.append(employee_totvs)
                 insert_employee(employee_totvs)
 
-        employee_serivce.update_employee_totvs(new_changes, db_session)
         end = time()
         elapsed_time = end - start
-        logger.info("Execution time: %s ms", str(elapsed_time))
+        logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "employee")
         logger.info("Retrive employee from TOTVS end.")
 
-    def _get_marital_status_totvs(self, db_session):
+    def _get_marital_status_totvs(self):
         """Excute procedure to retrive TOVTS matrimonial status data"""
         logger.info("Retrive matrimonial status from TOTVS start.")
         start = time()
@@ -171,18 +170,21 @@ class SchedulerService:
             marital_status_totvs = totvs_to_marital_status_schema(row)
             if not marital_status_totvs:
                 break
-            if verify_changes_marital_status(marital_status_totvs):
+            if verify_changes(
+                marital_status_totvs,
+                EmployeeMatrialStatusTotvsSchema,
+                EmployeeMaritalStatusTOTVSModel,
+            ):
                 new_changes.append(marital_status_totvs)
                 insert_marital_status(marital_status_totvs)
 
-        employee_serivce.update_marital_status_totvs(new_changes, db_session)
         end = time()
         elapsed_time = end - start
-        logger.info("Execution time: %s ms", str(elapsed_time))
+        logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "marital_status")
         logger.info("Retrive matrimonial status from TOTVS end.")
 
-    def _get_gender_totvs(self, db_session):
+    def _get_gender_totvs(self):
         """Excute procedure to retrive TOVTS gender data"""
         logger.info("Retrive gender from TOTVS start.")
         start = time()
@@ -195,18 +197,19 @@ class SchedulerService:
             gender_totvs = totvs_to_gender_schema(row)
             if not gender_totvs:
                 break
-            if verify_changes_gender(gender_totvs):
+            if verify_changes(
+                gender_totvs, EmployeeGenderTotvsSchema, EmployeeGenderTOTVSModel
+            ):
                 new_changes.append(gender_totvs)
                 insert_gender(gender_totvs)
 
-        employee_serivce.update_gender_totvs(new_changes, db_session)
         end = time()
         elapsed_time = end - start
-        logger.info("Execution time: %s ms", str(elapsed_time))
+        logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "gender")
         logger.info("Retrive gender from TOTVS end.")
 
-    def _get_nacionality_totvs(self, db_session):
+    def _get_nacionality_totvs(self):
         """Excute procedure to retrive TOVTS nationality data"""
         logger.info("Retrive nationality from TOTVS start.")
         start = time()
@@ -219,18 +222,21 @@ class SchedulerService:
             nationality_totvs = totvs_to_nationality_schema(row)
             if not nationality_totvs:
                 break
-            if verify_changes_nationality(nationality_totvs):
+            if verify_changes(
+                nationality_totvs,
+                EmployeeNationalityTotvsSchema,
+                EmployeeNationalityTOTVSModel,
+            ):
                 new_changes.append(nationality_totvs)
                 insert_nationality(nationality_totvs)
 
-        employee_serivce.update_nationality_totvs(new_changes, db_session)
         end = time()
         elapsed_time = end - start
-        logger.info("Execution time: %s ms", str(elapsed_time))
-        set_last_sync(new_changes, elapsed_time, "nationality")
+        logger.info(self.TIME_INFO, str(elapsed_time))
+        set_last_sync(len(new_changes), elapsed_time, "nationality")
         logger.info("Retrive nationality from TOTVS end.")
 
-    def _get_cost_center_totvs(self, db_session):
+    def _get_cost_center_totvs(self):
         """Excute procedure to retrive TOVTS cost center data"""
         logger.info("Retrive cost center from TOTVS start.")
         start = time()
@@ -243,18 +249,19 @@ class SchedulerService:
             cost_center_totvs = totvs_to_cost_center_schema(row)
             if not cost_center_totvs:
                 break
-            if verify_changes_cost_center(cost_center_totvs):
+            if verify_changes(
+                cost_center_totvs, CostCenterTotvsSchema, CostCenterTOTVSModel
+            ):
                 new_changes.append(cost_center_totvs)
                 insert_cost_center(cost_center_totvs)
 
-        asset_serivce.update_cost_center_totvs(new_changes, db_session)
         end = time()
         elapsed_time = end - start
-        logger.info("Execution time: %s ms", str(elapsed_time))
+        logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "cost_center")
         logger.info("Retrive cost center from TOTVS end.")
 
-    def _get_asset_type_totvs(self, db_session):
+    def _get_asset_type_totvs(self):
         """Excute procedure to retrive TOVTS asset type data"""
         logger.info("Retrive asset type from TOTVS start.")
         start = time()
@@ -267,18 +274,19 @@ class SchedulerService:
             asset_type_totvs = totvs_to_asset_type_schema(row)
             if not asset_type_totvs:
                 break
-            if verify_changes_asset_type(asset_type_totvs):
+            if verify_changes(
+                asset_type_totvs, AssetTypeTotvsSchema, AssetTypeTOTVSModel
+            ):
                 new_changes.append(asset_type_totvs)
                 insert_asset_type(asset_type_totvs)
 
-        asset_serivce.update_asset_type_totvs(new_changes, db_session)
         end = time()
         elapsed_time = end - start
-        logger.info("Execution time: %s ms", str(elapsed_time))
+        logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "asset_type")
         logger.info("Retrive asset type from TOTVS end.")
 
-    def _get_asset_totvs(self, db_session):
+    def _get_asset_totvs(self):
         """Excute procedure to retrive TOVTS asset data"""
         logger.info("Retrive asset from TOTVS start.")
         start = time()
@@ -291,18 +299,17 @@ class SchedulerService:
             asset_totvs = totvs_to_asset_schema(row)
             if not asset_totvs:
                 break
-            if verify_changes_asset(asset_totvs):
+            if verify_changes(asset_totvs, AssetTotvsSchema, AssetTOTVSModel):
                 new_changes.append(asset_totvs)
                 insert_asset(asset_totvs)
 
-        asset_serivce.update_asset_totvs(new_changes, db_session)
         end = time()
         elapsed_time = end - start
-        logger.info("Execution time: %s ms", str(elapsed_time))
+        logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "asset")
         logger.info("Retrive asset from TOTVS end.")
 
-    def _get_role_totvs(self, db_session):
+    def _get_role_totvs(self):
         """Excute procedure to retrive TOVTS role data"""
         logger.info("Retrive role from TOTVS start.")
         start = time()
@@ -315,30 +322,29 @@ class SchedulerService:
             role_totvs = totvs_to_role_schema(row)
             if not role_totvs:
                 break
-            if verify_changes_role(role_totvs):
+            if verify_changes(
+                role_totvs, EmployeeRoleTotvsSchema, EmployeeRoleTOTVSModel
+            ):
                 new_changes.append(role_totvs)
                 insert_role(role_totvs)
 
-        employee_serivce.update_role_totvs(new_changes, db_session)
         end = time()
         elapsed_time = end - start
-        logger.info("Execution time: %s ms", str(elapsed_time))
+        logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "role")
         logger.info("Retrive role from TOTVS end.")
 
     def _read_totvs_db(self):
         """Excute procedure to retrive TOVTS data"""
         logger.info("Retrive from TOTVS start.")
-        db_session = get_db_session()
-        self._get_asset_type_totvs(db_session)
-        self._get_marital_status_totvs(db_session)
-        self._get_gender_totvs(db_session)
-        self._get_nacionality_totvs(db_session)
-        self._get_cost_center_totvs(db_session)
-        self._get_role_totvs(db_session)
-        self._get_asset_totvs(db_session)
-        self._get_employees_totvs(db_session)
-        db_session.close()
+        self._get_asset_type_totvs()
+        self._get_marital_status_totvs()
+        self._get_gender_totvs()
+        self._get_nacionality_totvs()
+        self._get_cost_center_totvs()
+        self._get_role_totvs()
+        self._get_asset_totvs()
+        self._get_employees_totvs()
         logger.info("Retrive from TOTVS end.")
 
     def start(self) -> None:

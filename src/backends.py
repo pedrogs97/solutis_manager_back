@@ -31,11 +31,7 @@ logger = logging.Logger(__name__)
 
 def get_db_session():
     """Return session"""
-    database = Session_db()
-    try:
-        yield database
-    finally:
-        database.close()
+    return Session_db()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

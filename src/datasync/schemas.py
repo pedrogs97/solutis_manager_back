@@ -1,5 +1,6 @@
 """Datasync schemas"""
 from datetime import date, datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -10,15 +11,20 @@ class BaseSchema(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 
 
-class CostCenterTotvsSchema(BaseSchema):
-    """Cost center schema"""
+class BaseTotvsSchema(BaseSchema):
+    """Totvs base schema"""
 
     code: str
+
+
+class CostCenterTotvsSchema(BaseTotvsSchema):
+    """Cost center schema"""
+
     name: str
     classification: str
 
 
-class AssetTypeTotvsSchema(BaseSchema):
+class AssetTypeTotvsSchema(BaseTotvsSchema):
     """
     Asset type schema
 
@@ -31,33 +37,31 @@ class AssetTypeTotvsSchema(BaseSchema):
     * Softwares Admnistrativos
     """
 
-    code: int
     group_code: str
     name: str
 
 
-class AssetTotvsSchema(BaseSchema):
+class AssetTotvsSchema(BaseTotvsSchema):
     """Asset schema"""
 
-    code: int
     type: str
-    cost_center: str
-
+    cost_center: Optional[str] = ""
+    active: bool
     # tombo - registro patrimonial
     register_number: str
     description: str
     # fornecedor
     supplier: str
     # garantia
-    assurance_date: datetime
+    assurance_date: Optional[datetime]
     observations: str
-    discard_reason: str
+    discard_reason: str = ""
     # padrão
     pattern: str
     operational_system: str
     serial_number: str
     imei: str
-    acquisition_date: datetime
+    acquisition_date: Optional[datetime]
     value: float
     # pacote office
     ms_office: bool
@@ -65,17 +69,16 @@ class AssetTotvsSchema(BaseSchema):
     # operadora
     operator: str
     # modelo
-    model: str
+    model: str = ""
     # acessórios
     accessories: str
     # quantidade do  ativo
-    quantity: int
-    # unidade da quantidade
     unit: str
-    active: bool
+    # unidade da quantidade
+    quantity: int
 
 
-class EmployeeMatrialStatusTotvsSchema(BaseSchema):
+class EmployeeMatrialStatusTotvsSchema(BaseTotvsSchema):
     """
     Matrimonial status schema
 
@@ -89,11 +92,10 @@ class EmployeeMatrialStatusTotvsSchema(BaseSchema):
     * V - Viúvo
     """
 
-    code: str
     description: str
 
 
-class EmployeeGenderTotvsSchema(BaseSchema):
+class EmployeeGenderTotvsSchema(BaseTotvsSchema):
     """
     Gender schema
 
@@ -101,32 +103,28 @@ class EmployeeGenderTotvsSchema(BaseSchema):
     * F - Femino
     """
 
-    code: str
     description: str
 
 
-class EmployeeNationalityTotvsSchema(BaseSchema):
+class EmployeeNationalityTotvsSchema(BaseTotvsSchema):
     """
     Nationality schema
 
     All countries
     """
 
-    code: str
     description: str
 
 
-class EmployeeRoleTotvsSchema(BaseSchema):
+class EmployeeRoleTotvsSchema(BaseTotvsSchema):
     """Employee role schema"""
 
-    code: str
     name: str
 
 
-class EmployeeTotvsSchema(BaseSchema):
+class EmployeeTotvsSchema(BaseTotvsSchema):
     """Employee schema"""
 
-    code: int
     full_name: str
     birthday: date
     taxpayer_identification: str

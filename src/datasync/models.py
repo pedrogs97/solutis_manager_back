@@ -1,6 +1,9 @@
 """Datasync models"""
+from datetime import datetime
+
 from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, func
 
+from src.config import DATE_FORMAT
 from src.database import Base
 
 
@@ -34,7 +37,7 @@ class AssetTypeTOTVSModel(Base):
     __tablename__ = "asset_types_totvs"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", Integer, nullable=False)
+    code = Column("code", String(length=10), nullable=False)
     group_code = Column("group_name", String(length=10), nullable=False)
     name = Column("name", String(length=40), nullable=False)
 
@@ -49,7 +52,7 @@ class AssetTOTVSModel(Base):
     __allow_unmapped__ = True
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", Integer, unique=True, nullable=False)
+    code = Column("code", String(length=10), unique=True, nullable=False)
 
     type = Column("type", String(length=100), nullable=False)
 
@@ -62,7 +65,7 @@ class AssetTOTVSModel(Base):
     # fornecedor
     supplier = Column("supplier", String(length=100), nullable=True)
     assurance_date = Column("assurance_date", DateTime, nullable=True)
-    observations = Column("observations", String(length=255), nullable=True)
+    observations = Column("observations", String(length=600), nullable=True)
     discard_reason = Column("discard_reason", String(length=255), nullable=True)
     # padrão
     pattern = Column("pattern", String(length=255), nullable=True)
@@ -80,7 +83,11 @@ class AssetTOTVSModel(Base):
     model = Column("model", String(length=255), nullable=True)
     # acessórios
     accessories = Column("accessories", String(length=255), nullable=True)
-    configuration = Column("configuration", String(length=255), nullable=True)
+    unit = Column("unit", String(length=3), nullable=True)
+    quantity = Column("quantity", Integer, nullable=True)
+
+    def __str__(self):
+        return f"{self.code} - {self.description}"
 
 
 class EmployeeMaritalStatusTOTVSModel(Base):
@@ -151,6 +158,9 @@ class EmployeeRoleTOTVSModel(Base):
     code = Column("code", String(length=10), nullable=False)
     name = Column("name", String(length=100), nullable=False)
 
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
 
 class EmployeeTOTVSModel(Base):
     """Employee model"""
@@ -158,7 +168,7 @@ class EmployeeTOTVSModel(Base):
     __tablename__ = "employees_totvs"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", Integer, nullable=False, unique=True)
+    code = Column("code", String(length=10), nullable=False, unique=True)
     full_name = Column("full_name", String(length=120), nullable=False)
     taxpayer_identification = Column(
         "taxpayer_identification", String(length=11), nullable=False, unique=True
@@ -189,3 +199,7 @@ class SyncModel(Base):
     count_new_values = Column("count_new_values", Integer, nullable=False)
     model = Column("model", String(length=50), nullable=True, default="employee")
     execution_time = Column("execution_time", Float, nullable=False)
+
+    def __str__(self):
+        datetime_str = datetime.strftime(self.updated_at, DATE_FORMAT)
+        return f"{self.model} ({self.count_new_values}) - {datetime_str}"

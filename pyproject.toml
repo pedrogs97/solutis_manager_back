@@ -30,6 +30,7 @@ pdfkit = "^1.0.0"
 pyodbc = "^5.0.1"
 mysql-connector-python = "^8.2.0"
 pyjwt = "^2.8.0"
+pymssql = "^2.2.11"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -19,23 +19,10 @@ def get_database_url():
     return f"mysql+mysqlconnector://{user}:{password}@{server}:{port}/{db}"
 
 
-HOST_DB = os.environ.get("SQLSERVE_HOST_DB", "")
-NAME_DB = os.environ.get("SQLSERVE_NAME_DB", "")
-USER_DB = os.environ.get("SQLSERVE_USER_DB", "")
-PASSWORD_DB = os.environ.get("SQLSERVE_PASSWORD_DB", "")
-
-CONNECTION_STRING = (
-    "DRIVER={ODBC Driver 17 for SQL Server};SERVER="
-    + HOST_DB
-    + ";DATABASE="
-    + NAME_DB
-    + ";ENCRYPT=yes;UID="
-    + USER_DB
-    + ";PWD="
-    + PASSWORD_DB
-    + ";TrustServerCertificate=yes"
-)
-
+SQLSERVE_HOST_DB = os.environ.get("SQLSERVE_HOST_DB", "")
+SQLSERVE_NAME_DB = os.environ.get("SQLSERVE_NAME_DB", "")
+SQLSERVE_USER_DB = os.environ.get("SQLSERVE_USER_DB", "")
+SQLSERVE_PASSWORD_DB = os.environ.get("SQLSERVE_PASSWORD_DB", "")
 
 PASSWORD_SUPER_USER = os.getenv("PASSWORD_SUPER_USER")
 
@@ -73,8 +60,8 @@ PERMISSIONS = {
     "lending": {
         "models": [
             {"name": "asset", "label": "Ativos"},
-            {"name": "asset_type", "label": "Ativos"},
-            {"name": "asset_status", "label": "Ativos"},
+            {"name": "asset_type", "label": "Tipos de Ativo"},
+            {"name": "asset_status", "label": "Status de Ativo"},
             {"name": "lending", "label": "Comodato"},
             {"name": "verification", "label": "Verificação de Ativo"},
             {"name": "document", "label": "Documentos"},

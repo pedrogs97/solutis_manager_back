@@ -24,15 +24,10 @@ from src.people.models import (
 )
 from src.people.schemas import (
     EmployeeGenderSerializerSchema,
-    EmployeeGenderTotvsSchema,
     EmployeeMatrimonialStatusSerializerSchema,
-    EmployeeMatrimonialStatusTotvsSchema,
     EmployeeNationalitySerializerSchema,
-    EmployeeNationalityTotvsSchema,
     EmployeeRoleSerializerSchema,
-    EmployeeRoleTotvsSchema,
     EmployeeSerializerSchema,
-    EmployeeTotvsSchema,
     NewEmployeeSchema,
     UpdateEmployeeSchema,
 )
@@ -137,60 +132,6 @@ class EmployeeService:
             national_identification=employee.national_identification,
             taxpayer_identification=employee.taxpayer_identification,
         )
-
-    def update_employee_totvs(
-        self, totvs_employees: List[EmployeeTotvsSchema], db_session: Session
-    ):
-        """Updates employees from totvs"""
-        try:
-            updates: List[EmployeeModel] = []
-            for totvs_employee in totvs_employees:
-                if (
-                    db_session.query(EmployeeModel)
-                    .filter(EmployeeModel.code == totvs_employee.code)
-                    .first()
-                ):
-                    continue
-
-                role = (
-                    db_session.query(EmployeeRoleModel)
-                    .filter(EmployeeRoleModel.name == totvs_employee.role)
-                    .first()
-                )
-                nationality = (
-                    db_session.query(EmployeeNationalityModel)
-                    .filter(EmployeeNationalityModel.description == totvs_employee.role)
-                    .first()
-                )
-                marital_status = (
-                    db_session.query(EmployeeMaritalStatusModel)
-                    .filter(
-                        EmployeeMaritalStatusModel.description == totvs_employee.role
-                    )
-                    .first()
-                )
-                gender = (
-                    db_session.query(EmployeeGenderModel)
-                    .filter(EmployeeGenderModel.description == totvs_employee.role)
-                    .first()
-                )
-
-                dict_employee = {
-                    **totvs_employee.model_dump(
-                        exclude={"role", "nationality", "marital_status", "gender"}
-                    ),
-                    "role": role,
-                    "nationality": nationality,
-                    "marital_status": marital_status,
-                    "gender": gender,
-                }
-
-                updates.append(EmployeeModel(**dict_employee))
-
-            db_session.add_all(updates)
-            db_session.commit()
-        except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
     def create_employee(
         self,
@@ -411,128 +352,6 @@ class EmployeeService:
             )
 
         return paginated
-
-    def update_marital_status_totvs(
-        self,
-        totvs_marital_status: List[EmployeeMatrimonialStatusTotvsSchema],
-        db_session: Session,
-    ):
-        """Updates marital_status from totvs"""
-        try:
-            updates: List[EmployeeMaritalStatusModel] = []
-            for totvs_marital_status_item in totvs_marital_status:
-                db_marital_status = (
-                    db_session.query(EmployeeMaritalStatusModel)
-                    .filter(
-                        EmployeeMaritalStatusModel.code
-                        == totvs_marital_status_item.code
-                    )
-                    .first()
-                )
-                if db_marital_status:
-                    db_marital_status.description = (
-                        totvs_marital_status_item.description
-                    )
-                    updates.append(db_marital_status)
-                    continue
-
-                updates.append(
-                    EmployeeMaritalStatusModel(**totvs_marital_status_item.model_dump())
-                )
-
-            db_session.add_all(updates)
-            db_session.commit()
-
-            logger.info(
-                "Update Matrimonial Status from TOTVS. Total=%s", str(len(updates))
-            )
-        except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
-
-    def update_gender_totvs(
-        self,
-        totvs_gender: List[EmployeeGenderTotvsSchema],
-        db_session: Session,
-    ):
-        """Updates gender from totvs"""
-        try:
-            updates: List[EmployeeGenderModel] = []
-            for totvs_gender_item in totvs_gender:
-                db_gender = (
-                    db_session.query(EmployeeGenderModel)
-                    .filter(EmployeeGenderModel.code == totvs_gender_item.code)
-                    .first()
-                )
-                if db_gender:
-                    db_gender.description = totvs_gender_item.description
-                    updates.append(db_gender)
-                    continue
-
-                updates.append(EmployeeGenderModel(**totvs_gender_item.model_dump()))
-
-            db_session.add_all(updates)
-            db_session.commit()
-            logger.info("Update Gender from TOTVS. Total=%s", str(len(updates)))
-        except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
-
-    def update_nationality_totvs(
-        self,
-        totvs_nationality: List[EmployeeNationalityTotvsSchema],
-        db_session: Session,
-    ):
-        """Updates nationality from totvs"""
-        try:
-            updates: List[EmployeeNationalityModel] = []
-            for totvs_nationality_item in totvs_nationality:
-                db_nationality = (
-                    db_session.query(EmployeeNationalityModel)
-                    .filter(
-                        EmployeeNationalityModel.code == totvs_nationality_item.code
-                    )
-                    .first()
-                )
-                if db_nationality:
-                    db_nationality.description = totvs_nationality_item.description
-                    updates.append(db_nationality)
-                    continue
-
-                updates.append(
-                    EmployeeNationalityModel(**totvs_nationality_item.model_dump())
-                )
-
-            db_session.add_all(updates)
-            db_session.commit()
-            logger.info("Update Nationality from TOTVS. Total=%s", str(len(updates)))
-        except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
-
-    def update_role_totvs(
-        self,
-        totvs_role: List[EmployeeRoleTotvsSchema],
-        db_session: Session,
-    ):
-        """Updates role from totvs"""
-        try:
-            updates: List[EmployeeRoleModel] = []
-            for totvs_role_item in totvs_role:
-                db_role = (
-                    db_session.query(EmployeeRoleModel)
-                    .filter(EmployeeRoleModel.code == totvs_role_item.code)
-                    .first()
-                )
-                if db_role:
-                    db_role.name = totvs_role_item.name
-                    updates.append(db_role)
-                    continue
-
-                updates.append(EmployeeRoleModel(**totvs_role_item.model_dump()))
-
-            db_session.add_all(updates)
-            db_session.commit()
-            logger.info("Update Role from TOTVS. Total=%s", str(len(updates)))
-        except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE) from exc
 
 
 class EmpleoyeeGeneralSerivce:
