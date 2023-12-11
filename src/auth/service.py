@@ -542,6 +542,12 @@ class RoleService:
             db_session.query(RoleModel).filter(RoleModel.name == new_role.name).first()
         )
 
+        permissions = (
+            db_session.query(PermissionModel)
+            .filter(PermissionModel.id.in_(new_role.permissions))
+            .all()
+        )
+
         if role:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -549,6 +555,7 @@ class RoleService:
             )
 
         new_role_db = RoleModel(**new_role.model_dump(exclude="permissions"))
+        new_role_db.permissions = permissions
         db_session.add(new_role_db)
         db_session.commit()
         db_session.flush()

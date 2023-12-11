@@ -167,10 +167,6 @@ class EmployeeService:
         )
 
         new_emplyoee = EmployeeModel(
-            role=role,
-            nationality=nationality,
-            marital_status=marital_status,
-            gender=gender,
             code=data.code,
             full_name=data.full_name,
             taxpayer_identification=data.taxpayer_identification,
@@ -182,6 +178,12 @@ class EmployeeService:
             manager=data.manager,
             legal_person=True,
         )
+
+        new_emplyoee.role = role
+        new_emplyoee.nationality = nationality
+        new_emplyoee.marital_status = marital_status
+        new_emplyoee.gender = gender
+
         db_session.add(new_emplyoee)
         db_session.commit()
         db_session.flush()

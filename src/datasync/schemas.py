@@ -45,7 +45,7 @@ class AssetTotvsSchema(BaseTotvsSchema):
     """Asset schema"""
 
     type: str
-    cost_center: Optional[str] = ""
+    cost_center: Optional[str] = None
     active: bool
     # tombo - registro patrimonial
     register_number: str

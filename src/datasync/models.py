@@ -56,7 +56,7 @@ class AssetTOTVSModel(Base):
 
     type = Column("type", String(length=100), nullable=False)
 
-    cost_center: Column("cost_center", String(length=100), nullable=True)
+    cost_center = Column("cost_center", String(length=150), nullable=True, default="")
 
     active = Column("active", Boolean, nullable=True)
     # tombo - registro patrimonial

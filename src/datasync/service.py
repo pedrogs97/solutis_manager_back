@@ -6,20 +6,9 @@ from typing import Union
 
 from pydantic_core import ValidationError
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.sql import or_
 
 from src.backends import get_db_session
-from src.datasync.models import (
-    AssetTOTVSModel,
-    AssetTypeTOTVSModel,
-    CostCenterTOTVSModel,
-    EmployeeGenderTOTVSModel,
-    EmployeeMaritalStatusTOTVSModel,
-    EmployeeNationalityTOTVSModel,
-    EmployeeRoleTOTVSModel,
-    EmployeeTOTVSModel,
-    SyncModel,
-)
+from src.datasync.models import SyncModel
 from src.datasync.schemas import (
     AssetTotvsSchema,
     AssetTypeTotvsSchema,
@@ -263,25 +252,18 @@ def totvs_to_role_schema(
         return None
 
 
-def default(obj):
+def default_obj(obj):
+    """Return default value for an object. Used to parse object to string"""
     if isinstance(obj, (date, datetime)):
         return obj.isoformat()
+    return str(obj)
 
 
 def get_checksum(schema: BaseTotvsSchema) -> bytes:
     """Returns a schema as bytes"""
     return json.dumps(
-        schema.model_dump(), sort_keys=True, indent=2, default=default
+        schema.model_dump(), sort_keys=True, indent=2, default=default_obj
     ).encode("utf-8")
-    # schema_dict = schema.model_dump()
-    # values = schema_dict.values()
-    # bytes_schema = bytes(0)
-    # for item in values:
-    #     if isinstance(item, date):
-    #         bytes_schema += bytes(item.strftime("%d/%m/%Y"), "utf-8")
-    #     else:
-    #         bytes_schema += bytes(str(item).strip(), "utf-8")
-    # return bytes_schema
 
 
 def verify_changes(
@@ -299,185 +281,39 @@ def verify_changes(
     asset_db = db_session.query(model_type).filter_by(code=totvs_schema.code).first()
 
     if not asset_db:
-        logger.debug("Não achou")
         db_session.close()
         return True
     db_dict = {**asset_db.__dict__}
     db_dict.pop("_sa_instance_state")
     db_dict.pop("id")
-    if model_type == AssetTOTVSModel:
-        logger.debug(db_dict.keys())
-        logger.debug(db_schema.model_fields.keys())
     checksum_from_db = get_checksum(db_schema(**db_dict))
-    has_changes = checksum_from_db != checksum_from_totvs
-    if has_changes:
-        logger.debug(db_dict)
-        logger.debug(totvs_schema.model_dump())
-        logger.debug(f"{checksum_from_db}/{checksum_from_totvs}")
     db_session.close()
-    return has_changes
+    return checksum_from_db != checksum_from_totvs
 
 
-def insert_employee(employee: EmployeeTotvsSchema) -> None:
-    """Inserts new or changed employee"""
+def insert(schema: BaseTotvsSchema, model_type) -> None:
+    """Insert new or change"""
     db_session = get_db_session()
     try:
-        new_employee = EmployeeTOTVSModel(**employee.model_dump())
+        new_info = model_type(**schema.model_dump())
         if not db_session:
             logger.warning("No db session.")
             return
-        employee_db = (
-            db_session.query(EmployeeTOTVSModel)
-            .filter(
-                or_(
-                    EmployeeTOTVSModel.code == employee.code,
-                    EmployeeTOTVSModel.taxpayer_identification
-                    == employee.taxpayer_identification,
-                )
-            )
-            .first()
+
+        current_info = (
+            db_session.query(model_type).filter(model_type.code == schema.code).first()
         )
-        if employee_db:
-            logger.info("Updating: %s", str(employee_db))
-            db_session.delete(employee_db)
+
+        if current_info:
+            logger.info("Update: %s", str(new_info))
+            db_session.delete(current_info)
+            db_session.commit()
+            db_session.add(new_info)
             db_session.commit()
         else:
-            logger.info("New: %s", str(new_employee))
-
-        db_session.add(new_employee)
-        db_session.commit()
-
-    except IntegrityError as err:
-        logger.warning("Error: %s", err.args[0])
-    finally:
-        db_session.close()
-
-
-def insert_marital_status(
-    marital_status: EmployeeMatrialStatusTotvsSchema,
-) -> None:
-    """Inserts new matrimonial status"""
-    db_session = get_db_session()
-    try:
-        new_marital_status = EmployeeMaritalStatusTOTVSModel(
-            **marital_status.model_dump()
-        )
-        if not db_session:
-            logger.warning("No db session.")
-            return
-
-        logger.info("New: %s", str(new_marital_status))
-
-        db_session.add(new_marital_status)
-        db_session.commit()
-    except IntegrityError as err:
-        logger.warning("Error: %s", err.args[0])
-    finally:
-        db_session.close()
-
-
-def insert_gender(gender: EmployeeGenderTotvsSchema) -> None:
-    """Inserts new gender"""
-    db_session = get_db_session()
-    try:
-        new_gender = EmployeeGenderTOTVSModel(**gender.model_dump())
-        if not db_session:
-            logger.warning("No db session.")
-            return
-
-        logger.info("New: %s", str(new_gender))
-        db_session.add(new_gender)
-        db_session.commit()
-    except IntegrityError as err:
-        logger.warning("Error: %s", err.args[0])
-    finally:
-        db_session.close()
-
-
-def insert_nationality(nacionality: EmployeeNationalityTotvsSchema) -> None:
-    """Inserts new nacionality"""
-    db_session = get_db_session()
-    try:
-        new_nationality = EmployeeNationalityTOTVSModel(**nacionality.model_dump())
-        if not db_session:
-            logger.warning("No db session.")
-            return
-
-        logger.info("New: %s", str(new_nationality))
-        db_session.add(new_nationality)
-        db_session.commit()
-    except IntegrityError as err:
-        logger.warning("Error: %s", err.args[0])
-    finally:
-        db_session.close()
-
-
-def insert_cost_center(cost_center: CostCenterTotvsSchema) -> None:
-    """Inserts new cost center"""
-    db_session = get_db_session()
-    try:
-        new_cost_center = CostCenterTOTVSModel(**cost_center.model_dump())
-        if not db_session:
-            logger.warning("No db session.")
-            return
-
-        logger.info("New: %s", str(new_cost_center))
-        db_session.add(new_cost_center)
-        db_session.commit()
-    except IntegrityError as err:
-        logger.warning("Error: %s", err.args[0])
-    finally:
-        db_session.close()
-
-
-def insert_asset_type(asset_type: AssetTypeTotvsSchema) -> None:
-    """Inserts new asset type"""
-    db_session = get_db_session()
-    try:
-        new_asset_type = AssetTypeTOTVSModel(**asset_type.model_dump())
-        if not db_session:
-            logger.warning("No db session.")
-            return
-
-        logger.info("New: %s", str(new_asset_type))
-        db_session.add(new_asset_type)
-        db_session.commit()
-    except IntegrityError as err:
-        logger.warning("Error: %s", err.args[0])
-    finally:
-        db_session.close()
-
-
-def insert_asset(asset: AssetTotvsSchema) -> None:
-    """Inserts new asset"""
-    db_session = get_db_session()
-    try:
-        new_asset = AssetTOTVSModel(**asset.model_dump(exclude={"cost_center"}))
-        if not db_session:
-            logger.warning("No db session.")
-            return
-
-        logger.info("New: %s", str(new_asset))
-        db_session.add(new_asset)
-        db_session.commit()
-    except IntegrityError as err:
-        logger.warning("Error: %s", err.args[0])
-    finally:
-        db_session.close()
-
-
-def insert_role(role: EmployeeRoleTotvsSchema) -> None:
-    """Inserts new role"""
-    db_session = get_db_session()
-    try:
-        new_role = EmployeeRoleTOTVSModel(**role.model_dump())
-        if not db_session:
-            logger.warning("No db session.")
-            return
-
-        logger.info("New: %s", str(new_role))
-        db_session.add(new_role)
-        db_session.commit()
+            logger.info("New: %s", str(new_info))
+            db_session.add(new_info)
+            db_session.commit()
     except IntegrityError as err:
         logger.warning("Error: %s", err.args[0])
     finally:

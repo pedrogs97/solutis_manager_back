@@ -33,14 +33,7 @@ from src.datasync.schemas import (
     EmployeeTotvsSchema,
 )
 from src.datasync.service import (
-    insert_asset,
-    insert_asset_type,
-    insert_cost_center,
-    insert_employee,
-    insert_gender,
-    insert_marital_status,
-    insert_nationality,
-    insert_role,
+    insert,
     set_last_sync,
     totvs_to_asset_schema,
     totvs_to_asset_type_schema,
@@ -149,7 +142,7 @@ class SchedulerService:
                 break
             if verify_changes(employee_totvs, EmployeeTotvsSchema, EmployeeTOTVSModel):
                 new_changes.append(employee_totvs)
-                insert_employee(employee_totvs)
+                insert(employee_totvs, EmployeeTOTVSModel)
 
         end = time()
         elapsed_time = end - start
@@ -176,7 +169,7 @@ class SchedulerService:
                 EmployeeMaritalStatusTOTVSModel,
             ):
                 new_changes.append(marital_status_totvs)
-                insert_marital_status(marital_status_totvs)
+                insert(marital_status_totvs, EmployeeMaritalStatusTOTVSModel)
 
         end = time()
         elapsed_time = end - start
@@ -201,7 +194,7 @@ class SchedulerService:
                 gender_totvs, EmployeeGenderTotvsSchema, EmployeeGenderTOTVSModel
             ):
                 new_changes.append(gender_totvs)
-                insert_gender(gender_totvs)
+                insert(gender_totvs, EmployeeGenderTOTVSModel)
 
         end = time()
         elapsed_time = end - start
@@ -228,7 +221,7 @@ class SchedulerService:
                 EmployeeNationalityTOTVSModel,
             ):
                 new_changes.append(nationality_totvs)
-                insert_nationality(nationality_totvs)
+                insert(nationality_totvs, EmployeeNationalityTOTVSModel)
 
         end = time()
         elapsed_time = end - start
@@ -253,7 +246,7 @@ class SchedulerService:
                 cost_center_totvs, CostCenterTotvsSchema, CostCenterTOTVSModel
             ):
                 new_changes.append(cost_center_totvs)
-                insert_cost_center(cost_center_totvs)
+                insert(cost_center_totvs, CostCenterTOTVSModel)
 
         end = time()
         elapsed_time = end - start
@@ -278,7 +271,7 @@ class SchedulerService:
                 asset_type_totvs, AssetTypeTotvsSchema, AssetTypeTOTVSModel
             ):
                 new_changes.append(asset_type_totvs)
-                insert_asset_type(asset_type_totvs)
+                insert(asset_type_totvs, AssetTypeTOTVSModel)
 
         end = time()
         elapsed_time = end - start
@@ -301,7 +294,7 @@ class SchedulerService:
                 break
             if verify_changes(asset_totvs, AssetTotvsSchema, AssetTOTVSModel):
                 new_changes.append(asset_totvs)
-                insert_asset(asset_totvs)
+                insert(asset_totvs, AssetTOTVSModel)
 
         end = time()
         elapsed_time = end - start
@@ -326,7 +319,7 @@ class SchedulerService:
                 role_totvs, EmployeeRoleTotvsSchema, EmployeeRoleTOTVSModel
             ):
                 new_changes.append(role_totvs)
-                insert_role(role_totvs)
+                insert(role_totvs, EmployeeRoleTOTVSModel)
 
         end = time()
         elapsed_time = end - start

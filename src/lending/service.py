@@ -191,9 +191,6 @@ class AssetService:
         ) = self.__validate_nested(data, db_session)
 
         new_asset = AssetModel(
-            type=asset_type,
-            clothing_size=clothing_size,
-            status=asset_status,
             code=data.code,
             register_number=data.register_number,
             description=data.description,
@@ -218,6 +215,11 @@ class AssetService:
             active=True,
             by_agile=True,
         )
+
+        new_asset.type = (asset_type,)
+        new_asset.clothing_size = (clothing_size,)
+        new_asset.status = (asset_status,)
+
         db_session.add(new_asset)
         db_session.commit()
         db_session.flush()
@@ -615,16 +617,17 @@ class LendingService:
         ) = self.__validate_nested(new_lending, db_session)
 
         new_lending_db = LendingModel(
-            employee=employee,
-            asset=asset,
-            document=document,
-            workload=workload,
-            cost_center=cost_center,
             manager=new_lending.manager,
             observations=new_lending.observations,
             signed_date=new_lending.signed_date,
             glpi_number=new_lending.glpi_number,
         )
+
+        new_lending_db.employee = (employee,)
+        new_lending_db.asset = (asset,)
+        new_lending_db.document = (document,)
+        new_lending_db.workload = (workload,)
+        new_lending_db.cost_center = (cost_center,)
 
         new_lending_db.witnesses = witnesses
         db_session.add(new_lending_db)
@@ -774,8 +777,10 @@ class DocumentService:
         authenticated_user: UserModel,
     ) -> DocumentSerializerSchema:
         """Create new contract, not signed"""
-        doc_type = db_session.query(DocumentTypeModel).filter(
-            DocumentTypeModel.name == new_lending_doc.type_doc
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == new_lending_doc.type_doc)
+            .first()
         )
 
         asset = (
@@ -899,9 +904,9 @@ class DocumentService:
                 )
             )
 
-        new_doc = DocumentModel(
-            doc_type=doc_type, path=contract_path, file_name=f"{new_code}.pdf"
-        )
+        new_doc = DocumentModel(path=contract_path, file_name=f"{new_code}.pdf")
+
+        new_doc.doc_type = doc_type
 
         db_session.add(new_doc)
         db_session.commit()
@@ -1058,6 +1063,7 @@ class VerificationService:
             id=verification.id,
             question=verification.question,
             step=verification.step,
+            asset_type=verification.asset_type.name,
         )
 
     def serialize_answer_verification(
@@ -1084,9 +1090,10 @@ class VerificationService:
 
         new_verification = VerificationModel(
             question=data.question,
-            asset_type=asset_type,
             step=data.step,
         )
+
+        new_verification.asset_type = asset_type
 
         db_session.add(new_verification)
         db_session.commit()
@@ -1141,12 +1148,12 @@ class VerificationService:
 
         new_answer_verification = VerificationAnswerModel(
             lending=lending,
-            verification=verification,
-            type=verification_type,
-            step=data.step,
             answer=data.answer,
             observations=data.observations,
         )
+
+        new_answer_verification.type = (verification_type,)
+        new_answer_verification.verification = (verification,)
 
         db_session.add(new_answer_verification)
         db_session.commit()
@@ -1278,13 +1285,13 @@ class MaintenanceService:
             )
 
         new_maintenance = MaintenanceModel(
-            action=action_type,
-            status=pending_status,
             open_date=date.today(),
             glpi_number=data.glpi_number,
             supplier_service_order=data.supplier_service_order,
             supplier_number=data.supplier_number,
         )
+        new_maintenance.status = (pending_status,)
+        new_maintenance.action = (action_type,)
 
         db_session.add(new_maintenance)
         db_session.commit()

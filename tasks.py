@@ -26,6 +26,12 @@ def migrate(cmd):
 
 
 @task
+def revertmigration(cmd):
+    """Revert last alembic migration"""
+    cmd.run("alembic downgrade -1")
+
+
+@task
 def run(cmd):
     """Run application"""
     cmd.run("uvicorn src.main:app --port 8000 --reload")
