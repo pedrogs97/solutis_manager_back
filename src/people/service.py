@@ -57,6 +57,7 @@ class EmployeeService:
 
     def __validate_nested(self, data: NewEmployeeSchema, db_session: Session) -> tuple:
         """Validates role, nationality, marital status and gender values"""
+        errors = {}
         if data.role:
             role = (
                 db_session.query(EmployeeRoleModel)
@@ -64,10 +65,7 @@ class EmployeeService:
                 .first()
             )
             if not role:
-                raise HTTPException(
-                    detail={"role": "Perfil não existe"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
+                errors.update({"role": "Perfil não existe"})
 
         if data.role:
             nationality = (
@@ -76,10 +74,7 @@ class EmployeeService:
                 .first()
             )
             if not nationality:
-                raise HTTPException(
-                    detail={"nationality": "Nacionalidade não existe"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
+                errors.update({"nationality": "Nacionalidade não existe"})
 
         if data.marital_status:
             marital_status = (
@@ -88,10 +83,7 @@ class EmployeeService:
                 .first()
             )
             if not marital_status:
-                raise HTTPException(
-                    detail={"maritalStatus": "Estado civil não existe"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
+                errors.update({"maritalStatus": "Estado civil não existe"})
 
         if data.gender:
             gender = (
@@ -100,10 +92,13 @@ class EmployeeService:
                 .first()
             )
             if not gender:
-                raise HTTPException(
-                    detail={"gender": "Genero não existe"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
+                errors.update({"gender": "Genero não existe"})
+
+        if len(errors.keys()) > 0:
+            raise HTTPException(
+                detail=errors,
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
 
         return (role, nationality, marital_status, gender)
 
@@ -140,25 +135,26 @@ class EmployeeService:
         authenticated_user: UserModel,
     ) -> EmployeeSerializerSchema:
         """Creates new employee"""
+        errors = {}
         if data.code and (
             db_session.query(EmployeeModel)
             .filter(EmployeeModel.code == data.code)
             .first()
         ):
-            raise HTTPException(
-                detail={"code": "Colaborador já existe"},
-                status_code=status.HTTP_400_BAD_REQUEST,
-            )
+            errors.update({"code": "Colaborador já existe"})
 
-        if (
+        if data.taxpayer_identification and (
             db_session.query(EmployeeModel)
             .filter(
                 EmployeeModel.taxpayer_identification == data.taxpayer_identification
             )
             .first()
         ):
+            errors.update({"taxpayer_identification": "Colaborador já existe"})
+
+        if len(errors.keys()) > 0:
             raise HTTPException(
-                detail={"taxpayer_identification": "Colaborador já existe"},
+                detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 

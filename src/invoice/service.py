@@ -51,6 +51,7 @@ class InvoiceService:
         """Validate asstes"""
         assets = []
         if len(data.assets):
+            error_ids = []
             for asset_id in data.assets:
                 asset = (
                     db_session.query(AssetModel)
@@ -58,12 +59,16 @@ class InvoiceService:
                     .first()
                 )
                 if not asset:
-                    raise HTTPException(
-                        detail={"assets": f"Ativo não existe. {asset_id}"},
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                    )
+                    error_ids.append(asset_id)
 
                 assets.append(asset)
+
+            errors = {"assets": {"Ativos não existem": error_ids}}
+            raise HTTPException(
+                detail=errors,
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
         return assets
 
     def serialize_invoice(self, invoice: InvoiceModel) -> InvoiceSerializerSchema:

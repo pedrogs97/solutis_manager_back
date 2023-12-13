@@ -13,6 +13,7 @@ from src.auth.service import create_initial_data, create_permissions, create_sup
 from src.config import BASE_API, BASE_DIR, DATE_FORMAT, FORMAT, LOG_FILENAME, ORIGINS
 from src.database import ExternalDatabase
 from src.datasync.router import datasync_router
+from src.exceptions import default_response_exception
 from src.invoice.router import invoice_router
 from src.lending.router import lending_router
 from src.log.router import log_router
@@ -32,7 +33,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+exception_handlers = {
+    500: default_response_exception,
+    404: default_response_exception,
+    401: default_response_exception,
+    400: default_response_exception,
+}
+
+app = FastAPI(exception_handlers=exception_handlers)
 
 
 app.add_middleware(

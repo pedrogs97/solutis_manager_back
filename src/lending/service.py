@@ -85,6 +85,7 @@ class AssetService:
 
     def __validate_nested(self, data: NewAssetSchema, db_session: Session) -> tuple:
         """Validates clothing size, type and status values"""
+        errors = {}
         if data.type:
             asset_type = (
                 db_session.query(AssetTypeModel)
@@ -92,10 +93,7 @@ class AssetService:
                 .first()
             )
             if not asset_type:
-                raise HTTPException(
-                    detail={"assetType": f"Tipo de Ativo não existe. {asset_type}"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
+                errors.update({"assetType": f"Tipo de Ativo não existe. {asset_type}"})
 
         if data.clothing_size:
             clothing_size = (
@@ -104,11 +102,8 @@ class AssetService:
                 .first()
             )
             if not clothing_size:
-                raise HTTPException(
-                    detail={
-                        "clothingSize": f"Tamanho de roupa não existe. {clothing_size}"
-                    },
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                errors.update(
+                    {"clothingSize": f"Tamanho de roupa não existe. {clothing_size}"}
                 )
 
         if data.status:
@@ -118,12 +113,15 @@ class AssetService:
                 .first()
             )
             if not asset_status:
-                raise HTTPException(
-                    detail={
-                        "assetStatus": f"Situação de Ativo não existe. {asset_status}"
-                    },
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                errors.update(
+                    {"assetStatus": f"Situação de Ativo não existe. {asset_status}"}
                 )
+
+        if len(errors.keys()) > 0:
+            raise HTTPException(
+                detail=errors,
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
 
         return (
             asset_type,
@@ -164,23 +162,24 @@ class AssetService:
         self, data: NewAssetSchema, db_session: Session, authenticated_user: UserModel
     ) -> AssetSerializerSchema:
         """Creates new asset"""
+        errors = {}
         if (
             data.code
             and db_session.query(AssetModel)
             .filter(AssetModel.code == data.code)
             .first()
         ):
-            raise HTTPException(
-                detail={"code": "Este Código já existe."},
-                status_code=status.HTTP_400_BAD_REQUEST,
-            )
+            errors.update({"code": "Este Código já existe."})
         if (
             db_session.query(AssetModel)
             .filter(AssetModel.register_number == data.register_number)
             .first()
         ):
+            errors.update({"registerNumber": "Este N° de Patrimônio já existe"})
+
+        if len(errors.keys()) > 0:
             raise HTTPException(
-                detail={"registerNumber": "Este N° de Patrimônio já existe"},
+                detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -517,6 +516,7 @@ class LendingService:
 
     def __validate_nested(self, data: NewLendingSchema, db_session: Session) -> tuple:
         """Validates employee, asset, workload, cost center and document values"""
+        errors = {}
         if data.employee:
             employee = (
                 db_session.query(EmployeeModel)
@@ -524,9 +524,8 @@ class LendingService:
                 .first()
             )
             if not employee:
-                raise HTTPException(
-                    detail={"employee": f"Tipo de Colaborador não existe. {employee}"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                errors.update(
+                    {"employee": f"Tipo de Colaborador não existe. {employee}"}
                 )
 
         if data.asset:
@@ -534,10 +533,7 @@ class LendingService:
                 db_session.query(AssetModel).filter(AssetModel.id == data.asset).first()
             )
             if not asset:
-                raise HTTPException(
-                    detail={"asset": f"Ativo não existe. {asset}"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
+                errors.update({"asset": f"Ativo não existe. {asset}"})
 
         if data.document:
             document = (
@@ -546,10 +542,7 @@ class LendingService:
                 .first()
             )
             if not document:
-                raise HTTPException(
-                    detail={"document": f"Documento não existe. {document}"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
+                errors.update({"document": f"Documento não existe. {document}"})
 
         if data.workload:
             workload = (
@@ -558,10 +551,7 @@ class LendingService:
                 .first()
             )
             if not workload:
-                raise HTTPException(
-                    detail={"workload": f"Lotação não existe. {workload}"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                )
+                errors.update({"workload": f"Lotação não existe. {workload}"})
 
         if data.cost_center:
             cost_center = (
@@ -570,25 +560,29 @@ class LendingService:
                 .first()
             )
             if not cost_center:
-                raise HTTPException(
-                    detail={"costCenter": f"Centro de Custo não existe. {cost_center}"},
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                errors.update(
+                    {"costCenter": f"Centro de Custo não existe. {cost_center}"}
                 )
 
         if data.witnesses:
             witnesses = []
+            error_ids = []
             for witness in data.witnesses:
-                witiness = (
+                witness_obj = (
                     db_session.query(WitnessModel)
                     .filter(WitnessModel.id == witness)
                     .first()
                 )
-                if not witiness:
-                    raise HTTPException(
-                        detail={"witness": f"Testemunha não existe. {witiness}"},
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                    )
+                if not witness_obj:
+                    error_ids.append(witness_obj)
                 witnesses.append(witness)
+            errors.update({"witness": {"Testemunhas não encontradas": error_ids}})
+
+        if len(errors.keys()) > 0:
+            raise HTTPException(
+                detail=errors,
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
 
         return (
             employee,

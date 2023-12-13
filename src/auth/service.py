@@ -86,10 +86,10 @@ class UserSerivce:
             db_session.query(RoleModel).filter(RoleModel.name == new_user.role).first()
         )
 
-        errors = []
+        errors = {}
 
         if not role:
-            errors.append({"role": "Perfil inválido"})
+            errors.update({"role": "Perfil inválido"})
 
         employee = (
             db_session.query(EmployeeModel)
@@ -98,7 +98,7 @@ class UserSerivce:
         )
 
         if not employee:
-            errors.append({"employee": "Colaborador inválido"})
+            errors.update({"employee": "Colaborador inválido"})
 
         user_test_username = (
             db_session.query(UserModel)
@@ -107,7 +107,7 @@ class UserSerivce:
         )
 
         if user_test_username:
-            errors.append({"username": "Nome de usuário já existe"})
+            errors.update({"username": "Nome de usuário já existe"})
 
         user_test_email = (
             db_session.query(UserModel)
@@ -116,14 +116,14 @@ class UserSerivce:
         )
 
         if user_test_email:
-            errors.append({"email": "Já existe este e-mail"})
+            errors.update({"email": "Já existe este e-mail"})
 
         user_dict = {
             **new_user.model_dump(),
             "password": self.get_password_hash(self.make_new_random_password()),
         }
 
-        if len(errors) > 0:
+        if len(errors.keys()) > 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=errors)
 
         user_dict["role_id"] = role.id
@@ -284,13 +284,13 @@ class UserSerivce:
                     db_session,
                 )
                 logger.info("Updates user. %s", str(user))
-
-            return self.serialize_user(user)
-
+        except HTTPException as http_exc:
+            raise http_exc
         except Exception as exc:
             msg = f"{exc.args[0]}"
             logger.warning("Could not update user. Error: %s", msg)
-        return None
+
+        return self.serialize_user(user)
 
     def update_password(
         self,
@@ -526,17 +526,14 @@ class RoleService:
         authenticated_user: UserModel,
     ) -> RoleSerializerSchema:
         """Creates a new role"""
-
+        errors = {}
         for id_perm in new_role.permissions:
             if (
                 not db_session.query(PermissionModel)
                 .filter(PermissionModel.id == id_perm)
                 .first()
             ):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={"permissions": f"Permissão não existe. {id_perm}"},
-                )
+                errors.update({"permissions": f"Permissão não existe. {id_perm}"})
 
         role = (
             db_session.query(RoleModel).filter(RoleModel.name == new_role.name).first()
@@ -549,9 +546,12 @@ class RoleService:
         )
 
         if role:
+            errors.update({"role": "Perfil de usuário já existe"})
+
+        if len(errors.keys()) > 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"role": "Perfil de usuário já existe"},
+                detail=errors,
             )
 
         new_role_db = RoleModel(**new_role.model_dump(exclude="permissions"))
@@ -622,6 +622,7 @@ class RoleService:
         db_session: Session,
     ):
         """Verify new perms"""
+        error_ids = []
         for perm in new_permissions:
             permission = (
                 db_session.query(PermissionModel)
@@ -629,14 +630,18 @@ class RoleService:
                 .first()
             )
             if not permission:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail={"permissions": f"Permissão não encontrada. id={perm}"},
-                )
+                error_ids.append(perm)
             try:
                 current_permissions.index(permission)
             except ValueError:
                 current_permissions.append(permission)
+
+        if len(error_ids) > 0:
+            errors = {"permissions": {"Permissões não encontradas": error_ids}}
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=errors,
+            )
 
     def __check_remove_perms(
         self, new_permissions: List[int], current_permissions: List[PermissionModel]
@@ -691,10 +696,12 @@ class RoleService:
                 logger.info("Updates role. %s", str(role))
             return self.serialize_role(role)
 
+        except HTTPException as http_exc:
+            raise http_exc
         except Exception as exc:
             msg = f"{exc.args[0]}"
             logger.warning("Could not update role. Error: %s", msg)
-        return None
+        return self.serialize_role(role)
 
     def get_role(self, role_id: int, db_session: Session) -> RoleSerializerSchema:
         """Get role by id"""
