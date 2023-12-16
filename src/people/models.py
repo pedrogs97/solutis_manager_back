@@ -11,7 +11,7 @@ class CostCenterModel(Base):
     __tablename__ = "cost_center"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=25), nullable=False)
+    code = Column("code", String(length=25), nullable=False, unique=True)
     name = Column("name", String(length=60), nullable=False)
     classification = Column("group_name", String(length=60), nullable=False)
 
@@ -36,7 +36,7 @@ class EmployeeMaritalStatusModel(Base):
     __tablename__ = "marital_status"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=1), nullable=False)
+    code = Column("code", String(length=1), nullable=False, unique=True)
     description = Column("description", String(length=50), nullable=False)
 
     def __str__(self):
@@ -54,7 +54,7 @@ class EmployeeGenderModel(Base):
     __tablename__ = "genders"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=1), nullable=False)
+    code = Column("code", String(length=1), nullable=False, unique=True)
     description = Column("description", String(length=50), nullable=False)
 
     def __str__(self):
@@ -71,7 +71,7 @@ class EmployeeNationalityModel(Base):
     __tablename__ = "nationalities"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=3), nullable=False)
+    code = Column("code", String(length=3), nullable=False, unique=True)
     description = Column("description", String(length=50), nullable=False)
 
     def __str__(self):
@@ -84,7 +84,7 @@ class EmployeeRoleModel(Base):
     __tablename__ = "employee_roles"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=10), nullable=False)
+    code = Column("code", String(length=10), nullable=False, unique=True)
     name = Column("name", String(length=100), nullable=False)
 
 
@@ -100,20 +100,21 @@ class EmployeeModel(Base):
 
     nationality: Mapped[EmployeeNationalityModel] = relationship()
     nationality_id = Column(
-        "nationality_id", ForeignKey(EmployeeNationalityModel.id), nullable=False
+        "nationality_id", ForeignKey(EmployeeNationalityModel.id), nullable=True
     )
 
     marital_status: Mapped[EmployeeMaritalStatusModel] = relationship()
     marital_status_id = Column(
         "marital_status_id",
         ForeignKey(EmployeeMaritalStatusModel.id),
-        nullable=False,
+        nullable=True,
     )
 
     gender: Mapped[EmployeeGenderModel] = relationship()
     gender_id = Column("gender_id", ForeignKey(EmployeeGenderModel.id), nullable=False)
 
-    code = Column("code", Integer, nullable=False, unique=True)
+    code = Column("code", String(length=10), nullable=False, unique=True)
+    status = Column("status", String(length=100), default="Ativo")
     full_name = Column("full_name", String(length=120), nullable=False)
     taxpayer_identification = Column(
         "taxpayer_identification", String(length=11), nullable=False, unique=True

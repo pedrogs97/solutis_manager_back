@@ -261,3 +261,29 @@ def get_list_genders_route(
     genders = general_service.get_genders(db_session, search, fields, page, size)
     db_session.close()
     return genders
+
+
+@people_router.get("/roles/")
+def get_list_roles_route(
+    search: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    fields: str = "",
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "people", "model": "role", "action": "view"})
+    ),
+):
+    """List roles and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    roles = general_service.get_roles(db_session, search, fields, page, size)
+    db_session.close()
+    return roles

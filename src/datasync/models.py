@@ -13,7 +13,7 @@ class CostCenterTOTVSModel(Base):
     __tablename__ = "cost_centers_totvs"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=25), nullable=False)
+    code = Column("code", String(length=25), nullable=False, unique=True)
     name = Column("name", String(length=60), nullable=False)
     classification = Column("group_name", String(length=60), nullable=False)
 
@@ -37,7 +37,7 @@ class AssetTypeTOTVSModel(Base):
     __tablename__ = "asset_types_totvs"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=10), nullable=False)
+    code = Column("code", String(length=10), nullable=False, unique=True)
     group_code = Column("group_name", String(length=10), nullable=False)
     name = Column("name", String(length=40), nullable=False)
 
@@ -107,7 +107,7 @@ class EmployeeMaritalStatusTOTVSModel(Base):
     __tablename__ = "marital_status_totvs"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=1), nullable=False)
+    code = Column("code", String(length=1), nullable=False, unique=True)
     description = Column("description", String(length=50), nullable=False)
 
     def __str__(self):
@@ -125,7 +125,7 @@ class EmployeeGenderTOTVSModel(Base):
     __tablename__ = "genders_totvs"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=1), nullable=False)
+    code = Column("code", String(length=1), nullable=False, unique=True)
     description = Column("description", String(length=50), nullable=False)
 
     def __str__(self):
@@ -142,7 +142,7 @@ class EmployeeNationalityTOTVSModel(Base):
     __tablename__ = "nationalities_totvs"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=3), nullable=False)
+    code = Column("code", String(length=3), nullable=False, unique=True)
     description = Column("description", String(length=50), nullable=False)
 
     def __str__(self):
@@ -155,7 +155,7 @@ class EmployeeRoleTOTVSModel(Base):
     __tablename__ = "roles_totvs"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=10), nullable=False)
+    code = Column("code", String(length=10), nullable=False, unique=True)
     name = Column("name", String(length=100), nullable=False)
 
     def __str__(self):
@@ -173,12 +173,13 @@ class EmployeeTOTVSModel(Base):
     taxpayer_identification = Column(
         "taxpayer_identification", String(length=11), nullable=False, unique=True
     )
-    nacional_identification = Column(
-        "nacional_identification", String(length=15), nullable=False
+    national_identification = Column(
+        "national_identification", String(length=15), nullable=False
     )
     nationality = Column("nationality", String(length=50), nullable=False)
     marital_status = Column("marital_status", String(length=50), nullable=False)
     role = Column("role", String(length=100), nullable=True)
+    status = Column("status", String(length=100), nullable=True)
     address = Column("address", String(length=255), nullable=False)
     cell_phone = Column("cell_phone", String(length=15), nullable=False)
     email = Column("email", String(length=60), nullable=False)

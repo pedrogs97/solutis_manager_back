@@ -128,10 +128,11 @@ class EmployeeTotvsSchema(BaseTotvsSchema):
     full_name: str
     birthday: date
     taxpayer_identification: str
-    nacional_identification: str
+    national_identification: str
     nationality: str
     marital_status: str
     role: str
+    status: str = "Ativo"
     address: str
     cell_phone: str
     email: str

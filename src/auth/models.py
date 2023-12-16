@@ -7,10 +7,11 @@ from sqlalchemy.orm import Mapped, relationship
 from src.database import Base
 from src.people.models import EmployeeModel
 
-role_permissions = Table(
-    "role_permissions",
+group_permissions = Table(
+    "group_permissions",
     Base.metadata,
-    Column("role_id", ForeignKey("role.id")),
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("group_id", ForeignKey("group.id")),
     Column("permission_id", ForeignKey("permission.id")),
 )
 
@@ -35,17 +36,17 @@ class PermissionModel(Base):
         return f"{self.module}_{self.model}_{self.action}"
 
 
-class RoleModel(Base):
+class GroupModel(Base):
     """
-    Role model
+    Group model
     """
 
-    __tablename__ = "role"
+    __tablename__ = "group"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String(length=50), nullable=False)
     permissions: Mapped[List[PermissionModel]] = relationship(
-        secondary=role_permissions,
+        secondary=group_permissions,
     )
 
     def __str__(self) -> str:
@@ -64,8 +65,8 @@ class UserModel(Base):
     employee: Mapped[EmployeeModel] = relationship()
     employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=True)
 
-    role: Mapped[RoleModel] = relationship()
-    role_id = Column("role_id", ForeignKey("role.id"), nullable=True)
+    group: Mapped[GroupModel] = relationship()
+    group_id = Column("group_id", ForeignKey("group.id"), nullable=True)
 
     password = Column("password", String(length=255), nullable=False)
     username = Column("username", String(length=255), nullable=False, unique=True)
@@ -75,7 +76,7 @@ class UserModel(Base):
     last_login_in = Column("last_login", DateTime, nullable=True)
 
     def __str__(self) -> str:
-        return f"{self.email} - {self.role}"
+        return f"{self.email} - {self.group}"
 
 
 class TokenModel(Base):

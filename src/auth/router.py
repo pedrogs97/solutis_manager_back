@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
 from src.auth.schemas import (
+    NewGroupSchema,
     NewPasswordSchema,
-    NewRoleSchema,
     NewUserSchema,
     PermissionSerializerSchema,
     RefreshTokenSchema,
@@ -43,7 +43,7 @@ auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 user_service = UserSerivce()
 
-role_service = RoleService()
+group_service = RoleService()
 
 permission_serivce = PermissionService()
 
@@ -230,21 +230,21 @@ def get_user_route(
 
 
 @auth_router.post(
-    "/roles/", response_model=RoleSerializerSchema, description="Creates a new role"
+    "/groups/", response_model=RoleSerializerSchema, description="Creates a new group"
 )
 def post_create_role_route(
-    data: NewRoleSchema,
+    data: NewGroupSchema,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "add"})
+        PermissionChecker({"module": "auth", "model": "group", "action": "add"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
-    """New role route"""
+    """New group route"""
     if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = role_service.create_role(data, db_session, authenticated_user)
+    serializer = group_service.create_group(data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_201_CREATED
@@ -252,12 +252,12 @@ def post_create_role_route(
 
 
 @auth_router.get(
-    "/roles/",
+    "/groups/",
     description="Retrie list of roles. Can apply filters",
 )
 def get_list_role_route(
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "view"})
+        PermissionChecker({"module": "auth", "model": "group", "action": "view"})
     ),
     search: str = "",
     fields: str = "",
@@ -275,62 +275,64 @@ def get_list_role_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    roles = role_service.get_roles(db_session, page, size, search, fields)
+    roles = group_service.get_roles(db_session, page, size, search, fields)
     db_session.close()
     return roles
 
 
 @auth_router.patch(
-    "/roles/{role_id}/",
+    "/groups/{group_id}/",
     response_model=RoleSerializerSchema,
-    description="Updates an existing role",
+    description="Updates an existing group",
 )
 def update_role_route(
-    data: NewRoleSchema,
-    role_id: int,
+    data: NewGroupSchema,
+    group_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "edit"})
+        PermissionChecker({"module": "auth", "model": "group", "action": "edit"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
-    """Update role route"""
+    """Update group route"""
     if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = role_service.update_role(db_session, role_id, data, authenticated_user)
+    serializer = group_service.update_role(
+        db_session, group_id, data, authenticated_user
+    )
     db_session.close()
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
     )
 
 
-@auth_router.put("/roles/{role_id}/")
+@auth_router.put("/groups/{group_id}/")
 def put_update_role_route():
-    """Update role Not Implemented"""
+    """Update groupp Not Implemented"""
     return JSONResponse(
         content="Não implementado", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
     )
 
 
 @auth_router.get(
-    "/roles/{role_id}/",
+    "/groups/{group_id}/",
     response_model=RoleSerializerSchema,
-    description="Retrives an existing role",
+    description="Retrives an existing group",
 )
 def get_role_route(
-    role_id: int,
+    group_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "auth", "model": "role", "action": "view"})
+        PermissionChecker({"module": "auth", "model": "group", "action": "view"})
     ),
     db_session: Session = Depends(get_db_session),
 ) -> Response:
-    """Get role route"""
+    """Get group route"""
     if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = role_service.get_role(role_id, db_session)
+    serializer = group_service.get_role(group_id, db_session)
     db_session.close()
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
@@ -373,7 +375,7 @@ def post_send_new_password_route(
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker(
             {"module": "auth", "model": "permissions", "action": "admin"}
-        )  # action admin não existe, isso garante que só role Administrador consiga acessar
+        )  # action admin não existe, isso garante que só group Administrador consiga acessar
     ),
     db_session: Session = Depends(get_db_session),
 ) -> JSONResponse:

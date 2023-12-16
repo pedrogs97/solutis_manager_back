@@ -11,10 +11,10 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from src.auth.models import PermissionModel, RoleModel, UserModel
+from src.auth.models import GroupModel, PermissionModel, UserModel
 from src.auth.schemas import (
+    NewGroupSchema,
     NewPasswordSchema,
-    NewRoleSchema,
     NewUserSchema,
     PermissionSerializerSchema,
     RoleSerializerSchema,
@@ -82,14 +82,16 @@ class UserSerivce:
         authenticated_user: UserModel,
     ) -> UserSerializerSchema:
         """Creates a new user"""
-        role = (
-            db_session.query(RoleModel).filter(RoleModel.name == new_user.role).first()
+        group = (
+            db_session.query(GroupModel)
+            .filter(GroupModel.name == new_user.group)
+            .first()
         )
 
         errors = {}
 
-        if not role:
-            errors.update({"role": "Perfil inválido"})
+        if not group:
+            errors.update({"group": "Perfil inválido"})
 
         employee = (
             db_session.query(EmployeeModel)
@@ -126,8 +128,8 @@ class UserSerivce:
         if len(errors.keys()) > 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=errors)
 
-        user_dict["role_id"] = role.id
-        del user_dict["role"]
+        user_dict["group_id"] = group.id
+        del user_dict["group"]
         user_dict["employee_id"] = employee.id
 
         new_user_db = UserModel(**user_dict)
@@ -204,7 +206,7 @@ class UserSerivce:
         )
         return UserSerializerSchema(
             id=user.id,
-            role=RoleService().serialize_role(user.role),
+            group=RoleService().serialize_role(user.group),
             username=user.username,
             full_name=full_name,
             taxpayer_identification=taxpayer_identification,
@@ -227,19 +229,19 @@ class UserSerivce:
         try:
             user = self.__get_user_or_404(user_id, db_session)
 
-            if data.role:
-                role = (
-                    db_session.query(RoleModel)
-                    .filter(RoleModel.name == data.role)
+            if data.group:
+                group = (
+                    db_session.query(GroupModel)
+                    .filter(GroupModel.name == data.group)
                     .first()
                 )
-                if not role:
+                if not group:
                     raise HTTPException(
                         status_code=status.HTTP_404_NOT_FOUND,
-                        detail={"role": "Perfil de usuário não encontrado"},
+                        detail={"group": "Perfil de usuário não encontrado"},
                     )
 
-                user.role = role
+                user.group = group
 
             if data.employee_id:
                 employee = (
@@ -359,20 +361,20 @@ def create_super_user():
         )
 
         role_admin = (
-            db_session.query(RoleModel)
-            .filter(RoleModel.name == "Administrador")
+            db_session.query(GroupModel)
+            .filter(GroupModel.name == "Administrador")
             .first()
         )
 
         if not role_admin:
-            role_admin = RoleModel(name="Administrador")
+            role_admin = GroupModel(name="Administrador")
             db_session.add(role_admin)
             db_session.commit()
 
         if not super_user:
             new_super_user = UserModel(
                 username="agile_admin",
-                role_id=role_admin.id,
+                group_id=role_admin.id,
                 password=UserSerivce().get_password_hash(PASSWORD_SUPER_USER),
                 email="admin@email.com",
                 is_staff=True,
@@ -505,27 +507,27 @@ def create_initial_data():
 
 
 class RoleService:
-    """Role services"""
+    """group services"""
 
-    def __get_role_or_404(self, role_id: int, db_session: Session) -> RoleModel:
-        """Get role or raise 404"""
-        role = db_session.query(RoleModel).filter(RoleModel.id == role_id).first()
+    def __get_role_or_404(self, group_id: int, db_session: Session) -> GroupModel:
+        """Get group or raise 404"""
+        group = db_session.query(GroupModel).filter(GroupModel.id == group_id).first()
 
-        if not role:
+        if not group:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"role": "Perfil de usuário não encontrado"},
+                detail={"group": "Perfil de usuário não encontrado"},
             )
 
-        return role
+        return group
 
-    def create_role(
+    def create_group(
         self,
-        new_role: NewRoleSchema,
+        new_role: NewGroupSchema,
         db_session: Session,
         authenticated_user: UserModel,
     ) -> RoleSerializerSchema:
-        """Creates a new role"""
+        """Creates a new group"""
         errors = {}
         for id_perm in new_role.permissions:
             if (
@@ -535,8 +537,10 @@ class RoleService:
             ):
                 errors.update({"permissions": f"Permissão não existe. {id_perm}"})
 
-        role = (
-            db_session.query(RoleModel).filter(RoleModel.name == new_role.name).first()
+        group = (
+            db_session.query(GroupModel)
+            .filter(GroupModel.name == new_role.name)
+            .first()
         )
 
         permissions = (
@@ -545,8 +549,8 @@ class RoleService:
             .all()
         )
 
-        if role:
-            errors.update({"role": "Perfil de usuário já existe"})
+        if group:
+            errors.update({"group": "Perfil de usuário já existe"})
 
         if len(errors.keys()) > 0:
             raise HTTPException(
@@ -554,7 +558,7 @@ class RoleService:
                 detail=errors,
             )
 
-        new_role_db = RoleModel(**new_role.model_dump(exclude="permissions"))
+        new_role_db = GroupModel(**new_role.model_dump(exclude="permissions"))
         new_role_db.permissions = permissions
         db_session.add(new_role_db)
         db_session.commit()
@@ -568,15 +572,15 @@ class RoleService:
             authenticated_user,
             db_session,
         )
-        logger.info("New role add. %s", str(new_role_db))
+        logger.info("New group add. %s", str(new_role_db))
 
         return self.serialize_role(new_role_db)
 
-    def serialize_role(self, role: RoleModel) -> RoleSerializerSchema:
-        """Serialize role"""
-        dict_role = role.__dict__
+    def serialize_role(self, group: GroupModel) -> RoleSerializerSchema:
+        """Serialize group"""
+        dict_role = group.__dict__
         serializer_permissions = []
-        for perm in role.permissions:
+        for perm in group.permissions:
             serializer_permissions.append(PermissionSerializerSchema(**perm.__dict__))
         dict_role.update({"permissions": serializer_permissions})
         return RoleSerializerSchema(**dict_role)
@@ -589,9 +593,9 @@ class RoleService:
         search: str = "",
         fields: str = "",
     ) -> Page[RoleSerializerSchema]:
-        """Get role list"""
-        role_list = db_session.query(RoleModel).filter(
-            RoleModel.name.ilike(f"%{search}%")
+        """Get group list"""
+        role_list = db_session.query(GroupModel).filter(
+            GroupModel.name.ilike(f"%{search}%")
         )
 
         params = Params(page=page, size=size)
@@ -600,7 +604,7 @@ class RoleService:
                 role_list,
                 params=params,
                 transformer=lambda role_list: [
-                    self.serialize_role(role) for role in role_list
+                    self.serialize_role(group) for group in role_list
                 ],
             )
         else:
@@ -609,8 +613,8 @@ class RoleService:
                 role_list,
                 params=params,
                 transformer=lambda role_list: [
-                    self.serialize_role(role).model_dump(include={*list_fields})
-                    for role in role_list
+                    self.serialize_role(group).model_dump(include={*list_fields})
+                    for group in role_list
                 ],
             )
         return paginated
@@ -659,54 +663,54 @@ class RoleService:
     def update_role(
         self,
         db_session: Session,
-        role_id: int,
-        data: NewRoleSchema,
+        group_id: int,
+        data: NewGroupSchema,
         authenticated_user: UserModel,
     ) -> Union[RoleSerializerSchema, None]:
-        """Update role by id"""
+        """Update group by id"""
         try:
             is_updated = False
-            role = self.__get_role_or_404(role_id, db_session)
+            group = self.__get_role_or_404(group_id, db_session)
 
             if data.name:
                 is_updated = True
-                role.name = data.name
+                group.name = data.name
 
             if data.permissions:
                 is_updated = True
 
                 # verifica novas inclusões
-                self.__check_new_perms(data.permissions, role.permissions, db_session)
+                self.__check_new_perms(data.permissions, group.permissions, db_session)
 
                 # verifica exclusão
-                self.__check_remove_perms(data.permissions, role.permissions)
+                self.__check_remove_perms(data.permissions, group.permissions)
 
             if is_updated:
-                db_session.add(role)
+                db_session.add(group)
                 db_session.commit()
 
                 service_log.set_log(
                     "auth",
                     "user",
                     "Criação de usuário",
-                    role.id,
+                    group.id,
                     authenticated_user,
                     db_session,
                 )
-                logger.info("Updates role. %s", str(role))
-            return self.serialize_role(role)
+                logger.info("Updates group. %s", str(group))
+            return self.serialize_role(group)
 
         except HTTPException as http_exc:
             raise http_exc
         except Exception as exc:
             msg = f"{exc.args[0]}"
-            logger.warning("Could not update role. Error: %s", msg)
-        return self.serialize_role(role)
+            logger.warning("Could not update group. Error: %s", msg)
+        return self.serialize_role(group)
 
-    def get_role(self, role_id: int, db_session: Session) -> RoleSerializerSchema:
-        """Get role by id"""
-        role = self.__get_role_or_404(role_id, db_session)
-        return self.serialize_role(role)
+    def get_role(self, group_id: int, db_session: Session) -> RoleSerializerSchema:
+        """Get group by id"""
+        group = self.__get_role_or_404(group_id, db_session)
+        return self.serialize_role(group)
 
 
 class PermissionService:

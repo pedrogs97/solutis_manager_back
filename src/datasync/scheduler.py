@@ -43,6 +43,14 @@ from src.datasync.service import (
     totvs_to_marital_status_schema,
     totvs_to_nationality_schema,
     totvs_to_role_schema,
+    update_asset_totvs,
+    update_asset_type_totvs,
+    update_cost_center_totvs,
+    update_employee_totvs,
+    update_gender_totvs,
+    update_marital_status_totvs,
+    update_nationality_totvs,
+    update_role_totvs,
     verify_changes,
 )
 
@@ -58,7 +66,8 @@ class SchedulerService:
 	p.CODIGO, p.NOME, p.DTNASCIMENTO, c.DESCRICAO AS CIVIL, s.DESCRICAO AS SEXO,
     n.DESCRICAO AS NACIONALIDADE, p.RUA, p.NUMERO, p.COMPLEMENTO, p.BAIRRO,
     p.ESTADO, p.CIDADE, p.CEP, p.PAIS, p.CPF, p.TELEFONE1, p.CARTIDENTIDADE,
-    p.UFCARTIDENT, p.ORGEMISSORIDENT, p.DTEMISSAOIDENT, p.EMAIL, pf.NOME AS CARGO
+    p.UFCARTIDENT, p.ORGEMISSORIDENT, p.DTEMISSAOIDENT, p.EMAIL, pf.NOME AS CARGO,
+    cs.DESCRICAO as SITUACAO
     FROM CorporeRM_SI.dbo.PPESSOA as p
     LEFT JOIN PCODESTCIVIL AS c
     ON p.ESTADOCIVIL = c.CODINTERNO
@@ -69,7 +78,9 @@ class SchedulerService:
     LEFT JOIN PFUNC as f
     ON f.CODPESSOA = p.CODIGO
     LEFT JOIN PFUNCAO as pf
-    ON f.CODFUNCAO = pf.CODIGO ;"""
+    ON f.CODFUNCAO = pf.CODIGO
+    LEFT JOIN PCODSITUACAO as cs
+    ON cs.CODCLIENTE = f.CODSITUACAO;"""
 
     SQL_PCODESTCIVIL = """SELECT DESCRICAO, CODINTERNO FROM PCODESTCIVIL;"""
 
@@ -142,8 +153,8 @@ class SchedulerService:
                 break
             if verify_changes(employee_totvs, EmployeeTotvsSchema, EmployeeTOTVSModel):
                 new_changes.append(employee_totvs)
-                insert(employee_totvs, EmployeeTOTVSModel)
-
+                insert(employee_totvs, EmployeeTOTVSModel, "taxpayer_identification")
+        update_employee_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -170,7 +181,7 @@ class SchedulerService:
             ):
                 new_changes.append(marital_status_totvs)
                 insert(marital_status_totvs, EmployeeMaritalStatusTOTVSModel)
-
+        update_marital_status_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -195,14 +206,14 @@ class SchedulerService:
             ):
                 new_changes.append(gender_totvs)
                 insert(gender_totvs, EmployeeGenderTOTVSModel)
-
+        update_gender_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "gender")
         logger.info("Retrive gender from TOTVS end.")
 
-    def _get_nacionality_totvs(self):
+    def _get_nationality_totvs(self):
         """Excute procedure to retrive TOVTS nationality data"""
         logger.info("Retrive nationality from TOTVS start.")
         start = time()
@@ -222,7 +233,7 @@ class SchedulerService:
             ):
                 new_changes.append(nationality_totvs)
                 insert(nationality_totvs, EmployeeNationalityTOTVSModel)
-
+        update_nationality_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -247,7 +258,7 @@ class SchedulerService:
             ):
                 new_changes.append(cost_center_totvs)
                 insert(cost_center_totvs, CostCenterTOTVSModel)
-
+        update_cost_center_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -272,7 +283,7 @@ class SchedulerService:
             ):
                 new_changes.append(asset_type_totvs)
                 insert(asset_type_totvs, AssetTypeTOTVSModel)
-
+        update_asset_type_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -295,7 +306,7 @@ class SchedulerService:
             if verify_changes(asset_totvs, AssetTotvsSchema, AssetTOTVSModel):
                 new_changes.append(asset_totvs)
                 insert(asset_totvs, AssetTOTVSModel)
-
+        update_asset_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -320,7 +331,7 @@ class SchedulerService:
             ):
                 new_changes.append(role_totvs)
                 insert(role_totvs, EmployeeRoleTOTVSModel)
-
+        update_role_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -333,7 +344,7 @@ class SchedulerService:
         self._get_asset_type_totvs()
         self._get_marital_status_totvs()
         self._get_gender_totvs()
-        self._get_nacionality_totvs()
+        self._get_nationality_totvs()
         self._get_cost_center_totvs()
         self._get_role_totvs()
         self._get_asset_totvs()

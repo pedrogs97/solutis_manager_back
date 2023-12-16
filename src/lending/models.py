@@ -35,7 +35,7 @@ class AssetTypeModel(Base):
     __tablename__ = "asset_type"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=25), nullable=False)
+    code = Column("code", String(length=25), nullable=False, unique=True)
     group_code = Column("group_code", String(length=150), nullable=False)
     name = Column("name", String(length=150), nullable=False)
     acronym = Column("acronym", String(length=3), nullable=True)
@@ -101,11 +101,11 @@ class AssetModel(Base):
     type: Mapped[AssetTypeModel] = relationship()
     type_id = Column("type_id", ForeignKey("asset_type.id"), nullable=False)
 
-    status_id = Column("status_id", ForeignKey("asset_status.id"), nullable=False)
+    status_id = Column("status_id", ForeignKey("asset_status.id"), nullable=True)
     status: Mapped[AssetStatusModel] = relationship()
 
     clothing_size_id = Column(
-        "clothing_size_id", ForeignKey("asset_clothing_size.id"), nullable=False
+        "clothing_size_id", ForeignKey("asset_clothing_size.id"), nullable=True
     )
     clothing_size: Mapped[AssetClothingSizeModel] = relationship()
 
@@ -113,7 +113,7 @@ class AssetModel(Base):
         secondary=invoice_assets, back_populates="assets"
     )
 
-    code = Column("code", String(length=255), nullable=True)
+    code = Column("code", String(length=255), nullable=True, unique=True)
     # tombo - registro patrimonial
     register_number = Column("register_number", String(length=255), nullable=True)
     description = Column("description", String(length=255), nullable=True)
@@ -208,6 +208,7 @@ class WorkloadModel(Base):
 lending_witnesses = Table(
     "lending_witnesses",
     Base.metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
     Column("lending_id", ForeignKey("lending.id")),
     Column("witness_id", ForeignKey("witness.id")),
 )

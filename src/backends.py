@@ -97,7 +97,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     )
 
     permissions = [
-        f"{perm.module}_{perm.model}_{perm.action}" for perm in user.role.permissions
+        f"{perm.module}_{perm.model}_{perm.action}" for perm in user.group.permissions
     ]
 
     access_expire_in = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
@@ -140,7 +140,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         db_session.commit()
 
         return {
-            "role": user.role.name,
+            "group": user.group.name,
             "email": user.email,
             "full_name": user.employee.full_name if user.employee else "Usuário",
             "access_token": token,
@@ -151,7 +151,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         }
 
     return {
-        "role": user.role.name,
+        "group": user.group.name,
         "email": user.email,
         "full_name": user.employee.full_name if user.employee else "Usuário",
         "access_token": old_token.token,
@@ -223,10 +223,10 @@ class PermissionChecker:
                 return None
             user = get_current_user(token_decoded, db_session)
 
-            if user.role.name == "Administrador" and user.is_staff:
+            if user.group.name == "Administrador" and user.is_staff:
                 return user
 
-            for perm in user.role.permissions:
+            for perm in user.group.permissions:
                 if (
                     perm.module == self.required_permissions.module
                     and perm.model == self.required_permissions.model

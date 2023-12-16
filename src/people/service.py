@@ -65,9 +65,9 @@ class EmployeeService:
                 .first()
             )
             if not role:
-                errors.update({"role": "Perfil não existe"})
+                errors.update({"role": "Cargo não existe"})
 
-        if data.role:
+        if data.nationality:
             nationality = (
                 db_session.query(EmployeeNationalityModel)
                 .filter(EmployeeNationalityModel.description == data.nationality)
@@ -379,6 +379,12 @@ class EmpleoyeeGeneralSerivce:
         """Serialize gender"""
         return EmployeeGenderSerializerSchema(**gender.__dict__)
 
+    def serialize_role(
+        self, role: EmployeeGenderModel
+    ) -> EmployeeGenderSerializerSchema:
+        """Serialize role"""
+        return EmployeeGenderSerializerSchema(**role.__dict__)
+
     def get_nationalities(
         self,
         db_session: Session,
@@ -488,7 +494,7 @@ class EmpleoyeeGeneralSerivce:
                 center_cost_list,
                 params=params,
                 transformer=lambda center_cost_list: [
-                    self.serialize_nationality(center_cost)
+                    self.serialize_centre_cost(center_cost)
                     for center_cost in center_cost_list
                 ],
             )
@@ -499,7 +505,7 @@ class EmpleoyeeGeneralSerivce:
                 center_cost_list,
                 params=params,
                 transformer=lambda center_cost_list: [
-                    self.serialize_nationality(center_cost).model_dump(
+                    self.serialize_centre_cost(center_cost).model_dump(
                         include={*list_fields}
                     )
                     for center_cost in center_cost_list
@@ -531,7 +537,7 @@ class EmpleoyeeGeneralSerivce:
                 genders_list,
                 params=params,
                 transformer=lambda genders_list: [
-                    self.serialize_nationality(gender) for gender in genders_list
+                    self.serialize_gender(gender) for gender in genders_list
                 ],
             )
         else:
@@ -541,10 +547,48 @@ class EmpleoyeeGeneralSerivce:
                 genders_list,
                 params=params,
                 transformer=lambda genders_list: [
-                    self.serialize_nationality(gender).model_dump(
-                        include={*list_fields}
-                    )
+                    self.serialize_gender(gender).model_dump(include={*list_fields})
                     for gender in genders_list
+                ],
+            )
+
+        return paginated
+
+    def get_roles(
+        self,
+        db_session: Session,
+        search: str = "",
+        fields: str = "",
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[EmployeeRoleSerializerSchema]:
+        """Get roles list"""
+
+        roles_list = db_session.query(EmployeeRoleModel).filter(
+            or_(
+                EmployeeRoleModel.name.ilike(f"%{search}%"),
+                EmployeeRoleModel.code.ilike(f"%{search}"),
+            )
+        )
+
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                roles_list,
+                params=params,
+                transformer=lambda roles_list: [
+                    self.serialize_role(role) for role in roles_list
+                ],
+            )
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                roles_list,
+                params=params,
+                transformer=lambda roles_list: [
+                    self.serialize_role(role).model_dump(include={*list_fields})
+                    for role in roles_list
                 ],
             )
 

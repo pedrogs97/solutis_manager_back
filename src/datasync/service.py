@@ -2,9 +2,10 @@
 import json
 import logging
 from datetime import date, datetime
-from typing import Union
+from typing import List, Union
 
 from pydantic_core import ValidationError
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
 from src.backends import get_db_session
@@ -19,6 +20,15 @@ from src.datasync.schemas import (
     EmployeeNationalityTotvsSchema,
     EmployeeRoleTotvsSchema,
     EmployeeTotvsSchema,
+)
+from src.lending.models import AssetModel, AssetTypeModel
+from src.people.models import (
+    CostCenterModel,
+    EmployeeGenderModel,
+    EmployeeMaritalStatusModel,
+    EmployeeModel,
+    EmployeeNationalityModel,
+    EmployeeRoleModel,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,18 +63,20 @@ def totvs_to_employee_schema(
     CODIGO, NOME, DTNASCIMENTO, CIVIL, SEXO , NACIONALIDADE, RUA,
     NUMERO, COMPLEMENTO, BAIRRO, ESTADO, CIDADE, CEP, PAIS, CPF,
     TELEFONE1, CARTIDENTIDADE, UFCARTIDENT, ORGEMISSORIDENT, DTEMISSAOIDENT,
-    EMAIL, CARGO
+    EMAIL, CARGO, SITUACAO
     """
     try:
+        city = str(row["CIDADE"]).strip()
+        cep = str(row["CEP"]).strip()
         address = f"{row['RUA']}, {row['NUMERO']}, {row['COMPLEMENTO']}, {row['BAIRRO']}. \
-            {row['CIDADE']} - {row['ESTADO']}, {row['PAIS']}. {row['CEP']}"
+            {city} - {row['ESTADO']}, {row['PAIS']}. {cep}"
         birthday_datetime: datetime = row["DTNASCIMENTO"]
         return EmployeeTotvsSchema(
             code=str(row["CODIGO"]) if row["CODIGO"] is not None else "",
             full_name=row["NOME"] if row["NOME"] is not None else "",
             birthday=birthday_datetime.date(),
             taxpayer_identification=row["CPF"] if row["CPF"] is not None else "",
-            nacional_identification=row["CARTIDENTIDADE"]
+            national_identification=row["CARTIDENTIDADE"]
             if row["CARTIDENTIDADE"] is not None
             else "",
             marital_status=row["CIVIL"] if row["CIVIL"] is not None else "",
@@ -72,6 +84,7 @@ def totvs_to_employee_schema(
             if row["NACIONALIDADE"] is not None
             else "",
             role=row["CARGO"] if row["CARGO"] is not None else "",
+            status=row["SITUACAO"] if row["SITUACAO"] is not None else "",
             address=address,
             cell_phone=row["TELEFONE1"] if row["TELEFONE1"] is not None else "",
             email=row["EMAIL"] if row["EMAIL"] is not None else "",
@@ -291,19 +304,26 @@ def verify_changes(
     return checksum_from_db != checksum_from_totvs
 
 
-def insert(schema: BaseTotvsSchema, model_type) -> None:
+def insert(schema: BaseTotvsSchema, model_type, identifier="code") -> None:
     """Insert new or change"""
     db_session = get_db_session()
     try:
-        new_info = model_type(**schema.model_dump())
+        schema_dict = schema.model_dump()
+        new_info = model_type(**schema_dict)
         if not db_session:
             logger.warning("No db session.")
             return
-
-        current_info = (
-            db_session.query(model_type).filter(model_type.code == schema.code).first()
-        )
-
+        query = db_session.query(model_type)
+        if identifier == "code":
+            query = query.filter(model_type.code == schema.code)
+        else:
+            query = query.filter(
+                or_(
+                    model_type.code == schema.code,
+                    getattr(model_type, identifier) == schema_dict[identifier],
+                )
+            )
+        current_info = query.first()
         if current_info:
             logger.info("Update: %s", str(new_info))
             db_session.delete(current_info)
@@ -318,3 +338,281 @@ def insert(schema: BaseTotvsSchema, model_type) -> None:
         logger.warning("Error: %s", err.args[0])
     finally:
         db_session.close()
+
+
+def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
+    """Updates employees from totvs"""
+    db_session = get_db_session()
+    updates: List[EmployeeModel] = []
+    for totvs_employee in totvs_employees:
+        employee_db = (
+            db_session.query(EmployeeModel)
+            .filter(
+                or_(
+                    EmployeeModel.code == totvs_employee.code,
+                    EmployeeModel.taxpayer_identification
+                    == totvs_employee.taxpayer_identification,
+                )
+            )
+            .first()
+        )
+        if employee_db:
+            logger.debug(str(employee_db))
+            db_session.delete(employee_db)
+            db_session.commit()
+
+        role = (
+            db_session.query(EmployeeRoleModel)
+            .filter(EmployeeRoleModel.name == totvs_employee.role)
+            .first()
+        )
+        nationality = (
+            db_session.query(EmployeeNationalityModel)
+            .filter(EmployeeNationalityModel.description == totvs_employee.nationality)
+            .first()
+        )
+        marital_status = (
+            db_session.query(EmployeeMaritalStatusModel)
+            .filter(
+                EmployeeMaritalStatusModel.description == totvs_employee.marital_status
+            )
+            .first()
+        )
+        gender = (
+            db_session.query(EmployeeGenderModel)
+            .filter(EmployeeGenderModel.description == totvs_employee.gender)
+            .first()
+        )
+
+        dict_employee = {
+            **totvs_employee.model_dump(
+                exclude={"role", "nationality", "marital_status", "gender"}
+            ),
+            "role": role,
+            "nationality": nationality,
+            "marital_status": marital_status,
+            "gender": gender,
+        }
+        update_employee = EmployeeModel(**dict_employee)
+        exist = None
+        for update in updates:
+            if (
+                update.code == update_employee.code
+                or update.taxpayer_identification
+                == update_employee.taxpayer_identification
+            ):
+                exist = update
+                break
+        if exist:
+            updates.remove(exist)
+        updates.append(update_employee)
+
+    db_session.add_all(updates)
+    db_session.commit()
+    logger.info("Update Employee from TOTVS. Total=%s", str(len(updates)))
+    db_session.close()
+
+
+def update_marital_status_totvs(
+    totvs_marital_status: List[EmployeeMatrialStatusTotvsSchema],
+):
+    """Updates marital_status from totvs"""
+    db_session = get_db_session()
+    updates: List[EmployeeMaritalStatusModel] = []
+    for totvs_marital_status_item in totvs_marital_status:
+        db_marital_status = (
+            db_session.query(EmployeeMaritalStatusModel)
+            .filter(EmployeeMaritalStatusModel.code == totvs_marital_status_item.code)
+            .first()
+        )
+        if db_marital_status:
+            db_marital_status.description = totvs_marital_status_item.description
+            updates.append(db_marital_status)
+            continue
+
+        updates.append(
+            EmployeeMaritalStatusModel(**totvs_marital_status_item.model_dump())
+        )
+
+    db_session.add_all(updates)
+    db_session.commit()
+
+    logger.info("Update Matrimonial Status from TOTVS. Total=%s", str(len(updates)))
+    db_session.close()
+
+
+def update_gender_totvs(
+    totvs_gender: List[EmployeeGenderTotvsSchema],
+):
+    """Updates gender from totvs"""
+    db_session = get_db_session()
+    updates: List[EmployeeGenderModel] = []
+    for totvs_gender_item in totvs_gender:
+        db_gender = (
+            db_session.query(EmployeeGenderModel)
+            .filter(EmployeeGenderModel.code == totvs_gender_item.code)
+            .first()
+        )
+        if db_gender:
+            db_gender.description = totvs_gender_item.description
+            updates.append(db_gender)
+            continue
+
+        updates.append(EmployeeGenderModel(**totvs_gender_item.model_dump()))
+
+    db_session.add_all(updates)
+    db_session.commit()
+    logger.info("Update Gender from TOTVS. Total=%s", str(len(updates)))
+    db_session.close()
+
+
+def update_nationality_totvs(
+    totvs_nationality: List[EmployeeNationalityTotvsSchema],
+):
+    """Updates nationality from totvs"""
+    db_session = get_db_session()
+    updates: List[EmployeeNationalityModel] = []
+    for totvs_nationality_item in totvs_nationality:
+        db_nationality = (
+            db_session.query(EmployeeNationalityModel)
+            .filter(EmployeeNationalityModel.code == totvs_nationality_item.code)
+            .first()
+        )
+        if db_nationality:
+            db_nationality.description = totvs_nationality_item.description
+            updates.append(db_nationality)
+            continue
+
+        updates.append(EmployeeNationalityModel(**totvs_nationality_item.model_dump()))
+
+    db_session.add_all(updates)
+    db_session.commit()
+    logger.info("Update Nationality from TOTVS. Total=%s", str(len(updates)))
+    db_session.close()
+
+
+def update_role_totvs(
+    totvs_role: List[EmployeeRoleTotvsSchema],
+):
+    """Updates role from totvs"""
+    db_session = get_db_session()
+    updates: List[EmployeeRoleModel] = []
+    for totvs_role_item in totvs_role:
+        db_role = (
+            db_session.query(EmployeeRoleModel)
+            .filter(EmployeeRoleModel.code == totvs_role_item.code)
+            .first()
+        )
+        if db_role:
+            db_role.name = totvs_role_item.name
+            updates.append(db_role)
+            continue
+
+        updates.append(EmployeeRoleModel(**totvs_role_item.model_dump()))
+
+    db_session.add_all(updates)
+    db_session.commit()
+    logger.info("Update Role from TOTVS. Total=%s", str(len(updates)))
+    db_session.close()
+
+
+def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
+    """Updates assets from totvs"""
+    db_session = get_db_session()
+    updates: List[AssetModel] = []
+    for totvs_asset in totvs_assets:
+        asset_db = (
+            db_session.query(AssetModel)
+            .filter(AssetModel.code == totvs_asset.code)
+            .first()
+        )
+        if asset_db:
+            db_session.delete(asset_db)
+            db_session.commit()
+
+        asset_type = (
+            db_session.query(AssetTypeModel)
+            .filter(AssetTypeModel.name == totvs_asset.type)
+            .first()
+        )
+
+        if not asset_type:
+            continue
+
+        dict_asset = {
+            **totvs_asset.model_dump(exclude={"asset_type", "cost_center"}),
+            "type": asset_type,
+        }
+
+        update_asset = AssetModel(**dict_asset)
+        exist = None
+        for update in updates:
+            if update.code == update_asset.code:
+                exist = update
+                break
+        if exist:
+            updates.remove(exist)
+        updates.append(update_asset)
+
+    db_session.add_all(updates)
+    db_session.commit()
+    logger.info("Update Assets from TOTVS. Total=%s", str(len(updates)))
+    db_session.close()
+
+
+def update_asset_type_totvs(
+    totvs_asset_type: List[AssetTypeTotvsSchema],
+):
+    """Updates asset type from totvs"""
+    db_session = get_db_session()
+    updates: List[AssetTypeModel] = []
+    for totvs_asset_type_item in totvs_asset_type:
+        db_asset_type = (
+            db_session.query(AssetTypeModel)
+            .filter(AssetTypeModel.code == totvs_asset_type_item.code)
+            .first()
+        )
+        if db_asset_type:
+            db_asset_type.group_code = totvs_asset_type_item.group_code
+            db_asset_type.name = totvs_asset_type_item.name
+            updates.append(db_asset_type)
+            continue
+
+        updates.append(
+            AssetTypeModel(
+                **totvs_asset_type_item.model_dump(),
+                acronym=totvs_asset_type_item.name[:3].upper(),
+            )
+        )
+
+    db_session.add_all(updates)
+    db_session.commit()
+    logger.info("Update Asset Types from TOTVS. Total=%s", str(len(updates)))
+    db_session.close()
+
+
+def update_cost_center_totvs(
+    totvs_cost_center: List[CostCenterTotvsSchema],
+):
+    """Updates asset type from totvs"""
+    db_session = get_db_session()
+    updates: List[CostCenterModel] = []
+    for totvs_cost_center_item in totvs_cost_center:
+        db_cost_center = (
+            db_session.query(CostCenterModel)
+            .filter(CostCenterModel.code == totvs_cost_center_item.code)
+            .first()
+        )
+        if db_cost_center:
+            db_cost_center.code = totvs_cost_center_item.code
+            db_cost_center.classification = totvs_cost_center_item.classification
+            db_cost_center.name = totvs_cost_center_item.name
+            updates.append(db_cost_center)
+            continue
+
+        updates.append(CostCenterModel(**totvs_cost_center_item.model_dump()))
+
+    db_session.add_all(updates)
+    db_session.commit()
+    logger.info("Update Cost Centers from TOTVS. Total=%s", str(len(updates)))
+    db_session.close()

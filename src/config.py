@@ -74,14 +74,15 @@ PERMISSIONS = {
             {"name": "employee", "label": "Colaboradores"},
             {"name": "nationality", "label": "Nacionalidades"},
             {"name": "matrial_status", "label": "Estado Civil"},
-            {"name": "gender", "label": "Genero"},
+            {"name": "gender", "label": "Generos"},
+            {"name": "role", "label": "Cargos"},
         ],
         "label": "Pessoas",
     },
     "auth": {
         "models": [
             {"name": "permission", "label": "Permissões"},
-            {"name": "role", "label": "Perfil de usuário"},
+            {"name": "group", "label": "Perfil de usuário"},
             {"name": "user", "label": "Usuários"},
         ],
         "label": "Grupos e Permissões",

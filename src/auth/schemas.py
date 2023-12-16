@@ -45,9 +45,9 @@ class PermissionSerializerSchema(BaseSchema):
 
 class RoleSerializerSchema(BaseSchema):
     """
-    Role schema
+    Group schema
 
-    RoleModel representation for response
+    GroupModel representation for response
     """
 
     id: int
@@ -62,7 +62,7 @@ class UserUpdateSchema(BaseSchema):
     Used to update
     """
 
-    role: Optional[str] = None
+    group: Optional[str] = None
     employee_id: Optional[int] = None
     username: Optional[str] = None
     email: Optional[str] = None
@@ -89,7 +89,7 @@ class UserSerializerSchema(BaseSchema):
     """
 
     id: int
-    role: RoleSerializerSchema
+    group: RoleSerializerSchema
     full_name: str = Field(serialization_alias="fullName")
     username: str
     email: str
@@ -98,15 +98,8 @@ class UserSerializerSchema(BaseSchema):
     last_login_in: Optional[str] = Field(serialization_alias="lastLoginIn")
 
 
-class RoleSchema(BaseSchema):
-    """Role schema"""
-
-    name: str
-    permissions: List[PermissionSchema]
-
-
-class NewRoleSchema(BaseSchema):
-    """New role schema"""
+class NewGroupSchema(BaseSchema):
+    """New group schema"""
 
     name: Optional[str] = None
     permissions: Optional[List[int]] = None
@@ -123,7 +116,7 @@ class NewUserSchema(BaseSchema):
     is_active: bool = Field(
         alias="isActive", serialization_alias="is_active", default=True
     )
-    role: Optional[str] = None
+    group: Optional[str] = None
     employee_id: int = Field(alias="employeeId", serialization_alias="employee_id")
 
 

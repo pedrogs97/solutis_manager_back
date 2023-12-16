@@ -71,7 +71,8 @@ class NewEmployeeSchema(BaseSchema):
         serialization_alias="marital_status",
     )
     gender: str
-    code: Optional[int] = None
+    code: Optional[str] = None
+    status: Optional[str] = "Ativo"
     full_name: str = Field(
         alias="fullName",
         serialization_alias="full_name",
@@ -115,7 +116,8 @@ class UpdateEmployeeSchema(BaseSchema):
         default=None,
     )
     gender: Optional[str] = None
-    code: Optional[int] = None
+    code: Optional[str] = None
+    status: Optional[str] = None
     full_name: Optional[str] = Field(
         alias="fullName", serialization_alias="full_name", default=None
     )
@@ -163,7 +165,8 @@ class EmployeeSerializerSchema(BaseSchema):
         serialization_alias="marimonialStatus"
     )
     gender: EmployeeGenderSerializerSchema
-    code: Optional[int] = None
+    code: Optional[str] = None
+    status: str
     full_name: str = Field(serialization_alias="fullName")
     taxpayer_identification: str = Field(serialization_alias="taxpayerIdentification")
     national_identification: str = Field(serialization_alias="nationalIdentification")
