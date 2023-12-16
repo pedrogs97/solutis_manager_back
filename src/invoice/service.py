@@ -65,7 +65,7 @@ class InvoiceService:
 
             errors = {
                 "field": "assets",
-                "error": {"message": "Ativos não existem", "ids": error_ids},
+                "error": {"error": "Ativos não existem", "ids": error_ids},
             }
             raise HTTPException(
                 detail=errors,

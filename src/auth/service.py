@@ -547,7 +547,7 @@ class RoleService:
         errors.update(
             {
                 "field": "permissions",
-                "error": {"message": "Permissões não existem", "items": ids_not_found},
+                "error": {"error": "Permissões não existem", "items": ids_not_found},
             }
         )
 
