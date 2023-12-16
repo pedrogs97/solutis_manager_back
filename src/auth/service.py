@@ -48,7 +48,7 @@ class UserSerivce:
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"userId": "Usuário não encontrado"},
+                detail={"field": "userId", "error": "Usuário não encontrado"},
             )
 
         return user
@@ -91,7 +91,7 @@ class UserSerivce:
         errors = {}
 
         if not group:
-            errors.update({"group": "Perfil inválido"})
+            errors.update({"field": "group", "error": "Perfil inválido"})
 
         employee = (
             db_session.query(EmployeeModel)
@@ -100,7 +100,7 @@ class UserSerivce:
         )
 
         if not employee:
-            errors.update({"employee": "Colaborador inválido"})
+            errors.update({"field": "employee", "error": "Colaborador inválido"})
 
         user_test_username = (
             db_session.query(UserModel)
@@ -109,7 +109,7 @@ class UserSerivce:
         )
 
         if user_test_username:
-            errors.update({"username": "Nome de usuário já existe"})
+            errors.update({"field": "username", "error": "Nome de usuário já existe"})
 
         user_test_email = (
             db_session.query(UserModel)
@@ -118,7 +118,7 @@ class UserSerivce:
         )
 
         if user_test_email:
-            errors.update({"email": "Já existe este e-mail"})
+            errors.update({"field": "email", "error": "Já existe este e-mail"})
 
         user_dict = {
             **new_user.model_dump(),
@@ -238,7 +238,10 @@ class UserSerivce:
                 if not group:
                     raise HTTPException(
                         status_code=status.HTTP_404_NOT_FOUND,
-                        detail={"group": "Perfil de usuário não encontrado"},
+                        detail={
+                            "field": "group",
+                            "error": "Perfil de usuário não encontrado",
+                        },
                     )
 
                 user.group = group
@@ -252,7 +255,10 @@ class UserSerivce:
                 if not employee:
                     raise HTTPException(
                         status_code=status.HTTP_404_NOT_FOUND,
-                        detail={"employee": "Colaborador não encontrado"},
+                        detail={
+                            "field": "employee",
+                            "error": "Colaborador não encontrado",
+                        },
                     )
 
                 user.employee = employee
@@ -306,7 +312,7 @@ class UserSerivce:
         ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"password": "Senha atual inválida"},
+                detail={"field": "password", "error": "Senha atual inválida"},
             )
         authenticated_user.password = self.get_password_hash(data.password)
         db_session.add(authenticated_user)
@@ -516,7 +522,7 @@ class RoleService:
         if not group:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"group": "Perfil de usuário não encontrado"},
+                detail={"field": "group", "errror": "Perfil de usuário não encontrado"},
             )
 
         return group
@@ -529,13 +535,21 @@ class RoleService:
     ) -> RoleSerializerSchema:
         """Creates a new group"""
         errors = {}
+        ids_not_found = []
         for id_perm in new_role.permissions:
             if (
                 not db_session.query(PermissionModel)
                 .filter(PermissionModel.id == id_perm)
                 .first()
             ):
-                errors.update({"permissions": f"Permissão não existe. {id_perm}"})
+                ids_not_found.append(id_perm)
+
+        errors.update(
+            {
+                "field": "permissions",
+                "error": {"message": "Permissões não existem", "items": ids_not_found},
+            }
+        )
 
         group = (
             db_session.query(GroupModel)
@@ -550,7 +564,7 @@ class RoleService:
         )
 
         if group:
-            errors.update({"group": "Perfil de usuário já existe"})
+            errors.update({"field": "group", "error": "Perfil de usuário já existe"})
 
         if len(errors.keys()) > 0:
             raise HTTPException(
@@ -626,7 +640,7 @@ class RoleService:
         db_session: Session,
     ):
         """Verify new perms"""
-        error_ids = []
+        ids_not_found = []
         for perm in new_permissions:
             permission = (
                 db_session.query(PermissionModel)
@@ -634,14 +648,14 @@ class RoleService:
                 .first()
             )
             if not permission:
-                error_ids.append(perm)
+                ids_not_found.append(perm)
             try:
                 current_permissions.index(permission)
             except ValueError:
                 current_permissions.append(permission)
 
-        if len(error_ids) > 0:
-            errors = {"permissions": {"Permissões não encontradas": error_ids}}
+        if len(ids_not_found) > 0:
+            errors = {"permissions": {"Permissões não encontradas": ids_not_found}}
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=errors,

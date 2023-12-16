@@ -40,7 +40,7 @@ class InvoiceService:
         if not invoice:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"invoice": "Nota fiscal não encontrada"},
+                detail={"field": "invoice", "error": "Nota fiscal não encontrada"},
             )
 
         return invoice
@@ -63,7 +63,10 @@ class InvoiceService:
 
                 assets.append(asset)
 
-            errors = {"assets": {"Ativos não existem": error_ids}}
+            errors = {
+                "field": "assets",
+                "error": {"message": "Ativos não existem", "ids": error_ids},
+            }
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,

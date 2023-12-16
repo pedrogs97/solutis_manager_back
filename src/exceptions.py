@@ -31,4 +31,4 @@ async def default_response_exception(
     """Returns default response exception"""
     error_detail = exc.detail if hasattr(exc, "detail") else "Undefined"
     error_status_code = exc.status_code if hasattr(exc, "status_code") else 500
-    return JSONResponse(content={"error": error_detail}, status_code=error_status_code)
+    return JSONResponse(content=error_detail, status_code=error_status_code)

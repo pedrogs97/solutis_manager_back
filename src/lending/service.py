@@ -78,7 +78,7 @@ class AssetService:
         if not asset:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"assetId": "Ativo não encontrado"},
+                detail={"field": "assetId", "message": "Ativo não encontrado"},
             )
 
         return asset
@@ -93,7 +93,12 @@ class AssetService:
                 .first()
             )
             if not asset_type:
-                errors.update({"assetType": f"Tipo de Ativo não existe. {asset_type}"})
+                errors.update(
+                    {
+                        "field": "assetType",
+                        "message": f"Tipo de Ativo não existe. {asset_type}",
+                    }
+                )
 
         if data.clothing_size:
             clothing_size = (
@@ -103,7 +108,10 @@ class AssetService:
             )
             if not clothing_size:
                 errors.update(
-                    {"clothingSize": f"Tamanho de roupa não existe. {clothing_size}"}
+                    {
+                        "field": "clothingSize",
+                        "message": f"Tamanho de roupa não existe. {clothing_size}",
+                    }
                 )
 
         if data.status:
@@ -114,7 +122,10 @@ class AssetService:
             )
             if not asset_status:
                 errors.update(
-                    {"assetStatus": f"Situação de Ativo não existe. {asset_status}"}
+                    {
+                        "field": "assetStatus",
+                        "message": f"Situação de Ativo não existe. {asset_status}",
+                    }
                 )
 
         if len(errors.keys()) > 0:
@@ -169,13 +180,18 @@ class AssetService:
             .filter(AssetModel.code == data.code)
             .first()
         ):
-            errors.update({"code": "Este Código já existe."})
+            errors.update({"field": "code", "message": "Este Código já existe."})
         if (
             db_session.query(AssetModel)
             .filter(AssetModel.register_number == data.register_number)
             .first()
         ):
-            errors.update({"registerNumber": "Este N° de Patrimônio já existe"})
+            errors.update(
+                {
+                    "field": "registerNumber",
+                    "message": "Este N° de Patrimônio já existe",
+                }
+            )
 
         if len(errors.keys()) > 0:
             raise HTTPException(
@@ -482,7 +498,10 @@ class LendingService:
         if not lending:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"lendingId": "Contrato de Comodato não encontrado"},
+                detail={
+                    "field": "lendingId",
+                    "message": "Contrato de Comodato não encontrado",
+                },
             )
 
         return lending
@@ -525,7 +544,10 @@ class LendingService:
             )
             if not employee:
                 errors.update(
-                    {"employee": f"Tipo de Colaborador não existe. {employee}"}
+                    {
+                        "field": "employee",
+                        "message": f"Tipo de Colaborador não existe. {employee}",
+                    }
                 )
 
         if data.asset:
@@ -533,7 +555,9 @@ class LendingService:
                 db_session.query(AssetModel).filter(AssetModel.id == data.asset).first()
             )
             if not asset:
-                errors.update({"asset": f"Ativo não existe. {asset}"})
+                errors.update(
+                    {"field": "asset", "message": f"Ativo não existe. {asset}"}
+                )
 
         if data.document:
             document = (
@@ -542,7 +566,12 @@ class LendingService:
                 .first()
             )
             if not document:
-                errors.update({"document": f"Documento não existe. {document}"})
+                errors.update(
+                    {
+                        "field": "document",
+                        "message": f"Documento não existe. {document}",
+                    }
+                )
 
         if data.workload:
             workload = (
@@ -551,7 +580,9 @@ class LendingService:
                 .first()
             )
             if not workload:
-                errors.update({"workload": f"Lotação não existe. {workload}"})
+                errors.update(
+                    {"field": "workload", "message": f"Lotação não existe. {workload}"}
+                )
 
         if data.cost_center:
             cost_center = (
@@ -561,12 +592,15 @@ class LendingService:
             )
             if not cost_center:
                 errors.update(
-                    {"costCenter": f"Centro de Custo não existe. {cost_center}"}
+                    {
+                        "field": "costCenter",
+                        "message": f"Centro de Custo não existe. {cost_center}",
+                    }
                 )
 
         if data.witnesses:
             witnesses = []
-            error_ids = []
+            ids_not_found = []
             for witness in data.witnesses:
                 witness_obj = (
                     db_session.query(WitnessModel)
@@ -574,9 +608,14 @@ class LendingService:
                     .first()
                 )
                 if not witness_obj:
-                    error_ids.append(witness_obj)
+                    ids_not_found.append(witness_obj)
                 witnesses.append(witness)
-            errors.update({"witness": {"Testemunhas não encontradas": error_ids}})
+            errors.update(
+                {
+                    "field": "witness",
+                    "message": {"Testemunhas não encontradas": ids_not_found},
+                }
+            )
 
         if len(errors.keys()) > 0:
             raise HTTPException(
@@ -717,7 +756,7 @@ class DocumentService:
         if not document:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"documentId": "Contrato não encontrado"},
+                detail={"field": "documentId", "message": "Contrato não encontrado"},
             )
 
         return document
@@ -732,7 +771,10 @@ class DocumentService:
         if not lending:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"lendingId": "Contrato de Comodato não encontrado"},
+                detail={
+                    "field": "lendingId",
+                    "message": "Contrato de Comodato não encontrado",
+                },
             )
 
         return lending
@@ -746,7 +788,7 @@ class DocumentService:
         if not asset:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"asset": "Ativo não encontrado"},
+                detail={"field": "asset", "message": "Ativo não encontrado"},
             )
 
         if last_doc:
@@ -995,7 +1037,10 @@ class VerificationService:
         if not document:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"verificationId": "Pergunta de Verificação não encontrada."},
+                detail={
+                    "field": "verificationId",
+                    "message": "Pergunta de Verificação não encontrada.",
+                },
             )
 
         return document
@@ -1013,7 +1058,10 @@ class VerificationService:
         if not asset_type:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"assetTypeId": "Tipo do Ativo não encontrado."},
+                detail={
+                    "field": "assetTypeId",
+                    "message": "Tipo do Ativo não encontrado.",
+                },
             )
         return asset_type
 
@@ -1030,7 +1078,10 @@ class VerificationService:
         if not vertification_type:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"verificationTypeId": "Tipo do Verificação não encontrado."},
+                detail={
+                    "field": "verificationTypeId",
+                    "message": "Tipo do Verificação não encontrado.",
+                },
             )
         return vertification_type
 
@@ -1044,7 +1095,7 @@ class VerificationService:
         if not lending:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"lendingId": "Comodato não encontrado"},
+                detail={"field": "lendingId", "message": "Comodato não encontrado"},
             )
 
         return lending
@@ -1181,7 +1232,10 @@ class MaintenanceService:
         if not maintenance:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"maintenaceId": "Manutenção não encontrada."},
+                detail={
+                    "field": "maintenaceId",
+                    "message": "Manutenção não encontrada.",
+                },
             )
 
         return maintenance
@@ -1199,7 +1253,10 @@ class MaintenanceService:
         if not vertification_type:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"maintenaceActionId": "Ação de Manutenção não encontrada."},
+                detail={
+                    "field": "maintenaceActionId",
+                    "message": "Ação de Manutenção não encontrada.",
+                },
             )
         return vertification_type
 
@@ -1215,7 +1272,10 @@ class MaintenanceService:
         if not maintenance_status:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"maintenanceStatusId": "Status de manutenção não encontrado"},
+                detail={
+                    "field": "maintenanceStatusId",
+                    "message": "Status de manutenção não encontrado",
+                },
             )
 
         return maintenance_status

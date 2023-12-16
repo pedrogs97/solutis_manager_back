@@ -51,7 +51,7 @@ class EmployeeService:
         if not employee:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"employee": "Colaborador não encontrado"},
+                detail={"field": "employee", "message": "Colaborador não encontrado"},
             )
         return employee
 
@@ -65,7 +65,7 @@ class EmployeeService:
                 .first()
             )
             if not role:
-                errors.update({"role": "Cargo não existe"})
+                errors.update({"field": "role", "message": "Cargo não existe"})
 
         if data.nationality:
             nationality = (
@@ -74,7 +74,9 @@ class EmployeeService:
                 .first()
             )
             if not nationality:
-                errors.update({"nationality": "Nacionalidade não existe"})
+                errors.update(
+                    {"field": "nationality", "message": "Nacionalidade não existe"}
+                )
 
         if data.marital_status:
             marital_status = (
@@ -83,7 +85,9 @@ class EmployeeService:
                 .first()
             )
             if not marital_status:
-                errors.update({"maritalStatus": "Estado civil não existe"})
+                errors.update(
+                    {"field": "maritalStatus", "message": "Estado civil não existe"}
+                )
 
         if data.gender:
             gender = (
@@ -92,7 +96,7 @@ class EmployeeService:
                 .first()
             )
             if not gender:
-                errors.update({"gender": "Genero não existe"})
+                errors.update({"field": "gender", "message": "Genero não existe"})
 
         if len(errors.keys()) > 0:
             raise HTTPException(
@@ -141,7 +145,7 @@ class EmployeeService:
             .filter(EmployeeModel.code == data.code)
             .first()
         ):
-            errors.update({"code": "Colaborador já existe"})
+            errors.update({"field": "code", "message": "Colaborador já existe"})
 
         if data.taxpayer_identification and (
             db_session.query(EmployeeModel)
@@ -150,7 +154,9 @@ class EmployeeService:
             )
             .first()
         ):
-            errors.update({"taxpayer_identification": "Colaborador já existe"})
+            errors.update(
+                {"field": "taxpayer_identification", "message": "Colaborador já existe"}
+            )
 
         if len(errors.keys()) > 0:
             raise HTTPException(
