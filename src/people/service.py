@@ -110,7 +110,7 @@ class EmployeeService:
         """Serialize employee"""
         return EmployeeSerializerSchema(
             id=employee.id,
-            role=EmployeeRoleSerializerSchema(**employee.role)
+            role=EmployeeRoleSerializerSchema(**employee.role.__dict__)
             if employee.role
             else None,
             nationality=EmployeeNationalitySerializerSchema(

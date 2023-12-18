@@ -57,8 +57,8 @@ class EmployeeRoleSerializerSchema(BaseSchema):
     """
 
     id: int
+    name: str
     code: str
-    description: str
 
 
 class NewEmployeeSchema(BaseSchema):
