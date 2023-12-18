@@ -381,11 +381,11 @@ class EmpleoyeeGeneralSerivce:
         """Serialize marital status"""
         return EmployeeMatrimonialStatusSerializerSchema(**marital_status.__dict__)
 
-    def serialize_centre_cost(
-        self, centre_cost: CostCenterModel
+    def serialize_cost_center(
+        self, cost_center: CostCenterModel
     ) -> CostCenterSerializerSchema:
-        """Serialize centre cost"""
-        return CostCenterSerializerSchema(**centre_cost.__dict__)
+        """Serialize cost center"""
+        return CostCenterSerializerSchema(**cost_center.__dict__)
 
     def serialize_gender(
         self, gender: EmployeeGenderModel
@@ -393,11 +393,9 @@ class EmpleoyeeGeneralSerivce:
         """Serialize gender"""
         return EmployeeGenderSerializerSchema(**gender.__dict__)
 
-    def serialize_role(
-        self, role: EmployeeGenderModel
-    ) -> EmployeeGenderSerializerSchema:
+    def serialize_role(self, role: EmployeeRoleModel) -> EmployeeRoleSerializerSchema:
         """Serialize role"""
-        return EmployeeGenderSerializerSchema(**role.__dict__)
+        return EmployeeRoleSerializerSchema(**role.__dict__)
 
     def get_nationalities(
         self,
@@ -508,7 +506,7 @@ class EmpleoyeeGeneralSerivce:
                 center_cost_list,
                 params=params,
                 transformer=lambda center_cost_list: [
-                    self.serialize_centre_cost(center_cost)
+                    self.serialize_cost_center(center_cost)
                     for center_cost in center_cost_list
                 ],
             )
@@ -519,7 +517,7 @@ class EmpleoyeeGeneralSerivce:
                 center_cost_list,
                 params=params,
                 transformer=lambda center_cost_list: [
-                    self.serialize_centre_cost(center_cost).model_dump(
+                    self.serialize_cost_center(center_cost).model_dump(
                         include={*list_fields}
                     )
                     for center_cost in center_cost_list
