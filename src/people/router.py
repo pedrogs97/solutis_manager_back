@@ -177,8 +177,8 @@ def get_list_nationalities_route(
     return nationalities
 
 
-@people_router.get("/matrial-status/")
-def get_list_matrial_status_route(
+@people_router.get("/marital-status/")
+def get_list_marital_status_route(
     search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
@@ -191,20 +191,20 @@ def get_list_matrial_status_route(
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker(
-            {"module": "people", "model": "matrial_status", "action": "view"}
+            {"module": "people", "model": "marital_status", "action": "view"}
         )
     ),
 ):
-    """List matrial status and apply filters route"""
+    """List marital status and apply filters route"""
     if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    matrial_status = general_service.get_matrial_status(
+    marital_status = general_service.get_marital_status(
         db_session, search, fields, page, size
     )
     db_session.close()
-    return matrial_status
+    return marital_status
 
 
 @people_router.get("/center-cost/")

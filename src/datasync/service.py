@@ -16,7 +16,7 @@ from src.datasync.schemas import (
     BaseTotvsSchema,
     CostCenterTotvsSchema,
     EmployeeGenderTotvsSchema,
-    EmployeeMatrialStatusTotvsSchema,
+    EmployeeMaritalStatusTotvsSchema,
     EmployeeNationalityTotvsSchema,
     EmployeeRoleTotvsSchema,
     EmployeeTotvsSchema,
@@ -98,14 +98,14 @@ def totvs_to_employee_schema(
 
 def totvs_to_marital_status_schema(
     row,
-) -> Union[EmployeeMatrialStatusTotvsSchema, None]:
-    """Convert data from TOTVS to EmployeeMatrialStatusTotvsSchema
+) -> Union[EmployeeMaritalStatusTotvsSchema, None]:
+    """Convert data from TOTVS to EmployeeMaritalStatusTotvsSchema
 
     From
     DESCRICAO, CODINTERNO
     """
     try:
-        return EmployeeMatrialStatusTotvsSchema(
+        return EmployeeMaritalStatusTotvsSchema(
             code=row["CODINTERNO"] if row["CODINTERNO"] is not None else "",
             description=row["DESCRICAO"] if row["DESCRICAO"] is not None else "",
         )
@@ -414,7 +414,7 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
 
 
 def update_marital_status_totvs(
-    totvs_marital_status: List[EmployeeMatrialStatusTotvsSchema],
+    totvs_marital_status: List[EmployeeMaritalStatusTotvsSchema],
 ):
     """Updates marital_status from totvs"""
     db_session = get_db_session()

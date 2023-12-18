@@ -27,7 +27,7 @@ from src.datasync.schemas import (
     AssetTypeTotvsSchema,
     CostCenterTotvsSchema,
     EmployeeGenderTotvsSchema,
-    EmployeeMatrialStatusTotvsSchema,
+    EmployeeMaritalStatusTotvsSchema,
     EmployeeNationalityTotvsSchema,
     EmployeeRoleTotvsSchema,
     EmployeeTotvsSchema,
@@ -169,14 +169,14 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PCODESTCIVIL)
         rows = cursor.fetchall()
-        new_changes: List[EmployeeMatrialStatusTotvsSchema] = []
+        new_changes: List[EmployeeMaritalStatusTotvsSchema] = []
         for row in rows:
             marital_status_totvs = totvs_to_marital_status_schema(row)
             if not marital_status_totvs:
                 break
             if verify_changes(
                 marital_status_totvs,
-                EmployeeMatrialStatusTotvsSchema,
+                EmployeeMaritalStatusTotvsSchema,
                 EmployeeMaritalStatusTOTVSModel,
             ):
                 new_changes.append(marital_status_totvs)

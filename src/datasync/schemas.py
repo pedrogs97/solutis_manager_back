@@ -78,7 +78,7 @@ class AssetTotvsSchema(BaseTotvsSchema):
     quantity: int
 
 
-class EmployeeMatrialStatusTotvsSchema(BaseTotvsSchema):
+class EmployeeMaritalStatusTotvsSchema(BaseTotvsSchema):
     """
     Matrimonial status schema
 

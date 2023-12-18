@@ -9,17 +9,17 @@ from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
 from src.auth.schemas import (
+    GroupSerializerSchema,
     NewGroupSchema,
     NewPasswordSchema,
     NewUserSchema,
     PermissionSerializerSchema,
     RefreshTokenSchema,
-    RoleSerializerSchema,
     UserChangePasswordSchema,
     UserSerializerSchema,
     UserUpdateSchema,
 )
-from src.auth.service import PermissionService, RoleService, UserSerivce
+from src.auth.service import GroupService, PermissionService, UserSerivce
 from src.backends import (
     PermissionChecker,
     get_db_session,
@@ -43,7 +43,7 @@ auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 user_service = UserSerivce()
 
-group_service = RoleService()
+group_service = GroupService()
 
 permission_serivce = PermissionService()
 
@@ -230,9 +230,9 @@ def get_user_route(
 
 
 @auth_router.post(
-    "/groups/", response_model=RoleSerializerSchema, description="Creates a new group"
+    "/groups/", response_model=GroupSerializerSchema, description="Creates a new group"
 )
-def post_create_role_route(
+def post_create_group_route(
     data: NewGroupSchema,
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "group", "action": "add"})
@@ -253,9 +253,9 @@ def post_create_role_route(
 
 @auth_router.get(
     "/groups/",
-    description="Retrie list of roles. Can apply filters",
+    description="Retrie list of groups. Can apply filters",
 )
-def get_list_role_route(
+def get_list_group_route(
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "group", "action": "view"})
     ),
@@ -270,22 +270,22 @@ def get_list_role_route(
     ),
     db_session: Session = Depends(get_db_session),
 ):
-    """List roles route"""
+    """List groups route"""
     if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    roles = group_service.get_roles(db_session, page, size, search, fields)
+    groups = group_service.get_groups(db_session, page, size, search, fields)
     db_session.close()
-    return roles
+    return groups
 
 
 @auth_router.patch(
     "/groups/{group_id}/",
-    response_model=RoleSerializerSchema,
+    response_model=GroupSerializerSchema,
     description="Updates an existing group",
 )
-def update_role_route(
+def update_group_route(
     data: NewGroupSchema,
     group_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
@@ -298,7 +298,7 @@ def update_role_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = group_service.update_role(
+    serializer = group_service.update_group(
         db_session, group_id, data, authenticated_user
     )
     db_session.close()
@@ -308,8 +308,8 @@ def update_role_route(
 
 
 @auth_router.put("/groups/{group_id}/")
-def put_update_role_route():
-    """Update groupp Not Implemented"""
+def put_update_group_route():
+    """Update group Not Implemented"""
     return JSONResponse(
         content="Não implementado", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
     )
@@ -317,10 +317,10 @@ def put_update_role_route():
 
 @auth_router.get(
     "/groups/{group_id}/",
-    response_model=RoleSerializerSchema,
+    response_model=GroupSerializerSchema,
     description="Retrives an existing group",
 )
-def get_role_route(
+def get_group_route(
     group_id: int,
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "group", "action": "view"})
@@ -332,7 +332,7 @@ def get_role_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = group_service.get_role(group_id, db_session)
+    serializer = group_service.get_group(group_id, db_session)
     db_session.close()
     return JSONResponse(
         serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK

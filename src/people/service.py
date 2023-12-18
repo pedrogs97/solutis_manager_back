@@ -120,6 +120,7 @@ class EmployeeService:
                 **employee.marital_status.__dict__
             ),
             gender=EmployeeGenderSerializerSchema(**employee.gender.__dict__),
+            status=employee.status,
             manager=employee.manager,
             address=employee.address,
             birthday=employee.birthday,
@@ -297,7 +298,6 @@ class EmployeeService:
         size: int = 50,
     ) -> Page[EmployeeSerializerSchema]:
         """Get employees list"""
-
         employee_list = db_session.query(EmployeeModel).filter(
             or_(
                 EmployeeModel.full_name.ilike(f"%{search}%"),
@@ -311,25 +311,33 @@ class EmployeeService:
         )
 
         if filter_list != "":
-            employee_list = employee_list.join(EmployeeModel.role,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.role,
+            ).filter(
                 or_(
                     EmployeeRoleModel.name.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(EmployeeModel.nationality,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.nationality,
+            ).filter(
                 or_(
                     EmployeeNationalityModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(EmployeeModel.marital_status,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.marital_status,
+            ).filter(
                 or_(
                     EmployeeMaritalStatusModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(EmployeeModel.gender,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.gender,
+            ).filter(
                 or_(
                     EmployeeGenderModel.description.in_(filter_list),
                 )
@@ -367,11 +375,11 @@ class EmpleoyeeGeneralSerivce:
         """Serialize nationality"""
         return EmployeeNationalitySerializerSchema(**nationality.__dict__)
 
-    def serialize_matrial_status(
-        self, matrial_status: EmployeeMaritalStatusModel
+    def serialize_marital_status(
+        self, marital_status: EmployeeMaritalStatusModel
     ) -> EmployeeMatrimonialStatusSerializerSchema:
-        """Serialize matrial status"""
-        return EmployeeMatrimonialStatusSerializerSchema(**matrial_status.__dict__)
+        """Serialize marital status"""
+        return EmployeeMatrimonialStatusSerializerSchema(**marital_status.__dict__)
 
     def serialize_centre_cost(
         self, centre_cost: CostCenterModel
@@ -434,7 +442,7 @@ class EmpleoyeeGeneralSerivce:
 
         return paginated
 
-    def get_matrial_status(
+    def get_marital_status(
         self,
         db_session: Session,
         search: str = "",
@@ -442,9 +450,9 @@ class EmpleoyeeGeneralSerivce:
         page: int = 1,
         size: int = 50,
     ) -> Page[EmployeeMatrimonialStatusSerializerSchema]:
-        """Get matrial status list"""
+        """Get marital status list"""
 
-        matrial_status_list = db_session.query(EmployeeMaritalStatusModel).filter(
+        marital_status_list = db_session.query(EmployeeMaritalStatusModel).filter(
             or_(
                 EmployeeMaritalStatusModel.description.ilike(f"%{search}%"),
                 EmployeeMaritalStatusModel.code.ilike(f"%{search}"),
@@ -454,24 +462,24 @@ class EmpleoyeeGeneralSerivce:
         if fields == "":
             params = Params(page=page, size=size)
             paginated = paginate(
-                matrial_status_list,
+                marital_status_list,
                 params=params,
-                transformer=lambda matrial_status_list: [
-                    self.serialize_matrial_status(matrial_status)
-                    for matrial_status in matrial_status_list
+                transformer=lambda marital_status_list: [
+                    self.serialize_marital_status(marital_status)
+                    for marital_status in marital_status_list
                 ],
             )
         else:
             list_fields = fields.split(",")
             params = Params(page=page, size=size)
             paginated = paginate(
-                matrial_status_list,
+                marital_status_list,
                 params=params,
-                transformer=lambda matrial_status_list: [
-                    self.serialize_matrial_status(matrial_status).model_dump(
+                transformer=lambda marital_status_list: [
+                    self.serialize_marital_status(marital_status).model_dump(
                         include={*list_fields}
                     )
-                    for matrial_status in matrial_status_list
+                    for marital_status in marital_status_list
                 ],
             )
 

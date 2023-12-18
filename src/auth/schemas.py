@@ -43,7 +43,7 @@ class PermissionSerializerSchema(BaseSchema):
     description: str
 
 
-class RoleSerializerSchema(BaseSchema):
+class GroupSerializerSchema(BaseSchema):
     """
     Group schema
 
@@ -89,7 +89,7 @@ class UserSerializerSchema(BaseSchema):
     """
 
     id: int
-    group: RoleSerializerSchema
+    group: GroupSerializerSchema
     full_name: str = Field(serialization_alias="fullName")
     username: str
     email: str
@@ -116,8 +116,8 @@ class NewUserSchema(BaseSchema):
     is_active: bool = Field(
         alias="isActive", serialization_alias="is_active", default=True
     )
-    group: Optional[str] = None
-    employee_id: int = Field(alias="employeeId", serialization_alias="employee_id")
+    group_id: Optional[str] = None
+    employee_id: int = Field(serialization_alias="employee_id")
 
 
 class TokenSchema(BaseSchema):
