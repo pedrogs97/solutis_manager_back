@@ -108,6 +108,7 @@ class UserListSerializerSchema(BaseSchema):
 
     id: int
     group: str
+    group_id: int = Field(serialization_alias="groupId")
     full_name: str = Field(serialization_alias="fullName")
     username: str
     email: str

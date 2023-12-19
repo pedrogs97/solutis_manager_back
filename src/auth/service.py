@@ -198,6 +198,7 @@ class UserSerivce:
         if is_list:
             return UserListSerializerSchema(
                 id=user.id,
+                group_id=user.group.id,
                 group=user.group.name,
                 username=user.username,
                 full_name=full_name,
