@@ -550,7 +550,7 @@ class LendingService:
             if not employee:
                 errors.update(
                     {
-                        "field": "employee",
+                        "field": "employeeId",
                         "error": f"Tipo de Colaborador não existe. {employee}",
                     }
                 )
@@ -560,7 +560,9 @@ class LendingService:
                 db_session.query(AssetModel).filter(AssetModel.id == data.asset).first()
             )
             if not asset:
-                errors.update({"field": "asset", "error": f"Ativo não existe. {asset}"})
+                errors.update(
+                    {"field": "assetId", "error": f"Ativo não existe. {asset}"}
+                )
 
         if data.document:
             document = (
@@ -571,7 +573,7 @@ class LendingService:
             if not document:
                 errors.update(
                     {
-                        "field": "document",
+                        "field": "documentId",
                         "error": f"Documento não existe. {document}",
                     }
                 )
@@ -584,7 +586,7 @@ class LendingService:
             )
             if not workload:
                 errors.update(
-                    {"field": "workload", "error": f"Lotação não existe. {workload}"}
+                    {"field": "workloadId", "error": f"Lotação não existe. {workload}"}
                 )
 
         if data.cost_center:
@@ -615,7 +617,7 @@ class LendingService:
                 witnesses.append(witness)
             errors.update(
                 {
-                    "field": "witness",
+                    "field": "witnessId",
                     "error": {"Testemunhas não encontradas": ids_not_found},
                 }
             )
@@ -738,7 +740,8 @@ class LendingService:
             lending_list,
             params=params,
             transformer=lambda lending_list: [
-                self.serialize_lending(lending) for lending in lending_list
+                self.serialize_lending(lending).model_dump(by_alias=True)
+                for lending in lending_list
             ],
         )
         return paginated
@@ -791,7 +794,7 @@ class DocumentService:
         if not asset:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"field": "asset", "error": "Ativo não encontrado"},
+                detail={"field": "assetId", "error": "Ativo não encontrado"},
             )
 
         if last_doc:
@@ -1417,7 +1420,8 @@ class MaintenanceService:
             maintenance_list,
             params=params,
             transformer=lambda maintenance_list: [
-                self.serialize_maintenance(lending) for lending in maintenance_list
+                self.serialize_maintenance(lending).model_dump(by_alias=True)
+                for lending in maintenance_list
             ],
         )
         return paginated
@@ -1475,7 +1479,8 @@ class MaintenanceService:
 
         maintenance_actions = db_session.query(MaintenanceActionModel).all()
         return [
-            self.serialize_maintenance_action(action) for action in maintenance_actions
+            self.serialize_maintenance_action(action).model_dump(by_alias=True)
+            for action in maintenance_actions
         ]
 
     def get_maintenance_status(
@@ -1485,5 +1490,6 @@ class MaintenanceService:
 
         maintenance_status = db_session.query(MaintenanceActionModel).all()
         return [
-            self.serialize_maintenance_status(status) for status in maintenance_status
+            self.serialize_maintenance_status(status).model_dump(by_alias=True)
+            for status in maintenance_status
         ]

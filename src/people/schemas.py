@@ -64,14 +64,20 @@ class EmployeeRoleSerializerSchema(BaseSchema):
 class NewEmployeeSchema(BaseSchema):
     """New employee schema"""
 
-    role: str
-    nationality: str
-    marital_status: str = Field(
-        alias="maritalStatus",
-        serialization_alias="marital_status",
+    role: int
+    nationality_id: int = Field(
+        alias="nationalityId",
+        serialization_alias="nationality_id",
     )
-    gender: str
-    code: Optional[str] = None
+    marital_status_id: int = Field(
+        alias="maritalStatusId",
+        serialization_alias="marital_status_id",
+    )
+    gender_id: int = Field(
+        alias="genderId",
+        serialization_alias="gender_id",
+    )
+    code: Optional[int] = None
     status: Optional[str] = "Ativo"
     full_name: str = Field(
         alias="fullName",

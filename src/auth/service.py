@@ -19,6 +19,7 @@ from src.auth.schemas import (
     NewUserSchema,
     PermissionSerializerSchema,
     UserChangePasswordSchema,
+    UserListSerializerSchema,
     UserSerializerSchema,
     UserUpdateSchema,
 )
@@ -157,31 +158,18 @@ class UserSerivce:
         staff: Optional[bool] = None,
     ) -> Page[UserSerializerSchema]:
         """Get user list"""
+        user_list = db_session.query(UserModel)
+
         if staff:
-            user_list = (
-                db_session.query(UserModel)
-                .join(EmployeeModel)
-                .filter(
-                    or_(
-                        EmployeeModel.full_name.ilike(f"%{search}%"),
-                        UserModel.email.ilike(f"%{search}"),
-                        UserModel.username.ilike(f"%{search}"),
-                        EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
-                    )
-                )
-            )
             user_list = user_list.filter(UserModel.is_staff == staff)
-        else:
-            user_list = (
-                db_session.query(UserModel)
-                .join(EmployeeModel)
-                .filter(
-                    or_(
-                        EmployeeModel.full_name.ilike(f"%{search}%"),
-                        UserModel.email.ilike(f"%{search}"),
-                        UserModel.username.ilike(f"%{search}"),
-                        EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
-                    )
+
+        if search != "":
+            user_list = user_list.join(EmployeeModel).filter(
+                or_(
+                    EmployeeModel.full_name.ilike(f"%{search}%"),
+                    UserModel.email.ilike(f"%{search}"),
+                    UserModel.username.ilike(f"%{search}"),
+                    EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
                 )
             )
 
@@ -192,18 +180,36 @@ class UserSerivce:
             user_list,
             params=params,
             transformer=lambda user_list: [
-                self.serialize_user(user).model_dump(by_alias=True)
+                self.serialize_user(user, is_list=True).model_dump(by_alias=True)
                 for user in user_list
             ],
         )
         return paginated
 
-    def serialize_user(self, user: UserModel) -> UserSerializerSchema:
+    def serialize_user(
+        self, user: UserModel, is_list=False
+    ) -> Union[UserSerializerSchema, UserListSerializerSchema]:
         """Convert UserModel to UserSerializerSchema"""
         full_name: str = user.employee.full_name if user.employee else ""
         taxpayer_identification: str = (
             user.employee.taxpayer_identification if user.employee else ""
         )
+        employee_id = user.employee.id if user.employee else None
+        if is_list:
+            return UserListSerializerSchema(
+                id=user.id,
+                group=user.group.name,
+                username=user.username,
+                full_name=full_name,
+                taxpayer_identification=taxpayer_identification,
+                email=user.email,
+                is_active=user.is_active,
+                is_staff=user.is_staff,
+                last_login_in=user.last_login_in.strftime(DEFAULT_DATE_FORMAT)
+                if user.last_login_in
+                else None,
+                employee_id=employee_id,
+            )
         return UserSerializerSchema(
             id=user.id,
             group=GroupService().serialize_group(user.group),
@@ -216,6 +222,7 @@ class UserSerivce:
             last_login_in=user.last_login_in.strftime(DEFAULT_DATE_FORMAT)
             if user.last_login_in
             else None,
+            employee_id=employee_id,
         )
 
     def update_user(

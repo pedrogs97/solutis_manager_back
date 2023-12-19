@@ -96,6 +96,27 @@ class UserSerializerSchema(BaseSchema):
     is_staff: bool = Field(serialization_alias="isStaff")
     is_active: bool = Field(serialization_alias="isActive")
     last_login_in: Optional[str] = Field(serialization_alias="lastLoginIn")
+    employee_id: Optional[int] = Field(serialization_alias="employeeId", default=None)
+
+
+class UserListSerializerSchema(BaseSchema):
+    """
+    User serializer
+
+    UserModel representation for response
+    """
+
+    id: int
+    group: str
+    full_name: str = Field(serialization_alias="fullName")
+    username: str
+    email: str
+    is_staff: bool = Field(serialization_alias="isStaff")
+    is_active: bool = Field(serialization_alias="isActive")
+    last_login_in: Optional[str] = Field(
+        serialization_alias="lastLoginIn", default=None
+    )
+    employee_id: Optional[int] = Field(serialization_alias="employeeId", default=None)
 
 
 class NewGroupSchema(BaseSchema):

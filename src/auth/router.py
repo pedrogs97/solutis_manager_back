@@ -121,7 +121,6 @@ def post_create_user_route(
 
 @auth_router.get(
     "/users/",
-    response_model=Page[UserSerializerSchema],
     description="Retrie list of users. Can apply filters",
 )
 def get_list_user_route(

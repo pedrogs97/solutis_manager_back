@@ -10,6 +10,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
+from src.config import DEFAULT_DATE_FORMAT
 from src.lending.models import LendingModel
 from src.lending.schemas import CostCenterSerializerSchema, LendingSerializerSchema
 from src.lending.service import LendingService
@@ -51,7 +52,7 @@ class EmployeeService:
         if not employee:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"field": "employee", "error": "Colaborador não encontrado"},
+                detail={"field": "employeeId", "error": "Colaborador não encontrado"},
             )
         return employee
 
@@ -61,42 +62,42 @@ class EmployeeService:
         if data.role:
             role = (
                 db_session.query(EmployeeRoleModel)
-                .filter(EmployeeRoleModel.name == data.role)
+                .filter(EmployeeRoleModel.id == data.role)
                 .first()
             )
             if not role:
-                errors.update({"field": "role", "error": "Cargo não existe"})
+                errors.update({"field": "roleId", "error": "Cargo não existe"})
 
         if data.nationality:
             nationality = (
                 db_session.query(EmployeeNationalityModel)
-                .filter(EmployeeNationalityModel.description == data.nationality)
+                .filter(EmployeeNationalityModel.id == data.nationality_id)
                 .first()
             )
             if not nationality:
                 errors.update(
-                    {"field": "nationality", "error": "Nacionalidade não existe"}
+                    {"field": "nationalityId", "error": "Nacionalidade não existe"}
                 )
 
         if data.marital_status:
             marital_status = (
                 db_session.query(EmployeeMaritalStatusModel)
-                .filter(EmployeeMaritalStatusModel.description == data.marital_status)
+                .filter(EmployeeMaritalStatusModel.id == data.marital_status_id)
                 .first()
             )
             if not marital_status:
                 errors.update(
-                    {"field": "maritalStatus", "error": "Estado civil não existe"}
+                    {"field": "maritalStatusId", "error": "Estado civil não existe"}
                 )
 
         if data.gender:
             gender = (
                 db_session.query(EmployeeGenderModel)
-                .filter(EmployeeGenderModel.description == data.gender)
+                .filter(EmployeeGenderModel.id == data.gender_id)
                 .first()
             )
             if not gender:
-                errors.update({"field": "gender", "error": "Genero não existe"})
+                errors.update({"field": "genderId", "error": "Genero não existe"})
 
         if len(errors.keys()) > 0:
             raise HTTPException(
@@ -123,7 +124,7 @@ class EmployeeService:
             status=employee.status,
             manager=employee.manager,
             address=employee.address,
-            birthday=employee.birthday.isoformat(),
+            birthday=employee.birthday.strftime(DEFAULT_DATE_FORMAT),
             cell_phone=employee.cell_phone,
             code=employee.code,
             email=employee.email,
@@ -282,7 +283,8 @@ class EmployeeService:
         )
 
         historic_serialize = [
-            LendingService().serialize_lending(h) for h in historic_model
+            LendingService().serialize_lending(h).model_dump(by_alias=True)
+            for h in historic_model
         ]
 
         return historic_serialize
@@ -310,33 +312,25 @@ class EmployeeService:
         )
 
         if filter_list != "":
-            employee_list = employee_list.join(
-                EmployeeModel.role,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.role,).filter(
                 or_(
                     EmployeeRoleModel.name.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(
-                EmployeeModel.nationality,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.nationality,).filter(
                 or_(
                     EmployeeNationalityModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(
-                EmployeeModel.marital_status,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.marital_status,).filter(
                 or_(
                     EmployeeMaritalStatusModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(
-                EmployeeModel.gender,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.gender,).filter(
                 or_(
                     EmployeeGenderModel.description.in_(filter_list),
                 )
@@ -347,7 +341,8 @@ class EmployeeService:
                 employee_list,
                 params=params,
                 transformer=lambda employee_list: [
-                    self.serialize_employee(employee) for employee in employee_list
+                    self.serialize_employee(employee).model_dump(by_alias=True)
+                    for employee in employee_list
                 ],
             )
         else:
@@ -433,7 +428,7 @@ class EmpleoyeeGeneralSerivce:
                 params=params,
                 transformer=lambda nationalities_list: [
                     self.serialize_nationality(nationality).model_dump(
-                        include={*list_fields}
+                        include={*list_fields}, by_alias=True
                     )
                     for nationality in nationalities_list
                 ],
@@ -464,7 +459,9 @@ class EmpleoyeeGeneralSerivce:
                 marital_status_list,
                 params=params,
                 transformer=lambda marital_status_list: [
-                    self.serialize_marital_status(marital_status)
+                    self.serialize_marital_status(marital_status).model_dump(
+                        by_alias=True
+                    )
                     for marital_status in marital_status_list
                 ],
             )
@@ -476,7 +473,7 @@ class EmpleoyeeGeneralSerivce:
                 params=params,
                 transformer=lambda marital_status_list: [
                     self.serialize_marital_status(marital_status).model_dump(
-                        include={*list_fields}
+                        include={*list_fields}, by_alias=True
                     )
                     for marital_status in marital_status_list
                 ],
@@ -507,7 +504,7 @@ class EmpleoyeeGeneralSerivce:
                 center_cost_list,
                 params=params,
                 transformer=lambda center_cost_list: [
-                    self.serialize_cost_center(center_cost)
+                    self.serialize_cost_center(center_cost).model_dump(by_alias=True)
                     for center_cost in center_cost_list
                 ],
             )
@@ -519,7 +516,7 @@ class EmpleoyeeGeneralSerivce:
                 params=params,
                 transformer=lambda center_cost_list: [
                     self.serialize_cost_center(center_cost).model_dump(
-                        include={*list_fields}
+                        include={*list_fields}, by_alias=True
                     )
                     for center_cost in center_cost_list
                 ],
@@ -550,7 +547,8 @@ class EmpleoyeeGeneralSerivce:
                 genders_list,
                 params=params,
                 transformer=lambda genders_list: [
-                    self.serialize_gender(gender) for gender in genders_list
+                    self.serialize_gender(gender).model_dump(by_alias=True)
+                    for gender in genders_list
                 ],
             )
         else:
@@ -560,7 +558,9 @@ class EmpleoyeeGeneralSerivce:
                 genders_list,
                 params=params,
                 transformer=lambda genders_list: [
-                    self.serialize_gender(gender).model_dump(include={*list_fields})
+                    self.serialize_gender(gender).model_dump(
+                        include={*list_fields}, by_alias=True
+                    )
                     for gender in genders_list
                 ],
             )
@@ -590,7 +590,8 @@ class EmpleoyeeGeneralSerivce:
                 roles_list,
                 params=params,
                 transformer=lambda roles_list: [
-                    self.serialize_role(role) for role in roles_list
+                    self.serialize_role(role).model_dump(by_alias=True)
+                    for role in roles_list
                 ],
             )
         else:
@@ -600,7 +601,9 @@ class EmpleoyeeGeneralSerivce:
                 roles_list,
                 params=params,
                 transformer=lambda roles_list: [
-                    self.serialize_role(role).model_dump(include={*list_fields})
+                    self.serialize_role(role).model_dump(
+                        include={*list_fields}, by_alias=True
+                    )
                     for role in roles_list
                 ],
             )
