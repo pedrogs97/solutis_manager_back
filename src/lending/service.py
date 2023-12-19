@@ -367,22 +367,25 @@ class AssetService:
                 asset_list,
                 params=params,
                 transformer=lambda asset_list: [
-                    self.serialize_asset(asset) for asset in asset_list
-                ],
-            )
-            return paginated
-        else:
-            list_fields = fields.split(",")
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                asset_list,
-                params=params,
-                transformer=lambda asset_list: [
-                    self.serialize_asset(asset).model_dump(include={*list_fields})
+                    self.serialize_asset(asset).model_dump(by_alias=True)
                     for asset in asset_list
                 ],
             )
             return paginated
+
+        list_fields = fields.split(",")
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            asset_list,
+            params=params,
+            transformer=lambda asset_list: [
+                self.serialize_asset(asset).model_dump(
+                    include={*list_fields}, by_alias=True
+                )
+                for asset in asset_list
+            ],
+        )
+        return paginated
 
     def get_asset_types(
         self,
@@ -422,22 +425,24 @@ class AssetService:
                 asset_type_list,
                 params=params,
                 transformer=lambda asset_type_list: [
-                    self.serialize_asset(asset_type) for asset_type in asset_type_list
-                ],
-            )
-            return paginated
-        else:
-            list_fields = fields.split(",")
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                asset_type_list,
-                params=params,
-                transformer=lambda asset_type_list: [
-                    self.serialize_asset(asset_type).model_dump(include={*list_fields})
+                    self.serialize_asset(asset_type).model_dump(by_alias=True)
                     for asset_type in asset_type_list
                 ],
             )
             return paginated
+        list_fields = fields.split(",")
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            asset_type_list,
+            params=params,
+            transformer=lambda asset_type_list: [
+                self.serialize_asset(asset_type).model_dump(
+                    include={*list_fields}, by_alias=True
+                )
+                for asset_type in asset_type_list
+            ],
+        )
+        return paginated
 
     def get_asset_status(
         self,
@@ -464,25 +469,25 @@ class AssetService:
                 asset_type_status,
                 params=params,
                 transformer=lambda asset_type_status: [
-                    self.serialize_asset(asset_status)
+                    self.serialize_asset(asset_status).model_dump(by_alias=True)
                     for asset_status in asset_type_status
                 ],
             )
             return paginated
-        else:
-            list_fields = fields.split(",")
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                asset_type_status,
-                params=params,
-                transformer=lambda asset_type_status: [
-                    self.serialize_asset(asset_status).model_dump(
-                        include={*list_fields}
-                    )
-                    for asset_status in asset_type_status
-                ],
-            )
-            return paginated
+
+        list_fields = fields.split(",")
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            asset_type_status,
+            params=params,
+            transformer=lambda asset_type_status: [
+                self.serialize_asset(asset_status).model_dump(
+                    include={*list_fields}, by_alias=True
+                )
+                for asset_status in asset_type_status
+            ],
+        )
+        return paginated
 
 
 class LendingService:

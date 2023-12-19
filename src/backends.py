@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from typing import Annotated, Union
 
 import jwt
-from fastapi import Depends
+from fastapi import Depends, status
+from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import PyJWTError
 from passlib.context import CryptContext
@@ -95,6 +96,9 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     old_token = (
         db_session.query(TokenModel).filter(TokenModel.user_id == user.id).first()
     )
+
+    if not user.group:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     permissions = [
         f"{perm.module}_{perm.model}_{perm.action}" for perm in user.group.permissions

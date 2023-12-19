@@ -151,7 +151,8 @@ class InvoiceService:
             invoice_list_query,
             params=params,
             transformer=lambda invoice_list_query: [
-                self.serialize_invoice(invoice) for invoice in invoice_list_query
+                self.serialize_invoice(invoice).model_dump(by_alias=True)
+                for invoice in invoice_list_query
             ],
         )
         return paginated

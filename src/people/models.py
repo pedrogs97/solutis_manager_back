@@ -113,7 +113,7 @@ class EmployeeModel(Base):
     gender: Mapped[EmployeeGenderModel] = relationship()
     gender_id = Column("gender_id", ForeignKey(EmployeeGenderModel.id), nullable=False)
 
-    code = Column("code", String(length=10), nullable=False, unique=True)
+    code = Column("code", String(length=10), nullable=True, unique=True)
     status = Column("status", String(length=100), default="Ativo")
     full_name = Column("full_name", String(length=120), nullable=False)
     taxpayer_identification = Column(

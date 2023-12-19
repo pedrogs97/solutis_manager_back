@@ -7,9 +7,8 @@ from src.database import Base
 invoice_assets = Table(
     "invoice_assets",
     Base.metadata,
-    Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("invoice_id", ForeignKey("invoices.id")),
-    Column("asset_id", ForeignKey("asset.id")),
+    Column("invoice_id", ForeignKey("invoices.id"), primary_key=True),
+    Column("asset_id", ForeignKey("asset.id"), primary_key=True),
 )
 
 

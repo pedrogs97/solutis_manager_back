@@ -100,6 +100,6 @@ async def startup_base_data():
     """
     Instatialize base user and permissions if does not exist.
     """
-    create_super_user()
     create_permissions()
+    create_super_user()
     create_initial_data()

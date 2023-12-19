@@ -3,6 +3,7 @@
 # IDEs and editors
 /.idea
 .settings/
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
@@ -42,6 +43,7 @@ ENV/
 .DS_Store
 *.sqlite3
 *.db
+.python-version
 
 # media
 **/media

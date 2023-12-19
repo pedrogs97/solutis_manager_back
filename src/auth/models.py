@@ -10,9 +10,8 @@ from src.people.models import EmployeeModel
 group_permissions = Table(
     "group_permissions",
     Base.metadata,
-    Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("group_id", ForeignKey("group.id")),
-    Column("permission_id", ForeignKey("permission.id")),
+    Column("group_id", ForeignKey("group.id"), primary_key=True),
+    Column("permission_id", ForeignKey("permission.id"), primary_key=True),
 )
 
 

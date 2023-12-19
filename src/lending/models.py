@@ -208,9 +208,8 @@ class WorkloadModel(Base):
 lending_witnesses = Table(
     "lending_witnesses",
     Base.metadata,
-    Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("lending_id", ForeignKey("lending.id")),
-    Column("witness_id", ForeignKey("witness.id")),
+    Column("lending_id", ForeignKey("lending.id"), primary_key=True),
+    Column("witness_id", ForeignKey("witness.id"), primary_key=True),
 )
 
 

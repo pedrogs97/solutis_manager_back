@@ -91,7 +91,7 @@ class UserSerivce:
         errors = {}
 
         if not group:
-            errors.update({"field": "group_id", "error": "Perfil inválido"})
+            errors.update({"field": "groupId", "error": "Perfil inválido"})
 
         employee = (
             db_session.query(EmployeeModel)
@@ -100,7 +100,7 @@ class UserSerivce:
         )
 
         if not employee:
-            errors.update({"field": "employee", "error": "Colaborador inválido"})
+            errors.update({"field": "employeeId", "error": "Colaborador inválido"})
 
         user_test_username = (
             db_session.query(UserModel)
@@ -192,7 +192,8 @@ class UserSerivce:
             user_list,
             params=params,
             transformer=lambda user_list: [
-                self.serialize_user(user) for user in user_list
+                self.serialize_user(user).model_dump(by_alias=True)
+                for user in user_list
             ],
         )
         return paginated
@@ -375,6 +376,24 @@ def create_super_user():
             group_admin = GroupModel(name="Administrador")
             db_session.add(group_admin)
             db_session.commit()
+            db_session.flush()
+
+        all_perms = db_session.query(PermissionModel).all()
+        updated = False
+        for perm in all_perms:
+            found = False
+            for group_perm in group_admin.permissions:
+                if group_perm.id == perm.id:
+                    found = True
+                    break
+
+            if not found:
+                updated = True
+                group_admin.permissions.append(perm)
+
+        if updated:
+            db_session.commit()
+            db_session.flush()
 
         if not super_user:
             new_super_user = UserModel(
@@ -398,14 +417,14 @@ def create_permissions():
     try:
         db_session = Session_db()
         for module, dict_module in PERMISSIONS.items():
-            perm = (
-                db_session.query(PermissionModel)
-                .filter(PermissionModel.module == module)
-                .first()
-            )
-            if not perm:
-                module_label = dict_module["label"]
-                for dict_model in dict_module["models"]:
+            for dict_model in dict_module["models"]:
+                perm = (
+                    db_session.query(PermissionModel)
+                    .filter(PermissionModel.model == dict_model["name"])
+                    .first()
+                )
+                if not perm:
+                    module_label = dict_module["label"]
                     model_label = dict_model["label"]
                     new_perm_view = PermissionModel(
                         module=module,

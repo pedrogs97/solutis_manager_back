@@ -71,7 +71,7 @@ class NewEmployeeSchema(BaseSchema):
         serialization_alias="marital_status",
     )
     gender: str
-    code: Optional[str] = None
+    code: Optional[str] = ""
     status: Optional[str] = "Ativo"
     full_name: str = Field(
         alias="fullName",

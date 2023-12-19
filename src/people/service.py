@@ -141,7 +141,7 @@ class EmployeeService:
     ) -> EmployeeSerializerSchema:
         """Creates new employee"""
         errors = {}
-        if data.code and (
+        if data.code != "" and (
             db_session.query(EmployeeModel)
             .filter(EmployeeModel.code == data.code)
             .first()
@@ -311,33 +311,25 @@ class EmployeeService:
         )
 
         if filter_list != "":
-            employee_list = employee_list.join(
-                EmployeeModel.role,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.role,).filter(
                 or_(
                     EmployeeRoleModel.name.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(
-                EmployeeModel.nationality,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.nationality,).filter(
                 or_(
                     EmployeeNationalityModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(
-                EmployeeModel.marital_status,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.marital_status,).filter(
                 or_(
                     EmployeeMaritalStatusModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(
-                EmployeeModel.gender,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.gender,).filter(
                 or_(
                     EmployeeGenderModel.description.in_(filter_list),
                 )
