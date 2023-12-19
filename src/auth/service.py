@@ -236,7 +236,7 @@ class UserSerivce:
         """Update user by id"""
         try:
             user = self.__get_user_or_404(user_id, db_session)
-
+            errors = []
             if data.group:
                 group = (
                     db_session.query(GroupModel)
@@ -244,12 +244,8 @@ class UserSerivce:
                     .first()
                 )
                 if not group:
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail={
-                            "field": "group",
-                            "error": "Perfil de usuário não encontrado",
-                        },
+                    errors.append(
+                        {"field": "group", "error": "Perfil de usuário não encontrado"}
                     )
 
                 user.group = group
@@ -261,22 +257,34 @@ class UserSerivce:
                     .first()
                 )
                 if not employee:
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail={
-                            "field": "employee",
-                            "error": "Colaborador não encontrado",
-                        },
+                    errors.append(
+                        {"field": "employee", "error": "Colaborador não encontrado"}
                     )
 
                 user.employee = employee
 
             if data.username:
                 is_updated = True
+                employee = (
+                    db_session.query(UserModel)
+                    .filter(UserModel.username == data.username)
+                    .first()
+                )
+                if employee:
+                    errors.append(
+                        {"field": "username", "error": "Nome de usuário já existe"}
+                    )
                 user.username = data.username
 
             if data.email:
                 is_updated = True
+                employee = (
+                    db_session.query(UserModel)
+                    .filter(UserModel.email == data.email)
+                    .first()
+                )
+                if employee:
+                    errors.append({"field": "email", "error": "E-mail já existe"})
                 user.email = data.email
 
             if data.is_active is not None:
@@ -287,6 +295,10 @@ class UserSerivce:
                 is_updated = True
                 user.is_staff = data.is_staff
 
+            if len(errors) > 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=errors
+                )
             if is_updated:
                 db_session.add(user)
                 db_session.commit()

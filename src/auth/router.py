@@ -62,7 +62,7 @@ def login_route(
     return JSONResponse(content=token, status_code=status.HTTP_200_OK)
 
 
-@auth_router.post("/refresh/token/")
+@auth_router.post("/refresh-token/")
 def refresh_token_route(
     data: RefreshTokenSchema,
     db_session: Session = Depends(get_db_session),
