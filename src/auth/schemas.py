@@ -116,8 +116,8 @@ class NewUserSchema(BaseSchema):
     is_active: bool = Field(
         alias="isActive", serialization_alias="is_active", default=True
     )
-    group_id: Optional[str] = None
-    employee_id: int = Field(serialization_alias="employee_id")
+    group_id: Optional[int] = Field(alias="groupId", serialization_alias="group_id")
+    employee_id: int = Field(alias="employeeId", serialization_alias="employee_id")
 
 
 class TokenSchema(BaseSchema):

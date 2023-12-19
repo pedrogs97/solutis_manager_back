@@ -123,7 +123,7 @@ class EmployeeService:
             status=employee.status,
             manager=employee.manager,
             address=employee.address,
-            birthday=employee.birthday,
+            birthday=employee.birthday.isoformat(),
             cell_phone=employee.cell_phone,
             code=employee.code,
             email=employee.email,
@@ -141,7 +141,7 @@ class EmployeeService:
     ) -> EmployeeSerializerSchema:
         """Creates new employee"""
         errors = {}
-        if data.code != "" and (
+        if data.code and (
             db_session.query(EmployeeModel)
             .filter(EmployeeModel.code == data.code)
             .first()
@@ -168,7 +168,6 @@ class EmployeeService:
         (role, nationality, marital_status, gender) = self.__validate_nested(
             data, db_session
         )
-
         new_emplyoee = EmployeeModel(
             code=data.code,
             full_name=data.full_name,
@@ -311,25 +310,33 @@ class EmployeeService:
         )
 
         if filter_list != "":
-            employee_list = employee_list.join(EmployeeModel.role,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.role,
+            ).filter(
                 or_(
                     EmployeeRoleModel.name.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(EmployeeModel.nationality,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.nationality,
+            ).filter(
                 or_(
                     EmployeeNationalityModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(EmployeeModel.marital_status,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.marital_status,
+            ).filter(
                 or_(
                     EmployeeMaritalStatusModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(EmployeeModel.gender,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.gender,
+            ).filter(
                 or_(
                     EmployeeGenderModel.description.in_(filter_list),
                 )
@@ -350,7 +357,9 @@ class EmployeeService:
                 employee_list,
                 params=params,
                 transformer=lambda employee_list: [
-                    self.serialize_employee(employee).model_dump(include={*list_fields})
+                    self.serialize_employee(employee).model_dump(
+                        include={*list_fields}, by_alias=True
+                    )
                     for employee in employee_list
                 ],
             )

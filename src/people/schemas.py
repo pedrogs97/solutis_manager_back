@@ -71,7 +71,7 @@ class NewEmployeeSchema(BaseSchema):
         serialization_alias="marital_status",
     )
     gender: str
-    code: Optional[str] = ""
+    code: Optional[str] = None
     status: Optional[str] = "Ativo"
     full_name: str = Field(
         alias="fullName",
@@ -173,7 +173,7 @@ class EmployeeSerializerSchema(BaseSchema):
     address: str
     cell_phone: str = Field(serialization_alias="cellPhone")
     email: str
-    birthday: date
+    birthday: str
     manager: Optional[str] = None
     legal_person: bool = Field(serialization_alias="legalPerson")
     employer_number: Optional[str] = Field(
