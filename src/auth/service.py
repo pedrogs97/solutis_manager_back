@@ -237,10 +237,10 @@ class UserSerivce:
         try:
             user = self.__get_user_or_404(user_id, db_session)
             errors = []
-            if data.group:
+            if data.group_id:
                 group = (
                     db_session.query(GroupModel)
-                    .filter(GroupModel.name == data.group)
+                    .filter(GroupModel.id == data.group_id)
                     .first()
                 )
                 if not group:
@@ -248,7 +248,7 @@ class UserSerivce:
                         {"field": "group", "error": "Perfil de usuário não encontrado"}
                     )
 
-                user.group = group
+                user.group_id = group.id
 
             if data.employee_id:
                 employee = (
@@ -267,7 +267,9 @@ class UserSerivce:
                 is_updated = True
                 employee = (
                     db_session.query(UserModel)
-                    .filter(UserModel.username == data.username)
+                    .filter(
+                        UserModel.username == data.username, UserModel.id != user_id
+                    )
                     .first()
                 )
                 if employee:
@@ -275,12 +277,14 @@ class UserSerivce:
                         {"field": "username", "error": "Nome de usuário já existe"}
                     )
                 user.username = data.username
-
+            print("data.email", data.email)
             if data.email:
+                print("user_id", user_id)
+                print("user.id", user.id)
                 is_updated = True
                 employee = (
                     db_session.query(UserModel)
-                    .filter(UserModel.email == data.email)
+                    .filter(UserModel.email == data.email, UserModel.id != user_id)
                     .first()
                 )
                 if employee:
@@ -317,6 +321,9 @@ class UserSerivce:
         except Exception as exc:
             msg = f"{exc.args[0]}"
             logger.warning("Could not update user. Error: %s", msg)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail={"error": msg}
+            )
 
         return self.serialize_user(user)
 

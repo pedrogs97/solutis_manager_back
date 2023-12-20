@@ -68,7 +68,7 @@ class EmployeeService:
             if not role:
                 errors.update({"field": "roleId", "error": "Cargo não existe"})
 
-        if data.nationality:
+        if data.nationality_id:
             nationality = (
                 db_session.query(EmployeeNationalityModel)
                 .filter(EmployeeNationalityModel.id == data.nationality_id)
@@ -79,7 +79,7 @@ class EmployeeService:
                     {"field": "nationalityId", "error": "Nacionalidade não existe"}
                 )
 
-        if data.marital_status:
+        if data.marital_status_id:
             marital_status = (
                 db_session.query(EmployeeMaritalStatusModel)
                 .filter(EmployeeMaritalStatusModel.id == data.marital_status_id)
@@ -90,7 +90,7 @@ class EmployeeService:
                     {"field": "maritalStatusId", "error": "Estado civil não existe"}
                 )
 
-        if data.gender:
+        if data.gender_id:
             gender = (
                 db_session.query(EmployeeGenderModel)
                 .filter(EmployeeGenderModel.id == data.gender_id)
@@ -312,25 +312,33 @@ class EmployeeService:
         )
 
         if filter_list != "":
-            employee_list = employee_list.join(EmployeeModel.role,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.role,
+            ).filter(
                 or_(
                     EmployeeRoleModel.name.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(EmployeeModel.nationality,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.nationality,
+            ).filter(
                 or_(
                     EmployeeNationalityModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(EmployeeModel.marital_status,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.marital_status,
+            ).filter(
                 or_(
                     EmployeeMaritalStatusModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(EmployeeModel.gender,).filter(
+            employee_list = employee_list.join(
+                EmployeeModel.gender,
+            ).filter(
                 or_(
                     EmployeeGenderModel.description.in_(filter_list),
                 )

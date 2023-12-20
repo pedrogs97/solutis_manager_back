@@ -62,10 +62,10 @@ class UserUpdateSchema(BaseSchema):
     Used to update
     """
 
-    group: Optional[str] = None
-    employee_id: Optional[int] = None
-    username: Optional[str] = None
-    email: Optional[str] = None
+    group_id: Optional[int] = Field(alias="groupId", default=None)
+    employee_id: Optional[int] = Field(alias="employeeId", default=None)
+    username: Optional[str]
+    email: Optional[str]
     is_staff: Optional[bool] = Field(alias="isStaff", default=None)
     is_active: Optional[bool] = Field(alias="isActive", default=None)
 
