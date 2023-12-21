@@ -144,6 +144,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         db_session.commit()
 
         return {
+            "id": user.id,
             "group": user.group.name,
             "email": user.email,
             "full_name": user.employee.full_name if user.employee else "Usuário",
@@ -155,6 +156,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         }
 
     return {
+        "id": user.id,
         "group": user.group.name,
         "email": user.email,
         "full_name": user.employee.full_name if user.employee else "Usuário",

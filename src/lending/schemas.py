@@ -501,7 +501,6 @@ class NewLendingDocSchema(BaseSchema):
     date_confirm: Optional[str] = Field(alias="dateConfirm", default=None)
     goal: Optional[str] = Field(alias="goal", default=None)
     project: Optional[str] = None
-    type_doc: str = Field(alias="typeDoc")
 
 
 class WitnessContextSchema(BaseSchema):

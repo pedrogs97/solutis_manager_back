@@ -68,8 +68,7 @@ def totvs_to_employee_schema(
     try:
         city = str(row["CIDADE"]).strip()
         cep = str(row["CEP"]).strip()
-        address = f"{row['RUA']}, {row['NUMERO']}, {row['COMPLEMENTO']}, {row['BAIRRO']}. \
-            {city} - {row['ESTADO']}, {row['PAIS']}. {cep}"
+        address = f"{row['RUA']}, {row['NUMERO']}, {row['COMPLEMENTO']}, {row['BAIRRO']}, {city}, {row['ESTADO']}, {row['PAIS']}, {cep}"
         birthday_datetime: datetime = row["DTNASCIMENTO"]
         return EmployeeTotvsSchema(
             code=str(row["CODIGO"]) if row["CODIGO"] is not None else "",

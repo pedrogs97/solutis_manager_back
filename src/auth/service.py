@@ -43,7 +43,21 @@ class UserSerivce:
     """User services"""
 
     def __get_user_or_404(self, user_id: int, db_session: Session) -> UserModel:
-        """Get user or rais not found"""
+        """
+        Retrieve a user from the database based on the provided user ID.
+
+        If the user is not found, raise an HTTPException with a 404 status code and an error message.
+
+        Args:
+            user_id (int): The ID of the user to retrieve.
+            db_session (Session): The database session object.
+
+        Returns:
+            UserModel: The retrieved user object if found.
+
+        Raises:
+            HTTPException: If the user is not found in the database.
+        """
         user = db_session.query(UserModel).filter(UserModel.id == user_id).first()
 
         if not user:
@@ -55,7 +69,14 @@ class UserSerivce:
         return user
 
     def get_password_hash(self, password: str) -> str:
-        """Returns crypted password"""
+        """
+        Returns the hashed version of a given password using the bcrypt hashing algorithm.
+
+        :param password: The password to be hashed.
+        :type password: str
+        :return: The hashed password.
+        :rtype: str
+        """
         return bcrypt_context.hash(password)
 
     def make_new_random_password(self) -> str:
@@ -129,8 +150,8 @@ class UserSerivce:
         if len(errors.keys()) > 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=errors)
 
-        # user_dict["group_id"] = group.id
-        # user_dict["employee_id"] = employee.id
+        user_dict["group_id"] = group.id
+        user_dict["employee_id"] = employee.id
 
         new_user_db = UserModel(**user_dict)
         db_session.add(new_user_db)
@@ -264,7 +285,6 @@ class UserSerivce:
                 user.employee = employee
 
             if data.username:
-                is_updated = True
                 employee = (
                     db_session.query(UserModel)
                     .filter(
@@ -276,12 +296,10 @@ class UserSerivce:
                     errors.append(
                         {"field": "username", "error": "Nome de usuário já existe"}
                     )
-                user.username = data.username
-            print("data.email", data.email)
-            if data.email:
-                print("user_id", user_id)
-                print("user.id", user.id)
                 is_updated = True
+                user.username = data.username
+
+            if data.email:
                 employee = (
                     db_session.query(UserModel)
                     .filter(UserModel.email == data.email, UserModel.id != user_id)
@@ -289,6 +307,7 @@ class UserSerivce:
                 )
                 if employee:
                     errors.append({"field": "email", "error": "E-mail já existe"})
+                is_updated = True
                 user.email = data.email
 
             if data.is_active is not None:
@@ -432,6 +451,12 @@ def create_super_user():
             )
             db_session.add(new_super_user)
             db_session.commit()
+            db_session.flush()
+
+        if not super_user.group:
+            super_user.group = group_admin
+            db_session.commit()
+
     except Exception as exc:
         msg = f"{exc.args[0]}"
         logger.warning("Could not create super user. Error: %s", msg)

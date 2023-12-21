@@ -44,7 +44,7 @@ def post_create_employee_route(
     )
 
 
-@people_router.patch("/employee/{employee_id}/")
+@people_router.patch("/employees/{employee_id}/")
 def patch_update_employee_route(
     employee_id: int,
     data: UpdateEmployeeSchema,
@@ -67,7 +67,7 @@ def patch_update_employee_route(
     )
 
 
-@people_router.put("/employee/{employee_id}/")
+@people_router.put("/employees/{employee_id}/")
 def put_update_employee_route():
     """Update employee Not Implemented"""
     return JSONResponse(

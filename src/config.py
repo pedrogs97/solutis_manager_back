@@ -9,14 +9,34 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_database_url():
+def get_database_url(test=False):
     """Return database url"""
-    server = os.getenv("MYSQL_SERVER", "localhost")
-    db = os.getenv("MYSQL_DATABASE", "app")
-    user = os.getenv("MYSQL_USER", "postgres")
-    password = os.getenv("MYSQL_PASSWORD", "")
+    server = (
+        os.getenv("MYSQL_SERVER", "localhost")
+        if not test
+        else os.getenv("MYSQL_SERVER_TEST", "localhost")
+    )
+    db = os.getenv("MYSQL_DATABASE", "app") if not test else "db_test"
+    user = (
+        os.getenv("MYSQL_USER", "root")
+        if not test
+        else os.getenv("MYSQL_USER_TEST", "root")
+    )
+    password = (
+        os.getenv("MYSQL_PASSWORD", "")
+        if not test
+        else os.getenv("MYSQL_PASSWORD_TEST", "")
+    )
     port = os.getenv("MYSQL_PORT", "3306")
     return f"mysql+mysqlconnector://{user}:{password}@{server}:{port}/{db}"
+
+
+def get_database_server_url():
+    """Return database server url"""
+    server = os.getenv("MYSQL_SERVER_TEST", "localhost")
+    user = os.getenv("MYSQL_USER_TEST", "root")
+    password = os.getenv("MYSQL_PASSWORD_TEST", "")
+    return f"mysql+mysqlconnector://{user}:{password}@{server}"
 
 
 SQLSERVE_HOST_DB = os.environ.get("SQLSERVE_HOST_DB", "")

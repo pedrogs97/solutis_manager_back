@@ -815,13 +815,14 @@ class DocumentService:
     def create_contract(
         self,
         new_lending_doc: NewLendingDocSchema,
+        type_doc: str,
         db_session: Session,
         authenticated_user: UserModel,
     ) -> DocumentSerializerSchema:
         """Create new contract, not signed"""
         doc_type = (
             db_session.query(DocumentTypeModel)
-            .filter(DocumentTypeModel.name == new_lending_doc.type_doc)
+            .filter(DocumentTypeModel.name == type_doc)
             .first()
         )
 

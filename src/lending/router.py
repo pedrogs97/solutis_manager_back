@@ -33,7 +33,7 @@ from src.lending.service import (
     VerificationService,
 )
 
-lending_router = APIRouter(prefix="/lending", tags=["Lending"])
+lending_router = APIRouter(prefix="/lendings", tags=["Lending"])
 
 asset_service = AssetService()
 lending_service = LendingService()
@@ -238,7 +238,7 @@ def get_list_asset_status_route(
     )
 
 
-@lending_router.post("/documents/create/", response_class=FileResponse)
+@lending_router.post("/contracts/create/", response_class=FileResponse)
 def post_create_contract(
     new_lending_doc: Annotated[NewLendingDocSchema, Form()],
     db_session: Session = Depends(get_db_session),
@@ -253,7 +253,73 @@ def post_create_contract(
         )
 
     new_doc = document_service.create_contract(
-        new_lending_doc, db_session, authenticated_user
+        new_lending_doc, "Contrato de Comodato", db_session, authenticated_user
+    )
+
+    db_session.close()
+    return FileResponse(new_doc.path)
+
+
+@lending_router.post("/contracts/revoke/", response_class=FileResponse)
+def post_revoke_contract(
+    new_lending_doc: Annotated[NewLendingDocSchema, Form()],
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "add"})
+    ),
+):
+    """Creates a new revoke contract"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    new_doc = document_service.create_contract(
+        new_lending_doc, "Distrato de Comodato", db_session, authenticated_user
+    )
+
+    db_session.close()
+    return FileResponse(new_doc.path)
+
+
+@lending_router.post("/terms/create/", response_class=FileResponse)
+def post_create_term(
+    new_lending_doc: Annotated[NewLendingDocSchema, Form()],
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "add"})
+    ),
+):
+    """Creates a new term"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    new_doc = document_service.create_contract(
+        new_lending_doc, "Contrato de Comodato", db_session, authenticated_user
+    )
+
+    db_session.close()
+    return FileResponse(new_doc.path)
+
+
+@lending_router.post("/terms/revoke/", response_class=FileResponse)
+def post_revoke_term(
+    new_lending_doc: Annotated[NewLendingDocSchema, Form()],
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "add"})
+    ),
+):
+    """Creates a new revoke term"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    new_doc = document_service.create_contract(
+        new_lending_doc, "Distrato de Comodato", db_session, authenticated_user
     )
 
     db_session.close()
