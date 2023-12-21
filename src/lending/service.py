@@ -144,9 +144,15 @@ class AssetService:
         """Serialize asset"""
         return AssetSerializerSchema(
             id=asset.id,
-            type=AssetTypeSerializerSchema(**asset.type.__dict__),
-            clothing_size=AssetClothingSizeSerializer(**asset.clothing_size.__dict__),
-            status=AssetStatusSerializerSchema(**asset.status.__dict__),
+            type=AssetTypeSerializerSchema(**asset.type.__dict__)
+            if asset.type
+            else None,
+            clothing_size=AssetClothingSizeSerializer(**asset.clothing_size.__dict__)
+            if asset.clothing_size
+            else None,
+            status=AssetStatusSerializerSchema(**asset.status.__dict__)
+            if asset.status
+            else None,
             register_number=asset.register_number,
             description=asset.description,
             supplier=asset.supplier,
@@ -661,11 +667,11 @@ class LendingService:
             glpi_number=new_lending.glpi_number,
         )
 
-        new_lending_db.employee = (employee,)
-        new_lending_db.asset = (asset,)
-        new_lending_db.document = (document,)
-        new_lending_db.workload = (workload,)
-        new_lending_db.cost_center = (cost_center,)
+        new_lending_db.employee = employee
+        new_lending_db.asset = asset
+        new_lending_db.document = document
+        new_lending_db.workload = workload
+        new_lending_db.cost_center = cost_center
 
         new_lending_db.witnesses = witnesses
         db_session.add(new_lending_db)
