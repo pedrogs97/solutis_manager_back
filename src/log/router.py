@@ -9,7 +9,6 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
-from src.auth.service import UserSerivce
 from src.backends import PermissionChecker, get_db_session
 from src.config import (
     DEFAULT_DATE_TIME_FORMAT,
@@ -74,8 +73,6 @@ def get_list_logs_route(
             )
         )
 
-    user_service = UserSerivce()
-
     params = Params(page=page, size=size)
     paginated = paginate(
         log_list,
@@ -88,7 +85,12 @@ def get_list_logs_route(
                 model=log.model,
                 operation=log.operation,
                 logged_in=log.logged_in.strftime(DEFAULT_DATE_TIME_FORMAT),
-                user=user_service.serialize_user(log.user),
+                user={
+                    "id": log.user.id,
+                    "fullName": log.user.employee.full_name
+                    if log.user.employee
+                    else "",
+                },
             )
             for log in log_list
         ],

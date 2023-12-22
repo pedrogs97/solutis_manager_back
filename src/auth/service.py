@@ -80,7 +80,18 @@ class UserSerivce:
         return bcrypt_context.hash(password)
 
     def make_new_random_password(self) -> str:
-        """Make new random password"""
+        """
+        Generate a new random password consisting of a combination of lowercase letters and digits.
+
+        Returns:
+            str: The randomly generated password.
+
+        Example Usage:
+            user_service = UserSerivce()
+            new_password = user_service.make_new_random_password()
+            print(new_password)
+            # Output: 8aBcD3e
+        """
         # choose from all lowercase letter
         letters = string.ascii_letters
         digits = string.digits
@@ -103,7 +114,22 @@ class UserSerivce:
         db_session: Session,
         authenticated_user: UserModel,
     ) -> UserSerializerSchema:
-        """Creates a new user"""
+        """
+        Creates a new user in the system.
+
+        Args:
+            new_user (NewUserSchema): The data for the new user, including the group ID, employee ID, username, and email.
+            db_session (Session): The database session object.
+            authenticated_user (UserModel): The authenticated user who is creating the new user.
+
+        Returns:
+            UserSerializerSchema: A serialized object representing the newly created user.
+
+        Raises:
+            HTTPException: If there are any errors in the input data, such as invalid group ID, invalid employee ID,
+                duplicate username, or duplicate email. The exception will have a 400 status code and the corresponding
+                error messages as the detail.
+        """
         group = (
             db_session.query(GroupModel)
             .filter(GroupModel.id == new_user.group_id)
@@ -142,13 +168,13 @@ class UserSerivce:
         if user_test_email:
             errors.update({"field": "email", "error": "Já existe este e-mail"})
 
+        if len(errors.keys()) > 0:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=errors)
+
         user_dict = {
             **new_user.model_dump(),
             "password": self.get_password_hash(self.make_new_random_password()),
         }
-
-        if len(errors.keys()) > 0:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=errors)
 
         user_dict["group_id"] = group.id
         user_dict["employee_id"] = employee.id
@@ -178,7 +204,20 @@ class UserSerivce:
         active: bool = True,
         staff: Optional[bool] = None,
     ) -> Page[UserSerializerSchema]:
-        """Get user list"""
+        """
+        Get a paginated list of users based on the provided parameters.
+
+        Args:
+            db_session (Session): A SQLAlchemy session object for database operations.
+            page (int, optional): The page number of the user list to retrieve. Default is 1.
+            size (int, optional): The number of users to retrieve per page. Default is 50.
+            search (str, optional): A search string to filter the user list by. Default is an empty string.
+            active (bool, optional): A boolean value indicating whether to retrieve only active users. Default is True.
+            staff (bool, optional): A boolean value indicating whether to retrieve only users who are staff members. Default is None.
+
+        Returns:
+            Page[UserSerializerSchema]: A paginated result of the user list, where each user is represented by an instance of the UserSerializerSchema class.
+        """
         user_list = db_session.query(UserModel)
 
         if staff:
@@ -688,7 +727,8 @@ class GroupService:
                 group_list,
                 params=params,
                 transformer=lambda group_list: [
-                    self.serialize_group(group) for group in group_list
+                    self.serialize_group(group).model_dump(by_alias=True)
+                    for group in group_list
                 ],
             )
         else:
@@ -697,7 +737,9 @@ class GroupService:
                 group_list,
                 params=params,
                 transformer=lambda group_list: [
-                    self.serialize_group(group).model_dump(include={*list_fields})
+                    self.serialize_group(group).model_dump(
+                        include={*list_fields}, by_alias=True
+                    )
                     for group in group_list
                 ],
             )

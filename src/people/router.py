@@ -119,7 +119,9 @@ def get_emplooyee_route(
         )
     serializer = employee_service.get_employee(employee_id, db_session)
     db_session.close()
-    return JSONResponse(content=serializer, status_code=status.HTTP_200_OK)
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
+    )
 
 
 @people_router.get("/employees/history/lending/{employee_id}/")
@@ -287,3 +289,31 @@ def get_list_roles_route(
     roles = general_service.get_roles(db_session, search, fields, page, size)
     db_session.close()
     return roles
+
+
+@people_router.get("/educational-level/")
+def get_list_educational_levels_route(
+    search: str = "",
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    fields: str = "",
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "people", "model": "employee", "action": "view"})
+    ),
+):
+    """List educational levels and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    educational_levels = general_service.get_educational_levels(
+        db_session, search, fields, page, size
+    )
+    db_session.close()
+    return educational_levels

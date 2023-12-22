@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
 from src.config import DEFAULT_DATE_FORMAT
+from src.datasync.models import EmployeeEducationalLevelTOTVSModel
 from src.lending.models import LendingModel
 from src.lending.schemas import CostCenterSerializerSchema, LendingSerializerSchema
 from src.lending.service import LendingService
@@ -24,6 +25,7 @@ from src.people.models import (
     EmployeeRoleModel,
 )
 from src.people.schemas import (
+    EmployeeEducationalLevelSerializerSchema,
     EmployeeGenderSerializerSchema,
     EmployeeMatrimonialStatusSerializerSchema,
     EmployeeNationalitySerializerSchema,
@@ -312,33 +314,25 @@ class EmployeeService:
         )
 
         if filter_list != "":
-            employee_list = employee_list.join(
-                EmployeeModel.role,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.role,).filter(
                 or_(
                     EmployeeRoleModel.name.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(
-                EmployeeModel.nationality,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.nationality,).filter(
                 or_(
                     EmployeeNationalityModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(
-                EmployeeModel.marital_status,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.marital_status,).filter(
                 or_(
                     EmployeeMaritalStatusModel.description.in_(filter_list),
                 )
             )
 
-            employee_list = employee_list.join(
-                EmployeeModel.gender,
-            ).filter(
+            employee_list = employee_list.join(EmployeeModel.gender,).filter(
                 or_(
                     EmployeeGenderModel.description.in_(filter_list),
                 )
@@ -613,6 +607,51 @@ class EmpleoyeeGeneralSerivce:
                         include={*list_fields}, by_alias=True
                     )
                     for role in roles_list
+                ],
+            )
+
+        return paginated
+
+    def get_educational_levels(
+        self,
+        db_session: Session,
+        search: str = "",
+        fields: str = "",
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[EmployeeEducationalLevelSerializerSchema]:
+        """Get educational levels list"""
+
+        educational_levels_list = db_session.query(
+            EmployeeEducationalLevelTOTVSModel
+        ).filter(
+            or_(
+                EmployeeEducationalLevelTOTVSModel.description.ilike(f"%{search}%"),
+                EmployeeEducationalLevelTOTVSModel.code.ilike(f"%{search}"),
+            )
+        )
+
+        if fields == "":
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                educational_levels_list,
+                params=params,
+                transformer=lambda educational_levels_list: [
+                    self.serialize_role(role).model_dump(by_alias=True)
+                    for role in educational_levels_list
+                ],
+            )
+        else:
+            list_fields = fields.split(",")
+            params = Params(page=page, size=size)
+            paginated = paginate(
+                educational_levels_list,
+                params=params,
+                transformer=lambda educational_levels_list: [
+                    self.serialize_role(role).model_dump(
+                        include={*list_fields}, by_alias=True
+                    )
+                    for role in educational_levels_list
                 ],
             )
 

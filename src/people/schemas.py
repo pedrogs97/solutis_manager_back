@@ -61,6 +61,16 @@ class EmployeeRoleSerializerSchema(BaseSchema):
     code: str
 
 
+class EmployeeEducationalLevelSerializerSchema(BaseSchema):
+    """
+    Educational Level serializer schema
+    """
+
+    id: int
+    name: str
+    code: str
+
+
 class NewEmployeeSchema(BaseSchema):
     """New employee schema"""
 

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
+from src.asset.router import asset_router
 from src.auth.router import auth_router
 from src.auth.service import create_initial_data, create_permissions, create_super_user
 from src.config import BASE_API, BASE_DIR, DATE_FORMAT, FORMAT, LOG_FILENAME, ORIGINS
@@ -58,6 +59,7 @@ app.include_router(lending_router, prefix=BASE_API)
 app.include_router(log_router, prefix=BASE_API)
 app.include_router(people_router, prefix=BASE_API)
 app.include_router(datasync_router, prefix=BASE_API)
+app.include_router(asset_router, prefix=BASE_API)
 
 
 @app.get("/health/", tags=["Service"])

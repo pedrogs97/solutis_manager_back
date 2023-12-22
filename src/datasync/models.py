@@ -162,6 +162,39 @@ class EmployeeRoleTOTVSModel(Base):
         return f"{self.code} - {self.name}"
 
 
+class EmployeeEducationalLevelTOTVSModel(Base):
+    """
+    Educational Level model
+
+    * 1 - Analfabeto
+    * 2 - Até o 5º ano incompleto do ensino fundamental
+    * 3 - 5º ano completo do ensino fundamental
+    * 4 - Do 6º ao 9º ano do ensino fundamental
+    * 5 - Ensino fundamental completo
+    * 6 - Ensino médio incompleto
+    * 7 - Ensino médio completo
+    * 8 - Educação superior incompleto
+    * 9 - Educação superior completo
+    * A - Pós Grad. incompleto
+    * B - Pós Grad. completo
+    * C - Mestrado incompleto
+    * D - Mestrado completo
+    * E - Doutorado incompleto
+    * F - Doutorado completo
+    * G - Pós Dout.incompleto
+    * H - Pós Dout.completo
+    """
+
+    __tablename__ = "educational_totvs"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    code = Column("code", String(length=3), nullable=False, unique=True)
+    description = Column("description", String(length=50), nullable=False)
+
+    def __str__(self):
+        return f"{self.description}"
+
+
 class EmployeeTOTVSModel(Base):
     """Employee model"""
 
@@ -185,6 +218,8 @@ class EmployeeTOTVSModel(Base):
     email = Column("email", String(length=60), nullable=False)
     gender = Column("gender", String(length=50), nullable=False)
     birthday = Column("birthday", Date, nullable=False)
+    admission_date = Column("admission_date", Date, nullable=True)
+    registration = Column("registration", String(length=16), nullable=True)
 
     def __str__(self) -> str:
         return f"{self.code} - {self.full_name}"

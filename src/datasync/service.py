@@ -15,6 +15,7 @@ from src.datasync.schemas import (
     AssetTypeTotvsSchema,
     BaseTotvsSchema,
     CostCenterTotvsSchema,
+    EmployeeEducationalLevelTotvsSchema,
     EmployeeGenderTotvsSchema,
     EmployeeMaritalStatusTotvsSchema,
     EmployeeNationalityTotvsSchema,
@@ -63,13 +64,21 @@ def totvs_to_employee_schema(
     CODIGO, NOME, DTNASCIMENTO, CIVIL, SEXO , NACIONALIDADE, RUA,
     NUMERO, COMPLEMENTO, BAIRRO, ESTADO, CIDADE, CEP, PAIS, CPF,
     TELEFONE1, CARTIDENTIDADE, UFCARTIDENT, ORGEMISSORIDENT, DTEMISSAOIDENT,
-    EMAIL, CARGO, SITUACAO
+    EMAIL, CARGO, SITUACAO, ADMISSAO, MATRICULA
     """
     try:
         city = str(row["CIDADE"]).strip()
         cep = str(row["CEP"]).strip()
-        address = f"{row['RUA']}, {row['NUMERO']}, {row['COMPLEMENTO']}, {row['BAIRRO']}, {city}, {row['ESTADO']}, {row['PAIS']}, {cep}"
+        street = str(row["RUA"]).strip()
+        num = str(row["NUMERO"]).strip() if row["NUMERO"] else ""
+        comp = str(row["COMPLEMENTO"]).strip() if row["COMPLEMENTO"] else ""
+        neighborhood = str(row["BAIRRO"]).strip() if row["COMPLEMENTO"] else ""
+        state = str(row["ESTADO"]).strip()
+        country = str(row["PAIS"]).strip().replace(":", "").replace(".", "")
+
+        address = f"{street};{num};{comp};{neighborhood};{city};{state};{country};{cep}"
         birthday_datetime: datetime = row["DTNASCIMENTO"]
+        admission_datetime: datetime = row["ADMISSAO"]
         return EmployeeTotvsSchema(
             code=str(row["CODIGO"]) if row["CODIGO"] is not None else "",
             full_name=row["NOME"] if row["NOME"] is not None else "",
@@ -88,6 +97,27 @@ def totvs_to_employee_schema(
             cell_phone=row["TELEFONE1"] if row["TELEFONE1"] is not None else "",
             email=row["EMAIL"] if row["EMAIL"] is not None else "",
             gender=row["SEXO"] if row["SEXO"] is not None else "",
+            admission_date=admission_datetime.date(),
+            registration=row["MATRICULA"] if row["MATRICULA"] else "",
+        )
+    except ValidationError as err:
+        error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
+        logger.warning("Error: Field: %s", error_msg)
+        return None
+
+
+def totvs_to_educational_level_schema(
+    row,
+) -> Union[EmployeeEducationalLevelTotvsSchema, None]:
+    """Convert data from TOTVS to EmployeeEducationalLevelTotvsSchema
+
+    From
+    DESCRICAO, CODINTERNO
+    """
+    try:
+        return EmployeeEducationalLevelTotvsSchema(
+            code=row["CODINTERNO"] if row["CODINTERNO"] is not None else "",
+            description=row["DESCRICAO"] if row["DESCRICAO"] is not None else "",
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
@@ -356,7 +386,6 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
             .first()
         )
         if employee_db:
-            logger.debug(str(employee_db))
             db_session.delete(employee_db)
             db_session.commit()
 

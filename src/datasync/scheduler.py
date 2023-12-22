@@ -26,6 +26,7 @@ from src.datasync.schemas import (
     AssetTotvsSchema,
     AssetTypeTotvsSchema,
     CostCenterTotvsSchema,
+    EmployeeEducationalLevelTotvsSchema,
     EmployeeGenderTotvsSchema,
     EmployeeMaritalStatusTotvsSchema,
     EmployeeNationalityTotvsSchema,
@@ -38,6 +39,7 @@ from src.datasync.service import (
     totvs_to_asset_schema,
     totvs_to_asset_type_schema,
     totvs_to_cost_center_schema,
+    totvs_to_educational_level_schema,
     totvs_to_employee_schema,
     totvs_to_gender_schema,
     totvs_to_marital_status_schema,
@@ -67,7 +69,7 @@ class SchedulerService:
     n.DESCRICAO AS NACIONALIDADE, p.RUA, p.NUMERO, p.COMPLEMENTO, p.BAIRRO,
     p.ESTADO, p.CIDADE, p.CEP, p.PAIS, p.CPF, p.TELEFONE1, p.CARTIDENTIDADE,
     p.UFCARTIDENT, p.ORGEMISSORIDENT, p.DTEMISSAOIDENT, p.EMAIL, pf.NOME AS CARGO,
-    cs.DESCRICAO as SITUACAO
+    cs.DESCRICAO as SITUACAO, f.DATAADMISSAO AS ADMISSAO, f.CHAP AS MATRICULA
     FROM CorporeRM_SI.dbo.PPESSOA as p
     LEFT JOIN PCODESTCIVIL AS c
     ON p.ESTADOCIVIL = c.CODINTERNO
@@ -80,7 +82,9 @@ class SchedulerService:
     LEFT JOIN PFUNCAO as pf
     ON f.CODFUNCAO = pf.CODIGO
     LEFT JOIN PCODSITUACAO as cs
-    ON cs.CODCLIENTE = f.CODSITUACAO;"""
+    ON cs.CODCLIENTE = f.CODSITUACAO
+    LEFT JOIN PCODINSTRUCAO as i
+    ON i.CODEINTERNO = p.GRAUINSTRUCAO"""
 
     SQL_PCODESTCIVIL = """SELECT DESCRICAO, CODINTERNO FROM PCODESTCIVIL;"""
 
@@ -119,6 +123,9 @@ class SchedulerService:
     SQL_PFUNCAO = """SELECT CODIGO, NOME
     FROM PFUNCAO
     WHERE CODCOLIGADA = 1"""
+
+    SQL_PCODINSTRUCAO = """
+    SELECT CODINTERNO, DESCRICAO FROM PCODINSTRUCAO"""
 
     _scheduler = None
 
@@ -160,6 +167,33 @@ class SchedulerService:
         logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "employee")
         logger.info("Retrive employee from TOTVS end.")
+
+    def _get_educational_level_totvs(self):
+        """Excute procedure to retrive TOVTS educational level data"""
+        logger.info("Retrive educational level from TOTVS start.")
+        start = time()
+        external_db = ExternalDatabase()
+        cursor = external_db.get_cursor()
+        cursor.execute(self.SQL_PCODINSTRUCAO)
+        rows = cursor.fetchall()
+        new_changes: List[EmployeeEducationalLevelTotvsSchema] = []
+        for row in rows:
+            educational_level_totvs = totvs_to_educational_level_schema(row)
+            if not educational_level_totvs:
+                break
+            if verify_changes(
+                educational_level_totvs,
+                EmployeeEducationalLevelTotvsSchema,
+                EmployeeMaritalStatusTOTVSModel,
+            ):
+                new_changes.append(educational_level_totvs)
+                insert(educational_level_totvs, EmployeeMaritalStatusTOTVSModel)
+
+        end = time()
+        elapsed_time = end - start
+        logger.info(self.TIME_INFO, str(elapsed_time))
+        set_last_sync(len(new_changes), elapsed_time, "educational_level")
+        logger.info("Retrive educational level from TOTVS end.")
 
     def _get_marital_status_totvs(self):
         """Excute procedure to retrive TOVTS matrimonial status data"""

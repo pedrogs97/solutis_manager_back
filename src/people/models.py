@@ -127,6 +127,8 @@ class EmployeeModel(Base):
     email = Column("email", String(length=60), nullable=False)
     birthday = Column("birthday", Date, nullable=False)
     manager = Column("manager", String(length=150), nullable=True)
+    admission_date = Column("admission_date", Date, nullable=True)
+    registration = Column("registration", String(length=16), nullable=True)
     legal_person = Column("legal_person", Boolean, nullable=False, default=False)
     employer_number = Column("employer_number", String(length=255), nullable=True)
     employer_address = Column("employer_address", String(length=255), nullable=True)
