@@ -2,7 +2,7 @@
 import json
 import logging
 from datetime import date, datetime
-from typing import List, Union
+from typing import List, Type, Union
 
 from pydantic_core import ValidationError
 from sqlalchemy import or_
@@ -333,7 +333,7 @@ def verify_changes(
     return checksum_from_db != checksum_from_totvs
 
 
-def insert(schema: BaseTotvsSchema, model_type, identifier="code") -> None:
+def insert(schema: BaseTotvsSchema, model_type: Type, identifier="code") -> None:
     """Insert new or change"""
     db_session = get_db_session()
     try:

@@ -1,12 +1,14 @@
 """Auth router"""
-from typing import Annotated, Optional, Union
+from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm as LoginSchema
+from fastapi_filter import FilterDepends
 from fastapi_pagination import Page
 from sqlalchemy.orm import Session
 
+from src.auth.filters import GroupFilter, PermissionFilter, UserFilter
 from src.auth.models import UserModel
 from src.auth.schemas import (
     GroupSerializerSchema,
@@ -127,7 +129,7 @@ def get_list_user_route(
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "user", "action": "view"})
     ),
-    search: str = "",
+    user_filters: UserFilter = FilterDepends(UserFilter),
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -135,8 +137,6 @@ def get_list_user_route(
         le=MAX_PAGINATION_NUMBER,
         description=PAGE_SIZE_DESCRIPTION,
     ),
-    active: bool = Query(True, description="Active user"),
-    staff: Optional[bool] = Query(None, description="Staff user"),
     db_session: Session = Depends(get_db_session),
 ):
     """List users route"""
@@ -145,7 +145,7 @@ def get_list_user_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    users = user_service.get_users(db_session, page, size, search, active, staff)
+    users = user_service.get_users(db_session, user_filters, page, size)
     db_session.close()
     return users
 
@@ -258,7 +258,7 @@ def get_list_group_route(
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "group", "action": "view"})
     ),
-    search: str = "",
+    group_filter: GroupFilter = FilterDepends(GroupFilter),
     fields: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
@@ -274,7 +274,7 @@ def get_list_group_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    groups = group_service.get_groups(db_session, page, size, search, fields)
+    groups = group_service.get_groups(db_session, group_filter, page, size, fields)
     db_session.close()
     return groups
 
@@ -347,7 +347,7 @@ def get_list_permission_route(
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "auth", "model": "permission", "action": "view"})
     ),
-    search: str = "",
+    permission_filter: PermissionFilter = FilterDepends(PermissionFilter),
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -363,7 +363,9 @@ def get_list_permission_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    permissions = permission_serivce.get_permissions(db_session, page, size, search)
+    permissions = permission_serivce.get_permissions(
+        db_session, permission_filter, page, size
+    )
     db_session.close()
     return permissions
 

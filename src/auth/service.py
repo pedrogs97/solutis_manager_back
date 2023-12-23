@@ -2,15 +2,15 @@
 import logging
 import random
 import string
-from typing import List, Optional, Union
+from typing import List, Union
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from src.auth.filters import GroupFilter, PermissionFilter, UserFilter
 from src.auth.models import GroupModel, PermissionModel, UserModel
 from src.auth.schemas import (
     GroupSerializerSchema,
@@ -198,42 +198,23 @@ class UserSerivce:
     def get_users(
         self,
         db_session: Session,
+        user_filters: UserFilter,
         page: int = 1,
         size: int = 50,
-        search: str = "",
-        active: bool = True,
-        staff: Optional[bool] = None,
     ) -> Page[UserSerializerSchema]:
         """
         Get a paginated list of users based on the provided parameters.
 
         Args:
-            db_session (Session): A SQLAlchemy session object for database operations.
-            page (int, optional): The page number of the user list to retrieve. Default is 1.
-            size (int, optional): The number of users to retrieve per page. Default is 50.
-            search (str, optional): A search string to filter the user list by. Default is an empty string.
-            active (bool, optional): A boolean value indicating whether to retrieve only active users. Default is True.
-            staff (bool, optional): A boolean value indicating whether to retrieve only users who are staff members. Default is None.
+            db_session (Session): The database session object.
+            user_filters (UserFilter): An instance of the `UserFilter` class used to filter the user list.
+            page (int, optional): The page number of the paginated results. Defaults to 1.
+            size (int, optional): The number of users per page. Defaults to 50.
 
         Returns:
-            Page[UserSerializerSchema]: A paginated result of the user list, where each user is represented by an instance of the UserSerializerSchema class.
+            Page[UserSerializerSchema]: A `Page` object containing a paginated list of serialized user objects.
         """
-        user_list = db_session.query(UserModel)
-
-        if staff:
-            user_list = user_list.filter(UserModel.is_staff == staff)
-
-        if search != "":
-            user_list = user_list.join(EmployeeModel).filter(
-                or_(
-                    EmployeeModel.full_name.ilike(f"%{search}%"),
-                    UserModel.email.ilike(f"%{search}"),
-                    UserModel.username.ilike(f"%{search}"),
-                    EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
-                )
-            )
-
-        user_list = user_list.filter(UserModel.is_active == active)
+        user_list = user_filters.filter(db_session.query(UserModel))
 
         params = Params(page=page, size=size)
         paginated = paginate(
@@ -249,7 +230,21 @@ class UserSerivce:
     def serialize_user(
         self, user: UserModel, is_list=False
     ) -> Union[UserSerializerSchema, UserListSerializerSchema]:
-        """Convert UserModel to UserSerializerSchema"""
+        """
+        Convert UserModel to UserSerializerSchema or UserListSerializerSchema object.
+
+        Args:
+            user (UserModel): The UserModel object representing a user.
+            is_list (bool, optional): Determines whether to use UserListSerializerSchema or UserSerializerSchema. Defaults to False.
+
+        Returns:
+            Union[UserSerializerSchema, UserListSerializerSchema]: The serialized user object.
+
+        Example Usage:
+            user = UserModel(...)
+            serializer = UserService().serialize_user(user)
+            print(serializer)
+        """
         full_name: str = user.employee.full_name if user.employee else ""
         taxpayer_identification: str = (
             user.employee.taxpayer_identification if user.employee else ""
@@ -293,7 +288,21 @@ class UserSerivce:
         data: UserUpdateSchema,
         authenticated_user: UserModel,
     ) -> Union[UserSerializerSchema, None]:
-        """Update user by id"""
+        """
+        Update the details of a user in the system.
+
+        Args:
+            db_session (Session): The database session object.
+            user_id (int): The ID of the user to be updated.
+            data (UserUpdateSchema): The updated data for the user, including the group ID, employee ID, username, email, is_active, and is_staff.
+            authenticated_user (UserModel): The authenticated user who is performing the update.
+
+        Returns:
+            Union[UserSerializerSchema, None]: The serialized user object if the update is successful, None otherwise.
+
+        Raises:
+            HTTPException: If any errors occur during the update process, with a 400 status code and the corresponding error messages as the detail.
+        """
         try:
             user = self.__get_user_or_404(user_id, db_session)
             errors = []
@@ -391,7 +400,20 @@ class UserSerivce:
         db_session: Session,
         authenticated_user: UserModel,
     ):
-        """Update user password"""
+        """
+        Update the password of a user.
+
+        Args:
+            data (UserChangePasswordSchema): The data containing the current password and the new password.
+            db_session (Session): The database session object.
+            authenticated_user (UserModel): The authenticated user whose password is being updated.
+
+        Raises:
+            HTTPException: If the current password provided by the user does not match the hashed password stored in the database.
+
+        Returns:
+            None: This method does not return any output. It updates the password of the authenticated user in the database.
+        """
         if not bcrypt_context.verify(
             data.current_password, authenticated_user.password
         ):
@@ -414,7 +436,19 @@ class UserSerivce:
         logger.info("Password updated. %s", str(authenticated_user))
 
     def get_user(self, user_id: int, db_session: Session) -> UserSerializerSchema:
-        """Get user by id"""
+        """
+        Retrieve a user from the database based on the provided user ID and return a serialized representation of the user.
+
+        Args:
+            user_id (int): The ID of the user to retrieve.
+            db_session (Session): The database session object.
+
+        Returns:
+            UserSerializerSchema: A serialized object representing the retrieved user.
+
+        Raises:
+            HTTPException: If the user is not found in the database.
+        """
         user = self.__get_user_or_404(user_id, db_session)
 
         return self.serialize_user(user)
@@ -425,7 +459,20 @@ class UserSerivce:
         db_session: Session,
         authenticated_user: UserModel,
     ):
-        """Sends new password"""
+        """
+        Sends a new password to a user.
+
+        Args:
+            data (NewPasswordSchema): The data for sending a new password, including the user ID.
+            db_session (Session): The database session object.
+            authenticated_user (UserModel): The authenticated user who is sending the new password.
+
+        Returns:
+            None
+
+        Raises:
+            NotFoundError: If the user with the provided user ID is not found in the database.
+        """
 
         user = self.__get_user_or_404(data.user_id, db_session)
 
@@ -711,15 +758,13 @@ class GroupService:
     def get_groups(
         self,
         db_session: Session,
+        group_filter: GroupFilter,
         page: int = 1,
         size: int = 50,
-        search: str = "",
         fields: str = "",
     ) -> Page[GroupSerializerSchema]:
         """Get group list"""
-        group_list = db_session.query(GroupModel).filter(
-            GroupModel.name.ilike(f"%{search}%")
-        )
+        group_list = group_filter.filter(db_session.query(GroupModel))
 
         params = Params(page=page, size=size)
         if fields == "":
@@ -851,18 +896,12 @@ class PermissionService:
     def get_permissions(
         self,
         db_session: Session,
+        permission_filter: PermissionFilter,
         page: int = 1,
         size: int = 50,
-        search: str = "",
     ) -> Page[PermissionSerializerSchema]:
         """Get permission list"""
-        permission_list = db_session.query(PermissionModel).filter(
-            or_(
-                PermissionModel.module.ilike(f"%{search}%"),
-                PermissionModel.model.ilike(f"%{search}%"),
-                PermissionModel.action.ilike(f"%{search}%"),
-            )
-        )
+        permission_list = permission_filter.filter(db_session.query(PermissionModel))
 
         params = Params(page=page, size=size)
         paginated = paginate(
