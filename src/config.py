@@ -77,15 +77,20 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 BASE_API = "/api/v1"
 
 PERMISSIONS = {
-    "lending": {
+    "asset": {
         "models": [
             {"name": "asset", "label": "Ativos"},
             {"name": "asset_type", "label": "Tipos de Ativo"},
             {"name": "asset_status", "label": "Status de Ativo"},
-            {"name": "lending", "label": "Comodato"},
             {"name": "verification", "label": "Verificação de Ativo"},
-            {"name": "document", "label": "Documentos"},
             {"name": "mantenance", "label": "Manutenções e Melhorias"},
+        ],
+        "label": "Ativos",
+    },
+    "lending": {
+        "models": [
+            {"name": "lending", "label": "Comodato"},
+            {"name": "document", "label": "Documentos"},
         ],
         "label": "Comodato",
     },

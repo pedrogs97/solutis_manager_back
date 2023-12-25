@@ -1,10 +1,12 @@
-"""Lending router"""
+"""Asset router"""
 from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import JSONResponse
+from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
+from src.asset.filters import AssetFilter
 from src.asset.schemas import InactivateAssetSchema, NewAssetSchema, UpdateAssetSchema
 from src.asset.service import AssetService
 from src.auth.models import UserModel
@@ -27,7 +29,7 @@ def post_create_asset_route(
     data: NewAssetSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "asset", "action": "add"})
+        PermissionChecker({"module": "asset", "model": "asset", "action": "add"})
     ),
 ):
     """Creates asset route"""
@@ -49,7 +51,7 @@ def patch_update_asset_route(
     data: UpdateAssetSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "asset", "action": "edit"})
+        PermissionChecker({"module": "asset", "model": "asset", "action": "edit"})
     ),
 ):
     """Update asset route"""
@@ -72,7 +74,7 @@ def patch_inactivate_asset_route(
     data: InactivateAssetSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "asset", "action": "edit"})
+        PermissionChecker({"module": "asset", "model": "asset", "action": "edit"})
     ),
 ):
     """Update asset route"""
@@ -99,9 +101,7 @@ def put_update_asset_route():
 
 @asset_router.get("/")
 def get_list_assets_route(
-    search: str = "",
-    filter_asset: str = None,
-    active: bool = True,
+    asset_filters: AssetFilter = FilterDepends(AssetFilter, by_alias=True),
     fields: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
@@ -112,7 +112,7 @@ def get_list_assets_route(
     ),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "asset", "action": "view"})
+        PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
     ),
 ):
     """List assets and apply filters route"""
@@ -120,9 +120,7 @@ def get_list_assets_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    assets = asset_service.get_assets(
-        db_session, search, filter_asset, active, fields, page, size
-    )
+    assets = asset_service.get_assets(db_session, asset_filters, fields, page, size)
     db_session.close()
     return JSONResponse(
         content=assets,
@@ -135,7 +133,7 @@ def get_asset_route(
     asset_id: int,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "asset", "action": "view"})
+        PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
     ),
 ):
     """Get an asset route"""
@@ -165,9 +163,7 @@ def get_list_asset_types_route(
     ),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker(
-            {"module": "lending", "model": "asset_type", "action": "view"}
-        )
+        PermissionChecker({"module": "asset", "model": "asset_type", "action": "view"})
     ),
 ):
     """List asset types and apply filters route"""
@@ -199,7 +195,7 @@ def get_list_asset_status_route(
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker(
-            {"module": "lending", "model": "asset_status", "action": "view"}
+            {"module": "asset", "model": "asset_status", "action": "view"}
         )
     ),
 ):

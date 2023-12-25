@@ -6,18 +6,18 @@ from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
 from src.config import MEDIA_UPLOAD_DIR
+from src.invoice.filters import InvoiceFilter
 from src.invoice.models import InvoiceModel
 from src.invoice.schemas import (
     InvoiceSerializerSchema,
     NewInvoiceSchema,
     UploadInvoiceSchema,
 )
-from src.lending.models import AssetModel, AssetTypeModel
+from src.lending.models import AssetModel
 from src.lending.schemas import AssetSerializerSchema
 from src.log.services import LogService
 from src.utils import upload_file
@@ -118,33 +118,12 @@ class InvoiceService:
     def get_invoices(
         self,
         db_session: Session,
-        search: str = "",
-        filter_invoice: str = None,
+        invoice_filters: InvoiceFilter,
         page: int = 1,
         size: int = 50,
     ) -> Page[AssetSerializerSchema]:
         """Get invoices list"""
-
-        invoice_list_query = (
-            db_session.query(InvoiceModel)
-            .join(
-                InvoiceModel.assets,
-                AssetTypeModel,
-            )
-            .filter(
-                or_(
-                    InvoiceModel.number.ilike(f"%{search}"),
-                    AssetModel.code.ilike(f"%{search}%"),
-                    AssetModel.description.ilike(f"%{search}%"),
-                    AssetModel.register_number.ilike(f"%{search}%"),
-                )
-            )
-        )
-
-        if filter_invoice:
-            invoice_list_query = invoice_list_query.filter(
-                AssetTypeModel.name == filter_invoice,
-            )
+        invoice_list_query = invoice_filters.filter(db_session.query(InvoiceModel))
 
         params = Params(page=page, size=size)
         paginated = paginate(

@@ -8,6 +8,7 @@ from pydantic_core import ValidationError
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
+from src.asset.models import AssetModel, AssetTypeModel
 from src.backends import get_db_session
 from src.datasync.models import SyncModel
 from src.datasync.schemas import (
@@ -22,7 +23,6 @@ from src.datasync.schemas import (
     EmployeeRoleTotvsSchema,
     EmployeeTotvsSchema,
 )
-from src.lending.models import AssetModel, AssetTypeModel
 from src.people.models import (
     CostCenterModel,
     EmployeeGenderModel,

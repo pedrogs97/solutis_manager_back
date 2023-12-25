@@ -130,13 +130,13 @@ class UserSerivce:
                 duplicate username, or duplicate email. The exception will have a 400 status code and the corresponding
                 error messages as the detail.
         """
+        errors = {}
+
         group = (
             db_session.query(GroupModel)
             .filter(GroupModel.id == new_user.group_id)
             .first()
         )
-
-        errors = {}
 
         if not group:
             errors.update({"field": "groupId", "error": "Perfil inválido"})
@@ -306,7 +306,7 @@ class UserSerivce:
         try:
             user = self.__get_user_or_404(user_id, db_session)
             errors = []
-            if data.group_id:
+            if data.group_id and user.group.id != data.group_id:
                 group = (
                     db_session.query(GroupModel)
                     .filter(GroupModel.id == data.group_id)
@@ -319,7 +319,7 @@ class UserSerivce:
 
                 user.group_id = group.id
 
-            if data.employee_id:
+            if data.employee_id and user.employee.id != data.employee_id:
                 employee = (
                     db_session.query(EmployeeModel)
                     .filter(EmployeeModel.id == data.employee_id)
@@ -332,7 +332,7 @@ class UserSerivce:
 
                 user.employee = employee
 
-            if data.username:
+            if data.username and user.username != data.username:
                 employee = (
                     db_session.query(UserModel)
                     .filter(
@@ -347,7 +347,7 @@ class UserSerivce:
                 is_updated = True
                 user.username = data.username
 
-            if data.email:
+            if data.email and user.email != data.email:
                 employee = (
                     db_session.query(UserModel)
                     .filter(UserModel.email == data.email, UserModel.id != user_id)
@@ -358,11 +358,11 @@ class UserSerivce:
                 is_updated = True
                 user.email = data.email
 
-            if data.is_active is not None:
+            if data.is_active is not None and user.is_active != data.is_active:
                 is_updated = True
                 user.is_active = data.is_active
 
-            if data.is_staff is not None:
+            if data.is_staff is not None and user.is_staff != data.is_staff:
                 is_updated = True
                 user.is_staff = data.is_staff
 
@@ -370,6 +370,7 @@ class UserSerivce:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail=errors
                 )
+
             if is_updated:
                 db_session.add(user)
                 db_session.commit()
@@ -390,7 +391,7 @@ class UserSerivce:
             logger.warning("Could not update user. Error: %s", msg)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail={"error": msg}
-            )
+            ) from exc
 
         return self.serialize_user(user)
 
@@ -421,6 +422,7 @@ class UserSerivce:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={"field": "password", "error": "Senha atual inválida"},
             )
+
         authenticated_user.password = self.get_password_hash(data.password)
         db_session.add(authenticated_user)
         db_session.commit()
@@ -672,7 +674,19 @@ class GroupService:
     """group services"""
 
     def __get_group_or_404(self, group_id: int, db_session: Session) -> GroupModel:
-        """Get group or raise 404"""
+        """
+        Get a group from the database based on the provided group_id and raise a 404 HTTPException if the group is not found.
+
+        Args:
+            group_id (int): The ID of the group to retrieve.
+            db_session (Session): The SQLAlchemy database session.
+
+        Returns:
+            GroupModel: The retrieved group from the database.
+
+        Raises:
+            HTTPException: If the group with the specified ID is not found.
+        """
         group = db_session.query(GroupModel).filter(GroupModel.id == group_id).first()
 
         if not group:
@@ -689,7 +703,21 @@ class GroupService:
         db_session: Session,
         authenticated_user: UserModel,
     ) -> GroupSerializerSchema:
-        """Creates a new group"""
+        """
+        Creates a new group in the database.
+
+        Args:
+            new_group (NewGroupSchema): The details of the new group to be created.
+            db_session (Session): The SQLAlchemy database session.
+            authenticated_user (UserModel): The authenticated user who is creating the group.
+
+        Returns:
+            GroupSerializerSchema: The serialized representation of the created group.
+
+        Raises:
+            HTTPException: If there are any errors during the group creation process.
+
+        """
         errors = {}
         ids_not_found = []
         for id_perm in new_group.permissions:
@@ -713,12 +741,6 @@ class GroupService:
             .first()
         )
 
-        permissions = (
-            db_session.query(PermissionModel)
-            .filter(PermissionModel.id.in_(new_group.permissions))
-            .all()
-        )
-
         if group:
             errors.update({"field": "group", "error": "Perfil de usuário já existe"})
 
@@ -727,6 +749,12 @@ class GroupService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=errors,
             )
+
+        permissions = (
+            db_session.query(PermissionModel)
+            .filter(PermissionModel.id.in_(new_group.permissions))
+            .all()
+        )
 
         new_group_db = GroupModel(**new_group.model_dump(exclude="permissions"))
         new_group_db.permissions = permissions
@@ -843,7 +871,7 @@ class GroupService:
             is_updated = False
             group = self.__get_group_or_404(group_id, db_session)
 
-            if data.name:
+            if data.name and group.name != data.name:
                 is_updated = True
                 group.name = data.name
 

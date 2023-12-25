@@ -3,6 +3,7 @@ from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
@@ -14,6 +15,7 @@ from src.config import (
     PAGE_SIZE_DESCRIPTION,
     PAGINATION_NUMBER,
 )
+from src.invoice.filters import InvoiceFilter
 from src.invoice.schemas import NewInvoiceSchema, UploadInvoiceSchema
 from src.invoice.service import InvoiceService
 
@@ -60,8 +62,7 @@ def put_update_invoice_route():
 
 @invoice_router.get("/invoices/")
 def get_list_invoices_route(
-    search: str = "",
-    filter_invoice: str = None,
+    invoice_filters: InvoiceFilter = FilterDepends(InvoiceFilter),
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -79,9 +80,7 @@ def get_list_invoices_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    invoices = invoice_service.get_invoices(
-        db_session, search, filter_invoice, page, size
-    )
+    invoices = invoice_service.get_invoices(db_session, invoice_filters, page, size)
     db_session.close()
     return JSONResponse(
         content=invoices,

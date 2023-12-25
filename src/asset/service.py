@@ -1,4 +1,4 @@
-"""Lenging service"""
+"""Asset service"""
 import logging
 
 from fastapi import status
@@ -8,6 +8,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from src.asset.filters import AssetFilter
 from src.asset.models import (
     AssetClothingSizeModel,
     AssetModel,
@@ -198,9 +199,9 @@ class AssetService:
             by_agile=True,
         )
 
-        new_asset.type = (asset_type,)
-        new_asset.clothing_size = (clothing_size,)
-        new_asset.status = (asset_status,)
+        new_asset.type = asset_type
+        new_asset.clothing_size = clothing_size
+        new_asset.status = asset_status
 
         db_session.add(new_asset)
         db_session.commit()
@@ -256,8 +257,7 @@ class AssetService:
         """Uptades an asset"""
         asset = self.__get_asset_or_404(asset_id, db_session)
 
-        if data.active:
-            asset.active = data.active
+        asset.active = data.active
 
         db_session.add(asset)
         db_session.commit()
@@ -282,51 +282,14 @@ class AssetService:
     def get_assets(
         self,
         db_session: Session,
-        search: str = "",
-        filter_asset: str = None,
-        active: bool = True,
+        asset_filters: AssetFilter,
         fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[AssetSerializerSchema]:
         """Get assets list"""
 
-        asset_list = db_session.query(AssetModel).filter(
-            or_(
-                AssetModel.code.ilike(f"%{search}"),
-                AssetModel.register_number.ilike(f"%{search}%"),
-                AssetModel.description.ilike(f"%{search}"),
-                AssetModel.supplier.ilike(f"%{search}"),
-                AssetModel.pattern.ilike(f"%{search}"),
-                AssetModel.operational_system.ilike(f"%{search}"),
-                AssetModel.serial_number.ilike(f"%{search}"),
-                AssetModel.imei.ilike(f"%{search}"),
-                AssetModel.line_number.ilike(f"%{search}"),
-                AssetModel.operator.ilike(f"%{search}"),
-                AssetModel.model.ilike(f"%{search}"),
-            )
-        )
-
-        if filter_asset:
-            asset_list = asset_list.join(AssetModel.type,).filter(
-                or_(
-                    AssetTypeModel.name == filter_asset,
-                )
-            )
-
-            asset_list = asset_list.join(AssetModel.status,).filter(
-                or_(
-                    AssetStatusModel.name == filter_asset,
-                )
-            )
-
-            asset_list = asset_list.join(AssetModel.clothing_size,).filter(
-                or_(
-                    AssetClothingSizeModel.name == filter_asset,
-                )
-            )
-
-        asset_list = asset_list.filter(AssetModel.active == active)
+        asset_list = asset_filters.filter(db_session.query(AssetModel))
 
         if fields == "":
             params = Params(page=page, size=size)

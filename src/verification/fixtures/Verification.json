@@ -1,0 +1,114 @@
+[
+    {
+        "table": "verification",
+        "id": 1,
+        "asset_type_id": 1,
+        "question": "Borrachas de proteção",
+        "step": "1"
+    },
+    {
+        "table": "verification",
+        "id": 2,
+        "asset_type_id": 1,
+        "question": "Estado do LCD",
+        "step": "1"
+    },
+    {
+        "table": "verification",
+        "id": 3,
+        "asset_type_id": 1,
+        "question": "Estado do touchpad",
+        "step": "1"
+    },
+    {
+        "table": "verification",
+        "id": 4,
+        "asset_type_id": 1,
+        "question": "Estado da carcaça",
+        "step": "1"
+    },
+    {
+        "table": "verification",
+        "id": 5,
+        "asset_type_id": 1,
+        "question": "Estado do Teclado",
+        "step": "1"
+    },
+    {
+        "table": "verification",
+        "id": 6,
+        "asset_type_id": 1,
+        "question": "Carregador Bateria (entrada)",
+        "step": "2"
+    },
+    {
+        "table": "verification",
+        "id": 7,
+        "asset_type_id": 1,
+        "question": "Conectores USB/Ethernet/Modem",
+        "step": "2"
+    },
+    {
+        "table": "verification",
+        "id": 8,
+        "asset_type_id": 1,
+        "question": "Drive de Disco CD - DVD - DVDRW",
+        "step": "2"
+    },
+    {
+        "table": "verification",
+        "id": 9,
+        "asset_type_id": 1,
+        "question": "Estado da carcaça (atrás da tela)",
+        "step": "2"
+    },
+    {
+        "table": "verification",
+        "id": 10,
+        "asset_type_id": 1,
+        "question": "Bateria - Verificar serial (no notebook)",
+        "step": "3"
+    },
+    {
+        "table": "verification",
+        "id": 11,
+        "asset_type_id": 1,
+        "question": "Borracha de apoio",
+        "step": "3"
+    },
+    {
+        "table": "verification",
+        "id": 12,
+        "asset_type_id": 1,
+        "question": "Serial da máquina",
+        "step": "3"
+    },
+    {
+        "table": "verification",
+        "id": 13,
+        "asset_type_id": 1,
+        "question": "Parafusos da carcaça",
+        "step": "3"
+    },
+    {
+        "table": "verification",
+        "id": 14,
+        "asset_type_id": 1,
+        "question": "Carregador - Estado do conector",
+        "step": "4"
+    },
+    {
+        "table": "verification",
+        "id": 15,
+        "asset_type_id": 1,
+        "question": "Serial do carregador",
+        "step": "4"
+    },
+    {
+        "table": "verification",
+        "id": 16,
+        "asset_type_id": 1,
+        "question": "Carregador - Estado do cabo de energia",
+        "step": "4"
+    }
+]

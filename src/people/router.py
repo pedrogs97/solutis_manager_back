@@ -3,6 +3,7 @@ from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import JSONResponse
+from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
@@ -14,6 +15,7 @@ from src.config import (
     PAGE_SIZE_DESCRIPTION,
     PAGINATION_NUMBER,
 )
+from src.people.filters import EmployeeFilter
 from src.people.schemas import NewEmployeeSchema, UpdateEmployeeSchema
 from src.people.service import EmpleoyeeGeneralSerivce, EmployeeService
 
@@ -77,8 +79,7 @@ def put_update_employee_route():
 
 @people_router.get("/employees/")
 def get_list_employees_route(
-    search: str = "",
-    filter_list: str = "",
+    employee_filters: EmployeeFilter = FilterDepends(EmployeeFilter),
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -98,7 +99,7 @@ def get_list_employees_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     employees = employee_service.get_employees(
-        db_session, search, filter_list, fields, page, size
+        db_session, employee_filters, fields, page, size
     )
     db_session.close()
     return employees
@@ -151,7 +152,6 @@ def get_emplooyee_lending_history_route(
 
 @people_router.get("/nationalities/")
 def get_list_nationalities_route(
-    search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -172,16 +172,13 @@ def get_list_nationalities_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    nationalities = general_service.get_nationalities(
-        db_session, search, fields, page, size
-    )
+    nationalities = general_service.get_nationalities(db_session, fields, page, size)
     db_session.close()
     return nationalities
 
 
 @people_router.get("/marital-status/")
 def get_list_marital_status_route(
-    search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -202,16 +199,13 @@ def get_list_marital_status_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    marital_status = general_service.get_marital_status(
-        db_session, search, fields, page, size
-    )
+    marital_status = general_service.get_marital_status(db_session, fields, page, size)
     db_session.close()
     return marital_status
 
 
 @people_router.get("/center-cost/")
 def get_list_center_cost_route(
-    search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -232,16 +226,13 @@ def get_list_center_cost_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    center_cost = general_service.get_center_cost(
-        db_session, search, fields, page, size
-    )
+    center_cost = general_service.get_center_cost(db_session, fields, page, size)
     db_session.close()
     return center_cost
 
 
 @people_router.get("/genders/")
 def get_list_genders_route(
-    search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -260,14 +251,13 @@ def get_list_genders_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    genders = general_service.get_genders(db_session, search, fields, page, size)
+    genders = general_service.get_genders(db_session, fields, page, size)
     db_session.close()
     return genders
 
 
 @people_router.get("/roles/")
 def get_list_roles_route(
-    search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -286,14 +276,13 @@ def get_list_roles_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    roles = general_service.get_roles(db_session, search, fields, page, size)
+    roles = general_service.get_roles(db_session, fields, page, size)
     db_session.close()
     return roles
 
 
 @people_router.get("/educational-level/")
 def get_list_educational_levels_route(
-    search: str = "",
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -313,7 +302,7 @@ def get_list_educational_levels_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     educational_levels = general_service.get_educational_levels(
-        db_session, search, fields, page, size
+        db_session, fields, page, size
     )
     db_session.close()
     return educational_levels

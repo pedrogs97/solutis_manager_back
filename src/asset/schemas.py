@@ -1,4 +1,4 @@
-"""Lending schemas"""
+"""Asset schemas"""
 from datetime import date, datetime
 from typing import Optional
 

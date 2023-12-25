@@ -18,7 +18,9 @@ from src.exceptions import default_response_exception
 from src.invoice.router import invoice_router
 from src.lending.router import lending_router
 from src.log.router import log_router
+from src.maintenance.router import maintenance_router
 from src.people.router import people_router
+from src.verification.router import verification_router
 
 if not os.path.exists(f"{BASE_DIR}/logs/"):
     os.makedirs(f"{BASE_DIR}/logs/")
@@ -60,6 +62,8 @@ app.include_router(log_router, prefix=BASE_API)
 app.include_router(people_router, prefix=BASE_API)
 app.include_router(datasync_router, prefix=BASE_API)
 app.include_router(asset_router, prefix=BASE_API)
+app.include_router(maintenance_router, prefix=BASE_API)
+app.include_router(verification_router, prefix=BASE_API)
 
 
 @app.get("/health/", tags=["Service"])

@@ -1,4 +1,4 @@
-"""Lending models"""
+"""Asset models"""
 from typing import List
 
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String

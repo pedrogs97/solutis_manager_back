@@ -3,6 +3,7 @@ from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
@@ -14,28 +15,18 @@ from src.config import (
     PAGE_SIZE_DESCRIPTION,
     PAGINATION_NUMBER,
 )
+from src.lending.filters import LendingFilter
 from src.lending.schemas import (
     NewLendingDocSchema,
     NewLendingSchema,
-    NewMaintenanceSchema,
-    NewVerificationAnswerSchema,
-    NewVerificationSchema,
-    UpdateMaintenanceSchema,
     UploadSignedContractSchema,
 )
-from src.lending.service import (
-    DocumentService,
-    LendingService,
-    MaintenanceService,
-    VerificationService,
-)
+from src.lending.service import DocumentService, LendingService
 
 lending_router = APIRouter(prefix="/lendings", tags=["Lending"])
 
 lending_service = LendingService()
 document_service = DocumentService()
-verification_service = VerificationService()
-maintenance_service = MaintenanceService()
 
 
 @lending_router.post("/")
@@ -72,8 +63,7 @@ def post_create_lending_route(
 
 @lending_router.get("/")
 def get_list_lendings_route(
-    search: str = "",
-    filter_lending: str = None,
+    lending_filters: LendingFilter = FilterDepends(LendingFilter),
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -105,9 +95,7 @@ def get_list_lendings_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    assets = lending_service.get_lendings(
-        db_session, search, filter_lending, page, size
-    )
+    assets = lending_service.get_lendings(db_session, lending_filters, page, size)
     db_session.close()
     return JSONResponse(
         content=assets,
@@ -255,198 +243,6 @@ async def post_import_contract(
         file, data, db_session, authenticated_user
     )
 
-    db_session.close()
-    return JSONResponse(
-        content=serializer.model_dump(by_alias=True),
-        status_code=status.HTTP_200_OK,
-    )
-
-
-@lending_router.post("/verifications/")
-def post_create_verifications(
-    data: NewVerificationSchema,
-    db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker(
-            {"module": "lending", "model": "verification", "action": "add"}
-        )
-    ),
-):
-    """Creates new verification"""
-    if not authenticated_user:
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
-    serializer = verification_service.create_verification(
-        data, db_session, authenticated_user
-    )
-    db_session.close()
-    return JSONResponse(
-        content=serializer.model_dump(by_alias=True),
-        status_code=status.HTTP_200_OK,
-    )
-
-
-@lending_router.get("/verifications/{asset_type_id}/")
-def get_asset_type_verifications(
-    asset_type_id: int,
-    db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker(
-            {"module": "lending", "model": "verification", "action": "view"}
-        )
-    ),
-):
-    """Get asset type verifications"""
-    if not authenticated_user:
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
-
-    list_serializer = verification_service.get_asset_verifications(
-        asset_type_id, db_session
-    )
-    db_session.close()
-    return JSONResponse(
-        content=[
-            serializer.model_dump(by_alias=True) for serializer in list_serializer
-        ],
-        status_code=status.HTTP_200_OK,
-    )
-
-
-@lending_router.post("/verifications/answer/")
-def post_create_answer_verification(
-    data: NewVerificationAnswerSchema,
-    db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "answer", "action": "add"})
-    ),
-):
-    """Creates answer for a verification"""
-    if not authenticated_user:
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
-    serializer = verification_service.create_verification(
-        data, db_session, authenticated_user
-    )
-    db_session.close()
-    return JSONResponse(
-        content=serializer.model_dump(by_alias=True),
-        status_code=status.HTTP_200_OK,
-    )
-
-
-@lending_router.post("/maintenances/")
-def post_create_maintenance_route(
-    data: NewMaintenanceSchema,
-    db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker(
-            {"module": "lending", "model": "maintenance", "action": "add"}
-        )
-    ),
-):
-    """Creates maintenance route"""
-    if not authenticated_user:
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
-    serializer = maintenance_service.create_maintenance(
-        data, db_session, authenticated_user
-    )
-    db_session.close()
-    return JSONResponse(
-        content=serializer.model_dump(by_alias=True),
-        status_code=status.HTTP_201_CREATED,
-    )
-
-
-@lending_router.patch("/maintenances/{maintenance_id}/")
-def patch_update_maintenance_route(
-    maintenance_id: int,
-    data: UpdateMaintenanceSchema,
-    db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker(
-            {"module": "lending", "model": "maintenance", "action": "edit"}
-        )
-    ),
-):
-    """Update maintenance route"""
-    if not authenticated_user:
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
-    serializer = maintenance_service.update_maintenance(
-        data, maintenance_id, db_session, authenticated_user
-    )
-    db_session.close()
-    return JSONResponse(
-        content=serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
-    )
-
-
-@lending_router.put("/maintenances/{maintenance_id}/")
-def put_update_maintenance_route():
-    """Update maintenance Not Implemented"""
-    return JSONResponse(
-        content="Não implementado", status_code=status.HTTP_405_METHOD_NOT_ALLOWED
-    )
-
-
-@lending_router.get("/maintenances/")
-def get_list_maintenances_route(
-    search: str = "",
-    filter_maintenance: str = None,
-    inital_date: str = None,
-    final_date: str = None,
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
-    ),
-    db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker(
-            {"module": "lending", "model": "maintenance", "action": "view"}
-        )
-    ),
-):
-    """List maintenances and apply filters route"""
-    if not authenticated_user:
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
-    maintenances = maintenance_service.get_maintenances(
-        db_session, search, filter_maintenance, inital_date, final_date, page, size
-    )
-    db_session.close()
-    return JSONResponse(
-        content=maintenances,
-        status_code=status.HTTP_200_OK,
-    )
-
-
-@lending_router.get("/maintenances/{maintenance_id}/")
-def get_maintenance_route(
-    maintenance_id: int,
-    db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker(
-            {"module": "lending", "model": "maintenance", "action": "view"}
-        )
-    ),
-):
-    """Get an maintenance route"""
-    if not authenticated_user:
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
-    serializer = maintenance_service.get_maintenance(maintenance_id, db_session)
     db_session.close()
     return JSONResponse(
         content=serializer.model_dump(by_alias=True),

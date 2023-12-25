@@ -6,7 +6,6 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
@@ -16,6 +15,7 @@ from src.lending.models import LendingModel
 from src.lending.schemas import CostCenterSerializerSchema, LendingSerializerSchema
 from src.lending.service import LendingService
 from src.log.services import LogService
+from src.people.filters import EmployeeFilter
 from src.people.models import (
     CostCenterModel,
     EmployeeGenderModel,
@@ -294,49 +294,14 @@ class EmployeeService:
     def get_employees(
         self,
         db_session: Session,
-        search: str = "",
-        filter_list: str = "",
+        employee_filters: EmployeeFilter,
         fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[EmployeeSerializerSchema]:
         """Get employees list"""
-        employee_list = db_session.query(EmployeeModel).filter(
-            or_(
-                EmployeeModel.full_name.ilike(f"%{search}%"),
-                EmployeeModel.email.ilike(f"%{search}"),
-                EmployeeModel.national_identification.ilike(f"%{search}"),
-                EmployeeModel.taxpayer_identification.ilike(f"%{search}"),
-                EmployeeModel.cell_phone.ilike(f"%{search}"),
-                EmployeeModel.manager.ilike(f"%{search}"),
-                EmployeeModel.code.ilike(f"%{search}"),
-            )
-        )
+        employee_list = employee_filters.filter(db_session.query(EmployeeModel))
 
-        if filter_list != "":
-            employee_list = employee_list.join(EmployeeModel.role,).filter(
-                or_(
-                    EmployeeRoleModel.name.in_(filter_list),
-                )
-            )
-
-            employee_list = employee_list.join(EmployeeModel.nationality,).filter(
-                or_(
-                    EmployeeNationalityModel.description.in_(filter_list),
-                )
-            )
-
-            employee_list = employee_list.join(EmployeeModel.marital_status,).filter(
-                or_(
-                    EmployeeMaritalStatusModel.description.in_(filter_list),
-                )
-            )
-
-            employee_list = employee_list.join(EmployeeModel.gender,).filter(
-                or_(
-                    EmployeeGenderModel.description.in_(filter_list),
-                )
-            )
         if fields == "":
             params = Params(page=page, size=size)
             paginated = paginate(
@@ -398,19 +363,13 @@ class EmpleoyeeGeneralSerivce:
     def get_nationalities(
         self,
         db_session: Session,
-        search: str = "",
         fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[EmployeeNationalitySerializerSchema]:
         """Get nationalities list"""
 
-        nationalities_list = db_session.query(EmployeeNationalityModel).filter(
-            or_(
-                EmployeeNationalityModel.description.ilike(f"%{search}%"),
-                EmployeeNationalityModel.code.ilike(f"%{search}"),
-            )
-        )
+        nationalities_list = db_session.query(EmployeeNationalityModel)
 
         if fields == "":
             params = Params(page=page, size=size)
@@ -441,19 +400,13 @@ class EmpleoyeeGeneralSerivce:
     def get_marital_status(
         self,
         db_session: Session,
-        search: str = "",
         fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[EmployeeMatrimonialStatusSerializerSchema]:
         """Get marital status list"""
 
-        marital_status_list = db_session.query(EmployeeMaritalStatusModel).filter(
-            or_(
-                EmployeeMaritalStatusModel.description.ilike(f"%{search}%"),
-                EmployeeMaritalStatusModel.code.ilike(f"%{search}"),
-            )
-        )
+        marital_status_list = db_session.query(EmployeeMaritalStatusModel)
 
         if fields == "":
             params = Params(page=page, size=size)
@@ -486,19 +439,13 @@ class EmpleoyeeGeneralSerivce:
     def get_center_cost(
         self,
         db_session: Session,
-        search: str = "",
         fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[CostCenterSerializerSchema]:
         """Get center cost list"""
 
-        center_cost_list = db_session.query(CostCenterModel).filter(
-            or_(
-                CostCenterModel.classification.ilike(f"%{search}%"),
-                CostCenterModel.code.ilike(f"%{search}"),
-            )
-        )
+        center_cost_list = db_session.query(CostCenterModel)
 
         if fields == "":
             params = Params(page=page, size=size)
@@ -529,19 +476,13 @@ class EmpleoyeeGeneralSerivce:
     def get_genders(
         self,
         db_session: Session,
-        search: str = "",
         fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[EmployeeGenderSerializerSchema]:
         """Get genders list"""
 
-        genders_list = db_session.query(EmployeeGenderModel).filter(
-            or_(
-                EmployeeGenderModel.description.ilike(f"%{search}%"),
-                EmployeeGenderModel.code.ilike(f"%{search}"),
-            )
-        )
+        genders_list = db_session.query(EmployeeGenderModel)
 
         if fields == "":
             params = Params(page=page, size=size)
@@ -572,19 +513,13 @@ class EmpleoyeeGeneralSerivce:
     def get_roles(
         self,
         db_session: Session,
-        search: str = "",
         fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[EmployeeRoleSerializerSchema]:
         """Get roles list"""
 
-        roles_list = db_session.query(EmployeeRoleModel).filter(
-            or_(
-                EmployeeRoleModel.name.ilike(f"%{search}%"),
-                EmployeeRoleModel.code.ilike(f"%{search}"),
-            )
-        )
+        roles_list = db_session.query(EmployeeRoleModel)
 
         if fields == "":
             params = Params(page=page, size=size)
@@ -615,21 +550,13 @@ class EmpleoyeeGeneralSerivce:
     def get_educational_levels(
         self,
         db_session: Session,
-        search: str = "",
         fields: str = "",
         page: int = 1,
         size: int = 50,
     ) -> Page[EmployeeEducationalLevelSerializerSchema]:
         """Get educational levels list"""
 
-        educational_levels_list = db_session.query(
-            EmployeeEducationalLevelTOTVSModel
-        ).filter(
-            or_(
-                EmployeeEducationalLevelTOTVSModel.description.ilike(f"%{search}%"),
-                EmployeeEducationalLevelTOTVSModel.code.ilike(f"%{search}"),
-            )
-        )
+        educational_levels_list = db_session.query(EmployeeEducationalLevelTOTVSModel)
 
         if fields == "":
             params = Params(page=page, size=size)
