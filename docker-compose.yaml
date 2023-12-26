@@ -5,10 +5,10 @@ services:
     build:
       context: .
     ports:
-      - 8000:8000
+      - 8080:8080
     volumes:
       - ./src:/solutis-agile/src
-    command: sh -c "uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
+    command: sh -c "uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload"
     env_file:
       - ./.env
     networks:
