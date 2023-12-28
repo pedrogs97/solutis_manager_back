@@ -306,18 +306,22 @@ class UserSerivce:
         try:
             user = self.__get_user_or_404(user_id, db_session)
             errors = []
+            is_updated = False
+
             if data.group_id and user.group.id != data.group_id:
                 group = (
                     db_session.query(GroupModel)
                     .filter(GroupModel.id == data.group_id)
                     .first()
                 )
+
                 if not group:
                     errors.append(
                         {"field": "group", "error": "Perfil de usuário não encontrado"}
                     )
-
-                user.group_id = group.id
+                else:
+                    is_updated = True
+                    user.group_id = group.id
 
             if data.employee_id and user.employee.id != data.employee_id:
                 employee = (
@@ -329,8 +333,9 @@ class UserSerivce:
                     errors.append(
                         {"field": "employee", "error": "Colaborador não encontrado"}
                     )
-
-                user.employee = employee
+                else:
+                    is_updated = True
+                    user.employee = employee
 
             if data.username and user.username != data.username:
                 employee = (
@@ -340,12 +345,14 @@ class UserSerivce:
                     )
                     .first()
                 )
-                if employee:
+
+                if not employee:
                     errors.append(
                         {"field": "username", "error": "Nome de usuário já existe"}
                     )
-                is_updated = True
-                user.username = data.username
+                else:
+                    is_updated = True
+                    user.username = data.username
 
             if data.email and user.email != data.email:
                 employee = (
@@ -353,10 +360,12 @@ class UserSerivce:
                     .filter(UserModel.email == data.email, UserModel.id != user_id)
                     .first()
                 )
+
                 if employee:
                     errors.append({"field": "email", "error": "E-mail já existe"})
-                is_updated = True
-                user.email = data.email
+                else:
+                    is_updated = True
+                    user.email = data.email
 
             if data.is_active is not None and user.is_active != data.is_active:
                 is_updated = True
@@ -390,7 +399,7 @@ class UserSerivce:
             msg = f"{exc.args[0]}"
             logger.warning("Could not update user. Error: %s", msg)
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail={"error": msg}
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error": msg}
             ) from exc
 
         return self.serialize_user(user)

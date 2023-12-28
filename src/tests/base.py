@@ -1,4 +1,6 @@
 """Base test"""
+from datetime import datetime
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
@@ -17,6 +19,13 @@ from src.config import (
 )
 from src.database import Base
 from src.main import app
+from src.people.models import (
+    EmployeeGenderModel,
+    EmployeeMaritalStatusModel,
+    EmployeeModel,
+    EmployeeNationalityModel,
+    EmployeeRoleModel,
+)
 
 
 class TestBase:
@@ -147,6 +156,40 @@ class TestBase:
     @pytest.fixture
     def create_base_employee(self):
         """Create base employee for test"""
+        db_session = self.testing_session_local()
+        base_nationality = EmployeeNationalityModel(code="BR", description="Brasil")
+        base_marital_status = EmployeeMaritalStatusModel(code="C", description="Casado")
+        base_gender = EmployeeGenderModel(code="M", description="Masculino")
+        base_role = EmployeeRoleModel(code="ADS", name="Analista de Sistemas")
+
+        db_session.add(base_gender)
+        db_session.add(base_marital_status)
+        db_session.add(base_nationality)
+        db_session.add(base_role)
+        db_session.commit()
+        db_session.flush()
+
+        employee = EmployeeModel(
+            role=base_role,
+            nationality=base_nationality,
+            marital_status=base_marital_status,
+            gender=base_gender,
+            code="1111111111",
+            full_name="Colaborador Base Teste",
+            taxpayer_identification="11111111111",
+            national_identification="111111111111111",
+            address="endereço",
+            cell_phone="111111111111111",
+            email="base@email.com",
+            birthday=datetime.now().date(),
+            manager="Gestor",
+            admission_date=datetime.now().date(),
+            registration="1111111111111111",
+        )
+
+        db_session.add(employee)
+        db_session.commit()
+        db_session.flush()
 
     @pytest.fixture
     def create_initial_data(self, setup, create_super_user, create_base_employee):
