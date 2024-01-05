@@ -130,7 +130,7 @@ class UserSerivce:
                 duplicate username, or duplicate email. The exception will have a 400 status code and the corresponding
                 error messages as the detail.
         """
-        errors = {}
+        errors = []
 
         group = (
             db_session.query(GroupModel)
@@ -139,7 +139,7 @@ class UserSerivce:
         )
 
         if not group:
-            errors.update({"field": "groupId", "error": "Perfil inválido"})
+            errors.append({"field": "groupId", "error": "Perfil inválido"})
 
         employee = (
             db_session.query(EmployeeModel)
@@ -148,7 +148,7 @@ class UserSerivce:
         )
 
         if not employee:
-            errors.update({"field": "employeeId", "error": "Colaborador inválido"})
+            errors.append({"field": "employeeId", "error": "Colaborador inválido"})
 
         user_test_username = (
             db_session.query(UserModel)
@@ -157,7 +157,7 @@ class UserSerivce:
         )
 
         if user_test_username:
-            errors.update({"field": "username", "error": "Nome de usuário já existe"})
+            errors.append({"field": "username", "error": "Nome de usuário já existe"})
 
         user_test_email = (
             db_session.query(UserModel)
@@ -166,9 +166,9 @@ class UserSerivce:
         )
 
         if user_test_email:
-            errors.update({"field": "email", "error": "Já existe este e-mail"})
+            errors.append({"field": "email", "error": "Já existe este e-mail"})
 
-        if len(errors.keys()) > 0:
+        if len(errors) > 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=errors)
 
         user_dict = {
@@ -727,7 +727,7 @@ class GroupService:
             HTTPException: If there are any errors during the group creation process.
 
         """
-        errors = {}
+        errors = []
         ids_not_found = []
         for id_perm in new_group.permissions:
             if (
@@ -737,12 +737,16 @@ class GroupService:
             ):
                 ids_not_found.append(id_perm)
 
-        errors.update(
-            {
-                "field": "permissions",
-                "error": {"error": "Permissões não existem", "items": ids_not_found},
-            }
-        )
+        if len(ids_not_found) > 0:
+            errors.append(
+                {
+                    "field": "permissions",
+                    "error": {
+                        "error": "Permissões não existem",
+                        "items": ids_not_found,
+                    },
+                }
+            )
 
         group = (
             db_session.query(GroupModel)
@@ -751,9 +755,9 @@ class GroupService:
         )
 
         if group:
-            errors.update({"field": "group", "error": "Perfil de usuário já existe"})
+            errors.append({"field": "group", "error": "Perfil de usuário já existe"})
 
-        if len(errors.keys()) > 0:
+        if len(errors) > 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=errors,

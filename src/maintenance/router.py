@@ -102,10 +102,7 @@ def get_list_maintenances_route(
         db_session, maintenance_filters, page, size
     )
     db_session.close()
-    return JSONResponse(
-        content=maintenances,
-        status_code=status.HTTP_200_OK,
-    )
+    return maintenances
 
 
 @maintenance_router.get("/{maintenance_id}/")

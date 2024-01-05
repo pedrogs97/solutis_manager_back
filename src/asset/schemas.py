@@ -137,7 +137,7 @@ class AssetSerializerSchema(BaseSchema):
     # fornecedor
     supplier: Optional[str] = None
     # garantia
-    assurance_date: Optional[date] = Field(
+    assurance_date: Optional[str] = Field(
         serialization_alias="assuranceDate",
         default=None,
     )

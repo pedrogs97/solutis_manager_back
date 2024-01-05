@@ -29,7 +29,9 @@ class DocumentTypeFilter(Filter):
 class DocumentFilter(Filter):
     """Document filters"""
 
-    doc_type: Optional[str] = FilterDepends(with_prefix("doc_type", DocumentTypeFilter))
+    doc_type: Optional[DocumentTypeFilter] = FilterDepends(
+        with_prefix("doc_type", DocumentTypeFilter)
+    )
 
     class Constants(Filter.Constants):
         """Filter constants"""
@@ -59,12 +61,16 @@ class LendingFilter(Filter):
     glpi_number__ilike: Optional[str] = None
     signed_date__gte: Optional[date] = None
     signed_date__lte: Optional[date] = None
-    employee: Optional[str] = FilterDepends(
+    employee: Optional[EmployeeFullNameFilter] = FilterDepends(
         with_prefix("employee", EmployeeFullNameFilter)
     )
-    asset: Optional[str] = FilterDepends(with_prefix("asset", AssetShortFilter))
-    workload: Optional[str] = FilterDepends(with_prefix("workload", WorkloadFilter))
-    cost_center: Optional[str] = FilterDepends(
+    asset: Optional[AssetShortFilter] = FilterDepends(
+        with_prefix("asset", AssetShortFilter)
+    )
+    workload: Optional[WorkloadFilter] = FilterDepends(
+        with_prefix("workload", WorkloadFilter)
+    )
+    cost_center: Optional[CostCenterFilter] = FilterDepends(
         with_prefix("cost_center", CostCenterFilter)
     )
     order_by: List[str] = ["number"]

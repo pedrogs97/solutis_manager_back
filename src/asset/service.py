@@ -291,8 +291,8 @@ class AssetService:
 
         asset_list = asset_filters.filter(db_session.query(AssetModel))
 
+        params = Params(page=page, size=size)
         if fields == "":
-            params = Params(page=page, size=size)
             paginated = paginate(
                 asset_list,
                 params=params,
@@ -304,7 +304,6 @@ class AssetService:
             return paginated
 
         list_fields = fields.split(",")
-        params = Params(page=page, size=size)
         paginated = paginate(
             asset_list,
             params=params,

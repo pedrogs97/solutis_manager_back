@@ -80,13 +80,13 @@ class AssetFilter(Filter):
     acquisition_date__lte: Optional[date] = None
     active: Optional[bool] = True
     by_agile: Optional[bool] = None
-    asset_type: Optional[str] = FilterDepends(
+    asset_type: Optional[AssetTypeFilter] = FilterDepends(
         with_prefix("asset_type", AssetTypeFilter)
     )
-    asset_status: Optional[str] = FilterDepends(
+    asset_status: Optional[AssetStatusFilter] = FilterDepends(
         with_prefix("asset_status", AssetStatusFilter)
     )
-    asset_clothing_size: Optional[str] = FilterDepends(
+    asset_clothing_size: Optional[AssetClothingSizeFilter] = FilterDepends(
         with_prefix("asset_clothing_size", AssetClothingSizeFilter)
     )
     order_by: List[str] = ["code"]

@@ -122,10 +122,7 @@ def get_list_assets_route(
         )
     assets = asset_service.get_assets(db_session, asset_filters, fields, page, size)
     db_session.close()
-    return JSONResponse(
-        content=assets,
-        status_code=status.HTTP_200_OK,
-    )
+    return assets
 
 
 @asset_router.get("/{asset_id}/")
@@ -175,10 +172,7 @@ def get_list_asset_types_route(
         db_session, search, filter_asset_type, fields, page, size
     )
     db_session.close()
-    return JSONResponse(
-        content=assets_types,
-        status_code=status.HTTP_200_OK,
-    )
+    return assets_types
 
 
 @asset_router.get("/status/")
@@ -208,7 +202,4 @@ def get_list_asset_status_route(
         db_session, filter_asset_status, fields, page, size
     )
     db_session.close()
-    return JSONResponse(
-        content=assets_status,
-        status_code=status.HTTP_200_OK,
-    )
+    return assets_status

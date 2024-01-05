@@ -188,8 +188,7 @@ class TestAuthModule(TestBase):
         )
         assert response.status_code == 400
         data = response.json()
-        assert "error" in data
-        assert "field" in data
+        assert isinstance(data, list)
 
     def test_auth_get_users(self, authenticated):
         """Teste get users API case"""
@@ -205,6 +204,7 @@ class TestAuthModule(TestBase):
         assert response.status_code == 200
         data = response.json()
         assert len(data.keys()) == len(expected_keys)
+        assert isinstance(data["items"], list)
         assert all(a == b for a, b in zip(data.keys(), expected_keys))
 
     def test_auth_update_user_success(self, authenticated):
@@ -306,3 +306,90 @@ class TestAuthModule(TestBase):
         )
 
         assert response.status_code == 200
+
+    def test_auth_create_group_success(self, authenticated):
+        """Test create group API success case"""
+        expected_keys = [
+            "id",
+            "name",
+            "permissions",
+        ]
+        authenticated_data = authenticated
+        token = authenticated_data["access_token"]
+        token_type = authenticated_data["token_type"]
+        payload = {
+            "name": "Novo Grupo Teste",
+            "permissions": [1, 2, 3, 4],
+        }
+        response = self.client.post(
+            f"{BASE_API}/auth/groups/",
+            headers={"Authorization": f"{token_type} {token}"},
+            json=payload,
+        )
+
+        assert response.status_code == 201
+        data = response.json()
+        print(data.keys())
+        assert data["name"] == payload["name"]
+        assert len(data.keys()) == len(expected_keys)
+        assert all(a == b for a, b in zip(data.keys(), expected_keys))
+        assert len(data["permissions"]) == len(payload["permissions"])
+        assert all(
+            a == b
+            for a, b in zip(
+                [perm["id"] for perm in data["permissions"]], payload["permissions"]
+            )
+        )
+
+    def test_auth_create_group_invalid(self, authenticated):
+        """Test create group API invalid case"""
+        authenticated_data = authenticated
+        token = authenticated_data["access_token"]
+        token_type = authenticated_data["token_type"]
+        payload = {
+            "name": "Novo Grupo Teste",
+            "permissions": [999, 0, 66666, 22222],
+        }
+        response = self.client.post(
+            f"{BASE_API}/auth/groups/",
+            headers={"Authorization": f"{token_type} {token}"},
+            json=payload,
+        )
+
+        assert response.status_code == 400
+        data = response.json()
+        print(data)
+        assert isinstance(data, list)
+
+    def test_auth_get_groups(self, authenticated):
+        """Test get groups API case"""
+        expected_keys = ["items", "total", "page", "size", "pages"]
+        authenticated_data = authenticated
+        token = authenticated_data["access_token"]
+        token_type = authenticated_data["token_type"]
+        response = self.client.get(
+            f"{BASE_API}/auth/groups/",
+            headers={"Authorization": f"{token_type} {token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data.keys()) == len(expected_keys)
+        assert isinstance(data["items"], list)
+        assert all(a == b for a, b in zip(data.keys(), expected_keys))
+
+    def test_auth_upadate_groups_success(self, authenticated):
+        """Test upadate groups API success case"""
+        # authenticated_data = authenticated
+        # token = authenticated_data["access_token"]
+        # token_type = authenticated_data["token_type"]
+        # response = self.client.get(l
+        #     f"{BASE_API}/auth/groups/",
+        #     headers={"Authorization": f"{token_type} {token}"},
+        # )
+
+        # assert response.status_code == 200
+        # data = response.json()
+        # assert len(data.keys()) == len(expected_keys)
+        # assert isinstance(data["items"], list)
+        # assert all(a == b for a, b in zip(data.keys(), expected_keys))
