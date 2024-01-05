@@ -157,7 +157,7 @@ class AssetSerializerSchema(BaseSchema):
         default=None,
     )
     imei: Optional[str] = None
-    acquisition_date: Optional[date] = Field(
+    acquisition_date: Optional[str] = Field(
         serialization_alias="acquisitionDate",
         default=None,
     )

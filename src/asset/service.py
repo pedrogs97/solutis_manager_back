@@ -125,7 +125,7 @@ class AssetService:
             operational_system=asset.operational_system,
             serial_number=asset.serial_number,
             imei=asset.imei,
-            acquisition_date=asset.acquisition_date,
+            acquisition_date=asset.acquisition_date.isoformat(),
             value=asset.value,
             ms_office=asset.ms_office,
             line_number=asset.line_number,
