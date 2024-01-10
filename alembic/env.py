@@ -18,6 +18,7 @@ from src.verification.models import *
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+print(get_database_url())
 config.set_main_option("sqlalchemy.url", get_database_url())
 
 # Interpret the config file for Python logging.

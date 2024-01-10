@@ -13,7 +13,15 @@ from src.asset.router import asset_router
 from src.auth.router import auth_router
 from src.auth.service import create_initial_data, create_permissions, create_super_user
 from src.backends import get_db_session
-from src.config import BASE_API, BASE_DIR, DATE_FORMAT, FORMAT, LOG_FILENAME, ORIGINS
+from src.config import (
+    BASE_API,
+    BASE_DIR,
+    DATE_FORMAT,
+    FORMAT,
+    LOG_FILENAME,
+    ORIGINS,
+    get_database_url,
+)
 from src.database import ExternalDatabase
 from src.datasync.router import datasync_router
 from src.exceptions import default_response_exception
@@ -66,6 +74,7 @@ app.include_router(datasync_router, prefix=BASE_API)
 app.include_router(asset_router, prefix=BASE_API)
 app.include_router(maintenance_router, prefix=BASE_API)
 app.include_router(verification_router, prefix=BASE_API)
+print(get_database_url())
 
 
 @app.get("/health/", tags=["Service"])

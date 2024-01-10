@@ -1,18 +1,18 @@
-"""initial
+"""initial version 1
 
-Revision ID: 083760c6e8d3
-Revises: 
-Create Date: 2023-11-27 21:12:04.179342
+Revision ID: c7e5687f1d62
+Revises:
+Create Date: 2024-01-09 22:13:49.287853
 
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '083760c6e8d3'
+revision: str = 'c7e5687f1d62'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -36,30 +36,118 @@ def upgrade() -> None:
     sa.Column('group_code', sa.String(length=150), nullable=False),
     sa.Column('name', sa.String(length=150), nullable=False),
     sa.Column('acronym', sa.String(length=3), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
+    op.create_table('asset_types_totvs',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('code', sa.String(length=10), nullable=False),
+    sa.Column('group_name', sa.String(length=10), nullable=False),
+    sa.Column('name', sa.String(length=40), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
+    op.create_table('assets_totvs',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('code', sa.String(length=10), nullable=False),
+    sa.Column('type', sa.String(length=100), nullable=False),
+    sa.Column('cost_center', sa.String(length=150), nullable=True),
+    sa.Column('active', sa.Boolean(), nullable=True),
+    sa.Column('register_number', sa.String(length=30), nullable=True),
+    sa.Column('description', sa.String(length=240), nullable=True),
+    sa.Column('supplier', sa.String(length=100), nullable=True),
+    sa.Column('assurance_date', sa.DateTime(), nullable=True),
+    sa.Column('observations', sa.String(length=600), nullable=True),
+    sa.Column('discard_reason', sa.String(length=255), nullable=True),
+    sa.Column('pattern', sa.String(length=255), nullable=True),
+    sa.Column('operational_system', sa.String(length=255), nullable=True),
+    sa.Column('serial_number', sa.String(length=255), nullable=True),
+    sa.Column('imei', sa.String(length=255), nullable=True),
+    sa.Column('acquisition_date', sa.DateTime(), nullable=True),
+    sa.Column('value', sa.Float(), nullable=True),
+    sa.Column('ms_office', sa.Boolean(), nullable=True),
+    sa.Column('line_number', sa.String(length=255), nullable=True),
+    sa.Column('operator', sa.String(length=255), nullable=True),
+    sa.Column('model', sa.String(length=255), nullable=True),
+    sa.Column('accessories', sa.String(length=255), nullable=True),
+    sa.Column('unit', sa.String(length=3), nullable=True),
+    sa.Column('quantity', sa.Integer(), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
     )
     op.create_table('cost_center',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('code', sa.String(length=25), nullable=False),
     sa.Column('name', sa.String(length=60), nullable=False),
     sa.Column('group_name', sa.String(length=60), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
+    op.create_table('cost_centers_totvs',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('code', sa.String(length=25), nullable=False),
+    sa.Column('name', sa.String(length=60), nullable=False),
+    sa.Column('group_name', sa.String(length=60), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
     )
     op.create_table('document_type',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(length=40), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('educational_totvs',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('code', sa.String(length=3), nullable=False),
+    sa.Column('description', sa.String(length=50), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
     op.create_table('employee_roles',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('code', sa.String(length=10), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
+    op.create_table('employees_totvs',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('code', sa.String(length=10), nullable=False),
+    sa.Column('full_name', sa.String(length=120), nullable=False),
+    sa.Column('taxpayer_identification', sa.String(length=11), nullable=False),
+    sa.Column('national_identification', sa.String(length=15), nullable=False),
+    sa.Column('nationality', sa.String(length=50), nullable=False),
+    sa.Column('marital_status', sa.String(length=50), nullable=False),
+    sa.Column('role', sa.String(length=100), nullable=True),
+    sa.Column('status', sa.String(length=100), nullable=True),
+    sa.Column('address', sa.String(length=255), nullable=False),
+    sa.Column('cell_phone', sa.String(length=15), nullable=False),
+    sa.Column('email', sa.String(length=60), nullable=False),
+    sa.Column('gender', sa.String(length=50), nullable=False),
+    sa.Column('birthday', sa.Date(), nullable=False),
+    sa.Column('admission_date', sa.Date(), nullable=True),
+    sa.Column('registration', sa.String(length=16), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code'),
+    sa.UniqueConstraint('taxpayer_identification')
     )
     op.create_table('genders',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('code', sa.String(length=1), nullable=False),
     sa.Column('description', sa.String(length=50), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
+    op.create_table('genders_totvs',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('code', sa.String(length=1), nullable=False),
+    sa.Column('description', sa.String(length=50), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
+    op.create_table('group',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('name', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('invoices',
@@ -85,13 +173,29 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('code', sa.String(length=1), nullable=False),
     sa.Column('description', sa.String(length=50), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
+    op.create_table('marital_status_totvs',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('code', sa.String(length=1), nullable=False),
+    sa.Column('description', sa.String(length=50), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
     )
     op.create_table('nationalities',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('code', sa.String(length=3), nullable=False),
     sa.Column('description', sa.String(length=50), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
+    op.create_table('nationalities_totvs',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('code', sa.String(length=3), nullable=False),
+    sa.Column('description', sa.String(length=50), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
     )
     op.create_table('permission',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -101,9 +205,19 @@ def upgrade() -> None:
     sa.Column('description', sa.String(length=150), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('role',
+    op.create_table('roles_totvs',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('name', sa.String(length=50), nullable=False),
+    sa.Column('code', sa.String(length=10), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
+    )
+    op.create_table('syncs_totvs',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
+    sa.Column('count_new_values', sa.Integer(), nullable=False),
+    sa.Column('model', sa.String(length=50), nullable=True),
+    sa.Column('execution_time', sa.Float(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('verification_type',
@@ -119,8 +233,8 @@ def upgrade() -> None:
     op.create_table('asset',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('type_id', sa.Integer(), nullable=False),
-    sa.Column('status_id', sa.Integer(), nullable=False),
-    sa.Column('clothing_size_id', sa.Integer(), nullable=False),
+    sa.Column('status_id', sa.Integer(), nullable=True),
+    sa.Column('clothing_size_id', sa.Integer(), nullable=True),
     sa.Column('code', sa.String(length=255), nullable=True),
     sa.Column('register_number', sa.String(length=255), nullable=True),
     sa.Column('description', sa.String(length=255), nullable=True),
@@ -147,7 +261,8 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['clothing_size_id'], ['asset_clothing_size.id'], ),
     sa.ForeignKeyConstraint(['status_id'], ['asset_status.id'], ),
     sa.ForeignKeyConstraint(['type_id'], ['asset_type.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
     )
     op.create_table('document',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -160,10 +275,11 @@ def upgrade() -> None:
     op.create_table('employees',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('role_id', sa.Integer(), nullable=True),
-    sa.Column('nationality_id', sa.Integer(), nullable=False),
-    sa.Column('marital_status_id', sa.Integer(), nullable=False),
+    sa.Column('nationality_id', sa.Integer(), nullable=True),
+    sa.Column('marital_status_id', sa.Integer(), nullable=True),
     sa.Column('gender_id', sa.Integer(), nullable=False),
-    sa.Column('code', sa.Integer(), nullable=False),
+    sa.Column('code', sa.String(length=10), nullable=True),
+    sa.Column('status', sa.String(length=100), nullable=True),
     sa.Column('full_name', sa.String(length=120), nullable=False),
     sa.Column('taxpayer_identification', sa.String(length=11), nullable=False),
     sa.Column('national_identification', sa.String(length=15), nullable=False),
@@ -172,6 +288,8 @@ def upgrade() -> None:
     sa.Column('email', sa.String(length=60), nullable=False),
     sa.Column('birthday', sa.Date(), nullable=False),
     sa.Column('manager', sa.String(length=150), nullable=True),
+    sa.Column('admission_date', sa.Date(), nullable=True),
+    sa.Column('registration', sa.String(length=16), nullable=True),
     sa.Column('legal_person', sa.Boolean(), nullable=False),
     sa.Column('employer_number', sa.String(length=255), nullable=True),
     sa.Column('employer_address', sa.String(length=255), nullable=True),
@@ -183,6 +301,13 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code'),
     sa.UniqueConstraint('taxpayer_identification')
+    )
+    op.create_table('group_permissions',
+    sa.Column('group_id', sa.Integer(), nullable=False),
+    sa.Column('permission_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
+    sa.ForeignKeyConstraint(['permission_id'], ['permission.id'], ),
+    sa.PrimaryKeyConstraint('group_id', 'permission_id')
     )
     op.create_table('maintenance',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -197,12 +322,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['action_id'], ['maintenance_action.id'], ),
     sa.ForeignKeyConstraint(['status_id'], ['maintenance_status.id'], ),
     sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('role_permissions',
-    sa.Column('role_id', sa.Integer(), nullable=True),
-    sa.Column('permission_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['permission_id'], ['permission.id'], ),
-    sa.ForeignKeyConstraint(['role_id'], ['role.id'], )
     )
     op.create_table('upgrade',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -225,10 +344,11 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('invoice_assets',
-    sa.Column('invoice_id', sa.Integer(), nullable=True),
-    sa.Column('asset_id', sa.Integer(), nullable=True),
+    sa.Column('invoice_id', sa.Integer(), nullable=False),
+    sa.Column('asset_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['asset_id'], ['asset.id'], ),
-    sa.ForeignKeyConstraint(['invoice_id'], ['invoices.id'], )
+    sa.ForeignKeyConstraint(['invoice_id'], ['invoices.id'], ),
+    sa.PrimaryKeyConstraint('invoice_id', 'asset_id')
     )
     op.create_table('lending',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -260,7 +380,7 @@ def upgrade() -> None:
     op.create_table('user',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('employee_id', sa.Integer(), nullable=True),
-    sa.Column('role_id', sa.Integer(), nullable=False),
+    sa.Column('group_id', sa.Integer(), nullable=True),
     sa.Column('password', sa.String(length=255), nullable=False),
     sa.Column('username', sa.String(length=255), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
@@ -268,7 +388,7 @@ def upgrade() -> None:
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('last_login', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ),
-    sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
+    sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
@@ -281,10 +401,11 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('lending_witnesses',
-    sa.Column('lending_id', sa.Integer(), nullable=True),
-    sa.Column('witness_id', sa.Integer(), nullable=True),
+    sa.Column('lending_id', sa.Integer(), nullable=False),
+    sa.Column('witness_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['lending_id'], ['lending.id'], ),
-    sa.ForeignKeyConstraint(['witness_id'], ['witness.id'], )
+    sa.ForeignKeyConstraint(['witness_id'], ['witness.id'], ),
+    sa.PrimaryKeyConstraint('lending_id', 'witness_id')
     )
     op.create_table('logs',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -337,24 +458,34 @@ def downgrade() -> None:
     op.drop_table('invoice_assets')
     op.drop_table('verification')
     op.drop_table('upgrade')
-    op.drop_table('role_permissions')
     op.drop_table('maintenance')
+    op.drop_table('group_permissions')
     op.drop_table('employees')
     op.drop_table('document')
     op.drop_table('asset')
     op.drop_table('workload')
     op.drop_table('verification_type')
-    op.drop_table('role')
+    op.drop_table('syncs_totvs')
+    op.drop_table('roles_totvs')
     op.drop_table('permission')
+    op.drop_table('nationalities_totvs')
     op.drop_table('nationalities')
+    op.drop_table('marital_status_totvs')
     op.drop_table('marital_status')
     op.drop_table('maintenance_status')
     op.drop_table('maintenance_action')
     op.drop_table('invoices')
+    op.drop_table('group')
+    op.drop_table('genders_totvs')
     op.drop_table('genders')
+    op.drop_table('employees_totvs')
     op.drop_table('employee_roles')
+    op.drop_table('educational_totvs')
     op.drop_table('document_type')
+    op.drop_table('cost_centers_totvs')
     op.drop_table('cost_center')
+    op.drop_table('assets_totvs')
+    op.drop_table('asset_types_totvs')
     op.drop_table('asset_type')
     op.drop_table('asset_status')
     op.drop_table('asset_clothing_size')
