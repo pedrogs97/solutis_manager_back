@@ -3,14 +3,16 @@ import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
 
 from src.asset.router import asset_router
 from src.auth.router import auth_router
 from src.auth.service import create_initial_data, create_permissions, create_super_user
+from src.backends import get_db_session
 from src.config import BASE_API, BASE_DIR, DATE_FORMAT, FORMAT, LOG_FILENAME, ORIGINS
 from src.database import ExternalDatabase
 from src.datasync.router import datasync_router
@@ -67,8 +69,9 @@ app.include_router(verification_router, prefix=BASE_API)
 
 
 @app.get("/health/", tags=["Service"])
-def health_check():
+def health_check(db_session: Session = Depends(get_db_session)):
     """Check server up"""
+
     return True
 
 

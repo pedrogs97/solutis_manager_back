@@ -68,7 +68,7 @@ ALGORITHM = "HS256"
 
 ACCESS_TOKEN_EXPIRE_HOURS = 8
 REFRESH_TOKEN_EXPIRE_DAYS = 2
-STORAGE_DIR = "/mnt/storage"
+STORAGE_DIR = "/storage"
 CONTRACT_UPLOAD_DIR = os.path.join(STORAGE_DIR, "contracts")
 MEDIA_UPLOAD_DIR = os.path.join(STORAGE_DIR, "media")
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
