@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from src.asset.models import *
 from src.auth.models import *
-from src.config import get_database_url
+from src.config import DB_SERVER, get_database_url
 from src.database import Base
 from src.datasync.models import *
 from src.invoice.models import *
@@ -18,7 +18,6 @@ from src.verification.models import *
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-print(get_database_url())
 config.set_main_option("sqlalchemy.url", get_database_url())
 
 # Interpret the config file for Python logging.

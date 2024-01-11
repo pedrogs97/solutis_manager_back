@@ -163,5 +163,5 @@ class EmployeeTotvsSchema(BaseTotvsSchema):
     cell_phone: str
     email: str
     gender: str
-    admission_date: date
+    admission_date: Optional[date]
     registration: str

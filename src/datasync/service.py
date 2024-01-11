@@ -97,7 +97,9 @@ def totvs_to_employee_schema(
             cell_phone=row["TELEFONE1"] if row["TELEFONE1"] is not None else "",
             email=row["EMAIL"] if row["EMAIL"] is not None else "",
             gender=row["SEXO"] if row["SEXO"] is not None else "",
-            admission_date=admission_datetime.date(),
+            admission_date=admission_datetime.date()
+            if admission_datetime is not None
+            else None,
             registration=row["MATRICULA"] if row["MATRICULA"] else "",
         )
     except ValidationError as err:

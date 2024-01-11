@@ -8,14 +8,12 @@ load_dotenv()
 # PostgresSQL config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+DB_SERVER = os.getenv("MYSQL_SERVER", "localhost")
+
 
 def get_database_url(test=False):
     """Return database url"""
-    server = (
-        os.getenv("MYSQL_SERVER", "localhost")
-        if not test
-        else os.getenv("MYSQL_SERVER_TEST", "localhost")
-    )
+    server = DB_SERVER if not test else os.getenv("MYSQL_SERVER_TEST", "localhost")
     db = os.getenv("MYSQL_DATABASE", "app") if not test else "db_test"
     user = (
         os.getenv("MYSQL_USER", "root")

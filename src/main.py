@@ -7,6 +7,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import exc, text
 from sqlalchemy.orm import Session
 
 from src.asset.router import asset_router
@@ -17,10 +18,10 @@ from src.config import (
     BASE_API,
     BASE_DIR,
     DATE_FORMAT,
+    DB_SERVER,
     FORMAT,
     LOG_FILENAME,
     ORIGINS,
-    get_database_url,
 )
 from src.database import ExternalDatabase
 from src.datasync.router import datasync_router
@@ -74,14 +75,20 @@ app.include_router(datasync_router, prefix=BASE_API)
 app.include_router(asset_router, prefix=BASE_API)
 app.include_router(maintenance_router, prefix=BASE_API)
 app.include_router(verification_router, prefix=BASE_API)
-print(get_database_url())
 
 
 @app.get("/health/", tags=["Service"])
 def health_check(db_session: Session = Depends(get_db_session)):
     """Check server up"""
-
-    return True
+    response = {"status": "ok"}
+    try:
+        result = db_session.execute(text("SELECT VERSION()"))
+        version = result.fetchall()[0][0]
+        db_session.close_all()
+        response.update({"database": {"version": version, "server": DB_SERVER}})
+    except exc.TimeoutError:
+        response.update({"status": "not ok", "info": "Database disconnected"})
+    return response
 
 
 @app.get("/sqlserver/check/", tags=["Service"])
