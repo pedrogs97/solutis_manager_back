@@ -25,6 +25,7 @@ from src.config import (
 )
 from src.database import ExternalDatabase
 from src.datasync.router import datasync_router
+from src.datasync.scheduler import SchedulerService
 from src.exceptions import default_response_exception
 from src.invoice.router import invoice_router
 from src.lending.router import lending_router
@@ -128,3 +129,22 @@ async def startup_base_data():
     create_permissions()
     create_super_user()
     create_initial_data()
+
+
+@app.on_event("startup")
+async def startup_scheduler():
+    """
+    Instatialize the Scheduler Service
+    """
+    SchedulerService().start()
+    yield
+    # shutdown scheduler
+    SchedulerService().shutdown()
+    # close external database
+    external_db = ExternalDatabase()
+    cnxn = external_db.get_connection()
+    cursor = external_db.get_cursor()
+    if cursor is not None:
+        cursor.close()
+    if cnxn is not None:
+        cnxn.close()
