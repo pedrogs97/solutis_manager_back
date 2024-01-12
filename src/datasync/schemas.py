@@ -165,3 +165,4 @@ class EmployeeTotvsSchema(BaseTotvsSchema):
     gender: str
     admission_date: Optional[date]
     registration: str
+    educational_level: str

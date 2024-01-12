@@ -3,6 +3,7 @@ from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
+from src.datasync.models import EmployeeEducationalLevelTOTVSModel
 
 
 class CostCenterModel(Base):
@@ -113,6 +114,13 @@ class EmployeeModel(Base):
     gender: Mapped[EmployeeGenderModel] = relationship()
     gender_id = Column("gender_id", ForeignKey(EmployeeGenderModel.id), nullable=False)
 
+    educational_level: Mapped[EmployeeEducationalLevelTOTVSModel] = relationship()
+    educational_level_id = Column(
+        "educational_level_id",
+        ForeignKey(EmployeeEducationalLevelTOTVSModel.id),
+        nullable=True,
+    )
+
     code = Column("code", String(length=10), nullable=True, unique=True)
     status = Column("status", String(length=100), default="Ativo")
     full_name = Column("full_name", String(length=120), nullable=False)
@@ -129,7 +137,9 @@ class EmployeeModel(Base):
     manager = Column("manager", String(length=150), nullable=True)
     admission_date = Column("admission_date", Date, nullable=True)
     registration = Column("registration", String(length=16), nullable=True)
+    # PJ
     legal_person = Column("legal_person", Boolean, nullable=False, default=False)
+    # CNPJ
     employer_number = Column("employer_number", String(length=255), nullable=True)
     employer_address = Column("employer_address", String(length=255), nullable=True)
     employer_name = Column("employer_name", String(length=255), nullable=True)

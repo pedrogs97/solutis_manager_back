@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.asset.models import AssetModel, AssetTypeModel
 from src.backends import get_db_session
-from src.datasync.models import SyncModel
+from src.datasync.models import EmployeeEducationalLevelTOTVSModel, SyncModel
 from src.datasync.schemas import (
     AssetTotvsSchema,
     AssetTypeTotvsSchema,
@@ -64,7 +64,7 @@ def totvs_to_employee_schema(
     CODIGO, NOME, DTNASCIMENTO, CIVIL, SEXO , NACIONALIDADE, RUA,
     NUMERO, COMPLEMENTO, BAIRRO, ESTADO, CIDADE, CEP, PAIS, CPF,
     TELEFONE1, CARTIDENTIDADE, UFCARTIDENT, ORGEMISSORIDENT, DTEMISSAOIDENT,
-    EMAIL, CARGO, SITUACAO, ADMISSAO, MATRICULA
+    EMAIL, CARGO, SITUACAO, ADMISSAO, MATRICULA, ESCOLARIDADE
     """
     try:
         city = str(row["CIDADE"]).strip()
@@ -101,6 +101,7 @@ def totvs_to_employee_schema(
             if admission_datetime is not None
             else None,
             registration=row["MATRICULA"] if row["MATRICULA"] else "",
+            education_level=row["ESCOLARIDADE"] if row["ESCOLARIDADE"] else "",
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
@@ -414,14 +415,30 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
             .first()
         )
 
+        educational_level = (
+            db_session.query(EmployeeEducationalLevelTOTVSModel)
+            .filter(
+                EmployeeEducationalLevelTOTVSModel.description
+                == totvs_employee.educational_level
+            )
+            .first()
+        )
+
         dict_employee = {
             **totvs_employee.model_dump(
-                exclude={"role", "nationality", "marital_status", "gender"}
+                exclude={
+                    "role",
+                    "nationality",
+                    "marital_status",
+                    "gender",
+                    "educational_level",
+                }
             ),
             "role": role,
             "nationality": nationality,
             "marital_status": marital_status,
             "gender": gender,
+            "educational_level": educational_level,
         }
         update_employee = EmployeeModel(**dict_employee)
         exist = None

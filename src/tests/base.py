@@ -18,7 +18,7 @@ from src.config import (
     get_database_url,
 )
 from src.database import Base
-from src.main import app
+from src.main import appAPI
 from src.people.models import (
     EmployeeGenderModel,
     EmployeeMaritalStatusModel,
@@ -70,9 +70,9 @@ class TestBase:
         self.testing_session_local = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
         )
-        app.dependency_overrides[get_db_session] = self.__override_get_db
+        appAPI.dependency_overrides[get_db_session] = self.__override_get_db
 
-        self.client = TestClient(app)
+        self.client = TestClient(appAPI)
         yield
         connection = self.engine_server.connect()
         connection.execute(text("DROP DATABASE db_test"))

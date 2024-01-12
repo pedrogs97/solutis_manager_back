@@ -144,6 +144,13 @@ class AssetService:
 
         return AssetTypeSerializerSchema(**asset_type.__dict__)
 
+    def serialize_asset_status(
+        self, asset_status: AssetStatusModel
+    ) -> AssetStatusSerializerSchema:
+        """Serialize asset status"""
+
+        return AssetStatusSerializerSchema(**asset_status.__dict__)
+
     def create_asset(
         self, data: NewAssetSchema, db_session: Session, authenticated_user: UserModel
     ) -> AssetSerializerSchema:
@@ -405,7 +412,7 @@ class AssetService:
                 asset_type_status,
                 params=params,
                 transformer=lambda asset_type_status: [
-                    self.serialize_asset(asset_status).model_dump(by_alias=True)
+                    self.serialize_asset_status(asset_status).model_dump(by_alias=True)
                     for asset_status in asset_type_status
                 ],
             )
@@ -417,7 +424,7 @@ class AssetService:
             asset_type_status,
             params=params,
             transformer=lambda asset_type_status: [
-                self.serialize_asset(asset_status).model_dump(
+                self.serialize_asset_status(asset_status).model_dump(
                     include={*list_fields}, by_alias=True
                 )
                 for asset_status in asset_type_status

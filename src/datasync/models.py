@@ -220,6 +220,7 @@ class EmployeeTOTVSModel(Base):
     birthday = Column("birthday", Date, nullable=False)
     admission_date = Column("admission_date", Date, nullable=True)
     registration = Column("registration", String(length=16), nullable=True)
+    educational_level = Column("education_level", String(length=50), nullable=True)
 
     def __str__(self) -> str:
         return f"{self.code} - {self.full_name}"

@@ -95,12 +95,9 @@ def get_list_lendings_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    assets = lending_service.get_lendings(db_session, lending_filters, page, size)
+    lendings = lending_service.get_lendings(db_session, lending_filters, page, size)
     db_session.close()
-    return JSONResponse(
-        content=assets,
-        status_code=status.HTTP_200_OK,
-    )
+    return lendings
 
 
 @lending_router.get("/{lending_id}/")

@@ -1,6 +1,7 @@
 """Main Service"""
 import logging
 import os
+from contextlib import asynccontextmanager
 from logging.handlers import TimedRotatingFileHandler
 
 from fastapi import Depends, FastAPI
@@ -55,30 +56,57 @@ exception_handlers = {
     400: default_response_exception,
 }
 
-app = FastAPI(exception_handlers=exception_handlers)
+scheduler = SchedulerService()
 
 
-app.add_middleware(
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifesapn app"""
+    logger.info("Service Version %s", app.version)
+    create_permissions()
+    create_super_user()
+    create_initial_data()
+    scheduler.start()
+    # scheduler.schedule_job()
+    yield
+    # shutdown scheduler
+    scheduler.shutdown()
+    # close external database
+    external_db = ExternalDatabase()
+    cnxn = external_db.get_connection()
+    cursor = external_db.get_cursor()
+    if cursor is not None:
+        cursor.close()
+    if cnxn is not None:
+        cnxn.close()
+
+
+appAPI = FastAPI(
+    exception_handlers=exception_handlers, lifespan=lifespan, version="1.0.3"
+)
+
+
+appAPI.add_middleware(
     CORSMiddleware,
     allow_origins=ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/static", StaticFiles(directory=f"{BASE_DIR}/src/static"), name="static")
+appAPI.mount("/static", StaticFiles(directory=f"{BASE_DIR}/src/static"), name="static")
 
-app.include_router(auth_router, prefix=BASE_API)
-app.include_router(invoice_router, prefix=BASE_API)
-app.include_router(lending_router, prefix=BASE_API)
-app.include_router(log_router, prefix=BASE_API)
-app.include_router(people_router, prefix=BASE_API)
-app.include_router(datasync_router, prefix=BASE_API)
-app.include_router(asset_router, prefix=BASE_API)
-app.include_router(maintenance_router, prefix=BASE_API)
-app.include_router(verification_router, prefix=BASE_API)
+appAPI.include_router(auth_router, prefix=BASE_API)
+appAPI.include_router(invoice_router, prefix=BASE_API)
+appAPI.include_router(lending_router, prefix=BASE_API)
+appAPI.include_router(log_router, prefix=BASE_API)
+appAPI.include_router(people_router, prefix=BASE_API)
+appAPI.include_router(datasync_router, prefix=BASE_API)
+appAPI.include_router(asset_router, prefix=BASE_API)
+appAPI.include_router(maintenance_router, prefix=BASE_API)
+appAPI.include_router(verification_router, prefix=BASE_API)
 
 
-@app.get("/health/", tags=["Service"])
+@appAPI.get("/health/", tags=["Service"])
 def health_check(db_session: Session = Depends(get_db_session)):
     """Check server up"""
     response = {"status": "ok"}
@@ -92,7 +120,7 @@ def health_check(db_session: Session = Depends(get_db_session)):
     return response
 
 
-@app.get("/sqlserver/check/", tags=["Service"])
+@appAPI.get("/sqlserver/check/", tags=["Service"])
 def sqlserver_check():
     """Check sqlserver connection"""
     response = "Not connected"
@@ -115,36 +143,7 @@ def sqlserver_check():
         return f"{response}"
 
 
-@app.get("/", tags=["Service"])
+@appAPI.get("/", tags=["Service"])
 def root():
     """Redirect to docs"""
     return RedirectResponse(url="/docs")
-
-
-@app.on_event("startup")
-async def startup_base_data():
-    """
-    Instatialize base user and permissions if does not exist.
-    """
-    create_permissions()
-    create_super_user()
-    create_initial_data()
-
-
-@app.on_event("startup")
-async def startup_scheduler():
-    """
-    Instatialize the Scheduler Service
-    """
-    SchedulerService().start()
-    yield
-    # shutdown scheduler
-    SchedulerService().shutdown()
-    # close external database
-    external_db = ExternalDatabase()
-    cnxn = external_db.get_connection()
-    cursor = external_db.get_cursor()
-    if cursor is not None:
-        cursor.close()
-    if cnxn is not None:
-        cnxn.close()

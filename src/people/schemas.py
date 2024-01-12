@@ -87,6 +87,12 @@ class NewEmployeeSchema(BaseSchema):
         alias="genderId",
         serialization_alias="gender_id",
     )
+
+    educational_level_id: int = Field(
+        alias="educationalLevelId",
+        serialization_alias="educational_level_id",
+    )
+
     code: Optional[int] = None
     status: Optional[str] = "Ativo"
     full_name: str = Field(
@@ -124,14 +130,28 @@ class NewEmployeeSchema(BaseSchema):
 class UpdateEmployeeSchema(BaseSchema):
     """Update employee schema"""
 
-    role: Optional[str] = None
-    nationality: Optional[str] = None
-    marital_status: Optional[str] = Field(
-        alias="maritalStatus",
-        serialization_alias="marital_status",
+    role: Optional[int] = None
+    nationality_id: Optional[int] = Field(
+        alias="nationalityId",
+        serialization_alias="nationality_id",
         default=None,
     )
-    gender: Optional[str] = None
+    marital_status_id: Optional[int] = Field(
+        alias="maritalStatusId",
+        serialization_alias="marital_status_id",
+        default=None,
+    )
+    gender_id: Optional[int] = Field(
+        alias="genderId",
+        serialization_alias="gender_id",
+        default=None,
+    )
+
+    educational_level_id: Optional[int] = Field(
+        alias="educationalLevelId",
+        serialization_alias="educational_level_id",
+        default=None,
+    )
     code: Optional[str] = None
     status: Optional[str] = None
     full_name: Optional[str] = Field(
@@ -181,6 +201,9 @@ class EmployeeSerializerSchema(BaseSchema):
         serialization_alias="marimonialStatus"
     )
     gender: EmployeeGenderSerializerSchema
+    educational_level: Optional[EmployeeEducationalLevelSerializerSchema] = Field(
+        serialization_alias="educationalLevel", default=None
+    )
     code: Optional[str] = None
     status: str
     full_name: str = Field(serialization_alias="fullName")
@@ -191,6 +214,8 @@ class EmployeeSerializerSchema(BaseSchema):
     email: str
     birthday: str
     manager: Optional[str] = None
+    registration: Optional[str] = None
+    admission_date: str = Field(serialization_alias="admissionDate")
     legal_person: bool = Field(serialization_alias="legalPerson")
     employer_number: Optional[str] = Field(
         serialization_alias="employerNumber",

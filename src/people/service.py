@@ -1,6 +1,6 @@
 """People service"""
 import logging
-from typing import List
+from typing import List, Union
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -58,7 +58,9 @@ class EmployeeService:
             )
         return employee
 
-    def __validate_nested(self, data: NewEmployeeSchema, db_session: Session) -> tuple:
+    def __validate_nested(
+        self, data: Union[NewEmployeeSchema, UpdateEmployeeSchema], db_session: Session
+    ) -> tuple:
         """Validates role, nationality, marital status and gender values"""
         errors = {}
         if data.role:
@@ -101,13 +103,29 @@ class EmployeeService:
             if not gender:
                 errors.update({"field": "genderId", "error": "Genero não existe"})
 
+        if data.educational_level_id:
+            educational_level = (
+                db_session.query(EmployeeEducationalLevelTOTVSModel)
+                .filter(
+                    EmployeeEducationalLevelTOTVSModel.id == data.educational_level_id
+                )
+                .first()
+            )
+            if not educational_level:
+                errors.update(
+                    {
+                        "field": "educationalLevelId",
+                        "error": "Nível de Escolaridade não existe",
+                    }
+                )
+
         if len(errors.keys()) > 0:
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
-        return (role, nationality, marital_status, gender)
+        return (role, nationality, marital_status, gender, educational_level)
 
     def serialize_employee(self, employee: EmployeeModel) -> EmployeeSerializerSchema:
         """Serialize employee"""
@@ -123,6 +141,9 @@ class EmployeeService:
                 **employee.marital_status.__dict__
             ),
             gender=EmployeeGenderSerializerSchema(**employee.gender.__dict__),
+            educational_level=EmployeeEducationalLevelSerializerSchema(
+                **employee.educational_level.__dict__
+            ),
             status=employee.status,
             manager=employee.manager,
             address=employee.address,
@@ -168,9 +189,13 @@ class EmployeeService:
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
-        (role, nationality, marital_status, gender) = self.__validate_nested(
-            data, db_session
-        )
+        (
+            role,
+            nationality,
+            marital_status,
+            gender,
+            educational_level,
+        ) = self.__validate_nested(data, db_session)
         new_emplyoee = EmployeeModel(
             code=data.code,
             full_name=data.full_name,
@@ -188,6 +213,7 @@ class EmployeeService:
         new_emplyoee.nationality = nationality
         new_emplyoee.marital_status = marital_status
         new_emplyoee.gender = gender
+        new_emplyoee.educational_level = educational_level
 
         db_session.add(new_emplyoee)
         db_session.commit()
@@ -219,17 +245,23 @@ class EmployeeService:
                 detail="Este colaborador não pode ser editado.",
             )
 
-        (role, nationality, marital_status, gender) = self.__validate_nested(
-            data, db_session
-        )
+        (
+            role,
+            nationality,
+            marital_status,
+            gender,
+            educational_level,
+        ) = self.__validate_nested(data, db_session)
         if data.role:
             employee.role = role
-        if data.nationality:
+        if data.nationality_id:
             employee.nationality = nationality
-        if data.marital_status:
+        if data.marital_status_id:
             employee.marital_status = marital_status
-        if data.gender:
+        if data.gender_id:
             employee.gender = gender
+        if data.educational_level_id:
+            employee.educational_level = educational_level
         if data.code:
             employee.code = data.code
         if data.full_name:

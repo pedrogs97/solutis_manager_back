@@ -1,7 +1,7 @@
 """Scheduler Service"""
 import logging
 from time import time
-from typing import List
+from typing import List, Optional
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import (
@@ -16,6 +16,7 @@ from src.datasync.models import (
     AssetTOTVSModel,
     AssetTypeTOTVSModel,
     CostCenterTOTVSModel,
+    EmployeeEducationalLevelTOTVSModel,
     EmployeeGenderTOTVSModel,
     EmployeeMaritalStatusTOTVSModel,
     EmployeeNationalityTOTVSModel,
@@ -69,7 +70,7 @@ class SchedulerService:
     n.DESCRICAO AS NACIONALIDADE, p.RUA, p.NUMERO, p.COMPLEMENTO, p.BAIRRO,
     p.ESTADO, p.CIDADE, p.CEP, p.PAIS, p.CPF, p.TELEFONE1, p.CARTIDENTIDADE,
     p.UFCARTIDENT, p.ORGEMISSORIDENT, p.DTEMISSAOIDENT, p.EMAIL, pf.NOME AS CARGO,
-    cs.DESCRICAO as SITUACAO, f.DATAADMISSAO AS ADMISSAO, f.CHAPA AS MATRICULA
+    cs.DESCRICAO as SITUACAO, f.DATAADMISSAO AS ADMISSAO, f.CHAPA AS MATRICULA, i.DESCRICAO as ESCOLARIDADE
     FROM CorporeRM_SI.dbo.PPESSOA as p
     LEFT JOIN PCODESTCIVIL AS c
     ON p.ESTADOCIVIL = c.CODINTERNO
@@ -127,13 +128,13 @@ class SchedulerService:
     SQL_PCODINSTRUCAO = """
     SELECT CODINTERNO, DESCRICAO FROM PCODINSTRUCAO"""
 
-    _scheduler = None
+    _scheduler: Optional[AsyncIOScheduler] = None
 
     def __init__(self, debug=False, force=False) -> None:
         self._force = force
         if self._scheduler is None:
             jobstores = {"default": SQLAlchemyJobStore(url=get_database_url())}
-            self._scheduler = self._scheduler = AsyncIOScheduler(
+            self._scheduler = AsyncIOScheduler(
                 jobstores=jobstores,
             )
             self._debug = debug
@@ -184,10 +185,10 @@ class SchedulerService:
             if verify_changes(
                 educational_level_totvs,
                 EmployeeEducationalLevelTotvsSchema,
-                EmployeeMaritalStatusTOTVSModel,
+                EmployeeEducationalLevelTOTVSModel,
             ):
                 new_changes.append(educational_level_totvs)
-                insert(educational_level_totvs, EmployeeMaritalStatusTOTVSModel)
+                insert(educational_level_totvs, EmployeeEducationalLevelTOTVSModel)
 
         end = time()
         elapsed_time = end - start
@@ -437,6 +438,7 @@ class SchedulerService:
                 # runs at the same time (in this event loop).
                 max_instances=1,
             )
+            logger.info(f"Job scheduled. DEBUG={self._debug}")
 
     def force_fetch(self) -> None:
         """Force fetch from TOTVS database"""
