@@ -653,7 +653,7 @@ def create_initial_data():
         )
         if not employee_test:
             employee = EmployeeModel(
-                group=None,  # It comes from TOTVS
+                role=None,  # It comes from TOTVS
                 nationality=nationality,
                 marital_status=marital_status,
                 gender=gender,

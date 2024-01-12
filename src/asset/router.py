@@ -146,7 +146,7 @@ def get_asset_route(
     )
 
 
-@asset_router.get("/types/")
+@asset_router.get("-types/")
 def get_list_asset_types_route(
     search: str = "",
     filter_asset_type: str = None,
@@ -175,7 +175,7 @@ def get_list_asset_types_route(
     return assets_types
 
 
-@asset_router.get("/status/")
+@asset_router.get("-status/")
 def get_list_asset_status_route(
     filter_asset_status: str = None,
     fields: str = "",
