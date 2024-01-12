@@ -197,8 +197,8 @@ class SchedulerService:
         logger.info("Retrive educational level from TOTVS end.")
 
     def _get_marital_status_totvs(self):
-        """Excute procedure to retrive TOVTS matrimonial status data"""
-        logger.info("Retrive matrimonial status from TOTVS start.")
+        """Excute procedure to retrive TOVTS marital status data"""
+        logger.info("Retrive marital status from TOTVS start.")
         start = time()
         external_db = ExternalDatabase()
         cursor = external_db.get_cursor()
@@ -221,7 +221,7 @@ class SchedulerService:
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
         set_last_sync(len(new_changes), elapsed_time, "marital_status")
-        logger.info("Retrive matrimonial status from TOTVS end.")
+        logger.info("Retrive marital status from TOTVS end.")
 
     def _get_gender_totvs(self):
         """Excute procedure to retrive TOVTS gender data"""

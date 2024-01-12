@@ -93,7 +93,7 @@ class LendingService:
 
     def __validate_nested(self, data: NewLendingSchema, db_session: Session) -> tuple:
         """Validates employee, asset, workload, cost center and document values"""
-        errors = {}
+        errors = []
         if data.employee:
             employee = (
                 db_session.query(EmployeeModel)
@@ -101,7 +101,7 @@ class LendingService:
                 .first()
             )
             if not employee:
-                errors.update(
+                errors.append(
                     {
                         "field": "employeeId",
                         "error": f"Tipo de Colaborador não existe. {employee}",
@@ -113,7 +113,7 @@ class LendingService:
                 db_session.query(AssetModel).filter(AssetModel.id == data.asset).first()
             )
             if not asset:
-                errors.update(
+                errors.append(
                     {"field": "assetId", "error": f"Ativo não existe. {asset}"}
                 )
 
@@ -124,7 +124,7 @@ class LendingService:
                 .first()
             )
             if not document:
-                errors.update(
+                errors.append(
                     {
                         "field": "documentId",
                         "error": f"Documento não existe. {document}",
@@ -138,7 +138,7 @@ class LendingService:
                 .first()
             )
             if not workload:
-                errors.update(
+                errors.append(
                     {"field": "workloadId", "error": f"Lotação não existe. {workload}"}
                 )
 
@@ -149,7 +149,7 @@ class LendingService:
                 .first()
             )
             if not cost_center:
-                errors.update(
+                errors.append(
                     {
                         "field": "costCenter",
                         "error": f"Centro de Custo não existe. {cost_center}",
@@ -168,14 +168,14 @@ class LendingService:
                 if not witness_obj:
                     ids_not_found.append(witness_obj)
                 witnesses.append(witness)
-            errors.update(
+            errors.append(
                 {
                     "field": "witnessId",
                     "error": {"Testemunhas não encontradas": ids_not_found},
                 }
             )
 
-        if len(errors.keys()) > 0:
+        if len(errors) > 0:
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,

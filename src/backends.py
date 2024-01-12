@@ -8,7 +8,7 @@ import jwt
 from fastapi import Depends, status
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import PyJWTError
+from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
@@ -202,12 +202,14 @@ def token_is_valid(token: Union[TokenModel, dict]) -> bool:
 
 def refresh_token_has_expired(token_str: str) -> bool:
     """Verifies refresh token validity"""
-    token_decoded = jwt.decode(token_str, SECRET_KEY, algorithms=ALGORITHM)
-    print(token_decoded)
-    if "exp" not in token_decoded:
+    try:
+        token_decoded = jwt.decode(token_str, SECRET_KEY, algorithms=ALGORITHM)
+        if "exp" not in token_decoded:
+            return False
+    except ExpiredSignatureError:
         return False
     return (
-        token_decoded["exp"] < datetime.utcnow().timestamp()
+        token_decoded["exp"] > int(datetime.utcnow().timestamp())
         and token_decoded["type"] == "refresh"
     )
 

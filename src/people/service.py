@@ -62,7 +62,7 @@ class EmployeeService:
         self, data: Union[NewEmployeeSchema, UpdateEmployeeSchema], db_session: Session
     ) -> tuple:
         """Validates role, nationality, marital status and gender values"""
-        errors = {}
+        errors = []
         if data.role:
             role = (
                 db_session.query(EmployeeRoleModel)
@@ -70,7 +70,7 @@ class EmployeeService:
                 .first()
             )
             if not role:
-                errors.update({"field": "roleId", "error": "Cargo não existe"})
+                errors.append({"field": "roleId", "error": "Cargo não existe"})
 
         if data.nationality_id:
             nationality = (
@@ -79,7 +79,7 @@ class EmployeeService:
                 .first()
             )
             if not nationality:
-                errors.update(
+                errors.append(
                     {"field": "nationalityId", "error": "Nacionalidade não existe"}
                 )
 
@@ -90,7 +90,7 @@ class EmployeeService:
                 .first()
             )
             if not marital_status:
-                errors.update(
+                errors.append(
                     {"field": "maritalStatusId", "error": "Estado civil não existe"}
                 )
 
@@ -101,7 +101,7 @@ class EmployeeService:
                 .first()
             )
             if not gender:
-                errors.update({"field": "genderId", "error": "Genero não existe"})
+                errors.append({"field": "genderId", "error": "Genero não existe"})
 
         if data.educational_level_id:
             educational_level = (
@@ -164,13 +164,13 @@ class EmployeeService:
         authenticated_user: UserModel,
     ) -> EmployeeSerializerSchema:
         """Creates new employee"""
-        errors = {}
+        errors = []
         if data.code and (
             db_session.query(EmployeeModel)
             .filter(EmployeeModel.code == data.code)
             .first()
         ):
-            errors.update({"field": "code", "error": "Colaborador já existe"})
+            errors.append({"field": "code", "error": "Colaborador já existe"})
 
         if data.taxpayer_identification and (
             db_session.query(EmployeeModel)
@@ -179,11 +179,11 @@ class EmployeeService:
             )
             .first()
         ):
-            errors.update(
+            errors.append(
                 {"field": "taxpayer_identification", "error": "Colaborador já existe"}
             )
 
-        if len(errors.keys()) > 0:
+        if len(errors) > 0:
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,

@@ -47,7 +47,7 @@ class AssetService:
 
     def __validate_nested(self, data: NewAssetSchema, db_session: Session) -> tuple:
         """Validates clothing size, type and status values"""
-        errors = {}
+        errors = []
         if data.type:
             asset_type = (
                 db_session.query(AssetTypeModel)
@@ -55,7 +55,7 @@ class AssetService:
                 .first()
             )
             if not asset_type:
-                errors.update(
+                errors.append(
                     {
                         "field": "assetType",
                         "error": f"Tipo de Ativo não existe. {asset_type}",
@@ -69,7 +69,7 @@ class AssetService:
                 .first()
             )
             if not clothing_size:
-                errors.update(
+                errors.append(
                     {
                         "field": "clothingSize",
                         "error": f"Tamanho de roupa não existe. {clothing_size}",
@@ -83,14 +83,14 @@ class AssetService:
                 .first()
             )
             if not asset_status:
-                errors.update(
+                errors.append(
                     {
                         "field": "assetStatus",
                         "error": f"Situação de Ativo não existe. {asset_status}",
                     }
                 )
 
-        if len(errors.keys()) > 0:
+        if len(errors) > 0:
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -155,27 +155,27 @@ class AssetService:
         self, data: NewAssetSchema, db_session: Session, authenticated_user: UserModel
     ) -> AssetSerializerSchema:
         """Creates new asset"""
-        errors = {}
+        errors = []
         if (
             data.code
             and db_session.query(AssetModel)
             .filter(AssetModel.code == data.code)
             .first()
         ):
-            errors.update({"field": "code", "error": "Este Código já existe."})
+            errors.append({"field": "code", "error": "Este Código já existe."})
         if (
             db_session.query(AssetModel)
             .filter(AssetModel.register_number == data.register_number)
             .first()
         ):
-            errors.update(
+            errors.append(
                 {
                     "field": "registerNumber",
                     "error": "Este N° de Patrimônio já existe",
                 }
             )
 
-        if len(errors.keys()) > 0:
+        if len(errors) > 0:
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
