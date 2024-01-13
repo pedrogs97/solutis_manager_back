@@ -358,7 +358,13 @@ class AssetService:
                 for asset_type in asset_type_list
             ]
 
-        return [self.serialize_asset_type(asset_type) for asset_type in asset_type_list]
+        list_fields = fields.split(",")
+        return [
+            self.serialize_asset_type(asset_type).model_dump(
+                include={*list_fields}, by_alias=True
+            )
+            for asset_type in asset_type_list
+        ]
 
     def get_asset_status(
         self,
@@ -376,8 +382,12 @@ class AssetService:
                 for asset_status in asset_status
             ]
 
+        list_fields = fields.split(",")
         return [
-            self.serialize_asset_status(asset_status) for asset_status in asset_status
+            self.serialize_asset_status(asset_status).model_dump(
+                include={*list_fields}, by_alias=True
+            )
+            for asset_status in asset_status
         ]
 
     def get_asset_clothing_size(
@@ -400,7 +410,10 @@ class AssetService:
                 for asset_clothing_size in asset_clothing_size
             ]
 
+        list_fields = fields.split(",")
         return [
-            self.serialize_asset_clothing_size(asset_status)
+            self.serialize_asset_clothing_size(asset_status).model_dump(
+                include={*list_fields}, by_alias=True
+            )
             for asset_status in asset_clothing_size
         ]
