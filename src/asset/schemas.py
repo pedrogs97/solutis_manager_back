@@ -39,7 +39,7 @@ class AssetTypeSerializerSchema(BaseSchema):
     """
 
     id: int
-    code: int
+    code: str
     group_code: str = Field(serialization_alias="groupCode")
     name: str
 

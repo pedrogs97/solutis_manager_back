@@ -382,6 +382,7 @@ class SchedulerService:
         self._get_nationality_totvs()
         self._get_cost_center_totvs()
         self._get_role_totvs()
+        self._get_educational_level_totvs()
         self._get_asset_totvs()
         self._get_employees_totvs()
         logger.info("Retrive from TOTVS end.")

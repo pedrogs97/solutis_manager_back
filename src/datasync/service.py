@@ -101,7 +101,7 @@ def totvs_to_employee_schema(
             if admission_datetime is not None
             else None,
             registration=row["MATRICULA"] if row["MATRICULA"] else "",
-            education_level=row["ESCOLARIDADE"] if row["ESCOLARIDADE"] else "",
+            educational_level=row["ESCOLARIDADE"] if row["ESCOLARIDADE"] else "",
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"

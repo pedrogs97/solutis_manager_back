@@ -127,7 +127,7 @@ class EmployeeService:
                     }
                 )
 
-        if len(len(errors)) > 0:
+        if len(errors) > 0:
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -151,7 +151,9 @@ class EmployeeService:
             gender=EmployeeGenderSerializerSchema(**employee.gender.__dict__),
             educational_level=EmployeeEducationalLevelSerializerSchema(
                 **employee.educational_level.__dict__
-            ),
+            )
+            if employee.educational_level
+            else None,
             status=employee.status,
             manager=employee.manager,
             address=employee.address,
@@ -163,6 +165,9 @@ class EmployeeService:
             legal_person=employee.legal_person,
             national_identification=employee.national_identification,
             taxpayer_identification=employee.taxpayer_identification,
+            admission_date=employee.admission_date.strftime(DEFAULT_DATE_FORMAT)
+            if employee.admission_date
+            else None,
         )
 
     def create_employee(
@@ -400,6 +405,12 @@ class EmpleoyeeGeneralSerivce:
         """Serialize role"""
         return EmployeeRoleSerializerSchema(**role.__dict__)
 
+    def serialize_educational_level(
+        self, educational_level: EmployeeEducationalLevelTOTVSModel
+    ) -> EmployeeEducationalLevelSerializerSchema:
+        """Serialize educational_level"""
+        return EmployeeEducationalLevelSerializerSchema(**educational_level.__dict__)
+
     def get_nationalities(
         self,
         db_session: Session,
@@ -533,12 +544,14 @@ class EmpleoyeeGeneralSerivce:
 
         if fields == "":
             return [
-                self.serialize_role(role).model_dump(by_alias=True)
+                self.serialize_educational_level(role).model_dump(by_alias=True)
                 for role in educational_levels_list
             ]
 
         list_fields = fields.split(",")
         return [
-            self.serialize_role(role).model_dump(include={*list_fields}, by_alias=True)
+            self.serialize_educational_level(role).model_dump(
+                include={*list_fields}, by_alias=True
+            )
             for role in educational_levels_list
         ]

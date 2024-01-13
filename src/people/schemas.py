@@ -67,7 +67,7 @@ class EmployeeEducationalLevelSerializerSchema(BaseSchema):
     """
 
     id: int
-    name: str
+    description: str
     code: str
 
 
@@ -215,7 +215,7 @@ class EmployeeSerializerSchema(BaseSchema):
     birthday: str
     manager: Optional[str] = None
     registration: Optional[str] = None
-    admission_date: str = Field(serialization_alias="admissionDate")
+    admission_date: Optional[str] = Field(serialization_alias="admissionDate")
     legal_person: bool = Field(serialization_alias="legalPerson")
     employer_number: Optional[str] = Field(
         serialization_alias="employerNumber",

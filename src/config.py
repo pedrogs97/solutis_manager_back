@@ -88,6 +88,7 @@ PERMISSIONS = {
         "models": [
             {"name": "lending", "label": "Comodato"},
             {"name": "document", "label": "Documentos"},
+            {"name": "workload", "label": "Lotação"},
         ],
         "label": "Comodato",
     },

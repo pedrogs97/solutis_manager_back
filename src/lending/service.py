@@ -1,7 +1,7 @@
 """Lenging service"""
 import logging
 from datetime import date
-from typing import Union
+from typing import List, Union
 
 from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
@@ -13,7 +13,7 @@ from src.asset.models import AssetModel
 from src.asset.schemas import AssetSerializerSchema
 from src.auth.models import UserModel
 from src.config import CONTRACT_UPLOAD_DIR
-from src.lending.filters import DocumentFilter, LendingFilter
+from src.lending.filters import DocumentFilter, LendingFilter, WorkloadFilter
 from src.lending.models import (
     DocumentModel,
     DocumentTypeModel,
@@ -90,6 +90,10 @@ class LendingService:
             signed_date=lending.signed_date.strftime("DEFAULT_DATE_FORMAT"),
             glpi_number=lending.glpi_number,
         )
+
+    def serialize_workload(self, workload: WorkloadModel) -> WorkloadSerializerSchema:
+        """Serialize workload"""
+        return WorkloadSerializerSchema(**workload.__dict__)
 
     def __validate_nested(self, data: NewLendingSchema, db_session: Session) -> tuple:
         """Validates employee, asset, workload, cost center and document values"""
@@ -265,6 +269,30 @@ class LendingService:
             ],
         )
         return paginated
+
+    def get_workloads(
+        self,
+        db_session: Session,
+        workload_filters: WorkloadFilter,
+        fields: str = "",
+    ) -> List[WorkloadSerializerSchema]:
+        """Get workloads list"""
+
+        workloads_list = workload_filters.filter(db_session.query(WorkloadModel))
+
+        if fields == "":
+            return [
+                self.serialize_workload(workload).model_dump(by_alias=True)
+                for workload in workloads_list
+            ]
+
+        list_fields = fields.split(",")
+        return [
+            self.serialize_workload(workload).model_dump(
+                include={*list_fields}, by_alias=True
+            )
+            for workload in workloads_list
+        ]
 
 
 class DocumentService:

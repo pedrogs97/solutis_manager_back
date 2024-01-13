@@ -15,7 +15,7 @@ from src.config import (
     PAGE_SIZE_DESCRIPTION,
     PAGINATION_NUMBER,
 )
-from src.lending.filters import DocumentFilter, LendingFilter
+from src.lending.filters import DocumentFilter, LendingFilter, WorkloadFilter
 from src.lending.schemas import (
     NewLendingDocSchema,
     NewLendingSchema,
@@ -131,6 +131,25 @@ def get_lending_route(
         content=serializer.model_dump(by_alias=True),
         status_code=status.HTTP_200_OK,
     )
+
+
+@lending_router.get("-workloads/")
+def get_list_workloads_route(
+    role_filters: WorkloadFilter = FilterDepends(WorkloadFilter),
+    fields: str = "",
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "workload", "action": "view"})
+    ),
+):
+    """List workloads and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    workloads = lending_service.get_workloads(db_session, role_filters, fields)
+    db_session.close()
+    return JSONResponse(content=workloads, status_code=status.HTTP_200_OK)
 
 
 @lending_router.post("/contracts/create/", response_class=FileResponse)

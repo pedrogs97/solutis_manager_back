@@ -6,7 +6,6 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from src.asset.filters import (
@@ -371,13 +370,6 @@ class AssetService:
 
         asset_status = filter_asset_status.filter(db_session.query(AssetStatusModel))
 
-        if filter_asset_status:
-            asset_status = asset_status.filter(
-                or_(
-                    AssetStatusModel.name == filter_asset_status,
-                )
-            )
-
         if fields == "":
             return [
                 self.serialize_asset_status(asset_status).model_dump(by_alias=True)
@@ -399,13 +391,6 @@ class AssetService:
         asset_clothing_size = filter_asset_clothing_size.filter(
             db_session.query(AssetClothingSizeModel)
         )
-
-        if filter_asset_clothing_size:
-            asset_clothing_size = asset_clothing_size.filter(
-                or_(
-                    AssetStatusModel.name == filter_asset_clothing_size,
-                )
-            )
 
         if fields == "":
             return [
