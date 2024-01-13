@@ -6,7 +6,12 @@ from fastapi.responses import JSONResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
-from src.asset.filters import AssetFilter
+from src.asset.filters import (
+    AssetClothingSizeFilter,
+    AssetFilter,
+    AssetStatusFilter,
+    AssetTypeFilter,
+)
 from src.asset.schemas import InactivateAssetSchema, NewAssetSchema, UpdateAssetSchema
 from src.asset.service import AssetService
 from src.auth.models import UserModel
@@ -148,16 +153,8 @@ def get_asset_route(
 
 @asset_router.get("-types/")
 def get_list_asset_types_route(
-    search: str = "",
-    filter_asset_type: str = None,
+    filter_asset_type: AssetTypeFilter = FilterDepends(AssetTypeFilter),
     fields: str = "",
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
-    ),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "asset", "model": "asset_type", "action": "view"})
@@ -168,24 +165,15 @@ def get_list_asset_types_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    assets_types = asset_service.get_asset_types(
-        db_session, search, filter_asset_type, fields, page, size
-    )
+    assets_types = asset_service.get_asset_types(db_session, filter_asset_type, fields)
     db_session.close()
-    return assets_types
+    return JSONResponse(content=assets_types, status_code=status.HTTP_200_OK)
 
 
 @asset_router.get("-status/")
 def get_list_asset_status_route(
-    filter_asset_status: str = None,
+    filter_asset_status: AssetStatusFilter = FilterDepends(AssetStatusFilter),
     fields: str = "",
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
-    ),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker(
@@ -199,7 +187,32 @@ def get_list_asset_status_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     assets_status = asset_service.get_asset_status(
-        db_session, filter_asset_status, fields, page, size
+        db_session, filter_asset_status, fields
     )
     db_session.close()
-    return assets_status
+    return JSONResponse(content=assets_status, status_code=status.HTTP_200_OK)
+
+
+@asset_router.get("-clothing-size/")
+def get_list_asset_clothing_size_route(
+    filter_asset_clothing_size: AssetClothingSizeFilter = FilterDepends(
+        AssetClothingSizeFilter
+    ),
+    fields: str = "",
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            {"module": "asset", "model": "asset_clothing_size", "action": "view"}
+        )
+    ),
+):
+    """List asset clothing size and apply filters route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    assets_status = asset_service.get_asset_clothing_size(
+        db_session, filter_asset_clothing_size, fields
+    )
+    db_session.close()
+    return JSONResponse(content=assets_status, status_code=status.HTTP_200_OK)

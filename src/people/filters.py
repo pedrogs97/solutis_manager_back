@@ -5,6 +5,7 @@ from typing import List, Optional
 from fastapi_filter import FilterDepends, with_prefix
 from fastapi_filter.contrib.sqlalchemy import Filter
 
+from src.datasync.models import EmployeeEducationalLevelTOTVSModel
 from src.people.models import (
     CostCenterModel,
     EmployeeGenderModel,
@@ -27,7 +28,7 @@ class CostCenterFilter(Filter):
 
 
 class EmployeeMaritalStatusFilter(Filter):
-    """Cost center filter"""
+    """Marital Status filter"""
 
     description: Optional[str] = None
 
@@ -38,7 +39,7 @@ class EmployeeMaritalStatusFilter(Filter):
 
 
 class EmployeeGenderFilter(Filter):
-    """Cost center filter"""
+    """Gender filter"""
 
     description: Optional[str] = None
 
@@ -49,7 +50,7 @@ class EmployeeGenderFilter(Filter):
 
 
 class EmployeeNationalityFilter(Filter):
-    """Cost center filter"""
+    """Nationality filter"""
 
     description: Optional[str] = None
 
@@ -60,7 +61,7 @@ class EmployeeNationalityFilter(Filter):
 
 
 class EmployeeRoleFilter(Filter):
-    """Cost center filter"""
+    """Role filter"""
 
     name: Optional[str] = None
 
@@ -68,6 +69,17 @@ class EmployeeRoleFilter(Filter):
         """Filter constants"""
 
         model = EmployeeRoleModel
+
+
+class EmployeeEducationalLevelFilter(Filter):
+    """Educational level filter"""
+
+    description: Optional[str] = None
+
+    class Constants(Filter.Constants):
+        """Filter constants"""
+
+        model = EmployeeEducationalLevelTOTVSModel
 
 
 class EmployeeFullNameFilter(Filter):

@@ -15,7 +15,7 @@ from src.config import (
     PAGE_SIZE_DESCRIPTION,
     PAGINATION_NUMBER,
 )
-from src.lending.filters import LendingFilter
+from src.lending.filters import DocumentFilter, LendingFilter
 from src.lending.schemas import (
     NewLendingDocSchema,
     NewLendingSchema,
@@ -82,7 +82,7 @@ def get_list_lendings_route(
 
     Args:
         search (str, optional): A string used for searching lendings. Defaults to "".
-        filter_lending (str, optional): A string used for filtering lendings based on asset. Defaults to None.
+        lending_filters (str, optional): A string used for filtering lendings based on asset. Defaults to None.
         page (int, optional): An integer representing the page number of the results. Defaults to 1.
         size (int, optional): An integer representing the number of results per page. Defaults to PAGINATION_NUMBER.
         db_session (Session, optional): The database session. Defaults to Depends(get_db_session).
@@ -245,3 +245,42 @@ async def post_import_contract(
         content=serializer.model_dump(by_alias=True),
         status_code=status.HTTP_200_OK,
     )
+
+
+@lending_router.get("/documents/list/")
+def get_list_documents_route(
+    document_filters: DocumentFilter = FilterDepends(DocumentFilter),
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "view"})
+    ),
+):
+    """List documents and apply filters route
+
+    Retrieves a list of documents and applies filters based on the provided parameters.
+
+    Args:
+        search (str, optional): A string used for searching documents. Defaults to "".
+        document_filters (str, optional): A string used for filtering documents based on asset. Defaults to None.
+        page (int, optional): An integer representing the page number of the results. Defaults to 1.
+        size (int, optional): An integer representing the number of results per page. Defaults to PAGINATION_NUMBER.
+        db_session (Session, optional): The database session. Defaults to Depends(get_db_session).
+        authenticated_user (Union[UserModel, None], optional): The authenticated user. Defaults to Depends(PermissionChecker).
+
+    Returns:
+        JSONResponse: JSON response containing the retrieved documents with a status code of 200.
+    """
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    documents = document_service.get_documents(db_session, document_filters, page, size)
+    db_session.close()
+    return documents

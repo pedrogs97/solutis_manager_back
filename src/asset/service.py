@@ -1,5 +1,6 @@
 """Asset service"""
 import logging
+from typing import List
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -8,7 +9,12 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from src.asset.filters import AssetFilter
+from src.asset.filters import (
+    AssetClothingSizeFilter,
+    AssetFilter,
+    AssetStatusFilter,
+    AssetTypeFilter,
+)
 from src.asset.models import (
     AssetClothingSizeModel,
     AssetModel,
@@ -150,6 +156,13 @@ class AssetService:
         """Serialize asset status"""
 
         return AssetStatusSerializerSchema(**asset_status.__dict__)
+
+    def serialize_asset_clothing_size(
+        self, asset_clothing_size: AssetClothingSizeModel
+    ) -> AssetClothingSizeSerializer:
+        """Serialize asset clothing size"""
+
+        return AssetClothingSizeSerializer(**asset_clothing_size.__dict__)
 
     def create_asset(
         self, data: NewAssetSchema, db_session: Session, authenticated_user: UserModel
@@ -333,101 +346,76 @@ class AssetService:
     def get_asset_types(
         self,
         db_session: Session,
-        search: str = "",
-        filter_asset_type: str = None,
+        filter_asset_type: AssetTypeFilter,
         fields: str = "",
-        page: int = 1,
-        size: int = 50,
-    ) -> Page[AssetTypeSerializerSchema]:
+    ) -> List[AssetTypeSerializerSchema]:
         """Get asset types list"""
 
-        asset_type_list = db_session.query(AssetTypeModel).filter(
-            or_(
-                AssetTypeModel.code.ilike(f"%{search}"),
-                AssetTypeModel.name.ilike(f"%{search}%"),
-                AssetTypeModel.acronym.ilike(f"%{search}"),
-            )
-        )
-
-        if filter_asset_type:
-            asset_type_list = asset_type_list.filter(
-                or_(
-                    AssetTypeModel.acronym == filter_asset_type,
-                )
-            )
-
-            asset_type_list = asset_type_list.filter(
-                or_(
-                    AssetStatusModel.name == filter_asset_type,
-                )
-            )
+        asset_type_list = filter_asset_type.filter(db_session.query(AssetTypeModel))
 
         if fields == "":
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                asset_type_list,
-                params=params,
-                transformer=lambda asset_type_list: [
-                    self.serialize_asset_type(asset_type).model_dump(by_alias=True)
-                    for asset_type in asset_type_list
-                ],
-            )
-            return paginated
-        list_fields = fields.split(",")
-        params = Params(page=page, size=size)
-        paginated = paginate(
-            asset_type_list,
-            params=params,
-            transformer=lambda asset_type_list: [
-                self.serialize_asset_type(asset_type).model_dump(
-                    include={*list_fields}, by_alias=True
-                )
+            return [
+                self.serialize_asset_type(asset_type).model_dump(by_alias=True)
                 for asset_type in asset_type_list
-            ],
-        )
-        return paginated
+            ]
+
+        return [self.serialize_asset_type(asset_type) for asset_type in asset_type_list]
 
     def get_asset_status(
         self,
         db_session: Session,
-        filter_asset_status: str = None,
+        filter_asset_status: AssetStatusFilter,
         fields: str = "",
-        page: int = 1,
-        size: int = 50,
-    ) -> Page[AssetTypeSerializerSchema]:
+    ) -> List[AssetTypeSerializerSchema]:
         """Get asset status list"""
 
-        asset_type_status = db_session.query(AssetTypeModel)
+        asset_status = filter_asset_status.filter(db_session.query(AssetStatusModel))
 
         if filter_asset_status:
-            asset_type_status = asset_type_status.filter(
+            asset_status = asset_status.filter(
                 or_(
                     AssetStatusModel.name == filter_asset_status,
                 )
             )
 
         if fields == "":
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                asset_type_status,
-                params=params,
-                transformer=lambda asset_type_status: [
-                    self.serialize_asset_status(asset_status).model_dump(by_alias=True)
-                    for asset_status in asset_type_status
-                ],
-            )
-            return paginated
+            return [
+                self.serialize_asset_status(asset_status).model_dump(by_alias=True)
+                for asset_status in asset_status
+            ]
 
-        list_fields = fields.split(",")
-        params = Params(page=page, size=size)
-        paginated = paginate(
-            asset_type_status,
-            params=params,
-            transformer=lambda asset_type_status: [
-                self.serialize_asset_status(asset_status).model_dump(
-                    include={*list_fields}, by_alias=True
-                )
-                for asset_status in asset_type_status
-            ],
+        return [
+            self.serialize_asset_status(asset_status) for asset_status in asset_status
+        ]
+
+    def get_asset_clothing_size(
+        self,
+        db_session: Session,
+        filter_asset_clothing_size: AssetClothingSizeFilter,
+        fields: str = "",
+    ) -> List[AssetTypeSerializerSchema]:
+        """Get asset status list"""
+
+        asset_clothing_size = filter_asset_clothing_size.filter(
+            db_session.query(AssetClothingSizeModel)
         )
-        return paginated
+
+        if filter_asset_clothing_size:
+            asset_clothing_size = asset_clothing_size.filter(
+                or_(
+                    AssetStatusModel.name == filter_asset_clothing_size,
+                )
+            )
+
+        if fields == "":
+            return [
+                self.serialize_asset_clothing_size(asset_clothing_size).model_dump(
+                    by_alias=True
+                )
+                for asset_clothing_size in asset_clothing_size
+            ]
+
+        return [
+            self.serialize_asset_clothing_size(asset_status)
+            for asset_status in asset_clothing_size
+        ]

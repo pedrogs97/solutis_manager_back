@@ -938,18 +938,8 @@ class PermissionService:
         self,
         db_session: Session,
         permission_filter: PermissionFilter,
-        page: int = 1,
-        size: int = 50,
     ) -> Page[PermissionSerializerSchema]:
         """Get permission list"""
         permission_list = permission_filter.filter(db_session.query(PermissionModel))
 
-        params = Params(page=page, size=size)
-        paginated = paginate(
-            permission_list,
-            params=params,
-            transformer=lambda permission_list: [
-                self.serialize_permission(permission) for permission in permission_list
-            ],
-        )
-        return paginated
+        return [self.serialize_permission(permission) for permission in permission_list]

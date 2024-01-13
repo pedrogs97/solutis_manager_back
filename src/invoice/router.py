@@ -82,10 +82,7 @@ def get_list_invoices_route(
         )
     invoices = invoice_service.get_invoices(db_session, invoice_filters, page, size)
     db_session.close()
-    return JSONResponse(
-        content=invoices,
-        status_code=status.HTTP_200_OK,
-    )
+    return invoices
 
 
 @invoice_router.get("/invoices/{invoice_id}/")

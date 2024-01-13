@@ -348,13 +348,6 @@ def get_list_permission_route(
         PermissionChecker({"module": "auth", "model": "permission", "action": "view"})
     ),
     permission_filter: PermissionFilter = FilterDepends(PermissionFilter),
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
-    ),
     db_session: Session = Depends(get_db_session),
 ):
     """List permissions route"""
@@ -363,11 +356,9 @@ def get_list_permission_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    permissions = permission_serivce.get_permissions(
-        db_session, permission_filter, page, size
-    )
+    permissions = permission_serivce.get_permissions(db_session, permission_filter)
     db_session.close()
-    return permissions
+    return JSONResponse(content=permissions, status_code=status.HTTP_200_OK)
 
 
 @auth_router.post("/send-new-password/", description="Send new password to an user")

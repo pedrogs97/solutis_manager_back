@@ -209,7 +209,7 @@ def refresh_token_has_expired(token_str: str) -> bool:
     except ExpiredSignatureError:
         return False
     return (
-        token_decoded["exp"] > int(datetime.utcnow().timestamp())
+        token_decoded["exp"] < int(datetime.utcnow().timestamp())
         and token_decoded["type"] == "refresh"
     )
 

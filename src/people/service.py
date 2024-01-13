@@ -15,7 +15,15 @@ from src.lending.models import LendingModel
 from src.lending.schemas import CostCenterSerializerSchema, LendingSerializerSchema
 from src.lending.service import LendingService
 from src.log.services import LogService
-from src.people.filters import EmployeeFilter
+from src.people.filters import (
+    CostCenterFilter,
+    EmployeeEducationalLevelFilter,
+    EmployeeFilter,
+    EmployeeGenderFilter,
+    EmployeeMaritalStatusFilter,
+    EmployeeNationalityFilter,
+    EmployeeRoleFilter,
+)
 from src.people.models import (
     CostCenterModel,
     EmployeeGenderModel,
@@ -112,14 +120,14 @@ class EmployeeService:
                 .first()
             )
             if not educational_level:
-                errors.update(
+                errors.append(
                     {
                         "field": "educationalLevelId",
                         "error": "Nível de Escolaridade não existe",
                     }
                 )
 
-        if len(errors.keys()) > 0:
+        if len(len(errors)) > 0:
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -395,223 +403,142 @@ class EmpleoyeeGeneralSerivce:
     def get_nationalities(
         self,
         db_session: Session,
+        nationality_filters: EmployeeNationalityFilter,
         fields: str = "",
-        page: int = 1,
-        size: int = 50,
-    ) -> Page[EmployeeNationalitySerializerSchema]:
+    ) -> List[EmployeeNationalitySerializerSchema]:
         """Get nationalities list"""
 
-        nationalities_list = db_session.query(EmployeeNationalityModel)
+        nationalities_list = nationality_filters.filter(
+            db_session.query(EmployeeNationalityModel)
+        )
 
         if fields == "":
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                nationalities_list,
-                params=params,
-                transformer=lambda nationalities_list: [
-                    self.serialize_nationality(nationality)
-                    for nationality in nationalities_list
-                ],
+            return [
+                self.serialize_nationality(nationality).model_dump(by_alias=True)
+                for nationality in nationalities_list
+            ]
+        list_fields = fields.split(",")
+        return [
+            self.serialize_nationality(nationality).model_dump(
+                include={*list_fields}, by_alias=True
             )
-        else:
-            list_fields = fields.split(",")
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                nationalities_list,
-                params=params,
-                transformer=lambda nationalities_list: [
-                    self.serialize_nationality(nationality).model_dump(
-                        include={*list_fields}, by_alias=True
-                    )
-                    for nationality in nationalities_list
-                ],
-            )
-
-        return paginated
+            for nationality in nationalities_list
+        ]
 
     def get_marital_status(
         self,
         db_session: Session,
+        marital_status_filter: EmployeeMaritalStatusFilter,
         fields: str = "",
-        page: int = 1,
-        size: int = 50,
-    ) -> Page[EmployeeMatrimonialStatusSerializerSchema]:
+    ) -> List[EmployeeMatrimonialStatusSerializerSchema]:
         """Get marital status list"""
 
-        marital_status_list = db_session.query(EmployeeMaritalStatusModel)
+        marital_status_list = marital_status_filter.filter(
+            db_session.query(EmployeeMaritalStatusModel)
+        )
 
         if fields == "":
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                marital_status_list,
-                params=params,
-                transformer=lambda marital_status_list: [
-                    self.serialize_marital_status(marital_status).model_dump(
-                        by_alias=True
-                    )
-                    for marital_status in marital_status_list
-                ],
+            return [
+                self.serialize_marital_status(marital_status).model_dump(by_alias=True)
+                for marital_status in marital_status_list
+            ]
+        list_fields = fields.split(",")
+        return [
+            self.serialize_marital_status(marital_status).model_dump(
+                include={*list_fields}, by_alias=True
             )
-        else:
-            list_fields = fields.split(",")
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                marital_status_list,
-                params=params,
-                transformer=lambda marital_status_list: [
-                    self.serialize_marital_status(marital_status).model_dump(
-                        include={*list_fields}, by_alias=True
-                    )
-                    for marital_status in marital_status_list
-                ],
-            )
-
-        return paginated
+            for marital_status in marital_status_list
+        ]
 
     def get_center_cost(
         self,
         db_session: Session,
+        center_cost_filter: CostCenterFilter,
         fields: str = "",
-        page: int = 1,
-        size: int = 50,
-    ) -> Page[CostCenterSerializerSchema]:
+    ) -> List[CostCenterSerializerSchema]:
         """Get center cost list"""
 
-        center_cost_list = db_session.query(CostCenterModel)
+        center_cost_list = center_cost_filter.filter(db_session.query(CostCenterModel))
 
         if fields == "":
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                center_cost_list,
-                params=params,
-                transformer=lambda center_cost_list: [
-                    self.serialize_cost_center(center_cost).model_dump(by_alias=True)
-                    for center_cost in center_cost_list
-                ],
+            return [
+                self.serialize_cost_center(center_cost).model_dump(by_alias=True)
+                for center_cost in center_cost_list
+            ]
+        list_fields = fields.split(",")
+        return [
+            self.serialize_cost_center(center_cost).model_dump(
+                include={*list_fields}, by_alias=True
             )
-        else:
-            list_fields = fields.split(",")
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                center_cost_list,
-                params=params,
-                transformer=lambda center_cost_list: [
-                    self.serialize_cost_center(center_cost).model_dump(
-                        include={*list_fields}, by_alias=True
-                    )
-                    for center_cost in center_cost_list
-                ],
-            )
-
-        return paginated
+            for center_cost in center_cost_list
+        ]
 
     def get_genders(
         self,
         db_session: Session,
+        genders_filters: EmployeeGenderFilter,
         fields: str = "",
-        page: int = 1,
-        size: int = 50,
-    ) -> Page[EmployeeGenderSerializerSchema]:
+    ) -> List[EmployeeGenderSerializerSchema]:
         """Get genders list"""
 
-        genders_list = db_session.query(EmployeeGenderModel)
+        genders_list = genders_filters.filter(db_session.query(EmployeeGenderModel))
 
         if fields == "":
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                genders_list,
-                params=params,
-                transformer=lambda genders_list: [
-                    self.serialize_gender(gender).model_dump(by_alias=True)
-                    for gender in genders_list
-                ],
-            )
-        else:
-            list_fields = fields.split(",")
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                genders_list,
-                params=params,
-                transformer=lambda genders_list: [
-                    self.serialize_gender(gender).model_dump(
-                        include={*list_fields}, by_alias=True
-                    )
-                    for gender in genders_list
-                ],
-            )
+            return [
+                self.serialize_gender(gender).model_dump(by_alias=True)
+                for gender in genders_list
+            ]
 
-        return paginated
+        list_fields = fields.split(",")
+        return [
+            self.serialize_gender(gender).model_dump(
+                include={*list_fields}, by_alias=True
+            )
+            for gender in genders_list
+        ]
 
     def get_roles(
         self,
         db_session: Session,
+        roles_filter: EmployeeRoleFilter,
         fields: str = "",
-        page: int = 1,
-        size: int = 50,
-    ) -> Page[EmployeeRoleSerializerSchema]:
+    ) -> List[EmployeeRoleSerializerSchema]:
         """Get roles list"""
 
-        roles_list = db_session.query(EmployeeRoleModel)
+        roles_list = roles_filter.filter(db_session.query(EmployeeRoleModel))
 
         if fields == "":
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                roles_list,
-                params=params,
-                transformer=lambda roles_list: [
-                    self.serialize_role(role).model_dump(by_alias=True)
-                    for role in roles_list
-                ],
-            )
-        else:
-            list_fields = fields.split(",")
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                roles_list,
-                params=params,
-                transformer=lambda roles_list: [
-                    self.serialize_role(role).model_dump(
-                        include={*list_fields}, by_alias=True
-                    )
-                    for role in roles_list
-                ],
-            )
+            return [
+                self.serialize_role(role).model_dump(by_alias=True)
+                for role in roles_list
+            ]
 
-        return paginated
+        list_fields = fields.split(",")
+        return [
+            self.serialize_role(role).model_dump(include={*list_fields}, by_alias=True)
+            for role in roles_list
+        ]
 
     def get_educational_levels(
         self,
         db_session: Session,
+        educational_level_filter: EmployeeEducationalLevelFilter,
         fields: str = "",
-        page: int = 1,
-        size: int = 50,
-    ) -> Page[EmployeeEducationalLevelSerializerSchema]:
+    ) -> List[EmployeeEducationalLevelSerializerSchema]:
         """Get educational levels list"""
 
-        educational_levels_list = db_session.query(EmployeeEducationalLevelTOTVSModel)
+        educational_levels_list = educational_level_filter.filter(
+            db_session.query(EmployeeEducationalLevelTOTVSModel)
+        )
 
         if fields == "":
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                educational_levels_list,
-                params=params,
-                transformer=lambda educational_levels_list: [
-                    self.serialize_role(role).model_dump(by_alias=True)
-                    for role in educational_levels_list
-                ],
-            )
-        else:
-            list_fields = fields.split(",")
-            params = Params(page=page, size=size)
-            paginated = paginate(
-                educational_levels_list,
-                params=params,
-                transformer=lambda educational_levels_list: [
-                    self.serialize_role(role).model_dump(
-                        include={*list_fields}, by_alias=True
-                    )
-                    for role in educational_levels_list
-                ],
-            )
+            return [
+                self.serialize_role(role).model_dump(by_alias=True)
+                for role in educational_levels_list
+            ]
 
-        return paginated
+        list_fields = fields.split(",")
+        return [
+            self.serialize_role(role).model_dump(include={*list_fields}, by_alias=True)
+            for role in educational_levels_list
+        ]

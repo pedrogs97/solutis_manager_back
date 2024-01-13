@@ -13,7 +13,7 @@ from src.asset.models import AssetModel
 from src.asset.schemas import AssetSerializerSchema
 from src.auth.models import UserModel
 from src.config import CONTRACT_UPLOAD_DIR
-from src.lending.filters import LendingFilter
+from src.lending.filters import DocumentFilter, LendingFilter
 from src.lending.models import (
     DocumentModel,
     DocumentTypeModel,
@@ -547,3 +547,25 @@ class DocumentService:
         logger.info("Upload Document signed. %s", str(document))
 
         return self.serialize_document(document)
+
+    def get_documents(
+        self,
+        db_session: Session,
+        document_filters: DocumentFilter,
+        page: int = 1,
+        size: int = 50,
+    ) -> Page[DocumentSerializerSchema]:
+        """Get documents list"""
+
+        document_list = document_filters.filter(db_session.query(LendingModel))
+
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            document_list,
+            params=params,
+            transformer=lambda document_list: [
+                self.serialize_document(document).model_dump(by_alias=True)
+                for document in document_list
+            ],
+        )
+        return paginated

@@ -15,7 +15,14 @@ from src.config import (
     PAGE_SIZE_DESCRIPTION,
     PAGINATION_NUMBER,
 )
-from src.people.filters import EmployeeFilter
+from src.people.filters import (
+    CostCenterFilter,
+    EmployeeFilter,
+    EmployeeGenderFilter,
+    EmployeeMaritalStatusFilter,
+    EmployeeNationalityFilter,
+    EmployeeRoleFilter,
+)
 from src.people.schemas import NewEmployeeSchema, UpdateEmployeeSchema
 from src.people.service import EmpleoyeeGeneralSerivce, EmployeeService
 
@@ -152,12 +159,8 @@ def get_emplooyee_lending_history_route(
 
 @people_router.get("/nationalities/")
 def get_list_nationalities_route(
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
+    nationality_filters: EmployeeNationalityFilter = FilterDepends(
+        EmployeeNationalityFilter
     ),
     fields: str = "",
     db_session: Session = Depends(get_db_session),
@@ -172,19 +175,17 @@ def get_list_nationalities_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    nationalities = general_service.get_nationalities(db_session, fields, page, size)
+    nationalities = general_service.get_nationalities(
+        db_session, nationality_filters, fields
+    )
     db_session.close()
-    return nationalities
+    return JSONResponse(content=nationalities, status_code=status.HTTP_200_OK)
 
 
 @people_router.get("/marital-status/")
 def get_list_marital_status_route(
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
+    marital_status_filters: EmployeeMaritalStatusFilter = FilterDepends(
+        EmployeeMaritalStatusFilter
     ),
     fields: str = "",
     db_session: Session = Depends(get_db_session),
@@ -199,20 +200,16 @@ def get_list_marital_status_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    marital_status = general_service.get_marital_status(db_session, fields, page, size)
+    marital_status = general_service.get_marital_status(
+        db_session, marital_status_filters, fields
+    )
     db_session.close()
-    return marital_status
+    return JSONResponse(content=marital_status, status_code=status.HTTP_200_OK)
 
 
 @people_router.get("/center-cost/")
 def get_list_center_cost_route(
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
-    ),
+    cost_center_filters: CostCenterFilter = FilterDepends(CostCenterFilter),
     fields: str = "",
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -226,20 +223,16 @@ def get_list_center_cost_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    center_cost = general_service.get_center_cost(db_session, fields, page, size)
+    center_cost = general_service.get_center_cost(
+        db_session, cost_center_filters, fields
+    )
     db_session.close()
-    return center_cost
+    return JSONResponse(content=center_cost, status_code=status.HTTP_200_OK)
 
 
 @people_router.get("/genders/")
 def get_list_genders_route(
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
-    ),
+    gender_filters: EmployeeGenderFilter = FilterDepends(EmployeeGenderFilter),
     fields: str = "",
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -251,20 +244,14 @@ def get_list_genders_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    genders = general_service.get_genders(db_session, fields, page, size)
+    genders = general_service.get_genders(db_session, gender_filters, fields)
     db_session.close()
-    return genders
+    return JSONResponse(content=genders, status_code=status.HTTP_200_OK)
 
 
 @people_router.get("/roles/")
 def get_list_roles_route(
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
-    ),
+    role_filters: EmployeeRoleFilter = FilterDepends(EmployeeRoleFilter),
     fields: str = "",
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -276,20 +263,14 @@ def get_list_roles_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    roles = general_service.get_roles(db_session, fields, page, size)
+    roles = general_service.get_roles(db_session, role_filters, fields)
     db_session.close()
-    return roles
+    return JSONResponse(content=roles, status_code=status.HTTP_200_OK)
 
 
 @people_router.get("/educational-level/")
 def get_list_educational_levels_route(
-    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
-    size: int = Query(
-        PAGINATION_NUMBER,
-        ge=1,
-        le=MAX_PAGINATION_NUMBER,
-        description=PAGE_SIZE_DESCRIPTION,
-    ),
+    educational_level_filters: EmployeeRoleFilter = FilterDepends(EmployeeRoleFilter),
     fields: str = "",
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -302,7 +283,7 @@ def get_list_educational_levels_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     educational_levels = general_service.get_educational_levels(
-        db_session, fields, page, size
+        db_session, educational_level_filters, fields
     )
     db_session.close()
-    return educational_levels
+    return JSONResponse(content=educational_levels, status_code=status.HTTP_200_OK)
