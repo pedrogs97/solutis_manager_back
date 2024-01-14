@@ -26,6 +26,7 @@ from src.config import (
     FORMAT,
     LOG_FILENAME,
     ORIGINS,
+    SCHEDULER_ACTIVE,
 )
 from src.database import ExternalDatabase, get_database_url
 from src.datasync.router import datasync_router
@@ -109,7 +110,8 @@ async def lifespan(app: FastAPI):
             # runs at the same time (in this event loop).
             max_instances=1,
         )
-    scheduler.start()
+    if SCHEDULER_ACTIVE:
+        scheduler.start()
     # scheduler.schedule_job()
     yield
     # shutdown scheduler

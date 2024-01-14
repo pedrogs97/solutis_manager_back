@@ -942,4 +942,7 @@ class PermissionService:
         """Get permission list"""
         permission_list = permission_filter.filter(db_session.query(PermissionModel))
 
-        return [self.serialize_permission(permission) for permission in permission_list]
+        return [
+            self.serialize_permission(permission).model_dump(by_alias=True)
+            for permission in permission_list
+        ]
