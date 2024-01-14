@@ -1,16 +1,8 @@
 """Scheduler Service"""
 import logging
 from time import time
-from typing import List, Optional
+from typing import List
 
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from apscheduler.schedulers import (
-    SchedulerAlreadyRunningError,
-    SchedulerNotRunningError,
-)
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
-from src.config import get_database_url
 from src.database import ExternalDatabase
 from src.datasync.models import (
     AssetTOTVSModel,
@@ -128,23 +120,8 @@ class SchedulerService:
     SQL_PCODINSTRUCAO = """
     SELECT CODINTERNO, DESCRICAO FROM PCODINSTRUCAO"""
 
-    _scheduler: Optional[AsyncIOScheduler] = None
-
-    def __init__(self, debug=False, force=False) -> None:
+    def __init__(self, force=False) -> None:
         self._force = force
-        if self._scheduler is None:
-            jobstores = {"default": SQLAlchemyJobStore(url=get_database_url())}
-            self._scheduler = AsyncIOScheduler(
-                jobstores=jobstores,
-            )
-            self._debug = debug
-            if debug:
-                self._trigger = "interval"
-                self._minute = "*/5"
-            else:
-                self._trigger = "cron"
-                self._hour = "12-18"
-                self._minute = "0"
 
     def _get_employees_totvs(self):
         """Excute procedure to retrive TOVTS emplyoee data"""
@@ -373,7 +350,7 @@ class SchedulerService:
         set_last_sync(len(new_changes), elapsed_time, "role")
         logger.info("Retrive role from TOTVS end.")
 
-    def _read_totvs_db(self):
+    def read_totvs_db(self):
         """Excute procedure to retrive TOVTS data"""
         logger.info("Retrive from TOTVS start.")
         self._get_asset_type_totvs()
@@ -387,64 +364,10 @@ class SchedulerService:
         self._get_employees_totvs()
         logger.info("Retrive from TOTVS end.")
 
-    def start(self) -> None:
-        """Start Scheduler Service"""
-        try:
-            if self._scheduler is None:
-                return
-
-            self._scheduler.start()
-            logger.info("Started Scheduler Service.")
-        except SchedulerAlreadyRunningError:
-            logger.warning("Scheduler Service running.")
-        except Exception as err:
-            logger.error("Unable to start Scheduler Service. Error: %s", err.args[0])
-
-    def shutdown(self) -> None:
-        """Shutdown Schduler Service"""
-        try:
-            self._scheduler.shutdown(wait=True)
-            self._scheduler = None
-            logger.info("Disabled Scheduler Service.")
-        except SchedulerNotRunningError:
-            logger.warning("Scheduler Service not running.")
-        except Exception as err:
-            logger.error(
-                "Warning: Unable to shutdown Scheduler Service. Error: %s", err.args[0]
-            )
-
-    def schedule_job(self) -> None:
-        """Create job for read TOTVS db"""
-        if self._debug:
-            # -- configuração teste - roda a cada 5 min
-            # "interval",
-            # minute='*/5',
-            self._scheduler.add_job(
-                self._read_totvs_db,
-                # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
-                self._trigger,
-                minute=self._minute,
-                # Using max_instances=1 guarantees that only one job
-                # runs at the same time (in this event loop).
-                max_instances=1,
-            )
-        else:
-            # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
-            self._scheduler.add_job(
-                self._read_totvs_db,
-                self._trigger,
-                hour=self._hour,
-                minute=self._minute,
-                # Using max_instances=1 guarantees that only one job
-                # runs at the same time (in this event loop).
-                max_instances=1,
-            )
-            logger.info(f"Job scheduled. DEBUG={self._debug}")
-
     def force_fetch(self) -> None:
         """Force fetch from TOTVS database"""
         if self._force:
             logger.info("Force retrive.")
-            self._read_totvs_db()
+            self.read_totvs_db()
         else:
             logger.info("Cannot force.")

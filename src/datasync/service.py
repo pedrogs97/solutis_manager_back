@@ -360,6 +360,7 @@ def insert(schema: BaseTotvsSchema, model_type: Type, identifier="code") -> None
             logger.info("Update: %s", str(new_info))
             db_session.delete(current_info)
             db_session.commit()
+            db_session.flush()
             db_session.add(new_info)
             db_session.commit()
         else:
@@ -391,6 +392,7 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
         if employee_db:
             db_session.delete(employee_db)
             db_session.commit()
+            db_session.flush()
 
         role = (
             db_session.query(EmployeeRoleModel)
@@ -576,6 +578,7 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
         if asset_db:
             db_session.delete(asset_db)
             db_session.commit()
+            db_session.flush()
 
         asset_type = (
             db_session.query(AssetTypeModel)
