@@ -38,5 +38,22 @@
         "group_code": "00",
         "name": "CELULAR",
         "acronym": "CLT"
+    },
+    {
+        "table": "asset_type",
+        "id": 13,
+        "code": "0013",
+        "group_code": "00",
+        "name": "VESTIMENTA",
+        "acronym": "VST"
+    }
+    ,
+    {
+        "table": "asset_type",
+        "id": 14,
+        "code": "0014",
+        "group_code": "00",
+        "name": "FERRAMENTAS",
+        "acronym": "FRT"
     }
 ]
