@@ -34,7 +34,7 @@ def revertmigration(cmd):
 @task
 def run(cmd):
     """Run application"""
-    cmd.run("uvicorn src.main:app --port 8000 --reload")
+    cmd.run("uvicorn src.main:appAPI --port 8000 --reload")
 
 
 @task

@@ -63,14 +63,15 @@ class InvoiceService:
 
                 assets.append(asset)
 
-            errors = {
-                "field": "assets",
-                "error": {"error": "Ativos não existem", "ids": error_ids},
-            }
-            raise HTTPException(
-                detail=errors,
-                status_code=status.HTTP_400_BAD_REQUEST,
-            )
+            if len(error_ids):
+                errors = {
+                    "field": "assets",
+                    "error": {"error": "Ativos não existem", "ids": error_ids},
+                }
+                raise HTTPException(
+                    detail=errors,
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
 
         return assets
 

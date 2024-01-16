@@ -53,10 +53,13 @@ class AssetService:
     def __validate_nested(self, data: NewAssetSchema, db_session: Session) -> tuple:
         """Validates clothing size, type and status values"""
         errors = []
-        if data.type:
+        asset_type = None
+        clothing_size = None
+        asset_status = None
+        if data.type_id:
             asset_type = (
                 db_session.query(AssetTypeModel)
-                .filter(AssetTypeModel.name == data.type)
+                .filter(AssetTypeModel.id == data.type_id)
                 .first()
             )
             if not asset_type:
@@ -67,10 +70,10 @@ class AssetService:
                     }
                 )
 
-        if data.clothing_size:
+        if data.clothing_size_id:
             clothing_size = (
                 db_session.query(AssetClothingSizeModel)
-                .filter(AssetClothingSizeModel.name == data.clothing_size)
+                .filter(AssetClothingSizeModel.id == data.clothing_size_id)
                 .first()
             )
             if not clothing_size:
@@ -81,10 +84,10 @@ class AssetService:
                     }
                 )
 
-        if data.status:
+        if data.status_id:
             asset_status = (
                 db_session.query(AssetStatusModel)
-                .filter(AssetStatusModel.name == data.status)
+                .filter(AssetStatusModel.id == data.status_id)
                 .first()
             )
             if not asset_status:

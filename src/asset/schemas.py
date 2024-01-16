@@ -191,13 +191,21 @@ class AssetSerializerSchema(BaseSchema):
 class NewAssetSchema(BaseSchema):
     """New asset schema"""
 
-    type: Optional[str] = None
-    clothing_size: Optional[str] = Field(
-        alias="clothingSize",
-        serialization_alias="clothing_size",
+    type_id: Optional[str] = Field(
+        alias="typeId",
+        serialization_alias="type_id",
         default=None,
     )
-    status: Optional[str] = None
+    clothing_size_id: Optional[str] = Field(
+        alias="clothingSizeId",
+        serialization_alias="clothing_size_id",
+        default=None,
+    )
+    status_id: Optional[str] = Field(
+        alias="statusId",
+        serialization_alias="status_id",
+        default=None,
+    )
 
     code: Optional[str] = None
     # tombo - regiOptional[str]o patrimonial
