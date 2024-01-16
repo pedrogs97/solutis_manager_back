@@ -8,6 +8,7 @@ import jwt
 from fastapi import Depends, status
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -245,3 +246,43 @@ class PermissionChecker:
         except jwt.ExpiredSignatureError:
             logger.warning("Invalid token")
             return None
+
+
+class Email365Client:
+    """Office 365 email client"""
+
+    conf = ConnectionConfig(
+        MAIL_USERNAME="pedro.gustavo.santana@outlook.com",
+        MAIL_PASSWORD="Pedrog97!",
+        MAIL_FROM="pedro.gustavo.santana@outlook.com",
+        MAIL_PORT=587,
+        MAIL_SERVER="smtp-mail.outlook.com",
+        MAIL_FROM_NAME="Solutis Agile",
+        MAIL_STARTTLS=True,
+        MAIL_SSL_TLS=False,
+        USE_CREDENTIALS=True,
+        VALIDATE_CERTS=True,
+    )
+
+    def __init__(self, mail_to: str, mail_subject: str, mail_body: str) -> None:
+        self.__mail_to = mail_to
+        self.__mail_subject = mail_subject
+        self.__mail_body = mail_body
+        self.message = MessageSchema(
+            subject=self.__mail_subject,
+            recipients=[self.__mail_to],
+            body=self.__mail_body,
+            subtype=MessageType.html,
+        )
+
+        self.fm = FastMail(self.conf)
+
+    async def send_message(self) -> bool:
+        """Try send message"""
+        logger.info("Sending message to %s", self.__mail_to)
+        try:
+            await self.fm.send_message(self.message)
+            return True
+        except ValueError:
+            logger.error("Unable to sent message")
+            return False

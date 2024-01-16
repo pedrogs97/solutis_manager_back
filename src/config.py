@@ -144,3 +144,6 @@ ORIGINS = [
     "http://172.21.3.225",
     "http://datasync-totvs:8001",
 ]
+
+EMAIL_SOLUTIS_365 = "agile@solutis.com.br"
+EMAIL_PASSWORD_SOLUTIS_365 = os.getenv("EMAIL_PASSWORD_SOLUTIS_365")

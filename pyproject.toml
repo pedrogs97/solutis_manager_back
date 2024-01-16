@@ -32,11 +32,13 @@ mysql-connector-python = "^8.2.0"
 pyjwt = "^2.8.0"
 pymssql = "^2.2.11"
 fastapi-filter = "^1.0.0"
+fastapi-mail = "^1.4.1"
 
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
 pre-commit = "^3.5.0"
+pytest-asyncio = "^0.23.3"
 
 [build-system]
 requires = ["poetry-core"]
