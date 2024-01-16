@@ -1,5 +1,6 @@
 """Lenging service"""
 import logging
+import os
 from datetime import date
 from typing import List, Union
 
@@ -12,7 +13,7 @@ from sqlalchemy.orm import Session
 from src.asset.models import AssetModel
 from src.asset.schemas import AssetSerializerSchema
 from src.auth.models import UserModel
-from src.config import CONTRACT_UPLOAD_DIR
+from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG
 from src.lending.filters import DocumentFilter, LendingFilter, WorkloadFilter
 from src.lending.models import (
     DocumentModel,
@@ -549,8 +550,14 @@ class DocumentService:
         code = lending.number
 
         file_name = f"{code}.pdf"
+
+        UPLOAD_DIR = CONTRACT_UPLOAD_DIR
+
+        if DEBUG:
+            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "contracts")
+
         file_path = await upload_file(
-            file_name, "lending", contract.file.read(), CONTRACT_UPLOAD_DIR
+            file_name, "lending", contract.file.read(), UPLOAD_DIR
         )
 
         document.path = file_path
