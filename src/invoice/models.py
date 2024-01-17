@@ -26,7 +26,7 @@ class InvoiceModel(Base):
 
     # caminho do arquivo
     path = Column("path", String(length=255), nullable=True)
-    file_name = Column("file_name", String(length=100), nullable=False)
+    file_name = Column("file_name", String(length=100), nullable=True)
 
     assets = relationship(
         "AssetModel", secondary=invoice_assets, back_populates="invoices"

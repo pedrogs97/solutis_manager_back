@@ -65,7 +65,7 @@ class AssetTOTVSModel(Base):
     # fornecedor
     supplier = Column("supplier", String(length=100), nullable=True)
     assurance_date = Column("assurance_date", DateTime, nullable=True)
-    observations = Column("observations", String(length=600), nullable=True)
+    observations = Column("observations", String(length=999), nullable=True)
     discard_reason = Column("discard_reason", String(length=255), nullable=True)
     # padrão
     pattern = Column("pattern", String(length=255), nullable=True)

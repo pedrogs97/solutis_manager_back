@@ -3,8 +3,16 @@ from typing import List
 
 from pydantic import Field
 
-from src.lending.schemas import AssetSerializerSchema
+from src.asset.schemas import AssetShortSerializerSchema
 from src.schemas import BaseSchema
+
+
+class AssetInvoiceSerializerSchema(BaseSchema):
+    """Asset infos for invoice serializer schema"""
+
+    asset: AssetShortSerializerSchema
+    quantity: int
+    unit_value: float
 
 
 class InvoiceSerializerSchema(BaseSchema):
@@ -16,7 +24,15 @@ class InvoiceSerializerSchema(BaseSchema):
     file_name: str
     total_value: float = Field(serialization_alias="totalValue")
     total_quantity: float = Field(serialization_alias="totalQuantity")
-    assets: List[AssetSerializerSchema] = []
+    assets_invoice: List[AssetInvoiceSerializerSchema] = []
+
+
+class NewAssetInvoice(BaseSchema):
+    """Asset infos for invoice schema"""
+
+    asset_id: int
+    quantity: int
+    unit_value: float = Field(serialization_alias="unitValue")
 
 
 class NewInvoiceSchema(BaseSchema):
@@ -24,8 +40,8 @@ class NewInvoiceSchema(BaseSchema):
 
     number: str
     total_value: float = Field(alias="totalValue")
-    total_quantity: float = Field(alias="totalQuantity")
-    assets: List[int]
+    total_quantity: int = Field(alias="totalQuantity")
+    assets: List[NewAssetInvoice]
 
 
 class UploadInvoiceSchema(BaseSchema):

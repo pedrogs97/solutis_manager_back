@@ -117,6 +117,18 @@ class AssetTotvsSchema(BaseSchema):
     active: bool
 
 
+class AssetShortSerializerSchema(BaseSchema):
+    """Short asset serializer schema"""
+
+    id: int
+    description: Optional[str] = None
+    # tombo - registro patrimonial
+    register_number: Optional[str] = Field(
+        serialization_alias="registerNumber",
+        default=None,
+    )
+
+
 class AssetSerializerSchema(BaseSchema):
     """Asset serializer schema"""
 
@@ -128,7 +140,7 @@ class AssetSerializerSchema(BaseSchema):
     )
     status: Optional[AssetStatusSerializerSchema] = None
 
-    # tombo - regiOptional[str]o patrimonial
+    # tombo - registro patrimonial
     register_number: Optional[str] = Field(
         serialization_alias="registerNumber",
         default=None,

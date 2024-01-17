@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from src.auth.models import UserModel
 from src.config import BASE_DIR, DEBUG, MEDIA_UPLOAD_DIR
 from src.invoice.filters import InvoiceFilter
-from src.invoice.models import InvoiceModel
+from src.invoice.models import InvoiceModel, invoice_assets
 from src.invoice.schemas import (
     InvoiceSerializerSchema,
     NewInvoiceSchema,
@@ -46,25 +46,30 @@ class InvoiceService:
 
         return invoice
 
-    def __validate_nested(
-        self, data: NewInvoiceSchema, db_session: Session
-    ) -> List[AssetModel]:
+    def __validate_nested(self, data: NewInvoiceSchema, db_session: Session) -> List:
         """Validate asstes"""
         assets = []
-        if len(data.assets):
+        if data.assets:
             error_ids = []
-            for asset_id in data.assets:
+            for asset_invoice in data.assets:
                 asset = (
                     db_session.query(AssetModel)
-                    .filter(AssetModel.id == asset_id)
+                    .filter(AssetModel.id == asset_invoice.asset_id)
                     .first()
                 )
                 if not asset:
-                    error_ids.append(asset_id)
+                    error_ids.append(asset_invoice.asset_id)
 
-                assets.append(asset)
+                assets.append(
+                    invoice_assets(
+                        **{
+                            **asset_invoice.model_dump(exclude={"asset_id"}),
+                            "asset_id": asset,
+                        }
+                    )
+                )
 
-            if len(error_ids):
+            if error_ids:
                 errors = {
                     "field": "assets",
                     "error": {"error": "Ativos não existem", "ids": error_ids},
@@ -91,7 +96,9 @@ class InvoiceService:
 
         assets = self.__validate_nested(new_invoice, db_session)
 
-        new_invoice_db = InvoiceModel(**new_invoice.model_dump(by_alias=False))
+        new_invoice_db = InvoiceModel(
+            **new_invoice.model_dump(by_alias=False, exclude={"assets"})
+        )
 
         new_invoice_db.assets = assets
         db_session.add(new_invoice_db)
@@ -153,13 +160,12 @@ class InvoiceService:
 
         file_name = f"{code}.pdf"
 
-        UPLOAD_DIR = MEDIA_UPLOAD_DIR
-
-        if DEBUG:
-            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "media")
+        upload_dir = (
+            os.path.join(BASE_DIR, "storage", "media") if DEBUG else MEDIA_UPLOAD_DIR
+        )
 
         file_path = await upload_file(
-            file_name, "invoice", invoice_file.file.read(), UPLOAD_DIR
+            file_name, "invoice", invoice_file.file.read(), upload_dir
         )
 
         invoice.path = file_path

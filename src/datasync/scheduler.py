@@ -353,15 +353,15 @@ class SchedulerService:
     def read_totvs_db(self):
         """Excute procedure to retrive TOVTS data"""
         logger.info("Retrive from TOTVS start.")
-        # self._get_asset_type_totvs()
-        # self._get_marital_status_totvs()
-        # self._get_gender_totvs()
-        # self._get_nationality_totvs()
-        # self._get_cost_center_totvs()
-        # self._get_role_totvs()
-        # self._get_educational_level_totvs()
+        self._get_asset_type_totvs()
+        self._get_marital_status_totvs()
+        self._get_gender_totvs()
+        self._get_nationality_totvs()
+        self._get_cost_center_totvs()
+        self._get_role_totvs()
+        self._get_educational_level_totvs()
         self._get_asset_totvs()
-        # self._get_employees_totvs()
+        self._get_employees_totvs()
         logger.info("Retrive from TOTVS end.")
 
     def force_fetch(self) -> None:

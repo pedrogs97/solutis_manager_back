@@ -1,5 +1,6 @@
 """Base backends"""
 import logging
+import smtplib
 import time
 from datetime import datetime, timedelta
 from typing import Annotated, Union
@@ -18,6 +19,8 @@ from src.auth.schemas import PermissionSchema
 from src.config import (
     ACCESS_TOKEN_EXPIRE_HOURS,
     ALGORITHM,
+    EMAIL_PASSWORD_SOLUTIS_365,
+    EMAIL_SOLUTIS_365,
     REFRESH_TOKEN_EXPIRE_DAYS,
     SECRET_KEY,
 )
@@ -252,13 +255,13 @@ class Email365Client:
     """Office 365 email client"""
 
     conf = ConnectionConfig(
-        MAIL_USERNAME="pedro.gustavo.santana@outlook.com",
-        MAIL_PASSWORD="Pedrog97!",
-        MAIL_FROM="pedro.gustavo.santana@outlook.com",
+        MAIL_USERNAME=EMAIL_SOLUTIS_365,
+        MAIL_PASSWORD=EMAIL_PASSWORD_SOLUTIS_365,
+        MAIL_FROM=EMAIL_SOLUTIS_365,
         MAIL_PORT=587,
         MAIL_SERVER="smtp-mail.outlook.com",
         MAIL_FROM_NAME="Solutis Agile",
-        MAIL_STARTTLS=True,
+        MAIL_STARTTLS=False,
         MAIL_SSL_TLS=False,
         USE_CREDENTIALS=True,
         VALIDATE_CERTS=True,
@@ -274,15 +277,34 @@ class Email365Client:
             body=self.__mail_body,
             subtype=MessageType.html,
         )
-
+        logger.info(self.conf.model_dump())
         self.fm = FastMail(self.conf)
 
     async def send_message(self) -> bool:
         """Try send message"""
         logger.info("Sending message to %s", self.__mail_to)
-        try:
-            await self.fm.send_message(self.message)
-            return True
-        except ValueError:
-            logger.error("Unable to sent message")
-            return False
+        # try:
+        #     await self.fm.send_message(self.message)
+        #     return True
+        # except ValueError:
+        #     logger.error("Unable to sent message")
+        #     return False
+
+        sender = EMAIL_SOLUTIS_365
+
+        message = f"""\
+        Subject: Hi Mailtrap
+        To: {self.__mail_to}
+        From: {sender}
+
+        This is a test e-mail message."""
+
+        with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
+            server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
+            server.sendmail(sender, self.__mail_to, message)
+        return True
+
+        # with smtplib.SMTP("sandbox.smtp.mailtrap.io", 2525) as server:
+        #     server.login("c6d190177572f4", "bff9f2516dd37c")
+        #     server.sendmail(sender, self.__mail_to, message)
+        # return True

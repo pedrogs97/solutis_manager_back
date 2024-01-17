@@ -23,7 +23,6 @@ from src.config import (
     BASE_DIR,
     DATE_FORMAT,
     DB_SERVER,
-    DEBUG,
     FORMAT,
     LOG_FILENAME,
     ORIGINS,
@@ -81,70 +80,25 @@ async def lifespan(app: FastAPI):
     )
     logger.info("Current jobs %s", scheduler.get_jobs())
     try:
-        if DEBUG:
-            # -- configuração teste - roda a cada 5 min
-            trigger = "interval"
-            minute = 5
-            scheduler.add_job(
-                read_totvs_db,
-                # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
-                trigger,
-                id="datasync",
-                minutes=minute,
-                # Using max_instances=1 guarantees that only one job
-                # runs at the same time (in this event loop).
-                max_instances=1,
-            )
-        else:
-            trigger = "cron"
-            hour = "12-18"
-            minute = "00"
-            week = "mon-fri"
-            # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
-            scheduler.add_job(
-                read_totvs_db,
-                trigger,
-                id="datasync",
-                day_of_week=week,
-                hour=hour,
-                minute=minute,
-                # Using max_instances=1 guarantees that only one job
-                # runs at the same time (in this event loop).
-                max_instances=1,
-            )
+        trigger = "cron"
+        hour = "12-18"
+        minute = "00"
+        week = "mon-fri"
+        # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
+        scheduler.add_job(
+            read_totvs_db,
+            trigger,
+            id="datasync",
+            day_of_week=week,
+            hour=hour,
+            minute=minute,
+            # Using max_instances=1 guarantees that only one job
+            # runs at the same time (in this event loop).
+            max_instances=1,
+            replace_existing=True,
+        )
     except ConflictingIdError:
-        scheduler.remove_job("datasync", jobstores)
-        if DEBUG:
-            # -- configuração teste - roda a cada 5 min
-            trigger = "interval"
-            minute = 5
-            scheduler.add_job(
-                read_totvs_db,
-                # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
-                trigger,
-                id="datasync",
-                minutes=minute,
-                # Using max_instances=1 guarantees that only one job
-                # runs at the same time (in this event loop).
-                max_instances=1,
-            )
-        else:
-            trigger = "cron"
-            hour = "12-18"
-            minute = "00"
-            week = "mon-fri"
-            # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
-            scheduler.add_job(
-                read_totvs_db,
-                trigger,
-                id="datasync",
-                day_of_week=week,
-                hour=hour,
-                minute=minute,
-                # Using max_instances=1 guarantees that only one job
-                # runs at the same time (in this event loop).
-                max_instances=1,
-            )
+        logger.info("Job alredy exist")
 
     if SCHEDULER_ACTIVE:
         scheduler.start()
@@ -152,7 +106,7 @@ async def lifespan(app: FastAPI):
     yield
     # shutdown scheduler
     logging.info("Start shutdown")
-    scheduler.remove_job("datasync", jobstores)
+    scheduler.remove_job("datasync")
     scheduler.shutdown()
     # close external database
     external_db = ExternalDatabase()
