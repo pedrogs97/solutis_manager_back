@@ -1,5 +1,6 @@
 """Invoice service"""
 import logging
+import os
 from typing import List
 
 from fastapi import UploadFile, status
@@ -9,7 +10,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
-from src.config import MEDIA_UPLOAD_DIR
+from src.config import BASE_DIR, DEBUG, MEDIA_UPLOAD_DIR
 from src.invoice.filters import InvoiceFilter
 from src.invoice.models import InvoiceModel
 from src.invoice.schemas import (
@@ -63,14 +64,15 @@ class InvoiceService:
 
                 assets.append(asset)
 
-            errors = {
-                "field": "assets",
-                "error": {"error": "Ativos não existem", "ids": error_ids},
-            }
-            raise HTTPException(
-                detail=errors,
-                status_code=status.HTTP_400_BAD_REQUEST,
-            )
+            if len(error_ids):
+                errors = {
+                    "field": "assets",
+                    "error": {"error": "Ativos não existem", "ids": error_ids},
+                }
+                raise HTTPException(
+                    detail=errors,
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
 
         return assets
 
@@ -150,8 +152,14 @@ class InvoiceService:
         code = invoice.number
 
         file_name = f"{code}.pdf"
+
+        UPLOAD_DIR = MEDIA_UPLOAD_DIR
+
+        if DEBUG:
+            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "media")
+
         file_path = await upload_file(
-            file_name, "invoice", invoice_file.file.read(), MEDIA_UPLOAD_DIR
+            file_name, "invoice", invoice_file.file.read(), UPLOAD_DIR
         )
 
         invoice.path = file_path
