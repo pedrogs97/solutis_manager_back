@@ -4,6 +4,7 @@ import os
 from contextlib import asynccontextmanager
 from logging.handlers import TimedRotatingFileHandler
 
+from apscheduler.jobstores.base import ConflictingIdError
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import Depends, FastAPI
@@ -79,37 +80,72 @@ async def lifespan(app: FastAPI):
         jobstores=jobstores,
     )
     logger.info("Current jobs %s", scheduler.get_jobs())
-    if DEBUG:
-        # -- configuração teste - roda a cada 5 min
-        trigger = "interval"
-        minute = 5
-        scheduler.add_job(
-            read_totvs_db,
+    try:
+        if DEBUG:
+            # -- configuração teste - roda a cada 5 min
+            trigger = "interval"
+            minute = 5
+            scheduler.add_job(
+                read_totvs_db,
+                # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
+                trigger,
+                id="datasync",
+                minutes=minute,
+                # Using max_instances=1 guarantees that only one job
+                # runs at the same time (in this event loop).
+                max_instances=1,
+            )
+        else:
+            trigger = "cron"
+            hour = "12-18"
+            minute = "00"
+            week = "mon-fri"
             # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
-            trigger,
-            id="datasync",
-            minutes=minute,
-            # Using max_instances=1 guarantees that only one job
-            # runs at the same time (in this event loop).
-            max_instances=1,
-        )
-    else:
-        trigger = "cron"
-        hour = "12-18"
-        minute = "00"
-        week = "mon-fri"
-        # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
-        scheduler.add_job(
-            read_totvs_db,
-            trigger,
-            id="datasync",
-            day_of_week=week,
-            hour=hour,
-            minute=minute,
-            # Using max_instances=1 guarantees that only one job
-            # runs at the same time (in this event loop).
-            max_instances=1,
-        )
+            scheduler.add_job(
+                read_totvs_db,
+                trigger,
+                id="datasync",
+                day_of_week=week,
+                hour=hour,
+                minute=minute,
+                # Using max_instances=1 guarantees that only one job
+                # runs at the same time (in this event loop).
+                max_instances=1,
+            )
+    except ConflictingIdError:
+        scheduler.remove_job("datasync", jobstores)
+        if DEBUG:
+            # -- configuração teste - roda a cada 5 min
+            trigger = "interval"
+            minute = 5
+            scheduler.add_job(
+                read_totvs_db,
+                # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
+                trigger,
+                id="datasync",
+                minutes=minute,
+                # Using max_instances=1 guarantees that only one job
+                # runs at the same time (in this event loop).
+                max_instances=1,
+            )
+        else:
+            trigger = "cron"
+            hour = "12-18"
+            minute = "00"
+            week = "mon-fri"
+            # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
+            scheduler.add_job(
+                read_totvs_db,
+                trigger,
+                id="datasync",
+                day_of_week=week,
+                hour=hour,
+                minute=minute,
+                # Using max_instances=1 guarantees that only one job
+                # runs at the same time (in this event loop).
+                max_instances=1,
+            )
+
     if SCHEDULER_ACTIVE:
         scheduler.start()
     # scheduler.schedule_job()

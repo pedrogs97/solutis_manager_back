@@ -9,6 +9,8 @@ invoice_assets = Table(
     Base.metadata,
     Column("invoice_id", ForeignKey("invoices.id"), primary_key=True),
     Column("asset_id", ForeignKey("asset.id"), primary_key=True),
+    Column("quantity", Float, nullable=False),
+    Column("unit_value", Integer, nullable=False),
 )
 
 

@@ -318,7 +318,6 @@ def verify_changes(
     Check if the TotvsSchema object is different from the TotvsSchema in the database.
     Returns True if it does not exist in the database.
     """
-    checksum_from_totvs = get_checksum(totvs_schema)
     db_session = get_db_session()
     if not db_session:
         logger.warning("No db session")
@@ -328,6 +327,7 @@ def verify_changes(
     if not asset_db:
         db_session.close()
         return True
+    checksum_from_totvs = get_checksum(totvs_schema)
     db_dict = {**asset_db.__dict__}
     db_dict.pop("_sa_instance_state")
     db_dict.pop("id")
@@ -369,6 +369,8 @@ def insert(schema: BaseTotvsSchema, model_type: Type, identifier="code") -> None
             db_session.commit()
     except IntegrityError as err:
         logger.warning("Error: %s", err.args[0])
+    except Exception as err:
+        logger.error("Error: %s", err.args[0])
     finally:
         db_session.close()
 
