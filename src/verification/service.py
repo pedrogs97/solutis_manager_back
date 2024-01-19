@@ -33,12 +33,12 @@ class VerificationService:
         self, verification_id: int, db_session: Session
     ) -> VerificationModel:
         """Get verification or 404"""
-        document = (
+        verification = (
             db_session.query(VerificationModel)
             .filter(VerificationModel.id == verification_id)
             .first()
         )
-        if not document:
+        if not verification:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -47,7 +47,7 @@ class VerificationService:
                 },
             )
 
-        return document
+        return verification
 
     def __get_asset_type_or_404(
         self, asset_type_id: int, db_session: Session
@@ -175,6 +175,7 @@ class VerificationService:
                 id=verification.id,
                 question=verification.question,
                 asset_type=verification.asset_type.name,
+                step=verification.step,
             )
             for verification in verifications
         ]
