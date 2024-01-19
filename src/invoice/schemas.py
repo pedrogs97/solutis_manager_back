@@ -1,16 +1,15 @@
 """Invoice schemas"""
-from typing import List
+from typing import List, Optional
 
 from pydantic import Field
 
-from src.asset.schemas import AssetShortSerializerSchema
 from src.schemas import BaseSchema
 
 
 class AssetInvoiceSerializerSchema(BaseSchema):
     """Asset infos for invoice serializer schema"""
 
-    asset: AssetShortSerializerSchema
+    asset_id: int
     quantity: int
     unit_value: float
 
@@ -20,8 +19,8 @@ class InvoiceSerializerSchema(BaseSchema):
 
     id: int
     number: str
-    path: str
-    file_name: str
+    path: Optional[str] = None
+    file_name: Optional[str] = None
     total_value: float = Field(serialization_alias="totalValue")
     total_quantity: float = Field(serialization_alias="totalQuantity")
     assets_invoice: List[AssetInvoiceSerializerSchema] = []

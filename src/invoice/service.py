@@ -1,7 +1,6 @@
 """Invoice service"""
 import logging
 import os
-from typing import List
 
 from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
@@ -12,8 +11,9 @@ from sqlalchemy.orm import Session
 from src.auth.models import UserModel
 from src.config import BASE_DIR, DEBUG, MEDIA_UPLOAD_DIR
 from src.invoice.filters import InvoiceFilter
-from src.invoice.models import InvoiceModel, invoice_assets
+from src.invoice.models import InvoiceAssets, InvoiceModel
 from src.invoice.schemas import (
+    AssetInvoiceSerializerSchema,
     InvoiceSerializerSchema,
     NewInvoiceSchema,
     UploadInvoiceSchema,
@@ -46,9 +46,8 @@ class InvoiceService:
 
         return invoice
 
-    def __validate_nested(self, data: NewInvoiceSchema, db_session: Session) -> List:
+    def __validate_nested(self, data: NewInvoiceSchema, db_session: Session) -> None:
         """Validate asstes"""
-        assets = []
         if data.assets:
             error_ids = []
             for asset_invoice in data.assets:
@@ -60,15 +59,6 @@ class InvoiceService:
                 if not asset:
                     error_ids.append(asset_invoice.asset_id)
 
-                assets.append(
-                    invoice_assets(
-                        **{
-                            **asset_invoice.model_dump(exclude={"asset_id"}),
-                            "asset_id": asset,
-                        }
-                    )
-                )
-
             if error_ids:
                 errors = {
                     "field": "assets",
@@ -79,12 +69,13 @@ class InvoiceService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                 )
 
-        return assets
-
     def serialize_invoice(self, invoice: InvoiceModel) -> InvoiceSerializerSchema:
         """Serialize invoice"""
-        assets = [AssetSerializerSchema(**asset.__dict__) for asset in invoice.assets]
-        return InvoiceSerializerSchema(**invoice.__dict__, assets=[assets])
+
+        assets = [
+            AssetInvoiceSerializerSchema(**asset.__dict__) for asset in invoice.assets
+        ]
+        return InvoiceSerializerSchema(**{**invoice.__dict__, "assets_invoice": assets})
 
     def create_invoice(
         self,
@@ -94,17 +85,27 @@ class InvoiceService:
     ) -> InvoiceSerializerSchema:
         """Creates new invoice"""
 
-        assets = self.__validate_nested(new_invoice, db_session)
+        self.__validate_nested(new_invoice, db_session)
 
         new_invoice_db = InvoiceModel(
             **new_invoice.model_dump(by_alias=False, exclude={"assets"})
         )
-
-        new_invoice_db.assets = assets
         db_session.add(new_invoice_db)
         db_session.commit()
         db_session.flush()
 
+        for invoice_asset in new_invoice.assets:
+            new_invoice_asset = InvoiceAssets(
+                **{
+                    **invoice_asset.model_dump(by_alias=False, exclude={"asset_id"}),
+                    "asset_id": invoice_asset.asset_id,
+                    "invoice_id": new_invoice_db.id,
+                }
+            )
+            db_session.add(new_invoice_asset)
+            db_session.commit()
+
+        db_session.commit()
         service_log.set_log(
             "invoice",
             "asset",

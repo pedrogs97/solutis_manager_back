@@ -1,11 +1,9 @@
 """Asset models"""
-from typing import List
-
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
-from src.invoice.models import InvoiceModel, invoice_assets
+from src.invoice.models import InvoiceAssets
 
 
 class AssetTypeModel(Base):
@@ -98,9 +96,7 @@ class AssetModel(Base):
     )
     clothing_size: Mapped[AssetClothingSizeModel] = relationship()
 
-    invoices: Mapped[List[InvoiceModel]] = relationship(
-        secondary=invoice_assets, back_populates="assets"
-    )
+    invoice: Mapped[InvoiceAssets] = relationship(viewonly=True)
 
     code = Column("code", String(length=255), nullable=True, unique=True)
     # tombo - registro patrimonial
