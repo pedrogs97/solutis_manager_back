@@ -76,12 +76,12 @@ class LendingSerializerSchema(BaseSchema):
 class NewLendingSchema(BaseSchema):
     """New lending schema"""
 
-    employee: int
-    asset: int
-    document: Optional[int] = None
-    workload: int
-    witnesses: List[int]
-    cost_center: int = Field(alias="costCenter")
+    employee_id: int = Field(alias="employeeId")
+    asset_id: int = Field(alias="assetId")
+    document_id: Optional[int] = Field(alias="documentId", default=None)
+    workload_id: int = Field(alias="workloadId")
+    witnesses_id: List[int] = Field(alias="witnessesId")
+    cost_center_id: int = Field(alias="costCenterId")
     manager: str
     observations: Optional[str] = None
     signed_date: Optional[date] = Field(alias="signedDate", default=None)

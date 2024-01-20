@@ -99,10 +99,10 @@ class LendingService:
     def __validate_nested(self, data: NewLendingSchema, db_session: Session) -> tuple:
         """Validates employee, asset, workload, cost center and document values"""
         errors = []
-        if data.employee:
+        if data.employee_id:
             employee = (
                 db_session.query(EmployeeModel)
-                .filter(EmployeeModel.id == data.employee)
+                .filter(EmployeeModel.id == data.employee_id)
                 .first()
             )
             if not employee:
@@ -113,19 +113,21 @@ class LendingService:
                     }
                 )
 
-        if data.asset:
+        if data.asset_id:
             asset = (
-                db_session.query(AssetModel).filter(AssetModel.id == data.asset).first()
+                db_session.query(AssetModel)
+                .filter(AssetModel.id == data.asset_id)
+                .first()
             )
             if not asset:
                 errors.append(
                     {"field": "assetId", "error": f"Ativo não existe. {asset}"}
                 )
 
-        if data.document:
+        if data.document_id:
             document = (
                 db_session.query(DocumentModel)
-                .filter(DocumentModel.id == data.document)
+                .filter(DocumentModel.id == data.document_id)
                 .first()
             )
             if not document:
@@ -136,10 +138,10 @@ class LendingService:
                     }
                 )
 
-        if data.workload:
+        if data.workload_id:
             workload = (
                 db_session.query(WorkloadModel)
-                .filter(WorkloadModel.id == data.workload)
+                .filter(WorkloadModel.id == data.workload_id)
                 .first()
             )
             if not workload:
@@ -147,10 +149,10 @@ class LendingService:
                     {"field": "workloadId", "error": f"Lotação não existe. {workload}"}
                 )
 
-        if data.cost_center:
+        if data.cost_center_id:
             cost_center = (
                 db_session.query(CostCenterModel)
-                .filter(CostCenterModel.id == data.cost_center)
+                .filter(CostCenterModel.id == data.cost_center_id)
                 .first()
             )
             if not cost_center:
@@ -161,10 +163,10 @@ class LendingService:
                     }
                 )
 
-        if data.witnesses:
+        if data.witnesses_id:
             witnesses = []
             ids_not_found = []
-            for witness in data.witnesses:
+            for witness in data.witnesses_id:
                 witness_obj = (
                     db_session.query(WitnessModel)
                     .filter(WitnessModel.id == witness)
