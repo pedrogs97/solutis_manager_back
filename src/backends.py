@@ -1,6 +1,6 @@
 """Base backends"""
 import logging
-import smtplib
+import ssl
 import time
 from datetime import datetime, timedelta
 from typing import Annotated, Union
@@ -299,9 +299,13 @@ class Email365Client:
 
         This is a test e-mail message."""
 
-        with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
-            server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
-            server.sendmail(sender, self.__mail_to, message)
+        context = ssl.create_default_context()
+
+        # with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
+        #     server.set_debuglevel(1)
+        #     server.starttls(context=context)
+        #     server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
+        #     server.sendmail(sender, self.__mail_to, message)
         return True
 
         # with smtplib.SMTP("sandbox.smtp.mailtrap.io", 2525) as server:

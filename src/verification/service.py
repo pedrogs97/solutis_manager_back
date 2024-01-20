@@ -12,6 +12,7 @@ from src.lending.models import LendingModel
 from src.log.services import LogService
 from src.verification.models import (
     VerificationAnswerModel,
+    VerificationCategoryModel,
     VerificationModel,
     VerificationTypeModel,
 )
@@ -89,6 +90,24 @@ class VerificationService:
             )
         return vertification_type
 
+    def __get_verification_category_or_create(
+        self, verification_category: str, db_session: Session
+    ) -> VerificationCategoryModel:
+        """Get verification category or create"""
+        vertification_category = (
+            db_session.query(VerificationCategoryModel)
+            .filter(VerificationCategoryModel.name == verification_category)
+            .first()
+        )
+
+        if not vertification_category:
+            new_category = VerificationCategoryModel(name=verification_category)
+            db_session.add(new_category)
+            db_session.commit()
+            db_session.flush()
+
+        return vertification_category
+
     def __get_lending_or_404(
         self, lending_id: int, db_session: Session
     ) -> LendingModel:
@@ -113,6 +132,7 @@ class VerificationService:
             question=verification.question,
             step=verification.step,
             asset_type=verification.asset_type.name,
+            category=verification.category.name,
         )
 
     def serialize_answer_verification(
@@ -137,9 +157,12 @@ class VerificationService:
 
         asset_type = self.__get_asset_type_or_404(data.asset_type_id, db_session)
 
+        category = self.__get_verification_category_or_create(data.category, db_session)
+
         new_verification = VerificationModel(
             question=data.question,
             step=data.step,
+            category=category,
         )
 
         new_verification.asset_type = asset_type

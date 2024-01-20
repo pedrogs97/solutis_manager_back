@@ -1,0 +1,22 @@
+[
+    {
+        "table": "verification_category",
+        "id": 1,
+        "name": "Fonte de Alimentação / Carregador"
+    },
+    {
+        "table": "verification_category",
+        "id": 2,
+        "name": "Notebook aberto"
+    },
+    {
+        "table": "verification_category",
+        "id": 3,
+        "name": "Parte inferior"
+    },
+    {
+        "table": "verification_category",
+        "id": 4,
+        "name": "Parte lateral"
+    }
+]

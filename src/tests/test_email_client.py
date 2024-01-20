@@ -22,5 +22,5 @@ class TestEmail365Client:
             mail_body="testando envio de email",
         )
 
-        # result = await client.send_message()
-        # assert result
+        result = await client.send_message()
+        assert result

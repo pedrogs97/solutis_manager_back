@@ -11,6 +11,7 @@ class NewVerificationSchema(BaseSchema):
 
     question: str
     step: str
+    category: str
     asset_type_id: int = Field(alias="assetTypeId")
 
 
@@ -20,6 +21,7 @@ class VerificationSerializerSchema(BaseSchema):
     id: int
     question: str
     step: str
+    category: Optional[str] = None
     asset_type: str = Field(serialization_alias="assetType")
 
 
@@ -29,6 +31,15 @@ class VerificationTypeSerializerSchema(BaseSchema):
 
     * Saída - envio para o colaborador
     * Retorno - envio para a empresa
+    """
+
+    id: int
+    name: str
+
+
+class VerificationCategorySerializerSchema(BaseSchema):
+    """
+    Verification category serializer schema
     """
 
     id: int

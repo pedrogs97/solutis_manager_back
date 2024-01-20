@@ -8,6 +8,23 @@ from src.database import Base
 from src.lending.models import LendingModel
 
 
+class VerificationCategoryModel(Base):
+    """Verification category model
+
+    * Envio
+    * Retorno
+    """
+
+    __tablename__ = "verification_category"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    name = Column("name", String(length=150))
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.name}"
+
+
 class VerificationModel(Base):
     """Verification model"""
 
@@ -17,6 +34,10 @@ class VerificationModel(Base):
 
     asset_type: Mapped[AssetTypeModel] = relationship()
     asset_type_id = Column("asset_type_id", ForeignKey("asset_type.id"), nullable=False)
+    category: Mapped[VerificationCategoryModel] = relationship()
+    category_id = Column(
+        "category_id", ForeignKey("verification_category.id"), nullable=True
+    )
 
     question = Column("question", String(length=100))
     step = Column("step", String(length=2))
