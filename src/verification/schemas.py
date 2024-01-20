@@ -1,5 +1,5 @@
 """Lending schemas"""
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import Field
 
@@ -13,6 +13,7 @@ class NewVerificationSchema(BaseSchema):
     step: str
     category: str
     asset_type_id: int = Field(alias="assetTypeId")
+    options: List[str]
 
 
 class VerificationSerializerSchema(BaseSchema):
@@ -23,6 +24,7 @@ class VerificationSerializerSchema(BaseSchema):
     step: str
     category: Optional[str] = None
     asset_type: str = Field(serialization_alias="assetType")
+    options: Optional[List[str]] = []
 
 
 class VerificationTypeSerializerSchema(BaseSchema):

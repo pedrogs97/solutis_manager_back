@@ -12,6 +12,7 @@ from src.lending.models import LendingModel
 from src.log.services import LogService
 from src.verification.models import (
     VerificationAnswerModel,
+    VerificationAnswerOptionModel,
     VerificationCategoryModel,
     VerificationModel,
     VerificationTypeModel,
@@ -127,12 +128,14 @@ class VerificationService:
         self, verification: VerificationModel
     ) -> VerificationSerializerSchema:
         """Serialize verification"""
+        options = [option.name for option in verification.options]
         return VerificationSerializerSchema(
             id=verification.id,
             question=verification.question,
             step=verification.step,
             asset_type=verification.asset_type.name,
             category=verification.category.name,
+            options=options,
         )
 
     def serialize_answer_verification(
@@ -147,6 +150,21 @@ class VerificationService:
             verification=self.serialize_verification(answer_verification.verification),
         )
 
+    def __create_options(
+        self, data: NewVerificationSchema, db_session: Session
+    ) -> List[VerificationAnswerOptionModel]:
+        """Creates new options"""
+        new_options = []
+
+        for new_option in data.options:
+            new_options.append(VerificationAnswerOptionModel(name=new_option))
+
+        db_session.add_all(new_options)
+        db_session.commit()
+        db_session.flush()
+
+        return new_options
+
     def create_verification(
         self,
         data: NewVerificationSchema,
@@ -159,12 +177,15 @@ class VerificationService:
 
         category = self.__get_verification_category_or_create(data.category, db_session)
 
+        new_options = self.__create_options(data, db_session)
+
         new_verification = VerificationModel(
             question=data.question,
             step=data.step,
-            category=category,
         )
 
+        new_verification.category = category
+        new_verification.options = new_options
         new_verification.asset_type = asset_type
 
         db_session.add(new_verification)

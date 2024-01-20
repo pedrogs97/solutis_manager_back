@@ -1,4 +1,5 @@
 """Verification models"""
+from typing import List
 
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
@@ -39,12 +40,31 @@ class VerificationModel(Base):
         "category_id", ForeignKey("verification_category.id"), nullable=True
     )
 
+    options: Mapped[List["VerificationAnswerOptionModel"]] = relationship()
+
     question = Column("question", String(length=100))
     step = Column("step", String(length=2))
 
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.question} ({self.step})"
+
+
+class VerificationAnswerOptionModel(Base):
+    """Verification answer option model"""
+
+    __tablename__ = "verification_answer_option"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+
+    verification: Mapped[VerificationModel] = relationship(viewonly=True)
+    verification_id = Column("verification_id", ForeignKey("verification.id"))
+
+    name = Column("name", String(length=100))
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.name}"
 
 
 class VerificationTypeModel(Base):
