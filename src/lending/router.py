@@ -26,6 +26,7 @@ from src.lending.schemas import (
     NewLendingDocSchema,
     NewLendingSchema,
     UploadSignedContractSchema,
+    UploadSignedRevokeContractSchema,
 )
 from src.lending.service import DocumentService, LendingService
 
@@ -218,8 +219,9 @@ def post_create_contract(
 
 
 @lending_router.post("/contracts/revoke/", response_class=FileResponse)
-def post_revoke_contract(
-    new_lending_doc: Annotated[NewLendingDocSchema, Form()],
+async def post_revoke_contract(
+    data: Annotated[UploadSignedRevokeContractSchema, Form()],
+    file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})
@@ -231,12 +233,15 @@ def post_revoke_contract(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    new_doc = document_service.create_contract(
-        new_lending_doc, "Distrato de Comodato", db_session, authenticated_user
+    serializer = await document_service.upload_revoke_contract(
+        file, "Distrato de Comodato", data, db_session, authenticated_user
     )
 
     db_session.close()
-    return FileResponse(new_doc.path)
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
 
 
 @lending_router.post("/terms/create/", response_class=FileResponse)
@@ -262,8 +267,9 @@ def post_create_term(
 
 
 @lending_router.post("/terms/revoke/", response_class=FileResponse)
-def post_revoke_term(
-    new_lending_doc: Annotated[NewLendingDocSchema, Form()],
+async def post_revoke_term(
+    data: Annotated[UploadSignedRevokeContractSchema, Form()],
+    file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})
@@ -275,12 +281,19 @@ def post_revoke_term(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    new_doc = document_service.create_contract(
-        new_lending_doc, "Distrato de Comodato", db_session, authenticated_user
+    serializer = await document_service.upload_revoke_contract(
+        file,
+        "Distrato de Termo de Responsabilidade",
+        data,
+        db_session,
+        authenticated_user,
     )
 
     db_session.close()
-    return FileResponse(new_doc.path)
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
 
 
 @lending_router.post("/documents/upload/")

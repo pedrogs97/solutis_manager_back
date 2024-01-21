@@ -32,6 +32,7 @@ from src.lending.schemas import (
     NewLendingPjContextSchema,
     NewLendingSchema,
     UploadSignedContractSchema,
+    UploadSignedRevokeContractSchema,
     WitnessContextSchema,
     WitnessSerializerSchema,
     WorkloadSerializerSchema,
@@ -509,51 +510,31 @@ class DocumentService:
             .first()
         )
 
-        asset = (
-            db_session.query(AssetModel)
-            .filter(AssetModel.id == new_lending_doc.asset_id)
-            .first()
-        )
-
-        new_code = self.__generate_code(
-            db_session.query(DocumentModel).all()[-1], asset
-        )
-
         current_lending = (
             db_session.query(LendingModel)
             .filter(LendingModel.id == new_lending_doc.lending_id)
             .first()
         )
 
-        workload = (
-            db_session.query(WorkloadModel)
-            .filter(WorkloadModel.id == new_lending_doc.workload_id)
-            .first()
+        asset = current_lending.asset
+
+        new_code = self.__generate_code(
+            db_session.query(DocumentModel).all()[-1], asset
         )
 
-        employee = (
-            db_session.query(EmployeeModel)
-            .filter(EmployeeModel.id == new_lending_doc.employee_id)
-            .first()
-        )
+        workload = current_lending.workload
 
-        witness1 = (
-            db_session.query(WitnessModel)
-            .filter(WitnessModel.id == new_lending_doc.witness1_id)
-            .first()
-        )
+        employee = current_lending.employee
 
-        witness2 = (
-            db_session.query(WitnessModel)
-            .filter(WitnessModel.id == new_lending_doc.witness2_id)
-            .first()
-        )
+        witness1 = current_lending.witnesses[0]
+
+        witness2 = current_lending.witnesses[1]
 
         if new_lending_doc.legal_person:
             contract_path = create_lending_contract_pj(
                 NewLendingPjContextSchema(
                     number=new_code,
-                    glpi_number=new_lending_doc.glpi_number,
+                    glpi_number=current_lending.glpi_number,
                     full_name=employee.full_name,
                     taxpayer_identification=employee.taxpayer_identification,
                     national_identification=employee.national_identification,
@@ -562,7 +543,7 @@ class DocumentService:
                     role=employee.role.name,
                     marital_status=employee.marital_status.description,
                     cc=new_lending_doc.cc,
-                    manager=new_lending_doc.manager,
+                    manager=current_lending.manager,
                     business_executive=new_lending_doc.business_executive,
                     workload=workload.name,
                     register_number=asset.register_number,
@@ -596,7 +577,7 @@ class DocumentService:
             contract_path = create_lending_contract(
                 NewLendingContextSchema(
                     number=new_code,
-                    glpi_number=new_lending_doc.glpi_number,
+                    glpi_number=current_lending.glpi_number,
                     full_name=employee.full_name,
                     taxpayer_identification=employee.taxpayer_identification,
                     national_identification=employee.national_identification,
@@ -605,7 +586,7 @@ class DocumentService:
                     role=employee.role.name,
                     marital_status=employee.marital_status.description,
                     cc=new_lending_doc.cc,
-                    manager=new_lending_doc.manager,
+                    manager=current_lending.manager,
                     business_executive=new_lending_doc.business_executive,
                     workload=workload.name,
                     register_number=asset.register_number,
@@ -641,7 +622,7 @@ class DocumentService:
         service_log.set_log(
             "lending",
             "document",
-            "Criação de Contrato",
+            f"Criação de {type_doc}",
             new_doc.id,
             authenticated_user,
             db_session,
@@ -716,6 +697,54 @@ class DocumentService:
         logger.info("Upload Document signed. %s", str(document))
 
         return self.serialize_document(document)
+
+    async def upload_revoke_contract(
+        self,
+        contract: UploadFile,
+        type_doc: str,
+        data: UploadSignedRevokeContractSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Upload contract"""
+
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+        lending = self.__get_lending_or_404(data.lending_id, db_session)
+
+        code = lending.number
+
+        file_name = f"{code}.pdf"
+
+        UPLOAD_DIR = CONTRACT_UPLOAD_DIR
+
+        if DEBUG:
+            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "contracts")
+
+        file_path = await upload_file(
+            file_name, "lending", contract.file.read(), UPLOAD_DIR
+        )
+
+        new_doc = DocumentModel(path=file_path, file_name=file_name)
+        new_doc.doc_type = doc_type
+
+        db_session.add(new_doc)
+        db_session.commit()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Importação de Distrato {type_doc}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Upload Document renvoke. %s", str(new_doc))
+
+        return self.serialize_document(new_doc)
 
     def get_documents(
         self,

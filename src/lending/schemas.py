@@ -92,15 +92,9 @@ class NewLendingDocSchema(BaseSchema):
     """New contract info schema"""
 
     number: str
-    glpi_number: str = Field(alias="glpiNumber")
     employee_id: int = Field(alias="employeeId")
-    asset_id: int = Field(alias="assetId")
-    witness1_id: int = Field(alias="witness1Id")
-    witness2_id: int = Field(alias="witness2Id")
     lending_id: int = Field(alias="lendingId")
-    workload_id: int = Field(alias="workloadId")
     cc: str
-    manager: str
     project: str
     business_executive: str = Field(alias="businessExecutive")
     legal_person: bool = Field(alias="legalPerson", default=False)
@@ -184,6 +178,12 @@ class UploadSignedContractSchema(BaseSchema):
 
     lending_id: int = Field(alias="lendingId")
     document_id: int = Field(alias="documentId")
+
+
+class UploadSignedRevokeContractSchema(BaseSchema):
+    """Schema for upload contract signed"""
+
+    lending_id: int = Field(alias="lendingId")
 
 
 class CreateWitnessSchema(BaseSchema):
