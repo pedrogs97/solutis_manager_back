@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from pydantic import Field
 
-from src.asset.schemas import AssetSerializerSchema
+from src.asset.schemas import AssetShortSerializerSchema
 from src.people.schemas import EmployeeSerializerSchema
 from src.schemas import BaseSchema
 
@@ -54,7 +54,7 @@ class WitnessSerializerSchema(BaseSchema):
 
     id: int
     employee: EmployeeSerializerSchema
-    signed: str
+    signed: Optional[str]
 
 
 class LendingSerializerSchema(BaseSchema):
@@ -62,14 +62,14 @@ class LendingSerializerSchema(BaseSchema):
 
     id: int
     employee: EmployeeSerializerSchema
-    asset: AssetSerializerSchema
-    document: int
+    asset: AssetShortSerializerSchema
+    document: Optional[int]
     workload: WorkloadSerializerSchema
     witnesses: List[WitnessSerializerSchema]
     cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
     manager: str
     observations: Optional[str]
-    signed_date: str = Field(serialization_alias="signedDate")
+    signed_date: Optional[str] = Field(serialization_alias="signedDate")
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
 
 

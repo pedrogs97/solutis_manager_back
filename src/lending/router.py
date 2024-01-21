@@ -158,7 +158,7 @@ def get_list_workloads_route(
     return JSONResponse(content=workloads, status_code=status.HTTP_200_OK)
 
 
-@lending_router.get("-witness/")
+@lending_router.post("-witness/")
 def post_create_witness_route(
     data: CreateWitnessSchema,
     db_session: Session = Depends(get_db_session),

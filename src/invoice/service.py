@@ -8,6 +8,8 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
+from src.asset.models import AssetModel
+from src.asset.schemas import AssetSerializerSchema
 from src.auth.models import UserModel
 from src.config import BASE_DIR, DEBUG, MEDIA_UPLOAD_DIR
 from src.invoice.filters import InvoiceFilter
@@ -18,8 +20,6 @@ from src.invoice.schemas import (
     NewInvoiceSchema,
     UploadInvoiceSchema,
 )
-from src.lending.models import AssetModel
-from src.lending.schemas import AssetSerializerSchema
 from src.log.services import LogService
 from src.utils import upload_file
 

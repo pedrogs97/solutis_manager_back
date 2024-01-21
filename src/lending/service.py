@@ -11,9 +11,9 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
 from src.asset.models import AssetModel
-from src.asset.schemas import AssetSerializerSchema
+from src.asset.schemas import AssetShortSerializerSchema
 from src.auth.models import UserModel
-from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG
+from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
 from src.lending.filters import DocumentFilter, LendingFilter, WorkloadFilter
 from src.lending.models import (
     DocumentModel,
@@ -38,7 +38,14 @@ from src.lending.schemas import (
 )
 from src.log.services import LogService
 from src.people.models import CostCenterModel, EmployeeModel
-from src.people.schemas import EmployeeSerializerSchema
+from src.people.schemas import (
+    EmployeeEducationalLevelSerializerSchema,
+    EmployeeGenderSerializerSchema,
+    EmployeeMatrimonialStatusSerializerSchema,
+    EmployeeNationalitySerializerSchema,
+    EmployeeRoleSerializerSchema,
+    EmployeeSerializerSchema,
+)
 from src.utils import create_lending_contract, create_lending_contract_pj, upload_file
 
 logger = logging.getLogger(__name__)
@@ -66,12 +73,51 @@ class LendingService:
 
         return lending
 
+    def serialize_employee(self, employee: EmployeeModel) -> EmployeeSerializerSchema:
+        """Serializer employee"""
+        return EmployeeSerializerSchema(
+            id=employee.id,
+            role=EmployeeRoleSerializerSchema(**employee.role.__dict__)
+            if employee.role
+            else None,
+            nationality=EmployeeNationalitySerializerSchema(
+                **employee.nationality.__dict__
+            ),
+            marital_status=EmployeeMatrimonialStatusSerializerSchema(
+                **employee.marital_status.__dict__
+            ),
+            gender=EmployeeGenderSerializerSchema(**employee.gender.__dict__),
+            educational_level=EmployeeEducationalLevelSerializerSchema(
+                **employee.educational_level.__dict__
+            )
+            if employee.educational_level
+            else None,
+            status=employee.status,
+            manager=employee.manager,
+            address=employee.address,
+            birthday=employee.birthday.strftime(DEFAULT_DATE_FORMAT),
+            cell_phone=employee.cell_phone,
+            code=employee.code,
+            email=employee.email,
+            full_name=employee.full_name,
+            legal_person=employee.legal_person,
+            national_identification=employee.national_identification,
+            taxpayer_identification=employee.taxpayer_identification,
+            admission_date=employee.admission_date.strftime(DEFAULT_DATE_FORMAT)
+            if employee.admission_date
+            else None,
+        )
+
     def serialize_witness(self, witness: WitnessModel) -> WitnessSerializerSchema:
         """Serialize witness"""
+        employee_serializer = self.serialize_employee(witness.employee)
+
         return WitnessSerializerSchema(
             id=witness.id,
-            employee=EmployeeSerializerSchema(**witness.employee.__dict__),
-            signed=witness.signed.strftime("DEFAULT_DATE_FORMAT"),
+            employee=employee_serializer,
+            signed=witness.signed.strftime("DEFAULT_DATE_FORMAT")
+            if witness.signed
+            else None,
         )
 
     def serialize_lending(self, lending: LendingModel) -> LendingSerializerSchema:
@@ -83,15 +129,17 @@ class LendingService:
 
         return LendingSerializerSchema(
             id=lending.id,
-            employee=EmployeeSerializerSchema(**lending.employee.__dict__),
-            asset=AssetSerializerSchema(**lending.asset.__dict__),
-            document=lending.document.id,
+            employee=self.serialize_employee(lending.employee),
+            asset=AssetShortSerializerSchema(**lending.asset.__dict__),
+            document=lending.document.id if lending.document else None,
             workload=WorkloadSerializerSchema(**lending.workload.__dict__),
             witnesses=witnesses_serialzier,
             cost_center=CostCenterSerializerSchema(**lending.cost_center.__dict__),
             manager=lending.manager,
             observations=lending.observations,
-            signed_date=lending.signed_date.strftime("DEFAULT_DATE_FORMAT"),
+            signed_date=lending.signed_date.strftime("DEFAULT_DATE_FORMAT")
+            if lending.signed_date
+            else None,
             glpi_number=lending.glpi_number,
         )
 
@@ -127,6 +175,7 @@ class LendingService:
                     {"field": "assetId", "error": f"Ativo não existe. {asset}"}
                 )
 
+        document = None
         if data.document_id:
             document = (
                 db_session.query(DocumentModel)
@@ -175,17 +224,34 @@ class LendingService:
                     .filter(WitnessModel.id == witness)
                     .first()
                 )
-                if not witness_obj:
-                    ids_not_found.append(witness_obj)
-                witnesses.append(witness)
-            errors.append(
-                {
-                    "field": "witnessId",
-                    "error": {"Testemunhas não encontradas": ids_not_found},
-                }
-            )
 
-        if len(errors) > 0:
+                if not witness_obj:
+                    employee_obj = (
+                        db_session.query(EmployeeModel)
+                        .filter(EmployeeModel.id == witness)
+                        .first()
+                    )
+
+                    if not employee_obj:
+                        ids_not_found.append(witness_obj)
+                    else:
+                        new_witness = WitnessModel(employee=employee)
+                        db_session.add(new_witness)
+                        db_session.commit()
+                        db_session.flush()
+                        witnesses.append(new_witness)
+                else:
+                    witnesses.append(witness_obj)
+
+            if ids_not_found:
+                errors.append(
+                    {
+                        "field": "witnessId",
+                        "error": {"Testemunhas não encontradas": ids_not_found},
+                    }
+                )
+
+        if errors:
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -249,7 +315,7 @@ class LendingService:
 
     def get_lending(
         self, lending_id: int, db_session: Session
-    ) -> AssetSerializerSchema:
+    ) -> LendingSerializerSchema:
         """Get a lending"""
         lending = self.__get_lending_or_404(lending_id, db_session)
         return self.serialize_lending(lending)
@@ -260,7 +326,7 @@ class LendingService:
         lending_filters: LendingFilter,
         page: int = 1,
         size: int = 50,
-    ) -> Page[AssetSerializerSchema]:
+    ) -> Page[LendingSerializerSchema]:
         """Get lendings list"""
 
         lending_list = lending_filters.filter(db_session.query(LendingModel))
