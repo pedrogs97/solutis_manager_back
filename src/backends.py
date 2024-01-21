@@ -240,9 +240,9 @@ class PermissionChecker:
 
             for perm in user.group.permissions:
                 if (
-                    perm.module == self.required_permissions.module
-                    and perm.model == self.required_permissions.model
-                    and perm.action == self.required_permissions.action
+                    perm.module == self.required_permissions["module"]
+                    and perm.model == self.required_permissions["model"]
+                    and perm.action == self.required_permissions["action"]
                 ):
                     return user
             return None
