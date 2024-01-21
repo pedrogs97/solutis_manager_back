@@ -143,6 +143,7 @@ class AssetService:
             configuration=asset.configuration,
             quantity=asset.quantity,
             unit=asset.unit,
+            by_agile=asset.by_agile,
         )
 
     def serialize_asset_type(

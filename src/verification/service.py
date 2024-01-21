@@ -220,6 +220,8 @@ class VerificationService:
                 question=verification.question,
                 asset_type=verification.asset_type.name,
                 step=verification.step,
+                category=verification.category.name,
+                options=[option.name for option in verification.options],
             )
             for verification in verifications
         ]

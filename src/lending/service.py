@@ -755,7 +755,7 @@ class DocumentService:
     ) -> Page[DocumentSerializerSchema]:
         """Get documents list"""
 
-        document_list = document_filters.filter(db_session.query(LendingModel))
+        document_list = document_filters.filter(db_session.query(DocumentModel))
 
         params = Params(page=page, size=size)
         paginated = paginate(
