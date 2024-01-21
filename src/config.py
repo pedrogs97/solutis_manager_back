@@ -90,6 +90,7 @@ PERMISSIONS = {
             {"name": "lending", "label": "Comodato"},
             {"name": "document", "label": "Documentos"},
             {"name": "workload", "label": "Lotação"},
+            {"name": "witness", "label": "Testemunha"},
         ],
         "label": "Comodato",
     },

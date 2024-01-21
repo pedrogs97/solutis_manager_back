@@ -184,3 +184,9 @@ class UploadSignedContractSchema(BaseSchema):
 
     lending_id: int = Field(alias="lendingId")
     document_id: int = Field(alias="documentId")
+
+
+class CreateWitnessSchema(BaseSchema):
+    """Create witness schema"""
+
+    employee_id: int = Field(alias="employeeId")

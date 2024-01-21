@@ -10,6 +10,7 @@ from src.lending.models import (
     DocumentModel,
     DocumentTypeModel,
     LendingModel,
+    WitnessModel,
     WorkloadModel,
 )
 from src.people.filters import CostCenterFilter, EmployeeFullNameFilter
@@ -81,3 +82,16 @@ class LendingFilter(Filter):
 
         model = LendingModel
         search_model_fields = ["number", "manager", "glpi_number"]
+
+
+class WitnessFilter(Filter):
+    """Witness filters"""
+
+    employee: Optional[EmployeeFullNameFilter] = FilterDepends(
+        with_prefix("employee", EmployeeFullNameFilter)
+    )
+
+    class Constants(Filter.Constants):
+        """Filter constants"""
+
+        model = WitnessModel

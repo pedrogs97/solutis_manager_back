@@ -24,6 +24,7 @@ from src.lending.models import (
 )
 from src.lending.schemas import (
     CostCenterSerializerSchema,
+    CreateWitnessSchema,
     DocumentSerializerSchema,
     LendingSerializerSchema,
     NewLendingContextSchema,
@@ -65,18 +66,20 @@ class LendingService:
 
         return lending
 
+    def serialize_witness(self, witness: WitnessModel) -> WitnessSerializerSchema:
+        """Serialize witness"""
+        return WitnessSerializerSchema(
+            id=witness.id,
+            employee=EmployeeSerializerSchema(**witness.employee.__dict__),
+            signed=witness.signed.strftime("DEFAULT_DATE_FORMAT"),
+        )
+
     def serialize_lending(self, lending: LendingModel) -> LendingSerializerSchema:
         """Serialize lending"""
         witnesses_serialzier = []
 
         for witness in lending.witnesses:
-            witnesses_serialzier.append(
-                WitnessSerializerSchema(
-                    id=witness.id,
-                    employee=EmployeeSerializerSchema(**witness.employee.__dict__),
-                    signed=witness.signed.strftime("DEFAULT_DATE_FORMAT"),
-                )
-            )
+            witnesses_serialzier.append(self.serialize_witness(witness))
 
         return LendingSerializerSchema(
             id=lending.id,
@@ -295,6 +298,69 @@ class LendingService:
                 include={*list_fields}, by_alias=True
             )
             for workload in workloads_list
+        ]
+
+    def create_witness(
+        self,
+        data: CreateWitnessSchema,
+        authenticated_user: UserModel,
+        db_session: Session,
+    ) -> WitnessSerializerSchema:
+        """Creates new witness"""
+        employee = (
+            db_session.query(EmployeeModel)
+            .filter(EmployeeModel.id == data.employee_id)
+            .first()
+        )
+
+        if not employee:
+            raise HTTPException(
+                detail={
+                    "field": "employeeId",
+                    "error": "Colaborador não encontrado",
+                },
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        new_witness = WitnessModel(employee=employee)
+        db_session.add(new_witness)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "witness",
+            "Criação de Testemunha",
+            new_witness.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New Witness. %s", str(new_witness))
+
+        return self.serialize_witness(new_witness)
+
+    def get_witnesses(
+        self,
+        db_session: Session,
+        witnesses_filters: WorkloadFilter,
+        fields: str = "",
+    ) -> List[WitnessSerializerSchema]:
+        """Get witnesses list"""
+
+        witnesses_list = witnesses_filters.filter(db_session.query(WitnessModel))
+
+        if fields == "":
+            return [
+                self.serialize_witness(witnesss).model_dump(by_alias=True)
+                for witnesss in witnesses_list
+            ]
+
+        list_fields = fields.split(",")
+        return [
+            self.serialize_witness(witnesss).model_dump(
+                include={*list_fields}, by_alias=True
+            )
+            for witnesss in witnesses_list
         ]
 
 
