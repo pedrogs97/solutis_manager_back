@@ -6,23 +6,15 @@ from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
 
-# invoice_assets = Table(
-#     "invoice_assets",
-#     Base.metadata,
-#     Column("invoice_id", ForeignKey("invoices.id"), primary_key=True),
-#     Column("asset_id", ForeignKey("asset.id"), primary_key=True),
-#     Column("quantity", Float, nullable=False),
-#     Column("unit_value", Integer, nullable=False),
-# )
-
 
 class InvoiceAssets(Base):
     """Invoice asset pivot table"""
 
     __tablename__ = "invoice_assets"
 
-    invoice_id: Mapped[int] = Column(ForeignKey("invoices.id"), primary_key=True)
     asset_id: Mapped[int] = Column(ForeignKey("asset.id"), primary_key=True)
+    asset: Mapped["AssetModel"] = relationship()
+    invoice_id: Mapped[int] = Column(ForeignKey("invoices.id"))
     quantity = Column("quantity", Integer, nullable=False)
     unit_value = Column("unit_value", Float, nullable=False)
 
@@ -41,7 +33,7 @@ class InvoiceModel(Base):
     path = Column("path", String(length=255), nullable=True)
     file_name = Column("file_name", String(length=100), nullable=True)
 
-    assets: Mapped[List[InvoiceAssets]] = relationship(InvoiceAssets, viewonly=True)
+    assets: Mapped[List[InvoiceAssets]] = relationship(viewonly=True)
 
     def __str__(self):
         return f"{self.number}"

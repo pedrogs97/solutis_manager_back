@@ -140,6 +140,11 @@ class AssetSerializerSchema(BaseSchema):
     )
     status: Optional[AssetStatusSerializerSchema] = None
 
+    invoice_asset_id: Optional[int] = Field(
+        serialization_alias="invoiceAssetId",
+        default=None,
+    )
+
     # tombo - registro patrimonial
     register_number: Optional[str] = Field(
         serialization_alias="registerNumber",

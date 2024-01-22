@@ -96,7 +96,7 @@ class AssetModel(Base):
     )
     clothing_size: Mapped[AssetClothingSizeModel] = relationship()
 
-    invoice: Mapped[InvoiceAssets] = relationship(viewonly=True)
+    invoice: Mapped[InvoiceAssets] = relationship(viewonly=True, uselist=False)
 
     code = Column("code", String(length=255), nullable=True, unique=True)
     # tombo - registro patrimonial

@@ -144,6 +144,7 @@ class AssetService:
             quantity=asset.quantity,
             unit=asset.unit,
             by_agile=asset.by_agile,
+            invoice_asset_id=asset.invoice.asset_id if asset.invoice else None,
         )
 
     def serialize_asset_type(
