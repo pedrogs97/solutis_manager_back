@@ -80,11 +80,34 @@ def post_create_answer_verification(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = verification_service.create_answer_verification(
+    ansers_list = verification_service.create_answer_verification(
         data, db_session, authenticated_user
     )
     db_session.close()
     return JSONResponse(
-        content=serializer.model_dump(by_alias=True),
+        content=ansers_list,
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@verification_router.get("/answer/{lending_id}/")
+def get_answer_verification_by_lending(
+    lending_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "asset", "model": "answer", "action": "view"})
+    ),
+):
+    """Creates answer for a verification"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    ansers_list = verification_service.get_answer_verification_by_lending(
+        lending_id, db_session
+    )
+    db_session.close()
+    return JSONResponse(
+        content=ansers_list,
         status_code=status.HTTP_200_OK,
     )

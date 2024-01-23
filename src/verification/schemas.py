@@ -48,14 +48,20 @@ class VerificationCategorySerializerSchema(BaseSchema):
     name: str
 
 
+class NewAnswersSchema(BaseSchema):
+    """Answers schema"""
+
+    verification_id: int = Field(alias="verificationId")
+    answer: str
+    observations: Optional[str] = None
+
+
 class NewVerificationAnswerSchema(BaseSchema):
     """New verification answer schema"""
 
     lending_id: int = Field(alias="lendingId")
-    verification_id: int = Field(alias="verificationId")
     type_id: int = Field(alias="typeId")
-    answer: str
-    observations: Optional[str] = None
+    answered: List[NewAnswersSchema]
 
 
 class VerificationAnswerSerializerSchema(BaseSchema):

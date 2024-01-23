@@ -221,7 +221,7 @@ class VerificationService:
                 question=verification.question,
                 asset_type=verification.asset_type.name,
                 step=verification.step,
-                category=verification.category.name,
+                category=verification.category.name if verification.category else None,
                 options=[option.name for option in verification.options],
             )
             for verification in verifications
@@ -232,38 +232,62 @@ class VerificationService:
         data: NewVerificationAnswerSchema,
         db_session: Session,
         authenticated_user: UserModel,
-    ) -> VerificationAnswerSerializerSchema:
+    ) -> List[VerificationAnswerSerializerSchema]:
         """Creates new answer verification"""
 
-        verification = self.__get_verification_or_404(data.verification_id, db_session)
+        lending = self.__get_lending_or_404(data.lending_id, db_session)
 
         verification_type = self.__get_verification_type_or_404(
             data.type_id, db_session
         )
 
-        lending = self.__get_lending_or_404(data.lending_id, db_session)
+        new_answers = []
 
-        new_answer_verification = VerificationAnswerModel(
-            lending=lending,
-            answer=data.answer,
-            observations=data.observations,
-        )
+        for answer in data.answered:
+            verification = self.__get_verification_or_404(
+                answer.verification_id, db_session
+            )
 
-        new_answer_verification.type = verification_type
-        new_answer_verification.verification = verification
+            new_answer_verification = VerificationAnswerModel(
+                lending=lending,
+                answer=answer.answer,
+                observations=answer.observations,
+            )
 
-        db_session.add(new_answer_verification)
+            new_answer_verification.type = verification_type
+            new_answer_verification.verification = verification
+            new_answers.append(new_answer_verification)
+
+        db_session.add_all(new_answers)
         db_session.commit()
         db_session.flush()
 
         service_log.set_log(
             "lending",
             "verification",
-            "Adição de nova resposta verificação",
-            new_answer_verification.id,
+            "Adição de novas respostas verificação",
+            lending.id,
             authenticated_user,
             db_session,
         )
-        logger.info("New answer verification. %s", str(new_answer_verification))
+        logger.info("New answers verification. %s", str(len(new_answers)))
 
-        return self.serialize_answer_verification(new_answer_verification)
+        return [
+            self.serialize_answer_verification(new_answer).model_dump(by_alias=True)
+            for new_answer in new_answers
+        ]
+
+    def get_answer_verification_by_lending(
+        self, lending_id: int, db_session: Session
+    ) -> List[VerificationAnswerSerializerSchema]:
+        """Returns lending answers"""
+        answers = (
+            db_session.query(VerificationAnswerModel)
+            .filter(VerificationAnswerModel.lending_id == lending_id)
+            .all()
+        )
+
+        return [
+            self.serialize_answer_verification(answer).model_dump(by_alias=True)
+            for answer in answers
+        ]
