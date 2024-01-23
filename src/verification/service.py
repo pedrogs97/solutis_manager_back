@@ -22,6 +22,7 @@ from src.verification.schemas import (
     NewVerificationSchema,
     VerificationAnswerSerializerSchema,
     VerificationSerializerSchema,
+    VerificationTypeSerializerSchema,
 )
 
 logger = logging.getLogger(__name__)
@@ -134,7 +135,7 @@ class VerificationService:
             question=verification.question,
             step=verification.step,
             asset_type=verification.asset_type.name,
-            category=verification.category.name,
+            category=verification.category.name if verification.category else None,
             options=options,
         )
 
@@ -144,7 +145,7 @@ class VerificationService:
         """Serialize answer verification"""
         return VerificationAnswerSerializerSchema(
             id=answer_verification.id,
-            type=answer_verification.type.name,
+            type=VerificationTypeSerializerSchema(**answer_verification.type.__dict__),
             answer=answer_verification.answer,
             lending_id=answer_verification.lending.id,
             verification=self.serialize_verification(answer_verification.verification),
@@ -248,8 +249,8 @@ class VerificationService:
             observations=data.observations,
         )
 
-        new_answer_verification.type = (verification_type,)
-        new_answer_verification.verification = (verification,)
+        new_answer_verification.type = verification_type
+        new_answer_verification.verification = verification
 
         db_session.add(new_answer_verification)
         db_session.commit()

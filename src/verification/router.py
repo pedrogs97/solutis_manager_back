@@ -80,7 +80,7 @@ def post_create_answer_verification(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = verification_service.create_verification(
+    serializer = verification_service.create_answer_verification(
         data, db_session, authenticated_user
     )
     db_session.close()
