@@ -93,6 +93,24 @@ class WitnessModel(Base):
         return f"{self.id}"
 
 
+class LendingTypeModel(Base):
+    """
+    Lending type model
+
+    * Contrato
+    * Termo de reponsabilidade
+    """
+
+    __tablename__ = "lending_type"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    name = Column("name", String(length=40), nullable=False)
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.name}"
+
+
 class LendingModel(Base):
     """Lending model"""
 
@@ -110,6 +128,11 @@ class LendingModel(Base):
     # lotação
     workload: Mapped[WorkloadModel] = relationship()
     workload_id = Column("workload_id", ForeignKey("workload.id"), nullable=False)
+
+    type: Mapped[LendingTypeModel] = relationship()
+    type_id = Column(
+        "type_id", ForeignKey("lending_type.id"), nullable=False, default=1
+    )
 
     witnesses: Mapped[List[WitnessModel]] = relationship(
         secondary=lending_witnesses,

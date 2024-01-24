@@ -67,6 +67,7 @@ class LendingSerializerSchema(BaseSchema):
     workload: WorkloadSerializerSchema
     witnesses: List[WitnessSerializerSchema]
     cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
+    type: str
     manager: str
     observations: Optional[str]
     signed_date: Optional[str] = Field(serialization_alias="signedDate")
@@ -82,6 +83,7 @@ class NewLendingSchema(BaseSchema):
     workload_id: int = Field(alias="workloadId")
     witnesses_id: List[int] = Field(alias="witnessesId")
     cost_center_id: int = Field(alias="costCenterId")
+    type_id: int = Field(alias="typeId")
     manager: str
     observations: Optional[str] = None
     signed_date: Optional[date] = Field(alias="signedDate", default=None)

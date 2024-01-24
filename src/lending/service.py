@@ -19,6 +19,7 @@ from src.lending.models import (
     DocumentModel,
     DocumentTypeModel,
     LendingModel,
+    LendingTypeModel,
     WitnessModel,
     WorkloadModel,
 )
@@ -142,6 +143,7 @@ class LendingService:
             if lending.signed_date
             else None,
             glpi_number=lending.glpi_number,
+            type=lending.type.name,
         )
 
     def serialize_workload(self, workload: WorkloadModel) -> WorkloadSerializerSchema:
@@ -216,6 +218,20 @@ class LendingService:
                     }
                 )
 
+        if data.type_id:
+            lending_type = (
+                db_session.query(LendingTypeModel)
+                .filter(LendingTypeModel.id == data.type_id)
+                .first()
+            )
+            if not lending_type:
+                errors.append(
+                    {
+                        "field": "typeId",
+                        "error": f"Tipo não existe. {lending_type}",
+                    }
+                )
+
         if data.witnesses_id:
             witnesses = []
             ids_not_found = []
@@ -265,6 +281,7 @@ class LendingService:
             workload,
             cost_center,
             witnesses,
+            lending_type,
         )
 
     def create_lending(
@@ -282,6 +299,7 @@ class LendingService:
             workload,
             cost_center,
             witnesses,
+            lending_type,
         ) = self.__validate_nested(new_lending, db_session)
 
         new_lending_db = LendingModel(
@@ -296,6 +314,7 @@ class LendingService:
         new_lending_db.document = document
         new_lending_db.workload = workload
         new_lending_db.cost_center = cost_center
+        new_lending_db.type = lending_type
 
         new_lending_db.witnesses = witnesses
         db_session.add(new_lending_db)

@@ -10,6 +10,7 @@ from src.lending.models import (
     DocumentModel,
     DocumentTypeModel,
     LendingModel,
+    LendingTypeModel,
     WitnessModel,
     WorkloadModel,
 )
@@ -51,6 +52,17 @@ class WorkloadFilter(Filter):
         model = WorkloadModel
 
 
+class LendingTypeFilter(Filter):
+    """LendingType filters"""
+
+    name: Optional[str] = None
+
+    class Constants(Filter.Constants):
+        """Filter constants"""
+
+        model = LendingTypeModel
+
+
 class LendingFilter(Filter):
     """Lending filters"""
 
@@ -73,6 +85,9 @@ class LendingFilter(Filter):
     )
     cost_center: Optional[CostCenterFilter] = FilterDepends(
         with_prefix("cost_center", CostCenterFilter)
+    )
+    type: Optional[LendingTypeFilter] = FilterDepends(
+        with_prefix("type", LendingTypeFilter)
     )
     order_by: List[str] = ["number"]
     search: Optional[str] = None

@@ -1,0 +1,12 @@
+[
+    {
+        "table": "lending_type",
+        "id": 1,
+        "name": "Termo de reponsabilidade"
+    },
+    {
+        "table": "lending_type",
+        "id": 2,
+        "name": "Contrato"
+    }
+]
