@@ -16,7 +16,6 @@ ENV RUNLEVEL=3
 COPY ./poetry.lock /solutis-agile
 COPY ./pyproject.toml /solutis-agile
 COPY ./openssl.cnf /etc/ssl/openssl.cnf
-COPY ./nginx/config.json /docker-entrypoint.d/config.json
 COPY ./README.md /solutis-agile/README.md
 COPY ./src /solutis-agile/src
 COPY ./alembic /solutis-agile/alembic
