@@ -43,7 +43,6 @@ RUN apt-get update -y && apt-get install curl -y \
     && apt-get auto-remove -y \
     && apt-get remove curl -y \
     && pip uninstall poetry \
-    && rm requirements.txt \
-    && inv migrate
+    && rm requirements.txt
 
 ENV PATH="/opt/mssql-tools17/bin:$PATH"

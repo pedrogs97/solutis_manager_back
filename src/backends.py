@@ -1,15 +1,17 @@
 """Base backends"""
 import logging
-import ssl
+import smtplib
 import time
 from datetime import datetime, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Annotated, Union
 
+import jinja2
 import jwt
 from fastapi import Depends, status
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -23,6 +25,7 @@ from src.config import (
     EMAIL_SOLUTIS_365,
     REFRESH_TOKEN_EXPIRE_DAYS,
     SECRET_KEY,
+    TEMPLATE_DIR,
 )
 from src.database import Session_db
 from src.exceptions import get_user_exception, token_exception
@@ -254,61 +257,53 @@ class PermissionChecker:
 class Email365Client:
     """Office 365 email client"""
 
-    conf = ConnectionConfig(
-        MAIL_USERNAME=EMAIL_SOLUTIS_365,
-        MAIL_PASSWORD=EMAIL_PASSWORD_SOLUTIS_365,
-        MAIL_FROM=EMAIL_SOLUTIS_365,
-        MAIL_PORT=587,
-        MAIL_SERVER="smtp-mail.outlook.com",
-        MAIL_FROM_NAME="Solutis Agile",
-        MAIL_STARTTLS=False,
-        MAIL_SSL_TLS=False,
-        USE_CREDENTIALS=True,
-        VALIDATE_CERTS=True,
-    )
+    # https://realpython.com/python-send-email/
 
-    def __init__(self, mail_to: str, mail_subject: str, mail_body: str) -> None:
+    def __init__(
+        self, mail_to: str, mail_subject: str, type_message: str, extra: dict
+    ) -> None:
+        self.__extra = extra
+        self.__type = type_message
         self.__mail_to = mail_to
-        self.__mail_subject = mail_subject
-        self.__mail_body = mail_body
-        self.message = MessageSchema(
-            subject=self.__mail_subject,
-            recipients=[self.__mail_to],
-            body=self.__mail_body,
-            subtype=MessageType.html,
-        )
-        logger.info(self.conf.model_dump())
-        self.fm = FastMail(self.conf)
+        self.__message = MIMEMultipart("alternative")
+        self.__message["Subject"] = mail_subject
+        self.__message["From"] = EMAIL_SOLUTIS_365
+        self.__message["To"] = mail_to
 
-    async def send_message(self) -> bool:
+    def __prepare_new_password(self) -> str:
+        """Build new password email"""
+        if "username" not in self.__extra:
+            raise ValueError("Username not found to send new password email")
+        if "new_password" not in self.__extra:
+            raise ValueError("New password not found to send new password email")
+
+        template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+        template_env = jinja2.Environment(loader=template_loader)
+        template_file = "reset_password.html"
+        template = template_env.get_template(template_file)
+
+        return template.render(username="teste", new_password="teste senha")
+
+    def __prepare_message(self) -> None:
+        """Build email"""
+        output_text = ""
+        if self.__type == "new_password":
+            output_text = self.__prepare_new_password()
+
+        self.__message.attach(MIMEText(output_text, "html"))
+
+    def send_message(self, fake=False) -> bool:
         """Try send message"""
-        logger.info("Sending message to %s", self.__mail_to)
-        # try:
-        #     await self.fm.send_message(self.message)
-        #     return True
-        # except ValueError:
-        #     logger.error("Unable to sent message")
-        #     return False
-
-        sender = EMAIL_SOLUTIS_365
-
-        message = f"""\
-        Subject: Hi Mailtrap
-        To: {self.__mail_to}
-        From: {sender}
-
-        This is a test e-mail message."""
-
-        context = ssl.create_default_context()
-
-        # with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
-        #     server.set_debuglevel(1)
-        #     server.starttls(context=context)
-        #     server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
-        #     server.sendmail(sender, self.__mail_to, message)
+        self.__prepare_message()
+        with smtplib.SMTP(
+            "smtp.office365.com", 587, local_hostname="solutis.com.br"
+        ) as server:
+            server.set_debuglevel(1)
+            server.starttls()
+            server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
+            if fake:
+                return True
+            server.sendmail(
+                EMAIL_SOLUTIS_365, self.__mail_to, self.__message.as_string()
+            )
         return True
-
-        # with smtplib.SMTP("sandbox.smtp.mailtrap.io", 2525) as server:
-        #     server.login("c6d190177572f4", "bff9f2516dd37c")
-        #     server.sendmail(sender, self.__mail_to, message)
-        # return True

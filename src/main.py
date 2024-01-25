@@ -2,7 +2,6 @@
 import logging
 import os
 from contextlib import asynccontextmanager
-from logging.handlers import TimedRotatingFileHandler
 
 from apscheduler.jobstores.base import ConflictingIdError
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -18,13 +17,10 @@ from src.asset.router import asset_router
 from src.auth.router import auth_router
 from src.auth.service import create_initial_data, create_permissions, create_super_user
 from src.backends import get_db_session
-from src.config import (
+from src.config import (  # DATE_FORMAT,; FORMAT,; LOG_FILENAME,
     BASE_API,
     BASE_DIR,
-    DATE_FORMAT,
     DB_SERVER,
-    FORMAT,
-    LOG_FILENAME,
     ORIGINS,
     SCHEDULER_ACTIVE,
 )
@@ -39,18 +35,21 @@ from src.maintenance.router import maintenance_router
 from src.people.router import people_router
 from src.verification.router import verification_router
 
+# from logging.handlers import TimedRotatingFileHandler
+
+
 if not os.path.exists(f"{BASE_DIR}/logs/"):
     os.makedirs(f"{BASE_DIR}/logs/")
 
-file_handler = TimedRotatingFileHandler(LOG_FILENAME, when="midnight")
-file_handler.suffix = "bkp"
-logging.basicConfig(
-    encoding="utf-8",
-    level=logging.DEBUG,
-    format=FORMAT,
-    datefmt=DATE_FORMAT,
-    handlers=[file_handler],
-)
+# file_handler = TimedRotatingFileHandler(LOG_FILENAME, when="midnight")
+# file_handler.suffix = "bkp"
+# logging.basicConfig(
+#     encoding="utf-8",
+#     level=logging.DEBUG,
+#     format=FORMAT,
+#     datefmt=DATE_FORMAT,
+#     handlers=[file_handler],
+# )
 logger = logging.getLogger(__name__)
 
 exception_handlers = {

@@ -23,7 +23,7 @@ from src.auth.schemas import (
     UserSerializerSchema,
     UserUpdateSchema,
 )
-from src.backends import bcrypt_context
+from src.backends import Email365Client, bcrypt_context
 from src.config import DEBUG, DEFAULT_DATE_FORMAT, PASSWORD_SUPER_USER, PERMISSIONS
 from src.database import Session_db
 from src.log.services import LogService
@@ -88,8 +88,11 @@ class UserSerivce:
 
         Example Usage:
             user_service = UserSerivce()
+
             new_password = user_service.make_new_random_password()
+
             print(new_password)
+
             # Output: 8aBcD3e
         """
         # choose from all lowercase letter
@@ -487,16 +490,24 @@ class UserSerivce:
 
         user = self.__get_user_or_404(data.user_id, db_session)
 
-        service_log.set_log(
-            "auth",
-            "user",
-            "Envio de nova senha",
-            user.id,
-            authenticated_user,
-            db_session,
+        name = user.employee.full_name if user.employee else user.username
+        mail_client = Email365Client(
+            user.email,
+            "Nova senha",
+            "new_password",
+            {"username": name, "new_password": self.make_new_random_password()},
         )
-
-        # TODO serviço de envio de e-mail
+        if mail_client.send_message():
+            service_log.set_log(
+                "auth",
+                "user",
+                "Envio de nova senha",
+                user.id,
+                authenticated_user,
+                db_session,
+            )
+        else:
+            logger.warning("Não foi possível enviar o e-mail")
 
 
 def create_super_user():

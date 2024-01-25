@@ -140,6 +140,7 @@ MAX_PAGINATION_NUMBER = 100
 ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://172.21.3.225:3000",
     "http://127.0.0.1",
     "http://localhost",
     "http://172.21.3.225",

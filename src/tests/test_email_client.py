@@ -1,9 +1,6 @@
 """Functional tests for email client"""
-import pytest
 
 from src.backends import Email365Client
-
-pytest_plugins = ("pytest_asyncio",)
 
 
 class TestEmail365Client:
@@ -13,14 +10,14 @@ class TestEmail365Client:
     This class provides functional tests for the Email client.
     """
 
-    @pytest.mark.asyncio
-    async def test_send_message_sucess(self):
-        """Test send message success case"""
+    def test_send_new_password_email_sucess(self):
+        """Test send new password email success case"""
         client = Email365Client(
-            mail_to="pedrogustavosantana97@gmail.com",
+            mail_to="teste@email.com",
             mail_subject="teste de email",
-            mail_body="testando envio de email",
+            type_message="new_password",
+            extra={"username": "teste", "new_password": "teste"},
         )
 
-        result = await client.send_message()
+        result = client.send_message()
         assert result
