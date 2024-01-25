@@ -295,15 +295,20 @@ class Email365Client:
     def send_message(self, fake=False) -> bool:
         """Try send message"""
         self.__prepare_message()
-        with smtplib.SMTP(
-            "smtp.office365.com", 587, local_hostname="solutis.com.br"
-        ) as server:
-            server.set_debuglevel(1)
-            server.starttls()
-            server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
-            if fake:
-                return True
-            server.sendmail(
-                EMAIL_SOLUTIS_365, self.__mail_to, self.__message.as_string()
-            )
-        return True
+        try:
+            with smtplib.SMTP(
+                "smtp.office365.com", 587, local_hostname="solutis.com.br"
+            ) as server:
+                server.set_debuglevel(1)
+                server.starttls()
+                server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
+                if fake:
+                    return True
+                server.sendmail(
+                    EMAIL_SOLUTIS_365, self.__mail_to, self.__message.as_string()
+                )
+            return True
+        except smtplib.SMTPAuthenticationError:
+            return False
+        except smtplib.SMTPRecipientsRefused:
+            return False
