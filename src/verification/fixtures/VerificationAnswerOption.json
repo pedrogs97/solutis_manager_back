@@ -16,5 +16,287 @@
         "table": "verification_answer_option",
         "name": "Não tem",
         "verification_id": 1
+    },
+    {
+        "id": 4,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 2
+    },
+    {
+        "id": 5,
+        "table": "verification_answer_option",
+        "name": "Riscado",
+        "verification_id": 2
+    },
+    {
+        "id": 6,
+        "table": "verification_answer_option",
+        "name": "Quebrado",
+        "verification_id": 2
+    },
+    {
+        "id": 7,
+        "table": "verification_answer_option",
+        "name": "Não liga",
+        "verification_id": 2
+    },
+    {
+        "id": 8,
+        "table": "verification_answer_option",
+        "name": "Impossível verificar pois não liga",
+        "verification_id": 2
+    },
+    {
+        "id": 9,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 3
+    },
+    {
+        "id": 10,
+        "table": "verification_answer_option",
+        "name": "Riscado",
+        "verification_id": 3
+    },
+    {
+        "id": 11,
+        "table": "verification_answer_option",
+        "name": "Não funciona",
+        "verification_id": 3
+    },
+    {
+        "id": 12,
+        "table": "verification_answer_option",
+        "name": "Impossível verificar pois não liga",
+        "verification_id": 3
+    },
+    {
+        "id": 13,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 4
+    },
+    {
+        "id": 14,
+        "table": "verification_answer_option",
+        "name": "Riscado",
+        "verification_id": 4
+    },
+    {
+        "id": 15,
+        "table": "verification_answer_option",
+        "name": "Quebrado",
+        "verification_id": 4
+    },
+    {
+        "id": 16,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 5
+    },
+    {
+        "id": 17,
+        "table": "verification_answer_option",
+        "name": "Faltando tecla",
+        "verification_id": 5
+    },
+    {
+        "id": 18,
+        "table": "verification_answer_option",
+        "name": "Não funciona",
+        "verification_id": 5
+    },
+    {
+        "id": 19,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 6
+    },
+    {
+        "id": 20,
+        "table": "verification_answer_option",
+        "name": "Danificado",
+        "verification_id": 6
+    },
+    {
+        "id": 21,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 7
+    },
+    {
+        "id": 22,
+        "table": "verification_answer_option",
+        "name": "Danificados",
+        "verification_id": 7
+    },
+    {
+        "id": 23,
+        "table": "verification_answer_option",
+        "name": "CD",
+        "verification_id": 8
+    },
+    {
+        "id": 24,
+        "table": "verification_answer_option",
+        "name": "DVD",
+        "verification_id": 8
+    },
+    {
+        "id": 25,
+        "table": "verification_answer_option",
+        "name": "DVDRW",
+        "verification_id": 8
+    },
+    {
+        "id": 26,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 8
+    },
+    {
+        "id": 27,
+        "table": "verification_answer_option",
+        "name": "Não funciona",
+        "verification_id": 8
+    },
+    {
+        "id": 28,
+        "table": "verification_answer_option",
+        "name": "Não tem",
+        "verification_id": 8
+    },
+    {
+        "id": 29,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 9
+    },
+    {
+        "id": 30,
+        "table": "verification_answer_option",
+        "name": "Riscado",
+        "verification_id": 9
+    },
+    {
+        "id": 31,
+        "table": "verification_answer_option",
+        "name": "Quebrado",
+        "verification_id": 9
+    },
+    {
+        "id": 32,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 10
+    },
+    {
+        "id": 33,
+        "table": "verification_answer_option",
+        "name": "Não tem",
+        "verification_id": 10
+    },
+    {
+        "id": 34,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 11
+    },
+    {
+        "id": 35,
+        "table": "verification_answer_option",
+        "name": "Faltam",
+        "verification_id": 11
+    },
+    {
+        "id": 36,
+        "table": "verification_answer_option",
+        "name": "Não tem",
+        "verification_id": 11
+    },
+    {
+        "id": 37,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 12
+    },
+    {
+        "id": 38,
+        "table": "verification_answer_option",
+        "name": "Não tem",
+        "verification_id": 12
+    },
+    {
+        "id": 39,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 13
+    },
+    {
+        "id": 40,
+        "table": "verification_answer_option",
+        "name": "Faltam",
+        "verification_id": 13
+    },
+    {
+        "id": 41,
+        "table": "verification_answer_option",
+        "name": "Não tem",
+        "verification_id": 13
+    },
+    {
+        "id": 42,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 14
+    },
+    {
+        "id": 43,
+        "table": "verification_answer_option",
+        "name": "Danificado",
+        "verification_id": 14
+    },
+    {
+        "id": 44,
+        "table": "verification_answer_option",
+        "name": "Não tem",
+        "verification_id": 14
+    },
+    {
+        "id": 45,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 15
+    },
+    {
+        "id": 46,
+        "table": "verification_answer_option",
+        "name": "Danificado",
+        "verification_id": 15
+    },
+    {
+        "id": 47,
+        "table": "verification_answer_option",
+        "name": "Não tem",
+        "verification_id": 15
+    },
+    {
+        "id": 48,
+        "table": "verification_answer_option",
+        "name": "Ok",
+        "verification_id": 16
+    },
+    {
+        "id": 49,
+        "table": "verification_answer_option",
+        "name": "Danificado",
+        "verification_id": 16
+    },
+    {
+        "id": 50,
+        "table": "verification_answer_option",
+        "name": "Não tem",
+        "verification_id": 16
     }
 ]
