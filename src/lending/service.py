@@ -368,11 +368,11 @@ class LendingService:
 
         lending_list = lending_filters.filter(
             db_session.query(LendingModel)
-            .join(EmployeeModel)
-            .join(AssetModel)
-            .join(WorkloadModel)
-            .join(CostCenterModel)
-            .join(LendingTypeModel)
+            # .join(EmployeeModel)
+            # .join(AssetModel)
+            # .join(WorkloadModel)
+            # .join(CostCenterModel)
+            # .join(LendingTypeModel)
         )
 
         params = Params(page=page, size=size)

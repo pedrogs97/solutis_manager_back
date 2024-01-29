@@ -8,7 +8,7 @@ from pydantic_core import ValidationError
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
-from src.asset.models import AssetModel, AssetTypeModel
+from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
 from src.backends import get_db_session
 from src.datasync.models import EmployeeEducationalLevelTOTVSModel, SyncModel
 from src.datasync.schemas import (
@@ -582,6 +582,8 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
             db_session.commit()
             db_session.flush()
 
+        default_asset_status = db_session.query(AssetStatusModel).get(1)
+
         asset_type = (
             db_session.query(AssetTypeModel)
             .filter(AssetTypeModel.name == totvs_asset.type)
@@ -594,6 +596,7 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
         dict_asset = {
             **totvs_asset.model_dump(exclude={"asset_type", "cost_center"}),
             "type": asset_type,
+            "status": default_asset_status,
         }
 
         update_asset = AssetModel(**dict_asset)

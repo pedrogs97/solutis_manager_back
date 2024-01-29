@@ -9,7 +9,6 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
 from src.asset.models import AssetModel
-from src.asset.schemas import AssetSerializerSchema
 from src.auth.models import UserModel
 from src.config import BASE_DIR, DEBUG, MEDIA_UPLOAD_DIR
 from src.invoice.filters import InvoiceFilter
@@ -131,11 +130,9 @@ class InvoiceService:
         invoice_filters: InvoiceFilter,
         page: int = 1,
         size: int = 50,
-    ) -> Page[AssetSerializerSchema]:
+    ) -> Page[InvoiceSerializerSchema]:
         """Get invoices list"""
-        invoice_list_query = invoice_filters.filter(
-            db_session.query(InvoiceModel).join(AssetModel)
-        )
+        invoice_list_query = invoice_filters.filter(db_session.query(InvoiceModel))
 
         params = Params(page=page, size=size)
         paginated = paginate(

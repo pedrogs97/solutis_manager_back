@@ -88,7 +88,9 @@ class AssetModel(Base):
     type: Mapped[AssetTypeModel] = relationship()
     type_id = Column("type_id", ForeignKey("asset_type.id"), nullable=False)
 
-    status_id = Column("status_id", ForeignKey("asset_status.id"), nullable=True)
+    status_id = Column(
+        "status_id", ForeignKey("asset_status.id"), nullable=True, default=1
+    )
     status: Mapped[AssetStatusModel] = relationship()
 
     clothing_size_id = Column(
