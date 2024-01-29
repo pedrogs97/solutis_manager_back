@@ -72,6 +72,10 @@ class LendingSerializerSchema(BaseSchema):
     observations: Optional[str]
     signed_date: Optional[str] = Field(serialization_alias="signedDate")
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
+    goal: Optional[str] = Field(alias="goal", default=None)
+    project: Optional[str] = None
+    business_executive: str = Field(alias="businessExecutive", default=None)
+    location: str
 
 
 class NewLendingSchema(BaseSchema):
@@ -88,6 +92,10 @@ class NewLendingSchema(BaseSchema):
     observations: Optional[str] = None
     signed_date: Optional[date] = Field(alias="signedDate", default=None)
     glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
+    goal: Optional[str] = Field(alias="goal", default=None)
+    project: Optional[str] = None
+    business_executive: str = Field(alias="businessExecutive", default=None)
+    location: str
 
 
 class NewLendingDocSchema(BaseSchema):
@@ -96,13 +104,14 @@ class NewLendingDocSchema(BaseSchema):
     number: str
     employee_id: int = Field(alias="employeeId")
     lending_id: int = Field(alias="lendingId")
-    cc: str
-    project: str
-    business_executive: str = Field(alias="businessExecutive")
     legal_person: bool = Field(alias="legalPerson", default=False)
-    date_confirm: Optional[str] = Field(alias="dateConfirm", default=None)
-    goal: Optional[str] = Field(alias="goal", default=None)
-    project: Optional[str] = None
+
+
+class NewRevokeContractDocSchema(BaseSchema):
+    """New contract info schema"""
+
+    lending_id: int = Field(alias="lendingId")
+    legal_person: bool = Field(alias="legalPerson", default=False)
 
 
 class WitnessContextSchema(BaseSchema):
@@ -139,6 +148,7 @@ class NewLendingContextSchema(BaseSchema):
     value: str
     date: str
     witnesses: List[WitnessContextSchema]
+    location: str
 
 
 class NewLendingPjContextSchema(BaseSchema):
@@ -173,6 +183,29 @@ class NewLendingPjContextSchema(BaseSchema):
     value: str
     date: str
     witnesses: List[WitnessContextSchema]
+    location: str
+
+
+class NewLendingTermContextSchema(BaseSchema):
+    """Context for contract template"""
+
+    number: str
+    glpi_number: str
+    full_name: str
+    taxpayer_identification: str
+    national_identification: str
+    address: str
+    nationality: str
+    role: str
+    cc: str
+    manager: str
+    project: str
+    description: str
+    size: str
+    quantity: int
+    value: str
+    date: str
+    location: str
 
 
 class UploadSignedContractSchema(BaseSchema):

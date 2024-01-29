@@ -1,0 +1,168 @@
+<!--793.7 x 1122.5-->
+<!--top 75.6px-->
+<!--left 85px-->
+<!--bottom 56.7px-->
+<!--right 65.8px-->
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <meta charset="utf-8">
+        <title>Contrato</title>
+    </head>
+    <body style="text-align: justify;text-justify: inter-word;padding-left: 0.89in;padding-bottom: 0.69in;padding-right: 0.69in;font-family:Calibri, sans-serif;height: 11.69in;">
+        <div style="display: block;height: 11.69in;width: 8.27in;">
+            <div style="display: flex;justify-content: flex-end;width: 100%;">
+                <img style="width:1.14in;height:1.30in" src="{{ ri_1 }}" alt="logo"/>
+            </div>
+            <table style="border-collapse: separate;border-spacing: 0 12px;"  aria-describedby="table-detail">
+                <thead><th></th></thead>
+                <tbody style="background-color: #d9d9d9;font-weight: 900;">
+                    <tr style="margin-bottom: 10px;">
+                        <td style="padding: 4px;color:#000000">N° CONTRATO:</td>
+                        <td style="padding: 4px;color:#000000">{{ number }}</td>
+                        <td><img src="{{ n_termo }}" alt="n_termo" /></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 4px;">N° CHAMADO GLPI:</td>
+                        <td style="padding: 4px;">{{ glpi_number }}</td>
+                        <td><img src="{{ n_glpi }}" width="32" height="33" alt="n_glpi" /></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="display: flex; justify-content: center;">
+                <p style="font-style:normal;font-weight:bold;font-size:14pt;color:#000000;">DISTRATO DE COMODATO</p>
+            </div>
+            <div style="display: flex; justify-content: center; flex-direction: column;">
+                <table style="height: 2.4in;width: 6.5in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table1">
+                    <thead style="background-color: #d9d9d9;font-size: 16px;text-align: center;">
+                        <tr>
+                            <th style="padding: 8px;width: 308;">COMODANTE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: solid 2px #000000;padding-left: 2px;padding-right: 12px;width: 3.25in;">
+                                <div style="font-weight: 800;">SOLUTIS TECNOLOGIAS LTDA</div>
+                                <div>CNPJ: 12.023.465/0001-47</div>
+                                <div>Av. Tancredo Neves, n°1186, Edf. Catabas Center, 8° Andar, Sala 802, Caminhos da Árvores, Salvador, Bahia, CEP. 41.820-020</div>
+                                <div style="font-weight: 800;margin-top: 20px;">SOLUTIS TECNOLOGIAS LTDA</div>
+                                <div>CNPJ: 12.023.465/0004-90</div>
+                                <div>Avenida Paulista, n°2421, sl. 24, Bela Vista, São Paulo, Estado, CEP. 01.311-300</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table style="height: 2.4in;width: 6.5in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table1">
+                    <thead style="background-color: #d9d9d9;font-size: 16px;text-align: center;">
+                        <tr>
+                            <th style="padding: 8px;width: 308;">COMANDATÁRIO (A)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: solid 2px #000000;padding-top: 20px;padding-bottom: 15px; padding-left: 2px;padding-right: 12px;width: 3.25in;">
+                                <div style="font-weight: 800;">{{ full_name }}</div>
+                                <div>CPF: {{ taxpayer_identification }}</div>
+                                <div>RG: {{ national_identification }}</div>
+                                <div>Endereço: {{ address }}</div>
+                                <div>Nacionalidade: {{ nationality }}</div>
+                                <div>Cargo: {{ role }}</div>
+                                <div>Estado Civil: {{ marital_status }}</div>
+                                <div>C.C: {{ cc }}</div>
+                                <div>Gestor Direto: {{ manager }}</div>
+                                <div>Executivo: {{ business_executive }} </div>
+                                <div>Projeto: {{ project }}</div>
+                                <div>Lotação: {{ workload }}</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">
+                Pelo presente Termo de Devolução, o prestador de serviços da Solutis Tecnologias Ltda (“Solutis”), declara que, na data de assinatura do presente Termo, restituiu os Equipamentos que foram cedidos em comodato para o exercício das atividades profissionais junto à Solutis. Os Equipamentos cedidos estão especificados no item 1.1 do Termo de Comodato e reiterados logo abaixo:
+            </p>
+            <table style="height: 2.2in;width: 5.13in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table2">
+                <thead style="background-color: #d9d9d9;font-size: 16px;text-align: center;">
+                    <tr>
+                        <th style="padding: 8px;width: 308;">DETALHAMENTO DO ATIVO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="4" style="border: solid 2px #000000;padding-left: 2px;padding-bottom: 3px;padding-top: 2px;">
+                            <div>N° Patromônio: <span style="font-weight: 800;">{{ register_number }}</span></div>
+                            <div>S/N: <span style="font-weight: 800;">{{ serial_number }}</span></div>
+                            <div>Descrição: <span style="font-weight: 800;">{{ description }}</span></div>
+                            <div>Acessórios: <span style="font-weight: 800;">{{ accessories }}</span></div>
+                            <div>Pacote Office: <span style="font-weight: 800;">{{ ms_office }}</span></div>
+                            <div>Padrão Equipamento <span style="font-weight: 800;">{{ pattern }}</span></div>
+                            <div>Sistema Operacional: <span style="font-weight: 800;">{{ operational_system }}</span></div>
+                            <div><span style="font-weight: 800;">Valor de Aquisição: </span><span style="font-weight: 800;">R${{ value }}</span></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">
+                A Comodante reconhece que, durante o período de vigência do Comodato, todas as condições estipuladas entre as Partes foram respeitadas e cumpridas integralmente pelo Comodatário. A Solutis concede quitação integral ao Comodatário, para nada mais reclamar, em qualquer esfera e a qualquer título, reconhecendo que não há mais quaisquer direitos e obrigações pendentes em decorrência de quaisquer aspectos contratuais e legais relacionados ao Termo de Comodato, ora resolvido.
+            </p>
+            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;">
+                <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: end;">Página 1 de 2 </p>
+            </div>
+        </div>
+        <div style="page-break-before: always;"></div>
+        <div style="display: block;height: 11.69in;width: 8.27in;">
+            <div style="display: flex;justify-content: flex-end;width: 100%;">
+                <img style="width:1.14in;height:1.30in" src="{{ ri_1 }}" alt="logo"/>
+            </div>
+            <div style="display: flex;flex-direction: column;justify-content: flex-start;margin-top: 0.6in;">
+                <div style="display: flex;margin-top: 0.3in;">
+                    <div style="display: flex;flex-direction: column;justify-content: center;">
+                        <span>Assinaturas:</span>
+                    </div>
+                    <img style="width:0.5in;height:0.5in" src="{{ signed }}" alt="date1"/>
+                </div>
+                <div style="display: flex;flex-direction: row;margin-top: 0.3in;justify-content: space-between;width: 7.35in;">
+                    <div style="background-color: #d9d9d9;padding: 0.2in 0.3in;text-align: center;width: 2.6in;">
+                        <div>Comodante</div>
+                        <div>Solutis Tecnologias LTDA</div>
+                    </div>
+                    <div style="background-color: #d9d9d9;padding: 0.2in;text-align: center;width: 2.6in;">
+                        <div>Comodatário (a)</div>
+                        <div>{{ full_name }}</div>
+                    </div>
+                </div>
+                <div style="display: flex;margin-top: 0.3in;">
+                    <div style="display: flex;flex-direction: column;justify-content: center;">
+                        <span>Testemunhas:</span>
+                    </div>
+                    <img style="width:0.5in;height:0.5in" src="{{ signed }}" alt="date1"/>
+                </div>
+                <div style="display: flex;flex-direction: row;justify-content: space-between;margin-top: 0.3in;width: 7.35in;">
+                    <div style="background-color: #d9d9d9;padding-left: 0.1in;padding-right: 0.5in;text-align: start;width: 2.6in;">
+                        <p>{{ witnesses[0].full_name }}</p>
+                        <p>CPF: {{ witnesses[0].taxpayer_identification }}</p>
+                    </div>
+                    <div style="background-color: #d9d9d9;padding-left: 0.1in;padding-right: 0.5in;text-align: start;width: 2.6in;">
+                        <p>{{ witnesses[1].full_name }}</p>
+                        <p>CPF: {{ witnesses[1].taxpayer_identification }}</p>
+                    </div>
+                </div>
+            </div>
+            <div style="padding-left: 3in;margin-top: 0.6in;">
+                <div style="display: flex;justify-content: start;">
+                    <div style="display: flex;">
+                        <img style="width:0.7in;height:0.7in" src="{{ date_image }}" alt="date1"/>
+                        <div style="display: flex;flex-direction: column;justify-content: center;">
+                            <span>Local: {{ location }}</span>
+                            <span>Data: {{ date }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;margin-top: 6.4in;">
+                <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: end;">Página 2 de 2 </p>
+            </div>
+        </div>
+    </div>
+    </body>
+</html>

@@ -32,6 +32,8 @@ from src.lending.schemas import (
     NewLendingDocSchema,
     NewLendingPjContextSchema,
     NewLendingSchema,
+    NewLendingTermContextSchema,
+    NewRevokeContractDocSchema,
     UploadSignedContractSchema,
     UploadSignedRevokeContractSchema,
     WitnessContextSchema,
@@ -48,7 +50,14 @@ from src.people.schemas import (
     EmployeeRoleSerializerSchema,
     EmployeeSerializerSchema,
 )
-from src.utils import create_lending_contract, create_lending_contract_pj, upload_file
+from src.utils import (
+    create_lending_contract,
+    create_lending_contract_pj,
+    create_lending_term,
+    create_revoke_lending_contract,
+    create_revoke_lending_contract_pj,
+    upload_file,
+)
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -144,6 +153,10 @@ class LendingService:
             else None,
             glpi_number=lending.glpi_number,
             type=lending.type.name,
+            goal=lending.goal,
+            business_executive=lending.business_executive,
+            project=lending.project,
+            location=lending.location,
         )
 
     def serialize_workload(self, workload: WorkloadModel) -> WorkloadSerializerSchema:
@@ -307,6 +320,10 @@ class LendingService:
             observations=new_lending.observations,
             signed_date=new_lending.signed_date,
             glpi_number=new_lending.glpi_number,
+            goal=new_lending.goal,
+            business_executive=new_lending.business_executive,
+            project=new_lending.project,
+            location=new_lending.location,
         )
 
         new_lending_db.employee = employee
@@ -561,9 +578,9 @@ class DocumentService:
                     nationality=employee.nationality.description,
                     role=employee.role.name,
                     marital_status=employee.marital_status.description,
-                    cc=new_lending_doc.cc,
+                    cc=current_lending.cost_center.name,
                     manager=current_lending.manager,
-                    business_executive=new_lending_doc.business_executive,
+                    business_executive=current_lending.business_executive,
                     workload=workload.name,
                     register_number=asset.register_number,
                     serial_number=asset.serial_number,
@@ -587,9 +604,9 @@ class DocumentService:
                     cnpj=employee.employer_number,
                     company_address=employee.employer_address,
                     company=employee.employer_name,
-                    date_confirm=new_lending_doc.date_confirm,
-                    goal=new_lending_doc.goal,
-                    project=new_lending_doc.project,
+                    goal=current_lending.goal,
+                    project=current_lending.project,
+                    location=current_lending.location,
                 )
             )
         else:
@@ -604,9 +621,9 @@ class DocumentService:
                     nationality=employee.nationality.description,
                     role=employee.role.name,
                     marital_status=employee.marital_status.description,
-                    cc=new_lending_doc.cc,
+                    cc=current_lending.cost_center.name,
                     manager=current_lending.manager,
-                    business_executive=new_lending_doc.business_executive,
+                    business_executive=current_lending.business_executive,
                     workload=workload.name,
                     register_number=asset.register_number,
                     serial_number=asset.serial_number,
@@ -627,6 +644,12 @@ class DocumentService:
                             taxpayer_identification=witness2.employee.taxpayer_identification,
                         ),
                     ],
+                    cnpj=employee.employer_number,
+                    company_address=employee.employer_address,
+                    company=employee.employer_name,
+                    goal=current_lending.goal,
+                    project=current_lending.project,
+                    location=current_lending.location,
                 )
             )
 
@@ -661,6 +684,340 @@ class DocumentService:
             "lending",
             "lending",
             "Vinculação do Contrato ao Comodato",
+            current_lending.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New Document add to Lending. %s", str(current_lending))
+
+        return self.serialize_document(new_doc)
+
+    def create_revoke_contract(
+        self,
+        revoke_lending_doc: NewRevokeContractDocSchema,
+        type_doc: str,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Create new contract, not signed"""
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        current_lending = (
+            db_session.query(LendingModel)
+            .filter(LendingModel.id == revoke_lending_doc.lending_id)
+            .first()
+        )
+
+        asset = current_lending.asset
+
+        new_code = self.__generate_code(
+            db_session.query(DocumentModel).all()[-1], asset
+        )
+
+        workload = current_lending.workload
+
+        employee = current_lending.employee
+
+        witness1 = current_lending.witnesses[0]
+
+        witness2 = current_lending.witnesses[1]
+
+        if revoke_lending_doc.legal_person:
+            contract_path = create_revoke_lending_contract_pj(
+                NewLendingPjContextSchema(
+                    number=new_code,
+                    glpi_number=current_lending.glpi_number,
+                    full_name=employee.full_name,
+                    taxpayer_identification=employee.taxpayer_identification,
+                    national_identification=employee.national_identification,
+                    address=employee.address,
+                    nationality=employee.nationality.description,
+                    role=employee.role.name,
+                    marital_status=employee.marital_status.description,
+                    cc=current_lending.cost_center.name,
+                    manager=current_lending.manager,
+                    business_executive=current_lending.business_executive,
+                    workload=workload.name,
+                    register_number=asset.register_number,
+                    serial_number=asset.serial_number,
+                    description=asset.description,
+                    accessories=asset.accessories,
+                    ms_office="SIM" if asset.ms_office else "Não",
+                    pattern=asset.pattern,
+                    operational_system=asset.operational_system,
+                    value=asset.value,
+                    date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                    witnesses=[
+                        WitnessContextSchema(
+                            full_name=witness1.employee.full_name,
+                            taxpayer_identification=witness1.employee.taxpayer_identification,
+                        ),
+                        WitnessContextSchema(
+                            full_name=witness2.employee.full_name,
+                            taxpayer_identification=witness2.employee.taxpayer_identification,
+                        ),
+                    ],
+                    cnpj=employee.employer_number,
+                    company_address=employee.employer_address,
+                    company=employee.employer_name,
+                    goal=current_lending.goal,
+                    project=current_lending.project,
+                    location=current_lending.location,
+                )
+            )
+        else:
+            contract_path = create_revoke_lending_contract(
+                NewLendingContextSchema(
+                    number=new_code,
+                    glpi_number=current_lending.glpi_number,
+                    full_name=employee.full_name,
+                    taxpayer_identification=employee.taxpayer_identification,
+                    national_identification=employee.national_identification,
+                    address=employee.address,
+                    nationality=employee.nationality.description,
+                    role=employee.role.name,
+                    marital_status=employee.marital_status.description,
+                    cc=current_lending.cost_center.name,
+                    manager=current_lending.manager,
+                    business_executive=current_lending.business_executive,
+                    workload=workload.name,
+                    register_number=asset.register_number,
+                    serial_number=asset.serial_number,
+                    description=asset.description,
+                    accessories=asset.accessories,
+                    ms_office="SIM" if asset.ms_office else "Não",
+                    pattern=asset.pattern,
+                    operational_system=asset.operational_system,
+                    value=asset.value,
+                    date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                    witnesses=[
+                        WitnessContextSchema(
+                            full_name=witness1.employee.full_name,
+                            taxpayer_identification=witness1.employee.taxpayer_identification,
+                        ),
+                        WitnessContextSchema(
+                            full_name=witness2.employee.full_name,
+                            taxpayer_identification=witness2.employee.taxpayer_identification,
+                        ),
+                    ],
+                    cnpj=employee.employer_number,
+                    company_address=employee.employer_address,
+                    company=employee.employer_name,
+                    goal=current_lending.goal,
+                    project=current_lending.project,
+                    location=current_lending.location,
+                )
+            )
+
+        new_doc = DocumentModel(path=contract_path, file_name=f"{new_code}.pdf")
+
+        new_doc.doc_type = doc_type
+
+        db_session.add(new_doc)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Criação de {type_doc}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New Document. %s", str(new_doc))
+
+        current_lending.document = new_doc
+        current_lending.number = new_code
+        current_lending.witnesses.append(witness1)
+        current_lending.witnesses.append(witness2)
+
+        db_session.add(current_lending)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "lending",
+            "Desvinculação do Contrato ao Comodato",
+            current_lending.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New Document add to Lending. %s", str(current_lending))
+
+        return self.serialize_document(new_doc)
+
+    def create_term(
+        self,
+        new_lending_doc: NewLendingDocSchema,
+        type_doc: str,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Create new contract, not signed"""
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        current_lending = (
+            db_session.query(LendingModel)
+            .filter(LendingModel.id == new_lending_doc.lending_id)
+            .first()
+        )
+
+        asset = current_lending.asset
+
+        new_code = self.__generate_code(
+            db_session.query(DocumentModel).all()[-1], asset
+        )
+
+        employee = current_lending.employee
+
+        contract_path = create_lending_term(
+            NewLendingTermContextSchema(
+                number=new_code,
+                glpi_number=current_lending.glpi_number,
+                full_name=employee.full_name,
+                taxpayer_identification=employee.taxpayer_identification,
+                national_identification=employee.national_identification,
+                address=employee.address,
+                nationality=employee.nationality.description,
+                role=employee.role.name,
+                cc=current_lending.cost_center.name,
+                manager=current_lending.manager,
+                description=asset.description,
+                size=asset.clothing_size.name if asset.clothing_size else "N/A",
+                quantity=asset.quantity,
+                value=asset.value,
+                date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                project=current_lending.project,
+                location=current_lending.location,
+            )
+        )
+
+        new_doc = DocumentModel(path=contract_path, file_name=f"{new_code}.pdf")
+
+        new_doc.doc_type = doc_type
+
+        db_session.add(new_doc)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Criação de {type_doc}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New Document. %s", str(new_doc))
+
+        current_lending.document = new_doc
+        current_lending.number = new_code
+
+        db_session.add(current_lending)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "lending",
+            "Vinculação do Termo",
+            current_lending.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New Document add to Lending. %s", str(current_lending))
+
+        return self.serialize_document(new_doc)
+
+    def create_revoke_term(
+        self,
+        revoke_lending_doc: NewRevokeContractDocSchema,
+        type_doc: str,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Create new contract, not signed"""
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        current_lending = (
+            db_session.query(LendingModel)
+            .filter(LendingModel.id == revoke_lending_doc.lending_id)
+            .first()
+        )
+
+        asset = current_lending.asset
+
+        new_code = self.__generate_code(
+            db_session.query(DocumentModel).all()[-1], asset
+        )
+
+        employee = current_lending.employee
+
+        contract_path = create_lending_term(
+            NewLendingTermContextSchema(
+                number=new_code,
+                glpi_number=current_lending.glpi_number,
+                full_name=employee.full_name,
+                taxpayer_identification=employee.taxpayer_identification,
+                national_identification=employee.national_identification,
+                address=employee.address,
+                nationality=employee.nationality.description,
+                role=employee.role.name,
+                cc=current_lending.cost_center.name,
+                manager=current_lending.manager,
+                description=asset.description,
+                size=asset.clothing_size.name if asset.clothing_size else "N/A",
+                quantity=asset.quantity,
+                value=asset.value,
+                date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                project=current_lending.project,
+                location=current_lending.location,
+            )
+        )
+
+        new_doc = DocumentModel(path=contract_path, file_name=f"{new_code}.pdf")
+
+        new_doc.doc_type = doc_type
+
+        db_session.add(new_doc)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Criação de {type_doc}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New Document. %s", str(new_doc))
+
+        current_lending.document = new_doc
+        current_lending.number = new_code
+
+        db_session.add(current_lending)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "lending",
+            "Vinculação do Termo",
             current_lending.id,
             authenticated_user,
             db_session,

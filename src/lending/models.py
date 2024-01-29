@@ -147,6 +147,10 @@ class LendingModel(Base):
     # código gerado
     number = Column("number", String(length=30), nullable=True)
     manager = Column("manager", String(length=50))
+    business_executive = Column("business_executive", String(length=50), nullable=True)
+    goal = Column("goal", String(length=255), nullable=True)
+    project = Column("project", String(length=100), nullable=True)
+    location = Column("location", String(length=100), nullable=True)
     observations = Column("observations", String(length=255), nullable=True)
     signed_date = Column("signed_date", Date, nullable=True)
     glpi_number = Column("glpi_number", String(length=25), nullable=True)

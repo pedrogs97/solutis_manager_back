@@ -50,3 +50,4 @@ ENV/
 
 # storage
 **/storage
+**/contracts

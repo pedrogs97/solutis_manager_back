@@ -1,4 +1,5 @@
 """Task"""
+import base64
 import os
 from datetime import date
 from os.path import dirname
@@ -8,7 +9,7 @@ import pdfkit
 from invoke import task
 from sqlalchemy import Table
 
-from src.config import CONTRACT_UPLOAD_DIR, DEFAULT_DATE_FORMAT, TEMPLATE_DIR
+from src.config import CONTRACT_UPLOAD_TEST_DIR, DEFAULT_DATE_FORMAT, TEMPLATE_DIR
 from src.database import Base, Engine, Session_db
 from src.utils import get_file_paths, read_file
 
@@ -87,6 +88,26 @@ def __contract():
     template_env = jinja2.Environment(loader=template_loader)
     template_file = "comodato.html"
     template = template_env.get_template(template_file)
+    logo_file = open("./src/static/images/ri_1.png", "rb")
+    logo_encoded_string = (
+        str(base64.b64encode(logo_file.read())).replace("b'", "").replace("'", "")
+    )
+    signed_file = open("./src/static/images/signed.png", "rb")
+    signed_encoded_string = (
+        str(base64.b64encode(signed_file.read())).replace("b'", "").replace("'", "")
+    )
+    date_image = open("./src/static/images/date.jpeg", "rb")
+    date_image_encoded_string = (
+        str(base64.b64encode(date_image.read())).replace("b'", "").replace("'", "")
+    )
+    n_glpi_file = open("./src/static/images/n_glpi.png", "rb")
+    n_glpi_encoded_string = (
+        str(base64.b64encode(n_glpi_file.read())).replace("b'", "").replace("'", "")
+    )
+    n_termo_file = open("./src/static/images/n_termo.png", "rb")
+    n_termo_encoded_string = (
+        str(base64.b64encode(n_termo_file.read())).replace("b'", "").replace("'", "")
+    )
     output_text = template.render(
         number="35161343241",
         glpi_number="GLPI 41325",
@@ -121,26 +142,236 @@ def __contract():
                 "taxpayer_identification": "111.111.111-11",
             },
         ],
+        signed=f"data:image/png;base64,{signed_encoded_string}",
+        date_image=f"data:image/png;base64,{date_image_encoded_string}",
+        n_glpi=f"data:image/png;base64,{n_glpi_encoded_string}",
+        n_termo=f"data:image/png;base64,{n_termo_encoded_string}",
+        ri_1=f"data:image/png;base64,{logo_encoded_string}",
+        location="Salvador - BA",
     )
 
-    if not os.path.exists(CONTRACT_UPLOAD_DIR):
-        os.mkdir(CONTRACT_UPLOAD_DIR)
+    if not os.path.exists(CONTRACT_UPLOAD_TEST_DIR):
+        os.mkdir(CONTRACT_UPLOAD_TEST_DIR)
 
-    html_path = os.path.join(CONTRACT_UPLOAD_DIR, "template_test.html")
+    html_path = os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html")
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
+    options = {
+        "page-size": "A4",
+        "enable-local-file-access": None,
+    }
 
     with open(
-        os.path.join(CONTRACT_UPLOAD_DIR, "template_test.html"), encoding="utf-8"
+        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
     ) as f:
         pdfkit.from_file(
             f,
-            os.path.join(CONTRACT_UPLOAD_DIR, "contract_test.pdf"),
+            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "contract_test.pdf"),
             options=options,
         )
-    os.remove(os.path.join(CONTRACT_UPLOAD_DIR, "template_test.html"))
+    os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
+    logo_file.close()
+    signed_file.close()
+    date_image.close()
+    n_glpi_file.close()
+    n_termo_file.close()
+
+
+def __termination():
+    """
+    Termination
+    """
+    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    template_env = jinja2.Environment(loader=template_loader)
+    template_file = "distrato_comodato.html"
+    template = template_env.get_template(template_file)
+    logo_file = open("./src/static/images/ri_1.png", "rb")
+    logo_encoded_string = (
+        str(base64.b64encode(logo_file.read())).replace("b'", "").replace("'", "")
+    )
+    signed_file = open("./src/static/images/signed.png", "rb")
+    signed_encoded_string = (
+        str(base64.b64encode(signed_file.read())).replace("b'", "").replace("'", "")
+    )
+    date_image = open("./src/static/images/date.jpeg", "rb")
+    date_image_encoded_string = (
+        str(base64.b64encode(date_image.read())).replace("b'", "").replace("'", "")
+    )
+    n_glpi_file = open("./src/static/images/n_glpi.png", "rb")
+    n_glpi_encoded_string = (
+        str(base64.b64encode(n_glpi_file.read())).replace("b'", "").replace("'", "")
+    )
+    n_termo_file = open("./src/static/images/n_termo.png", "rb")
+    n_termo_encoded_string = (
+        str(base64.b64encode(n_termo_file.read())).replace("b'", "").replace("'", "")
+    )
+    output_text = template.render(
+        number="35161343241",
+        glpi_number="GLPI 41325",
+        full_name="Abmael da Silva",
+        taxpayer_identification="222.222.222-22",
+        national_identification="22222222-22",
+        address="Rua da esquina, 31, Alpha Vile, Salvador",
+        nationality="BRASILEIRO",
+        role="Desenvolvedor",
+        marital_status="CASADO",
+        cc="23412-1",
+        manager="Hericles Bitencurt",
+        business_executive="Janaina Bitencurt",
+        project="Solutis",
+        workload="Home Office",
+        register_number="sa321431",
+        serial_number="2151232",
+        description="Macbook Air",
+        accessories="N/A",
+        ms_office="Sim",
+        pattern="Studio",
+        operational_system="MacOS",
+        value="46.000,00",
+        date=date.today().strftime(DEFAULT_DATE_FORMAT),
+        witnesses=[
+            {
+                "full_name": "Testemunha 1 teste",
+                "taxpayer_identification": "000.000.000-00",
+            },
+            {
+                "full_name": "Testemunha 2 teste",
+                "taxpayer_identification": "111.111.111-11",
+            },
+        ],
+        signed=f"data:image/png;base64,{signed_encoded_string}",
+        date_image=f"data:image/png;base64,{date_image_encoded_string}",
+        n_glpi=f"data:image/png;base64,{n_glpi_encoded_string}",
+        n_termo=f"data:image/png;base64,{n_termo_encoded_string}",
+        ri_1=f"data:image/png;base64,{logo_encoded_string}",
+        location="Salvador - BA",
+    )
+
+    if not os.path.exists(CONTRACT_UPLOAD_TEST_DIR):
+        os.mkdir(CONTRACT_UPLOAD_TEST_DIR)
+
+    html_path = os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html")
+    with open(html_path, "w", encoding="utf-8") as html_file:
+        html_file.write(output_text)
+
+    options = {
+        "page-size": "A4",
+        "enable-local-file-access": None,
+    }
+
+    with open(
+        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
+    ) as f:
+        pdfkit.from_file(
+            f,
+            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "termination_test.pdf"),
+            options=options,
+        )
+    os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
+    logo_file.close()
+    signed_file.close()
+    date_image.close()
+    n_glpi_file.close()
+    n_termo_file.close()
+
+
+def __termination_pj():
+    """
+    Termination PJ
+    """
+    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    template_env = jinja2.Environment(loader=template_loader)
+    template_file = "distrato_comodato_pj.html"
+    template = template_env.get_template(template_file)
+    logo_file = open("./src/static/images/ri_1.png", "rb")
+    logo_encoded_string = (
+        str(base64.b64encode(logo_file.read())).replace("b'", "").replace("'", "")
+    )
+    signed_file = open("./src/static/images/signed.png", "rb")
+    signed_encoded_string = (
+        str(base64.b64encode(signed_file.read())).replace("b'", "").replace("'", "")
+    )
+    date_image = open("./src/static/images/date.jpeg", "rb")
+    date_image_encoded_string = (
+        str(base64.b64encode(date_image.read())).replace("b'", "").replace("'", "")
+    )
+    n_glpi_file = open("./src/static/images/n_glpi.png", "rb")
+    n_glpi_encoded_string = (
+        str(base64.b64encode(n_glpi_file.read())).replace("b'", "").replace("'", "")
+    )
+    n_termo_file = open("./src/static/images/n_termo.png", "rb")
+    n_termo_encoded_string = (
+        str(base64.b64encode(n_termo_file.read())).replace("b'", "").replace("'", "")
+    )
+    output_text = template.render(
+        number="35161343241",
+        glpi_number="GLPI 41325",
+        full_name="Abmael da Silva",
+        taxpayer_identification="222.222.222-22",
+        national_identification="22222222-22",
+        address="Rua da esquina, 31, Alpha Vile, Salvador",
+        nationality="BRASILEIRO",
+        role="Desenvolvedor",
+        marital_status="CASADO",
+        cc="23412-1",
+        manager="Hericles Bitencurt",
+        business_executive="Janaina Bitencurt",
+        project="Solutis",
+        workload="Home Office",
+        register_number="sa321431",
+        serial_number="2151232",
+        description="Macbook Air",
+        accessories="N/A",
+        ms_office="Sim",
+        pattern="Studio",
+        operational_system="MacOS",
+        value="46.000,00",
+        date=date.today().strftime(DEFAULT_DATE_FORMAT),
+        witnesses=[
+            {
+                "full_name": "Testemunha 1 teste",
+                "taxpayer_identification": "000.000.000-00",
+            },
+            {
+                "full_name": "Testemunha 2 teste",
+                "taxpayer_identification": "111.111.111-11",
+            },
+        ],
+        signed=f"data:image/png;base64,{signed_encoded_string}",
+        date_image=f"data:image/png;base64,{date_image_encoded_string}",
+        n_glpi=f"data:image/png;base64,{n_glpi_encoded_string}",
+        n_termo=f"data:image/png;base64,{n_termo_encoded_string}",
+        ri_1=f"data:image/png;base64,{logo_encoded_string}",
+        location="Salvador - BA",
+    )
+
+    if not os.path.exists(CONTRACT_UPLOAD_TEST_DIR):
+        os.mkdir(CONTRACT_UPLOAD_TEST_DIR)
+
+    html_path = os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html")
+    with open(html_path, "w", encoding="utf-8") as html_file:
+        html_file.write(output_text)
+
+    options = {
+        "page-size": "A4",
+        "enable-local-file-access": None,
+    }
+
+    with open(
+        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
+    ) as f:
+        pdfkit.from_file(
+            f,
+            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "termination_pj_test.pdf"),
+            options=options,
+        )
+    os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
+    logo_file.close()
+    signed_file.close()
+    date_image.close()
+    n_glpi_file.close()
+    n_termo_file.close()
 
 
 def __contract_pj():
@@ -151,6 +382,26 @@ def __contract_pj():
     template_env = jinja2.Environment(loader=template_loader)
     template_file = "comodato_pj.html"
     template = template_env.get_template(template_file)
+    logo_file = open("./src/static/images/ri_1.png", "rb")
+    logo_encoded_string = (
+        str(base64.b64encode(logo_file.read())).replace("b'", "").replace("'", "")
+    )
+    signed_file = open("./src/static/images/signed.png", "rb")
+    signed_encoded_string = (
+        str(base64.b64encode(signed_file.read())).replace("b'", "").replace("'", "")
+    )
+    date_image = open("./src/static/images/date.jpeg", "rb")
+    date_image_encoded_string = (
+        str(base64.b64encode(date_image.read())).replace("b'", "").replace("'", "")
+    )
+    n_glpi_file = open("./src/static/images/n_glpi.png", "rb")
+    n_glpi_encoded_string = (
+        str(base64.b64encode(n_glpi_file.read())).replace("b'", "").replace("'", "")
+    )
+    n_termo_file = open("./src/static/images/n_termo.png", "rb")
+    n_termo_encoded_string = (
+        str(base64.b64encode(n_termo_file.read())).replace("b'", "").replace("'", "")
+    )
     output_text = template.render(
         number="35161343241",
         glpi_number="GLPI 41325",
@@ -190,26 +441,203 @@ def __contract_pj():
                 "taxpayer_identification": "111.111.111-11",
             },
         ],
+        signed=f"data:image/png;base64,{signed_encoded_string}",
+        date_image=f"data:image/png;base64,{date_image_encoded_string}",
+        n_glpi=f"data:image/png;base64,{n_glpi_encoded_string}",
+        n_termo=f"data:image/png;base64,{n_termo_encoded_string}",
+        ri_1=f"data:image/png;base64,{logo_encoded_string}",
+        location="Salvador - BA",
     )
 
-    if not os.path.exists(CONTRACT_UPLOAD_DIR):
-        os.mkdir(CONTRACT_UPLOAD_DIR)
+    if not os.path.exists(CONTRACT_UPLOAD_TEST_DIR):
+        os.mkdir(CONTRACT_UPLOAD_TEST_DIR)
 
-    html_path = os.path.join(CONTRACT_UPLOAD_DIR, "template_pj_test.html")
+    html_path = os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_pj_test.html")
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
+    options = {
+        "page-size": "A4",
+        "enable-local-file-access": None,
+    }
 
     with open(
-        os.path.join(CONTRACT_UPLOAD_DIR, "template_pj_test.html"), encoding="utf-8"
+        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_pj_test.html"),
+        encoding="utf-8",
     ) as f:
         pdfkit.from_file(
             f,
-            os.path.join(CONTRACT_UPLOAD_DIR, "contract_pj_test.pdf"),
+            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "contract_pj_test.pdf"),
             options=options,
         )
-    os.remove(os.path.join(CONTRACT_UPLOAD_DIR, "template_pj_test.html"))
+    os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_pj_test.html"))
+    logo_file.close()
+    signed_file.close()
+    date_image.close()
+    n_glpi_file.close()
+    n_termo_file.close()
+
+
+def __term():
+    """
+    Term
+    """
+    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    template_env = jinja2.Environment(loader=template_loader)
+    template_file = "termo.html"
+    template = template_env.get_template(template_file)
+    logo_file = open("./src/static/images/ri_1.png", "rb")
+    logo_encoded_string = (
+        str(base64.b64encode(logo_file.read())).replace("b'", "").replace("'", "")
+    )
+    signed_file = open("./src/static/images/signed.png", "rb")
+    signed_encoded_string = (
+        str(base64.b64encode(signed_file.read())).replace("b'", "").replace("'", "")
+    )
+    date_image = open("./src/static/images/date.jpeg", "rb")
+    date_image_encoded_string = (
+        str(base64.b64encode(date_image.read())).replace("b'", "").replace("'", "")
+    )
+    n_glpi_file = open("./src/static/images/n_glpi.png", "rb")
+    n_glpi_encoded_string = (
+        str(base64.b64encode(n_glpi_file.read())).replace("b'", "").replace("'", "")
+    )
+    n_termo_file = open("./src/static/images/n_termo.png", "rb")
+    n_termo_encoded_string = (
+        str(base64.b64encode(n_termo_file.read())).replace("b'", "").replace("'", "")
+    )
+    output_text = template.render(
+        number="35161343241",
+        glpi_number="GLPI 41325",
+        full_name="Abmael da Silva",
+        taxpayer_identification="222.222.222-22",
+        national_identification="22222222-22",
+        address="Rua da esquina, 31, Alpha Vile, Salvador",
+        nationality="BRASILEIRO",
+        role="Desenvolvedor",
+        cc="23412-1",
+        manager="Hericles Bitencurt",
+        project="Solutis",
+        description="Camisa",
+        size="N/A",
+        quantity=1,
+        value="46.000,00",
+        date=date.today().strftime(DEFAULT_DATE_FORMAT),
+        signed=f"data:image/png;base64,{signed_encoded_string}",
+        date_image=f"data:image/png;base64,{date_image_encoded_string}",
+        n_glpi=f"data:image/png;base64,{n_glpi_encoded_string}",
+        n_termo=f"data:image/png;base64,{n_termo_encoded_string}",
+        ri_1=f"data:image/png;base64,{logo_encoded_string}",
+        location="Salvador - BA",
+    )
+
+    if not os.path.exists(CONTRACT_UPLOAD_TEST_DIR):
+        os.mkdir(CONTRACT_UPLOAD_TEST_DIR)
+
+    html_path = os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html")
+    with open(html_path, "w", encoding="utf-8") as html_file:
+        html_file.write(output_text)
+
+    options = {
+        "page-size": "A4",
+        "enable-local-file-access": None,
+    }
+
+    with open(
+        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
+    ) as f:
+        pdfkit.from_file(
+            f,
+            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "term_test.pdf"),
+            options=options,
+        )
+    os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
+    logo_file.close()
+    signed_file.close()
+    date_image.close()
+    n_glpi_file.close()
+    n_termo_file.close()
+
+
+def __termination_term():
+    """
+    Termination term
+    """
+    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    template_env = jinja2.Environment(loader=template_loader)
+    template_file = "distrato_termo.html"
+    template = template_env.get_template(template_file)
+    logo_file = open("./src/static/images/ri_1.png", "rb")
+    logo_encoded_string = (
+        str(base64.b64encode(logo_file.read())).replace("b'", "").replace("'", "")
+    )
+    signed_file = open("./src/static/images/signed.png", "rb")
+    signed_encoded_string = (
+        str(base64.b64encode(signed_file.read())).replace("b'", "").replace("'", "")
+    )
+    date_image = open("./src/static/images/date.jpeg", "rb")
+    date_image_encoded_string = (
+        str(base64.b64encode(date_image.read())).replace("b'", "").replace("'", "")
+    )
+    n_glpi_file = open("./src/static/images/n_glpi.png", "rb")
+    n_glpi_encoded_string = (
+        str(base64.b64encode(n_glpi_file.read())).replace("b'", "").replace("'", "")
+    )
+    n_termo_file = open("./src/static/images/n_termo.png", "rb")
+    n_termo_encoded_string = (
+        str(base64.b64encode(n_termo_file.read())).replace("b'", "").replace("'", "")
+    )
+    output_text = template.render(
+        number="35161343241",
+        glpi_number="GLPI 41325",
+        full_name="Abmael da Silva",
+        taxpayer_identification="222.222.222-22",
+        national_identification="22222222-22",
+        address="Rua da esquina, 31, Alpha Vile, Salvador",
+        nationality="BRASILEIRO",
+        role="Desenvolvedor",
+        cc="23412-1",
+        manager="Hericles Bitencurt",
+        project="Solutis",
+        description="Camisa",
+        size="N/A",
+        quantity=1,
+        value="46.000,00",
+        date=date.today().strftime(DEFAULT_DATE_FORMAT),
+        signed=f"data:image/png;base64,{signed_encoded_string}",
+        date_image=f"data:image/png;base64,{date_image_encoded_string}",
+        n_glpi=f"data:image/png;base64,{n_glpi_encoded_string}",
+        n_termo=f"data:image/png;base64,{n_termo_encoded_string}",
+        ri_1=f"data:image/png;base64,{logo_encoded_string}",
+        location="Salvador - BA",
+    )
+
+    if not os.path.exists(CONTRACT_UPLOAD_TEST_DIR):
+        os.mkdir(CONTRACT_UPLOAD_TEST_DIR)
+
+    html_path = os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html")
+    with open(html_path, "w", encoding="utf-8") as html_file:
+        html_file.write(output_text)
+
+    options = {
+        "page-size": "A4",
+        "enable-local-file-access": None,
+    }
+
+    with open(
+        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
+    ) as f:
+        pdfkit.from_file(
+            f,
+            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "termination_term_test.pdf"),
+            options=options,
+        )
+    os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
+    logo_file.close()
+    signed_file.close()
+    date_image.close()
+    n_glpi_file.close()
+    n_termo_file.close()
 
 
 @task
@@ -218,6 +646,10 @@ def test(cmd):
     Convert html to pdf using pdfkit which is a wrapper of wkhtmltopdf
     """
     cmd.run("echo conversion started")
+    __term()
+    __termination_term()
     __contract()
+    __termination()
     __contract_pj()
+    __termination_pj()
     cmd.run("echo conversion finished")

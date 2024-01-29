@@ -69,7 +69,9 @@ ACCESS_TOKEN_EXPIRE_HOURS = 8
 REFRESH_TOKEN_EXPIRE_DAYS = 2
 STORAGE_DIR = "/storage"
 CONTRACT_UPLOAD_DIR = os.path.join(STORAGE_DIR, "contracts")
+CONTRACT_UPLOAD_TEST_DIR = os.path.join(BASE_DIR, "contracts")
 MEDIA_UPLOAD_DIR = os.path.join(STORAGE_DIR, "media")
+MEDIA_UPLOAD_TEST_DIR = os.path.join(BASE_DIR, "media")
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 
 BASE_API = "/api/v1"

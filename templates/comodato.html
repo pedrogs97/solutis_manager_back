@@ -6,39 +6,37 @@
 <!DOCTYPE html>
 <html lang="pt">
     <head>
+        <meta charset="utf-8">
         <title>Contrato</title>
     </head>
     <body style="text-align: justify;text-justify: inter-word;padding-left: 0.89in;padding-bottom: 0.69in;padding-right: 0.69in;font-family:Calibri, sans-serif;height: 11.69in;">
         <div style="display: block;height: 11.69in;width: 8.27in;">
             <div style="display: flex;justify-content: flex-end;width: 100%;">
-                <img style="width:1.14in;height:1.30in" src="/app/static/images/ri_1.png" alt="logo"/>
+                <img style="width:1.14in;height:1.30in" src="{{ ri_1 }}" alt="logo"/>
             </div>
-            <div>
-                <table style="border-collapse: separate;border-spacing: 0 12px;"  aria-describedby="table-detail">
-                    <thead><th></th></thead>
-                    <tbody style="background-color: #d9d9d9;font-weight: 900;">
-                        <tr style="margin-bottom: 10px;">
-                            <td style="padding: 4px;color:#000000">N° TERMO:</td>
-                            <td style="padding: 4px;color:#000000">{{ number }}</td>
-                            <td><img src="/app/static/images/n_termo.png" alt="n_termo" /></td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 4px;">N° CHAMADO GLPI:</td>
-                            <td style="padding: 4px;">{{ glpi_number }}</td>
-                            <td><img src="/app/static/images/n_glpi.png" width="32" height="33" alt="n_glpi" /></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table style="border-collapse: separate;border-spacing: 0 12px;"  aria-describedby="table-detail">
+                <thead><th></th></thead>
+                <tbody style="background-color: #d9d9d9;font-weight: 900;">
+                    <tr style="margin-bottom: 10px;">
+                        <td style="padding: 4px;color:#000000">N° CONTRATO:</td>
+                        <td style="padding: 4px;color:#000000">{{ number }}</td>
+                        <td><img src="{{ n_termo }}" alt="n_termo" /></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 4px;">N° CHAMADO GLPI:</td>
+                        <td style="padding: 4px;">{{ glpi_number }}</td>
+                        <td><img src="{{ n_glpi }}" width="32" height="33" alt="n_glpi" /></td>
+                    </tr>
+                </tbody>
+            </table>
             <div style="display: flex; justify-content: center;">
-                <p style="font-style:normal;font-weight:bold;font-size:14pt;color:#000000;">TERMO DE COMODATO</p>
+                <p style="font-style:normal;font-weight:bold;font-size:14pt;color:#000000;">CONTRATO DE COMODATO</p>
             </div>
-            <div style="display: flex; justify-content: center;">
+            <div style="display: flex; justify-content: center; flex-direction: column;">
                 <table style="height: 2.4in;width: 6.5in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table1">
                     <thead style="background-color: #d9d9d9;font-size: 16px;text-align: center;">
                         <tr>
                             <th style="padding: 8px;width: 308;">COMODANTE</th>
-                            <th style="padding: 8px;width: 308;">COMANDATÁRIO (A)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -51,6 +49,17 @@
                                 <div>CNPJ: 12.023.465/0004-90</div>
                                 <div>Avenida Paulista, n°2421, sl. 24, Bela Vista, São Paulo, Estado, CEP. 01.311-300</div>
                             </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table style="height: 2.4in;width: 6.5in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table1">
+                    <thead style="background-color: #d9d9d9;font-size: 16px;text-align: center;">
+                        <tr>
+                            <th style="padding: 8px;width: 308;">COMANDATÁRIO (A)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
                             <td style="border: solid 2px #000000;padding-top: 20px;padding-bottom: 15px; padding-left: 2px;padding-right: 12px;width: 3.25in;">
                                 <div style="font-weight: 800;">{{ full_name }}</div>
                                 <div>CPF: {{ taxpayer_identification }}</div>
@@ -72,12 +81,21 @@
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">
                 <span style="font-style:normal;font-weight:bold;font-size:11pt;color:#000000">CONSIDERANDO QUE </span> o (a) Comodatário (a) faz uso de equipamentos tecnológicos para o desempenho das suas atividades laborativas, bem como que o ônus do empreendimento econômico, a teor do art. 2º da CLT, deve ser suportado pela Empresa.
             </p>
-            <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">Resolvem, de comum acordo e na melhor forma de direito, celebrar o presente Termo de Comodato de Equipamento/Material, com base nas cláusulas e condições que seguem:</p>
+            <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">Resolvem, de comum acordo e na melhor forma de direito, celebrar o presente Termo de Comodato de Equipamento/ Material, com base nas cláusulas e condições que seguem:</p>
             <p style="font-style:normal;font-weight:bold;font-size:11pt;color:#000000;">1. Objeto</p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">
                 1.1. A Comodante, como legítima proprietária dos equipamentos abaixo elencados, doravante denominados “Equipamentos”, realiza a sua cessão, em caráter gratuito, ao (a) Comodatário (a), exclusivamente, para o exercício das atividades inerentes à função desenvolvida na Empresa, sendo vedado o uso para fins pessoais. Para os fins deste Termo de Comodato, consideram-se Equipamentos:
-            </p> 
-            <table style="height: 2.17in;width: 5.13in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table2">
+            </p>
+            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;margin-top: 2.3in;">
+                <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: end;">Página  1 de 3 </p>
+            </div>
+        </div>
+        <div style="page-break-before: always;"></div>
+        <div style="display: block;height: 11.69in;width: 8.27in;">
+            <div style="display: flex;justify-content: flex-end;width: 100%;">
+                <img style="width:1.14in;height:1.30in" src="{{ ri_1 }}" alt="logo"/>
+            </div>
+            <table style="height: 2.2in;width: 5.13in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table2">
                 <thead style="background-color: #d9d9d9;font-size: 16px;text-align: center;">
                     <tr>
                         <th style="padding: 8px;width: 308;">DETALHAMENTO DO ATIVO</th>
@@ -85,7 +103,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td colspan="2" style="border: solid 2px #000000;padding-left: 2px;padding-bottom: 3px;padding-top: 2px;">
+                        <td colspan="4" style="border: solid 2px #000000;padding-left: 2px;padding-bottom: 3px;padding-top: 2px;">
                             <div>N° Patromônio: <span style="font-weight: 800;">{{ register_number }}</span></div>
                             <div>S/N: <span style="font-weight: 800;">{{ serial_number }}</span></div>
                             <div>Descrição: <span style="font-weight: 800;">{{ description }}</span></div>
@@ -100,17 +118,8 @@
             </table>
             <div>
                 <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">
-                    1.2. Neste ato, o (a) Comodatário (a) declara ter recebido os Equipamentos em perfeitas condições de uso e em regular funcionamento. Declara, ainda, que os Equipamentos destinam-se ao seu uso pessoal e intransferível. 
-                </p>  
-            </div>
-            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;margin-top: 0.8in;">
-                <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: end;">Página  1 de 3 </p>
-            </div>
-        </div>
-        <div style="page-break-after: always;"></div>
-        <div style="display: block;height: 11.69in;width: 8.27in;">
-            <div style="display: flex;justify-content: flex-end;width: 100%;">
-                <img style="width:1.14in;height:1.30in" src="/app/static/images/ri_1.png" alt="logo"/>
+                    1.2. Neste ato, o (a) Comodatário (a) declara ter recebido os Equipamentos em perfeitas condições de uso e em regular funcionamento. Declara, ainda, que os Equipamentos destinam-se ao seu uso pessoal e intransferível.
+                </p>
             </div>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">
                 <span style="font-style:normal;font-weight:bold;font-size:11pt;color:#000000">2. Obrigações e Faculdades das Partes</span>
@@ -127,19 +136,19 @@
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;padding-left: 0.3in;">2.1.9. Em caso de furto, roubo ou qualquer outro evento que ocasione o desaparecimento dos Equipamentos, registrar imediatamente o ocorrido, obtendo o devido Boletim de Ocorrência Policial, se for o caso, enviando-o à Comodante no prazo máximo de 48 (quarenta e oito) horas.</p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;padding-left: 0.3in;">2.1.10. Devolver imediatamente os Equipamentos à Comodante quando do encerramento do vínculo empregatício. </p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;padding-left: 0.3in;">2.1.11. Responsabilizar-se pelo ressarcimento à Comodante dos prejuízos havidos em caso de dano, quebra e/ou avaria dos equipamentos, decorrentes de negligência/imprudência/imperícia ou sua má utilização, autorizando, desde já, à Comodante, a descontar em folha de pagamento ou Termo de Rescisão do Contrato de Trabalho, o respectivo valor, nos moldes da legislação vigente.</p>
+            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;margin-top: 0.8in;">
+                <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: end;">Página  2 de 3 </p>
+            </div>
+        </div>
+        <div style="page-break-before: always;"></div>
+        <div style="display: block;height: 11.69in;width: 8.27in;">
+            <div style="display: flex;justify-content: flex-end;width: 100%;">
+                <img style="width:1.14in;height:1.30in" src="{{ ri_1 }}" alt="logo"/>
+            </div>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">2.2. Sem prejuízo das demais obrigações e faculdades previstas no Contrato Principal e neste Termo:</p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;padding-left: 0.3in;">2.2.1. A Comodante poderá, a qualquer tempo, inspecionar os Equipamentos e exigir que ao (a) Comodatário (a) adote as providências necessárias à preservação e regular funcionamento dos referidos bens. Tal inspeção, no entanto, não caracteriza obrigação da Comodante.</p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;padding-left: 0.3in;">2.2.2. A Comodante poderá, a seu exclusivo critério, sempre que desejar ou mediante solicitação do (a) Comodatário (a), proceder à manutenção dos Equipamentos, inclusive através de seu departamento de suporte técnico.</p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;padding-left: 0.3in;">2.2.3. Quaisquer peças ou acessórios substituídos ou acrescentados aos Equipamentos pela  Comodante ou pelo (a) Comodatário (a), desde que com a autorização da Comodante, automaticamente serão incorporados aos Equipamentos correspondentes, não cabendo ao (à) Comodatário (a) qualquer direito de retenção ou indenização por tais reparos ou melhorias.</p>
-            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;margin-top: 1.4in;">
-                <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: end;">Página  2 de 3 </p>
-            </div>
-        </div>
-        <div style="page-break-after: always;"></div>
-        <div style="display: block;height: 11.69in;width: 8.27in;">
-            <div style="display: flex;justify-content: flex-end;width: 100%;">
-                <img style="width:1.14in;height:1.30in" src="/app/static/images/ri_1.png" alt="logo"/>
-            </div>
             <p style="font-style:normal;font-weight:bold;font-size:11pt;color:#000000">3. Disposições Gerais</p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;">3.1. O prazo de vigência do presente Termo será igual ao prazo do Contrato Principal firmado entre as Partes. Em caso de rescisão, por qualquer motivo, do Contrato Principal, este termo será considerado automaticamente rescindido.</p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;"> 3.2. Quaisquer tolerâncias, concessões ou omissões de Parte a Parte, não importarão em alterações ou novações deste Contrato, nem constituirão precedentes invocáveis. Qualquer modificação ou aditamento ao presente Acordo deverá ser feito por escrito.</p>
@@ -147,32 +156,12 @@
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;">3.4. As Partes elegem o Foro da Comarca de Salvador/BA, para dirimir quaisquer controvérsias oriundas do presente Termo, renunciando qualquer outro, por mais especializado que seja ou se torne.</p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;">3.5. As Partes admitem a assinatura eletrônica do presente Termo como válida e hábil, garantindo sua integridade e a autoria.</p>
             <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;">E por estarem assim ajustadas, firmam o presente instrumento, em vias de igual teor e forma.</p>
-            <div style="padding-top: 0.2in;">
-                <div style="display: flex;justify-content: center;">
-                    <div style="display: flex;">
-                        <img style="width:0.7in;height:0.7in" src="/app/static/images/date.jpeg" alt="date1"/>
-                        <div style="display: flex;flex-direction: column;justify-content: center;">
-                            <span>Local: Salvador - Bahia</span>
-                            <span>Data: {{ date }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div style="display: flex;justify-content: center;">
-                    <div style="display: flex;flex-direction: row;justify-content: flex-start;">
-                        <img style="width:0.7in;height:0.7in" src="/app/static/images/date.jpeg" alt="date1"/>
-                        <div style="display: flex;flex-direction: column;justify-content: center;">
-                            <span>Local: São Paulo - SP</span>
-                            <span>Data: {{ date }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div style="display: flex;flex-direction: column;justify-content: flex-start;margin-top: 0.6in;">
                 <div style="display: flex;margin-top: 0.3in;">
                     <div style="display: flex;flex-direction: column;justify-content: center;">
                         <span>Assinaturas:</span>
                     </div>
-                    <img style="width:0.5in;height:0.5in" src="/app/static/images/signed.png" alt="date1"/>
+                    <img style="width:0.5in;height:0.5in" src="{{ signed }}" alt="date1"/>
                 </div>
                 <div style="display: flex;flex-direction: row;margin-top: 0.3in;justify-content: space-between;width: 7.35in;">
                     <div style="background-color: #d9d9d9;padding: 0.2in 0.3in;text-align: center;width: 2.6in;">
@@ -188,7 +177,7 @@
                     <div style="display: flex;flex-direction: column;justify-content: center;">
                         <span>Testemunhas:</span>
                     </div>
-                    <img style="width:0.5in;height:0.5in" src="/app/static/images/signed.png" alt="date1"/>
+                    <img style="width:0.5in;height:0.5in" src="{{ signed }}" alt="date1"/>
                 </div>
                 <div style="display: flex;flex-direction: row;justify-content: space-between;margin-top: 0.3in;width: 7.35in;">
                     <div style="background-color: #d9d9d9;padding-left: 0.1in;padding-right: 0.5in;text-align: start;width: 2.6in;">
@@ -201,7 +190,18 @@
                     </div>
                 </div>
             </div>
-            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;margin-top: 2.8in;">
+            <div style="padding-left: 3in;margin-top: 0.6in;">
+                <div style="display: flex;justify-content: start;">
+                    <div style="display: flex;">
+                        <img style="width:0.7in;height:0.7in" src="{{ date_image }}" alt="date1"/>
+                        <div style="display: flex;flex-direction: column;justify-content: center;">
+                            <span>Local: {{ location }}</span>
+                            <span>Data: {{ date }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;">
                 <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: end;">Página  3 de 3 </p>
             </div>
         </div>
