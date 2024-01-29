@@ -195,6 +195,8 @@ class MaintenanceService:
 
         maintenance_list = maintenance_filters.filter(
             db_session.query(MaintenanceModel)
+            .join(MaintenanceActionModel)
+            .join(MaintenanceStatusModel)
         )
 
         params = Params(page=page, size=size)

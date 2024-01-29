@@ -133,7 +133,9 @@ class InvoiceService:
         size: int = 50,
     ) -> Page[AssetSerializerSchema]:
         """Get invoices list"""
-        invoice_list_query = invoice_filters.filter(db_session.query(InvoiceModel))
+        invoice_list_query = invoice_filters.filter(
+            db_session.query(InvoiceModel).join(AssetModel)
+        )
 
         params = Params(page=page, size=size)
         paginated = paginate(

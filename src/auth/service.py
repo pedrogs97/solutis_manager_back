@@ -217,7 +217,9 @@ class UserSerivce:
         Returns:
             Page[UserSerializerSchema]: A `Page` object containing a paginated list of serialized user objects.
         """
-        user_list = user_filters.filter(db_session.query(UserModel))
+        user_list = user_filters.filter(
+            db_session.query(UserModel).join(EmployeeModel).join(GroupModel)
+        )
 
         params = Params(page=page, size=size)
         paginated = paginate(

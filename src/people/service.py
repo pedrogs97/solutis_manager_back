@@ -345,7 +345,13 @@ class EmployeeService:
         size: int = 50,
     ) -> Page[EmployeeSerializerSchema]:
         """Get employees list"""
-        employee_list = employee_filters.filter(db_session.query(EmployeeModel))
+        employee_list = employee_filters.filter(
+            db_session.query(EmployeeModel)
+            .join(EmployeeRoleModel)
+            .join(EmployeeNationalityModel)
+            .join(EmployeeMaritalStatusModel)
+            .join(EmployeeGenderModel)
+        )
 
         if fields == "":
             params = Params(page=page, size=size)

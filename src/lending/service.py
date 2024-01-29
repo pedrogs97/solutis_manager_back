@@ -366,7 +366,14 @@ class LendingService:
     ) -> Page[LendingSerializerSchema]:
         """Get lendings list"""
 
-        lending_list = lending_filters.filter(db_session.query(LendingModel))
+        lending_list = lending_filters.filter(
+            db_session.query(LendingModel)
+            .join(EmployeeModel)
+            .join(AssetModel)
+            .join(WorkloadModel)
+            .join(CostCenterModel)
+            .join(LendingTypeModel)
+        )
 
         params = Params(page=page, size=size)
         paginated = paginate(
@@ -450,7 +457,9 @@ class LendingService:
     ) -> List[WitnessSerializerSchema]:
         """Get witnesses list"""
 
-        witnesses_list = witnesses_filters.filter(db_session.query(WitnessModel))
+        witnesses_list = witnesses_filters.filter(
+            db_session.query(WitnessModel).join(EmployeeModel)
+        )
 
         if fields == "":
             return [
@@ -1131,7 +1140,9 @@ class DocumentService:
     ) -> Page[DocumentSerializerSchema]:
         """Get documents list"""
 
-        document_list = document_filters.filter(db_session.query(DocumentModel))
+        document_list = document_filters.filter(
+            db_session.query(DocumentModel).join(DocumentTypeModel)
+        )
 
         params = Params(page=page, size=size)
         paginated = paginate(

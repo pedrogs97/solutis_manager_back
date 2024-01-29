@@ -320,7 +320,12 @@ class AssetService:
     ) -> Page[AssetSerializerSchema]:
         """Get assets list"""
 
-        asset_list = asset_filters.filter(db_session.query(AssetModel))
+        asset_list = asset_filters.filter(
+            db_session.query(AssetModel)
+            .join(AssetTypeModel)
+            .join(AssetClothingSizeModel)
+            .join(AssetStatusModel)
+        )
 
         params = Params(page=page, size=size)
         if fields == "":
