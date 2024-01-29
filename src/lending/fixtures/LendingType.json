@@ -2,11 +2,11 @@
     {
         "table": "lending_type",
         "id": 1,
-        "name": "Termo de reponsabilidade"
+        "name": "Termo de Responsabilidade"
     },
     {
         "table": "lending_type",
         "id": 2,
-        "name": "Contrato"
+        "name": "Contrato de Comodato"
     }
 ]
