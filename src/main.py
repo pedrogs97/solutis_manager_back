@@ -1,4 +1,5 @@
 """Main Service"""
+
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -121,7 +122,7 @@ async def lifespan(app: FastAPI):
 appAPI = FastAPI(
     exception_handlers=exception_handlers,
     lifespan=lifespan,
-    version="1.0.5",
+    version="1.0.6",
 )
 
 
