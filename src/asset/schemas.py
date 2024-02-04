@@ -1,4 +1,5 @@
 """Asset schemas"""
+
 from datetime import date, datetime
 from typing import Optional
 
@@ -140,8 +141,8 @@ class AssetSerializerSchema(BaseSchema):
     )
     status: Optional[AssetStatusSerializerSchema] = None
 
-    invoice_asset_id: Optional[int] = Field(
-        serialization_alias="invoiceAssetId",
+    invoice_asset_number: Optional[str] = Field(
+        serialization_alias="invoiceAssetNumber",
         default=None,
     )
 

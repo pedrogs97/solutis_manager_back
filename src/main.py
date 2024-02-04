@@ -119,7 +119,9 @@ async def lifespan(app: FastAPI):
 
 
 appAPI = FastAPI(
-    exception_handlers=exception_handlers, lifespan=lifespan, version="1.0.3"
+    exception_handlers=exception_handlers,
+    lifespan=lifespan,
+    version="1.0.5",
 )
 
 
@@ -183,4 +185,4 @@ def sqlserver_check():
 @appAPI.get("/", tags=["Service"])
 def root():
     """Redirect to docs"""
-    return RedirectResponse(url="/docs")
+    return RedirectResponse(url="/api/docs")

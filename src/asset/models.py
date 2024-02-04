@@ -1,4 +1,5 @@
 """Asset models"""
+
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
@@ -85,18 +86,18 @@ class AssetModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
-    type: Mapped[AssetTypeModel] = relationship()
+    type: Mapped[AssetTypeModel] = relationship(lazy="joined")
     type_id = Column("type_id", ForeignKey("asset_type.id"), nullable=False)
 
     status_id = Column(
         "status_id", ForeignKey("asset_status.id"), nullable=True, default=1
     )
-    status: Mapped[AssetStatusModel] = relationship()
+    status: Mapped[AssetStatusModel] = relationship(lazy="joined")
 
     clothing_size_id = Column(
         "clothing_size_id", ForeignKey("asset_clothing_size.id"), nullable=True
     )
-    clothing_size: Mapped[AssetClothingSizeModel] = relationship()
+    clothing_size: Mapped[AssetClothingSizeModel] = relationship(lazy="joined")
 
     invoice: Mapped[InvoiceAssets] = relationship(viewonly=True, uselist=False)
 

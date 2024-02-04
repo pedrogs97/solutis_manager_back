@@ -1,4 +1,5 @@
 """invoice models"""
+
 from typing import List
 
 from sqlalchemy import Column, Float, ForeignKey, Integer, String
@@ -12,8 +13,10 @@ class InvoiceAssets(Base):
 
     __tablename__ = "invoice_assets"
 
-    asset_id: Mapped[int] = Column(ForeignKey("asset.id"), primary_key=True)
     asset: Mapped["AssetModel"] = relationship()
+    asset_id: Mapped[int] = Column(ForeignKey("asset.id"), primary_key=True)
+
+    invoice: Mapped["InvoiceModel"] = relationship(viewonly=True)
     invoice_id: Mapped[int] = Column(ForeignKey("invoices.id"))
     quantity = Column("quantity", Integer, nullable=False)
     unit_value = Column("unit_value", Float, nullable=False)

@@ -143,10 +143,20 @@ ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://172.21.3.225:3000",
+    "http://agile.solutis.net.br:3000",
     "http://127.0.0.1",
     "http://localhost",
     "http://172.21.3.225",
+    "http://agile.solutis.net.br",
     "http://datasync-totvs:8001",
+    "https://localhost:3000",
+    "https://127.0.0.1:3000",
+    "https://172.21.3.225:3000",
+    "https://agile.solutis.net.br:3000",
+    "https://127.0.0.1",
+    "https://localhost",
+    "https://172.21.3.225",
+    "https://agile.solutis.net.br",
 ]
 
 EMAIL_SOLUTIS_365 = "agile@solutis.com.br"

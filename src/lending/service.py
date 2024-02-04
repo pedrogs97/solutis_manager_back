@@ -1,4 +1,5 @@
 """Lenging service"""
+
 import logging
 import os
 from datetime import date
@@ -88,9 +89,11 @@ class LendingService:
         """Serializer employee"""
         return EmployeeSerializerSchema(
             id=employee.id,
-            role=EmployeeRoleSerializerSchema(**employee.role.__dict__)
-            if employee.role
-            else None,
+            role=(
+                EmployeeRoleSerializerSchema(**employee.role.__dict__)
+                if employee.role
+                else None
+            ),
             nationality=EmployeeNationalitySerializerSchema(
                 **employee.nationality.__dict__
             ),
@@ -98,11 +101,13 @@ class LendingService:
                 **employee.marital_status.__dict__
             ),
             gender=EmployeeGenderSerializerSchema(**employee.gender.__dict__),
-            educational_level=EmployeeEducationalLevelSerializerSchema(
-                **employee.educational_level.__dict__
-            )
-            if employee.educational_level
-            else None,
+            educational_level=(
+                EmployeeEducationalLevelSerializerSchema(
+                    **employee.educational_level.__dict__
+                )
+                if employee.educational_level
+                else None
+            ),
             status=employee.status,
             manager=employee.manager,
             address=employee.address,
@@ -114,9 +119,11 @@ class LendingService:
             legal_person=employee.legal_person,
             national_identification=employee.national_identification,
             taxpayer_identification=employee.taxpayer_identification,
-            admission_date=employee.admission_date.strftime(DEFAULT_DATE_FORMAT)
-            if employee.admission_date
-            else None,
+            admission_date=(
+                employee.admission_date.strftime(DEFAULT_DATE_FORMAT)
+                if employee.admission_date
+                else None
+            ),
         )
 
     def serialize_witness(self, witness: WitnessModel) -> WitnessSerializerSchema:
@@ -126,9 +133,11 @@ class LendingService:
         return WitnessSerializerSchema(
             id=witness.id,
             employee=employee_serializer,
-            signed=witness.signed.strftime("DEFAULT_DATE_FORMAT")
-            if witness.signed
-            else None,
+            signed=(
+                witness.signed.strftime("DEFAULT_DATE_FORMAT")
+                if witness.signed
+                else None
+            ),
         )
 
     def serialize_lending(self, lending: LendingModel) -> LendingSerializerSchema:
@@ -148,9 +157,11 @@ class LendingService:
             cost_center=CostCenterSerializerSchema(**lending.cost_center.__dict__),
             manager=lending.manager,
             observations=lending.observations,
-            signed_date=lending.signed_date.strftime("DEFAULT_DATE_FORMAT")
-            if lending.signed_date
-            else None,
+            signed_date=(
+                lending.signed_date.strftime("DEFAULT_DATE_FORMAT")
+                if lending.signed_date
+                else None
+            ),
             glpi_number=lending.glpi_number,
             type=lending.type.name,
             goal=lending.goal,
@@ -368,11 +379,11 @@ class LendingService:
 
         lending_list = lending_filters.filter(
             db_session.query(LendingModel)
-            # .join(EmployeeModel)
-            # .join(AssetModel)
-            # .join(WorkloadModel)
-            # .join(CostCenterModel)
-            # .join(LendingTypeModel)
+            .outerjoin(EmployeeModel)
+            .outerjoin(AssetModel)
+            .outerjoin(WorkloadModel)
+            .outerjoin(CostCenterModel)
+            .outerjoin(LendingTypeModel)
         )
 
         params = Params(page=page, size=size)

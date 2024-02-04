@@ -1,4 +1,5 @@
 """Asset service"""
+
 import logging
 from typing import List
 
@@ -114,15 +115,19 @@ class AssetService:
         """Serialize asset"""
         return AssetSerializerSchema(
             id=asset.id,
-            type=AssetTypeSerializerSchema(**asset.type.__dict__)
-            if asset.type
-            else None,
-            clothing_size=AssetClothingSizeSerializer(**asset.clothing_size.__dict__)
-            if asset.clothing_size
-            else None,
-            status=AssetStatusSerializerSchema(**asset.status.__dict__)
-            if asset.status
-            else None,
+            type=(
+                AssetTypeSerializerSchema(**asset.type.__dict__) if asset.type else None
+            ),
+            clothing_size=(
+                AssetClothingSizeSerializer(**asset.clothing_size.__dict__)
+                if asset.clothing_size
+                else None
+            ),
+            status=(
+                AssetStatusSerializerSchema(**asset.status.__dict__)
+                if asset.status
+                else None
+            ),
             register_number=asset.register_number,
             description=asset.description,
             supplier=asset.supplier,
@@ -144,7 +149,9 @@ class AssetService:
             quantity=asset.quantity,
             unit=asset.unit,
             by_agile=asset.by_agile,
-            invoice_asset_id=asset.invoice.asset_id if asset.invoice else None,
+            invoice_asset_number=(
+                asset.invoice.invoice.number if asset.invoice else None
+            ),
         )
 
     def serialize_asset_type(
@@ -321,9 +328,10 @@ class AssetService:
         """Get assets list"""
 
         asset_list = asset_filters.filter(
-            db_session.query(AssetModel).join(AssetTypeModel)
-            # .join(AssetClothingSizeModel)
-            # .join(AssetStatusModel)
+            db_session.query(AssetModel)
+            .join(AssetTypeModel)
+            .outerjoin(AssetClothingSizeModel)
+            .outerjoin(AssetStatusModel)
         )
 
         params = Params(page=page, size=size)
