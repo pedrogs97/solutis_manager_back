@@ -558,9 +558,12 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        new_code = self.__generate_code(
-            db_session.query(DocumentModel).all()[-1], asset
-        )
+        if len(db_session.query(DocumentModel).all()):
+            new_code = self.__generate_code(
+                db_session.query(DocumentModel).all()[-1], asset
+            )
+        else:
+            new_code = self.__generate_code(None, asset)
 
         workload = current_lending.workload
 
@@ -574,7 +577,11 @@ class DocumentService:
             contract_path = create_lending_contract_pj(
                 NewLendingPjContextSchema(
                     number=new_code,
-                    glpi_number=current_lending.glpi_number,
+                    glpi_number=(
+                        current_lending.glpi_number
+                        if current_lending.glpi_number
+                        else ""
+                    ),
                     full_name=employee.full_name,
                     taxpayer_identification=employee.taxpayer_identification,
                     national_identification=employee.national_identification,
@@ -593,7 +600,7 @@ class DocumentService:
                     ms_office="SIM" if asset.ms_office else "Não",
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
-                    value=asset.value,
+                    value=str(asset.value),
                     date=date.today().strftime("DEFAULT_DATE_FORMAT"),
                     witnesses=[
                         WitnessContextSchema(
@@ -617,7 +624,11 @@ class DocumentService:
             contract_path = create_lending_contract(
                 NewLendingContextSchema(
                     number=new_code,
-                    glpi_number=current_lending.glpi_number,
+                    glpi_number=(
+                        current_lending.glpi_number
+                        if current_lending.glpi_number
+                        else ""
+                    ),
                     full_name=employee.full_name,
                     taxpayer_identification=employee.taxpayer_identification,
                     national_identification=employee.national_identification,
@@ -636,7 +647,7 @@ class DocumentService:
                     ms_office="SIM" if asset.ms_office else "Não",
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
-                    value=asset.value,
+                    value=str(asset.value),
                     date=date.today().strftime("DEFAULT_DATE_FORMAT"),
                     witnesses=[
                         WitnessContextSchema(
@@ -718,9 +729,12 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        new_code = self.__generate_code(
-            db_session.query(DocumentModel).all()[-1], asset
-        )
+        if len(db_session.query(DocumentModel).all()):
+            new_code = self.__generate_code(
+                db_session.query(DocumentModel).all()[-1], asset
+            )
+        else:
+            new_code = self.__generate_code(None, asset)
 
         workload = current_lending.workload
 
@@ -734,7 +748,11 @@ class DocumentService:
             contract_path = create_revoke_lending_contract_pj(
                 NewLendingPjContextSchema(
                     number=new_code,
-                    glpi_number=current_lending.glpi_number,
+                    glpi_number=(
+                        current_lending.glpi_number
+                        if current_lending.glpi_number
+                        else ""
+                    ),
                     full_name=employee.full_name,
                     taxpayer_identification=employee.taxpayer_identification,
                     national_identification=employee.national_identification,
@@ -753,7 +771,7 @@ class DocumentService:
                     ms_office="SIM" if asset.ms_office else "Não",
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
-                    value=asset.value,
+                    value=str(asset.value),
                     date=date.today().strftime("DEFAULT_DATE_FORMAT"),
                     witnesses=[
                         WitnessContextSchema(
@@ -777,7 +795,11 @@ class DocumentService:
             contract_path = create_revoke_lending_contract(
                 NewLendingContextSchema(
                     number=new_code,
-                    glpi_number=current_lending.glpi_number,
+                    glpi_number=(
+                        current_lending.glpi_number
+                        if current_lending.glpi_number
+                        else ""
+                    ),
                     full_name=employee.full_name,
                     taxpayer_identification=employee.taxpayer_identification,
                     national_identification=employee.national_identification,
@@ -796,7 +818,7 @@ class DocumentService:
                     ms_office="SIM" if asset.ms_office else "Não",
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
-                    value=asset.value,
+                    value=str(asset.value),
                     date=date.today().strftime("DEFAULT_DATE_FORMAT"),
                     witnesses=[
                         WitnessContextSchema(
@@ -878,16 +900,21 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        new_code = self.__generate_code(
-            db_session.query(DocumentModel).all()[-1], asset
-        )
+        if len(db_session.query(DocumentModel).all()):
+            new_code = self.__generate_code(
+                db_session.query(DocumentModel).all()[-1], asset
+            )
+        else:
+            new_code = self.__generate_code(None, asset)
 
         employee = current_lending.employee
 
         contract_path = create_lending_term(
             NewLendingTermContextSchema(
                 number=new_code,
-                glpi_number=current_lending.glpi_number,
+                glpi_number=(
+                    current_lending.glpi_number if current_lending.glpi_number else ""
+                ),
                 full_name=employee.full_name,
                 taxpayer_identification=employee.taxpayer_identification,
                 national_identification=employee.national_identification,
@@ -899,7 +926,7 @@ class DocumentService:
                 description=asset.description,
                 size=asset.clothing_size.name if asset.clothing_size else "N/A",
                 quantity=asset.quantity,
-                value=asset.value,
+                value=str(asset.value),
                 date=date.today().strftime("DEFAULT_DATE_FORMAT"),
                 project=current_lending.project,
                 location=current_lending.location,
@@ -965,16 +992,21 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        new_code = self.__generate_code(
-            db_session.query(DocumentModel).all()[-1], asset
-        )
+        if len(db_session.query(DocumentModel).all()):
+            new_code = self.__generate_code(
+                db_session.query(DocumentModel).all()[-1], asset
+            )
+        else:
+            new_code = self.__generate_code(None, asset)
 
         employee = current_lending.employee
 
         contract_path = create_lending_term(
             NewLendingTermContextSchema(
                 number=new_code,
-                glpi_number=current_lending.glpi_number,
+                glpi_number=(
+                    current_lending.glpi_number if current_lending.glpi_number else ""
+                ),
                 full_name=employee.full_name,
                 taxpayer_identification=employee.taxpayer_identification,
                 national_identification=employee.national_identification,
@@ -986,7 +1018,7 @@ class DocumentService:
                 description=asset.description,
                 size=asset.clothing_size.name if asset.clothing_size else "N/A",
                 quantity=asset.quantity,
-                value=asset.value,
+                value=str(asset.value),
                 date=date.today().strftime("DEFAULT_DATE_FORMAT"),
                 project=current_lending.project,
                 location=current_lending.location,
