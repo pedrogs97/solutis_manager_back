@@ -36,7 +36,6 @@ from src.lending.schemas import (
     NewLendingSchema,
     NewLendingTermContextSchema,
     NewRevokeContractDocSchema,
-    UploadSignedContractSchema,
     WitnessContextSchema,
     WitnessSerializerSchema,
     WorkloadSerializerSchema,
@@ -1062,7 +1061,7 @@ class DocumentService:
         self,
         contract: UploadFile,
         type_doc: str,
-        data: UploadSignedContractSchema,
+        lendingId: int,
         db_session: Session,
         authenticated_user: UserModel,
     ) -> DocumentSerializerSchema:
@@ -1073,7 +1072,7 @@ class DocumentService:
             .filter(DocumentTypeModel.name == type_doc)
             .first()
         )
-        lending = self.__get_lending_or_404(data.lending_id, db_session)
+        lending = self.__get_lending_or_404(lendingId, db_session)
 
         code = lending.number
 
@@ -1114,7 +1113,7 @@ class DocumentService:
         self,
         contract: UploadFile,
         type_doc: str,
-        data: UploadSignedContractSchema,
+        lendingId: int,
         db_session: Session,
         authenticated_user: UserModel,
     ) -> DocumentSerializerSchema:
@@ -1125,7 +1124,7 @@ class DocumentService:
             .filter(DocumentTypeModel.name == type_doc)
             .first()
         )
-        lending = self.__get_lending_or_404(data.lending_id, db_session)
+        lending = self.__get_lending_or_404(lendingId, db_session)
 
         code = lending.number
 

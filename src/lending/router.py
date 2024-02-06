@@ -27,7 +27,6 @@ from src.lending.schemas import (
     NewLendingDocSchema,
     NewLendingSchema,
     NewRevokeContractDocSchema,
-    UploadSignedContractSchema,
 )
 from src.lending.service import DocumentService, LendingService
 
@@ -221,7 +220,7 @@ def post_create_contract(
 
 @lending_router.post("/contracts/upload/")
 async def post_import_contract(
-    data: Annotated[UploadSignedContractSchema, Form()],
+    lendingId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -235,7 +234,7 @@ async def post_import_contract(
         )
 
     serializer = await document_service.upload_contract(
-        file, "Contrato de Comodato", data, db_session, authenticated_user
+        file, "Contrato de Comodato", lendingId, db_session, authenticated_user
     )
 
     db_session.close()
@@ -269,7 +268,7 @@ def post_create_revoke_contract(
 
 @lending_router.post("/contracts/revoke/upload/")
 async def post_revoke_contract(
-    data: Annotated[UploadSignedContractSchema, Form()],
+    lendingId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -283,7 +282,7 @@ async def post_revoke_contract(
         )
 
     serializer = await document_service.upload_revoke_contract(
-        file, "Distrato de Comodato", data, db_session, authenticated_user
+        file, "Distrato de Comodato", lendingId, db_session, authenticated_user
     )
 
     db_session.close()
@@ -317,7 +316,7 @@ def post_create_term(
 
 @lending_router.post("/terms/upload/")
 async def post_import_term(
-    data: Annotated[UploadSignedContractSchema, Form()],
+    lendingId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -331,7 +330,7 @@ async def post_import_term(
         )
 
     serializer = await document_service.upload_contract(
-        file, "Termo de Responsabilidade", data, db_session, authenticated_user
+        file, "Termo de Responsabilidade", lendingId, db_session, authenticated_user
     )
 
     db_session.close()
@@ -368,7 +367,7 @@ def post_create_revoke_term(
 
 @lending_router.post("/terms/revoke/upload/")
 async def post_revoke_term(
-    data: Annotated[UploadSignedContractSchema, Form()],
+    lendingId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -384,7 +383,7 @@ async def post_revoke_term(
     serializer = await document_service.upload_revoke_contract(
         file,
         "Distrato de Termo de Responsabilidade",
-        data,
+        lendingId,
         db_session,
         authenticated_user,
     )

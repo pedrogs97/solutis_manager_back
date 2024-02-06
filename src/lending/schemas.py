@@ -207,12 +207,6 @@ class NewLendingTermContextSchema(BaseSchema):
     location: str
 
 
-class UploadSignedContractSchema(BaseSchema):
-    """Schema for upload contract signed"""
-
-    lending_id: int = Field(alias="lendingId")
-
-
 class CreateWitnessSchema(BaseSchema):
     """Create witness schema"""
 
