@@ -310,7 +310,6 @@ class LendingService:
         new_lending_db = LendingModel(
             manager=new_lending.manager,
             observations=new_lending.observations,
-            signed_date=new_lending.signed_date,
             glpi_number=new_lending.glpi_number,
             goal=new_lending.goal,
             business_executive=new_lending.business_executive,
