@@ -1,4 +1,5 @@
 """Auth filters"""
+
 from datetime import date
 from typing import List, Optional
 
@@ -52,9 +53,9 @@ class UserFilter(Filter):
     )
     group: Optional[GroupFilter] = FilterDepends(with_prefix("group", GroupFilter))
     username__ilike: Optional[str] = None
-    username__like: Optional[str] = None
     email__ilike: Optional[str] = None
-    email__like: Optional[str] = None
+    department__ilike: Optional[str] = None
+    manager__ilike: Optional[str] = None
     is_staff: Optional[bool] = None
     is_active: Optional[bool] = None
     last_login_in__gte: Optional[date] = None

@@ -186,4 +186,4 @@ def sqlserver_check():
 @appAPI.get("/", tags=["Service"])
 def root():
     """Redirect to docs"""
-    return RedirectResponse(url="/api/docs")
+    return RedirectResponse(url="/docs")
