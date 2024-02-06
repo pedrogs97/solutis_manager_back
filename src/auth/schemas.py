@@ -1,4 +1,5 @@
 """Auth schemas"""
+
 from datetime import datetime
 from typing import List, Optional
 
@@ -68,6 +69,8 @@ class UserUpdateSchema(BaseSchema):
     email: Optional[str] = None
     is_staff: Optional[bool] = Field(alias="isStaff", default=None)
     is_active: Optional[bool] = Field(alias="isActive", default=None)
+    department: Optional[str] = None
+    manager: Optional[str] = None
 
 
 class UserChangePasswordSchema(BaseSchema):
@@ -97,6 +100,8 @@ class UserSerializerSchema(BaseSchema):
     is_active: bool = Field(serialization_alias="isActive")
     last_login_in: Optional[str] = Field(serialization_alias="lastLoginIn")
     employee_id: Optional[int] = Field(serialization_alias="employeeId", default=None)
+    department: str
+    manager: str
 
 
 class UserListSerializerSchema(BaseSchema):
@@ -118,6 +123,8 @@ class UserListSerializerSchema(BaseSchema):
         serialization_alias="lastLoginIn", default=None
     )
     employee_id: Optional[int] = Field(serialization_alias="employeeId", default=None)
+    department: str
+    manager: str
 
 
 class NewGroupSchema(BaseSchema):
@@ -140,6 +147,8 @@ class NewUserSchema(BaseSchema):
     )
     group_id: Optional[int] = Field(alias="groupId", serialization_alias="group_id")
     employee_id: int = Field(alias="employeeId", serialization_alias="employee_id")
+    department: str
+    manager: str
 
 
 class TokenSchema(BaseSchema):

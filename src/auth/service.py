@@ -1,4 +1,5 @@
 """Auth service"""
+
 import logging
 import random
 import string
@@ -218,7 +219,7 @@ class UserSerivce:
             Page[UserSerializerSchema]: A `Page` object containing a paginated list of serialized user objects.
         """
         user_list = user_filters.filter(
-            db_session.query(UserModel).join(EmployeeModel).join(GroupModel)
+            db_session.query(UserModel).join(GroupModel).outerjoin(EmployeeModel)
         )
 
         params = Params(page=page, size=size)
@@ -266,10 +267,14 @@ class UserSerivce:
                 email=user.email,
                 is_active=user.is_active,
                 is_staff=user.is_staff,
-                last_login_in=user.last_login_in.strftime(DEFAULT_DATE_FORMAT)
-                if user.last_login_in
-                else None,
+                last_login_in=(
+                    user.last_login_in.strftime(DEFAULT_DATE_FORMAT)
+                    if user.last_login_in
+                    else None
+                ),
                 employee_id=employee_id,
+                department=user.department,
+                manager=user.manager,
             )
         return UserSerializerSchema(
             id=user.id,
@@ -280,10 +285,14 @@ class UserSerivce:
             email=user.email,
             is_active=user.is_active,
             is_staff=user.is_staff,
-            last_login_in=user.last_login_in.strftime(DEFAULT_DATE_FORMAT)
-            if user.last_login_in
-            else None,
+            last_login_in=(
+                user.last_login_in.strftime(DEFAULT_DATE_FORMAT)
+                if user.last_login_in
+                else None
+            ),
             employee_id=employee_id,
+            department=user.department,
+            manager=user.manager,
         )
 
     def update_user(
@@ -379,6 +388,14 @@ class UserSerivce:
             if data.is_staff is not None and user.is_staff != data.is_staff:
                 is_updated = True
                 user.is_staff = data.is_staff
+
+            if data.department is not None and user.department != data.department:
+                is_updated = True
+                user.department = data.department
+
+            if data.manager is not None and user.manager != data.manager:
+                is_updated = True
+                user.manager = data.manager
 
             if len(errors) > 0:
                 raise HTTPException(

@@ -1,4 +1,5 @@
 """Authenticate models"""
+
 from typing import List
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table
@@ -73,6 +74,8 @@ class UserModel(Base):
     is_staff = Column("is_staff", Boolean, default=False)
     is_active = Column("is_active", Boolean, default=True)
     last_login_in = Column("last_login", DateTime, nullable=True)
+    department = Column("department", String(length=255), nullable=False, default="")
+    manager = Column("manager", String(length=255), nullable=False, default="")
 
     def __str__(self) -> str:
         return f"{self.email} - {self.group}"

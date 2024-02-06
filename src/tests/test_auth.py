@@ -1,4 +1,5 @@
 """Functional tests for Auth module"""
+
 import time
 from datetime import datetime, timedelta
 
@@ -146,6 +147,8 @@ class TestAuthModule(TestBase):
             "isActive",
             "lastLoginIn",
             "employeeId",
+            "department",
+            "manager",
         ]
         authenticated_data = authenticated
         token = authenticated_data["access_token"]
@@ -155,6 +158,8 @@ class TestAuthModule(TestBase):
             "email": "new_user@email.com",
             "groupId": 1,
             "employeeId": 1,
+            "department": "ADS",
+            "manager": "João da Silva",
         }
         response = self.client.post(
             f"{BASE_API}/auth/users/",
@@ -180,6 +185,8 @@ class TestAuthModule(TestBase):
             "email": "new_user@email.com",
             "groupId": 0,
             "employeeId": 0,
+            "department": "ADS",
+            "manager": "João da Silva",
         }
         response = self.client.post(
             f"{BASE_API}/auth/users/",
@@ -219,6 +226,8 @@ class TestAuthModule(TestBase):
             "isActive",
             "lastLoginIn",
             "employeeId",
+            "department",
+            "manager",
         ]
         authenticated_data = authenticated
         token = authenticated_data["access_token"]
@@ -264,6 +273,8 @@ class TestAuthModule(TestBase):
             "isActive",
             "lastLoginIn",
             "employeeId",
+            "department",
+            "manager",
         ]
         authenticated_data = authenticated
         token = authenticated_data["access_token"]
