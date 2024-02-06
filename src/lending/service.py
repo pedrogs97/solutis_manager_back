@@ -688,8 +688,6 @@ class DocumentService:
 
         current_lending.document = new_doc
         current_lending.number = new_code
-        current_lending.witnesses.append(witness1)
-        current_lending.witnesses.append(witness2)
 
         db_session.add(current_lending)
         db_session.commit()

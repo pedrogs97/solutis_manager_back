@@ -1,4 +1,5 @@
 """Base utils"""
+
 import base64
 import os
 from json import loads
@@ -57,11 +58,11 @@ def get_str_base64_image(file_name: str) -> str:
     return str_base64
 
 
-SIGNED_DATE_IMAGE = "./static/images/signed.png"
-DATE_IMAGE = "./static/images/date.jpeg"
-GLPI_IMAGE = "./static/images/n_glpi.png"
-N_TERM_IMAGE = "./static/images/n_termo.png"
-LOGO_IMAGE = "./static/images/ri_1.png"
+SIGNED_DATE_IMAGE = "src/static/images/signed.png"
+DATE_IMAGE = "src/static/images/date.jpeg"
+GLPI_IMAGE = "src/static/images/n_glpi.png"
+N_TERM_IMAGE = "src/static/images/n_termo.png"
+LOGO_IMAGE = "src/static/images/ri_1.png"
 
 
 def create_lending_contract(context: NewLendingContextSchema) -> str:

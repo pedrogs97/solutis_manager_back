@@ -1,4 +1,5 @@
 """Base backends"""
+
 import logging
 import smtplib
 import time
@@ -282,7 +283,9 @@ class Email365Client:
         template_file = "reset_password.html"
         template = template_env.get_template(template_file)
 
-        return template.render(username="teste", new_password="teste senha")
+        return template.render(
+            username=self.__extra["username"], new_password=self.__extra["new_password"]
+        )
 
     def __prepare_message(self) -> None:
         """Build email"""

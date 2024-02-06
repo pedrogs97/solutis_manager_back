@@ -199,7 +199,7 @@ def get_list_witness_route(
 
 @lending_router.post("/contracts/create/", response_class=FileResponse)
 def post_create_contract(
-    new_lending_doc: Annotated[NewLendingDocSchema, Form()],
+    new_lending_doc: NewLendingDocSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})
@@ -247,7 +247,7 @@ async def post_import_contract(
 
 @lending_router.post("/contracts/revoke/create/", response_class=FileResponse)
 def post_create_revoke_contract(
-    data: Annotated[NewRevokeContractDocSchema, Form()],
+    data: NewRevokeContractDocSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})
@@ -295,7 +295,7 @@ async def post_revoke_contract(
 
 @lending_router.post("/terms/create/", response_class=FileResponse)
 def post_create_term(
-    new_lending_doc: Annotated[NewLendingDocSchema, Form()],
+    new_lending_doc: NewLendingDocSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})
@@ -343,7 +343,7 @@ async def post_import_term(
 
 @lending_router.post("/terms/revoke/create/", response_class=FileResponse)
 def post_create_revoke_term(
-    new_lending_doc: Annotated[NewRevokeContractDocSchema, Form()],
+    new_lending_doc: NewRevokeContractDocSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})

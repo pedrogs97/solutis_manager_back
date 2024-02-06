@@ -13,27 +13,19 @@ from sqlalchemy.orm import Session
 
 from src.auth.filters import GroupFilter, PermissionFilter, UserFilter
 from src.auth.models import GroupModel, PermissionModel, UserModel
-from src.auth.schemas import (
-    GroupSerializerSchema,
-    NewGroupSchema,
-    NewPasswordSchema,
-    NewUserSchema,
-    PermissionSerializerSchema,
-    UserChangePasswordSchema,
-    UserListSerializerSchema,
-    UserSerializerSchema,
-    UserUpdateSchema,
-)
+from src.auth.schemas import (GroupSerializerSchema, NewGroupSchema,
+                              NewPasswordSchema, NewUserSchema,
+                              PermissionSerializerSchema,
+                              UserChangePasswordSchema,
+                              UserListSerializerSchema, UserSerializerSchema,
+                              UserUpdateSchema)
 from src.backends import Email365Client, bcrypt_context
-from src.config import DEBUG, DEFAULT_DATE_FORMAT, PASSWORD_SUPER_USER, PERMISSIONS
+from src.config import (DEBUG, DEFAULT_DATE_FORMAT, PASSWORD_SUPER_USER,
+                        PERMISSIONS)
 from src.database import Session_db
 from src.log.services import LogService
-from src.people.models import (
-    EmployeeGenderModel,
-    EmployeeMaritalStatusModel,
-    EmployeeModel,
-    EmployeeNationalityModel,
-)
+from src.people.models import (EmployeeGenderModel, EmployeeMaritalStatusModel,
+                               EmployeeModel, EmployeeNationalityModel)
 
 logger = logging.getLogger(__name__)
 
