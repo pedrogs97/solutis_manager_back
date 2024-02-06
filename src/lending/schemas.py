@@ -91,7 +91,6 @@ class NewLendingSchema(BaseSchema):
     type_id: int = Field(alias="typeId")
     manager: str
     observations: Optional[str] = None
-    signed_date: Optional[date] = Field(alias="signedDate", default=None)
     glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
     goal: Optional[str] = Field(alias="goal", default=None)
     project: Optional[str] = None

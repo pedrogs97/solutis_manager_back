@@ -134,9 +134,7 @@ class LendingService:
             id=witness.id,
             employee=employee_serializer,
             signed=(
-                witness.signed.strftime("DEFAULT_DATE_FORMAT")
-                if witness.signed
-                else None
+                witness.signed.strftime(DEFAULT_DATE_FORMAT) if witness.signed else None
             ),
         )
 
@@ -158,7 +156,7 @@ class LendingService:
             manager=lending.manager,
             observations=lending.observations,
             signed_date=(
-                lending.signed_date.strftime("DEFAULT_DATE_FORMAT")
+                lending.signed_date.strftime(DEFAULT_DATE_FORMAT)
                 if lending.signed_date
                 else None
             ),
@@ -601,7 +599,7 @@ class DocumentService:
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
                     value=str(asset.value),
-                    date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                    date=date.today().strftime(DEFAULT_DATE_FORMAT),
                     witnesses=[
                         WitnessContextSchema(
                             full_name=witness1.employee.full_name,
@@ -648,7 +646,7 @@ class DocumentService:
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
                     value=str(asset.value),
-                    date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                    date=date.today().strftime(DEFAULT_DATE_FORMAT),
                     witnesses=[
                         WitnessContextSchema(
                             full_name=witness1.employee.full_name,
@@ -770,7 +768,7 @@ class DocumentService:
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
                     value=str(asset.value),
-                    date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                    date=date.today().strftime(DEFAULT_DATE_FORMAT),
                     witnesses=[
                         WitnessContextSchema(
                             full_name=witness1.employee.full_name,
@@ -817,7 +815,7 @@ class DocumentService:
                     pattern=asset.pattern,
                     operational_system=asset.operational_system,
                     value=str(asset.value),
-                    date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                    date=date.today().strftime(DEFAULT_DATE_FORMAT),
                     witnesses=[
                         WitnessContextSchema(
                             full_name=witness1.employee.full_name,
@@ -925,7 +923,7 @@ class DocumentService:
                 size=asset.clothing_size.name if asset.clothing_size else "N/A",
                 quantity=asset.quantity,
                 value=str(asset.value),
-                date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                date=date.today().strftime(DEFAULT_DATE_FORMAT),
                 project=current_lending.project,
                 location=current_lending.location,
             )
@@ -1017,7 +1015,7 @@ class DocumentService:
                 size=asset.clothing_size.name if asset.clothing_size else "N/A",
                 quantity=asset.quantity,
                 value=str(asset.value),
-                date=date.today().strftime("DEFAULT_DATE_FORMAT"),
+                date=date.today().strftime(DEFAULT_DATE_FORMAT),
                 project=current_lending.project,
                 location=current_lending.location,
             )
