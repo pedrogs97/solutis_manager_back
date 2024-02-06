@@ -28,7 +28,6 @@ from src.lending.schemas import (
     NewLendingSchema,
     NewRevokeContractDocSchema,
     UploadSignedContractSchema,
-    UploadSignedRevokeContractSchema,
 )
 from src.lending.service import DocumentService, LendingService
 
@@ -220,6 +219,32 @@ def post_create_contract(
     return FileResponse(new_doc.path)
 
 
+@lending_router.post("/contracts/upload/")
+async def post_import_contract(
+    data: Annotated[UploadSignedContractSchema, Form()],
+    file: UploadFile,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "edit"})
+    ),
+):
+    """Upload new contract"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    serializer = await document_service.upload_contract(
+        file, "Contrato de Comodato", data, db_session, authenticated_user
+    )
+
+    db_session.close()
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
+
+
 @lending_router.post("/contracts/revoke/create/", response_class=FileResponse)
 def post_create_revoke_contract(
     data: Annotated[NewRevokeContractDocSchema, Form()],
@@ -244,7 +269,7 @@ def post_create_revoke_contract(
 
 @lending_router.post("/contracts/revoke/upload/")
 async def post_revoke_contract(
-    data: Annotated[UploadSignedRevokeContractSchema, Form()],
+    data: Annotated[UploadSignedContractSchema, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -290,6 +315,32 @@ def post_create_term(
     return FileResponse(new_doc.path)
 
 
+@lending_router.post("/terms/upload/")
+async def post_import_term(
+    data: Annotated[UploadSignedContractSchema, Form()],
+    file: UploadFile,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "edit"})
+    ),
+):
+    """Upload new term"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    serializer = await document_service.upload_contract(
+        file, "Termo de Responsabilidade", data, db_session, authenticated_user
+    )
+
+    db_session.close()
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
+
+
 @lending_router.post("/terms/revoke/create/", response_class=FileResponse)
 def post_create_revoke_term(
     new_lending_doc: Annotated[NewRevokeContractDocSchema, Form()],
@@ -317,7 +368,7 @@ def post_create_revoke_term(
 
 @lending_router.post("/terms/revoke/upload/")
 async def post_revoke_term(
-    data: Annotated[UploadSignedRevokeContractSchema, Form()],
+    data: Annotated[UploadSignedContractSchema, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -336,32 +387,6 @@ async def post_revoke_term(
         data,
         db_session,
         authenticated_user,
-    )
-
-    db_session.close()
-    return JSONResponse(
-        content=serializer.model_dump(by_alias=True),
-        status_code=status.HTTP_200_OK,
-    )
-
-
-@lending_router.post("/documents/upload/")
-async def post_import_contract(
-    data: Annotated[UploadSignedContractSchema, Form()],
-    file: UploadFile,
-    db_session: Session = Depends(get_db_session),
-    authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "document", "action": "edit"})
-    ),
-):
-    """Upload new contract"""
-    if not authenticated_user:
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
-
-    serializer = await document_service.upload_contract(
-        file, data, db_session, authenticated_user
     )
 
     db_session.close()

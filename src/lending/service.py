@@ -37,7 +37,6 @@ from src.lending.schemas import (
     NewLendingTermContextSchema,
     NewRevokeContractDocSchema,
     UploadSignedContractSchema,
-    UploadSignedRevokeContractSchema,
     WitnessContextSchema,
     WitnessSerializerSchema,
     WorkloadSerializerSchema,
@@ -1034,14 +1033,19 @@ class DocumentService:
     async def upload_contract(
         self,
         contract: UploadFile,
+        type_doc: str,
         data: UploadSignedContractSchema,
         db_session: Session,
         authenticated_user: UserModel,
     ) -> DocumentSerializerSchema:
         """Upload contract"""
 
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
         lending = self.__get_lending_or_404(data.lending_id, db_session)
-        document = self.__get_document_or_404(data.document_id, db_session)
 
         code = lending.number
 
@@ -1056,34 +1060,33 @@ class DocumentService:
             file_name, "lending", contract.file.read(), UPLOAD_DIR
         )
 
-        document.path = file_path
-        document.file_name = file_name
+        new_doc = DocumentModel(path=file_path, file_name=file_name)
+        new_doc.doc_type = doc_type
 
-        db_session.add(document)
+        db_session.add(new_doc)
         db_session.commit()
 
         lending.signed_date = date.today()
-
         db_session.add(lending)
         db_session.commit()
 
         service_log.set_log(
             "lending",
             "document",
-            "Importação de Contrato de Comodato",
-            document.id,
+            f"Importação de Contrato {type_doc}",
+            new_doc.id,
             authenticated_user,
             db_session,
         )
-        logger.info("Upload Document signed. %s", str(document))
+        logger.info("Upload Document signed. %s", str(new_doc))
 
-        return self.serialize_document(document)
+        return self.serialize_document(new_doc)
 
     async def upload_revoke_contract(
         self,
         contract: UploadFile,
         type_doc: str,
-        data: UploadSignedRevokeContractSchema,
+        data: UploadSignedContractSchema,
         db_session: Session,
         authenticated_user: UserModel,
     ) -> DocumentSerializerSchema:

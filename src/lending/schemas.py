@@ -212,13 +212,6 @@ class UploadSignedContractSchema(BaseSchema):
     """Schema for upload contract signed"""
 
     lending_id: int = Field(alias="lendingId")
-    document_id: int = Field(alias="documentId")
-
-
-class UploadSignedRevokeContractSchema(BaseSchema):
-    """Schema for upload contract signed"""
-
-    lending_id: int = Field(alias="lendingId")
 
 
 class CreateWitnessSchema(BaseSchema):
