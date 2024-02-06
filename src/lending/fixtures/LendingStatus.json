@@ -1,0 +1,22 @@
+[
+    {
+        "table": "lending_status",
+        "id": 1,
+        "name": "Arquivo pendente"
+    },
+    {
+        "table": "lending_status",
+        "id": 2,
+        "name": "Ativo"
+    },
+    {
+        "table": "lending_status",
+        "id": 2,
+        "name": "Arquivo de distrato pendente"
+    },
+    {
+        "table": "lending_status",
+        "id": 2,
+        "name": "Inativo"
+    }
+]

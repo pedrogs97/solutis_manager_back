@@ -1,4 +1,5 @@
 """Lending Filters"""
+
 from datetime import date
 from typing import List, Optional
 
@@ -10,6 +11,7 @@ from src.lending.models import (
     DocumentModel,
     DocumentTypeModel,
     LendingModel,
+    LendingStatusModel,
     LendingTypeModel,
     WitnessModel,
     WorkloadModel,
@@ -53,7 +55,7 @@ class WorkloadFilter(Filter):
 
 
 class LendingTypeFilter(Filter):
-    """LendingType filters"""
+    """Lending type filters"""
 
     name: Optional[str] = None
 
@@ -61,6 +63,17 @@ class LendingTypeFilter(Filter):
         """Filter constants"""
 
         model = LendingTypeModel
+
+
+class LendingStatusFilter(Filter):
+    """Lending status filters"""
+
+    name: Optional[str] = None
+
+    class Constants(Filter.Constants):
+        """Filter constants"""
+
+        model = LendingStatusModel
 
 
 class LendingFilter(Filter):
@@ -88,6 +101,9 @@ class LendingFilter(Filter):
     )
     type: Optional[LendingTypeFilter] = FilterDepends(
         with_prefix("type", LendingTypeFilter)
+    )
+    status: Optional[LendingStatusFilter] = FilterDepends(
+        with_prefix("status", LendingStatusFilter)
     )
     order_by: List[str] = ["number"]
     search: Optional[str] = None

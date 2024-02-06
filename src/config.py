@@ -1,4 +1,5 @@
 """Global configs and constants"""
+
 import os
 from datetime import datetime
 
@@ -100,7 +101,7 @@ PERMISSIONS = {
         "models": [
             {"name": "employee", "label": "Colaboradores"},
             {"name": "nationality", "label": "Nacionalidades"},
-            {"name": "matrial_status", "label": "Estado Civil"},
+            {"name": "marital_status", "label": "Estado Civil"},
             {"name": "gender", "label": "Generos"},
             {"name": "role", "label": "Cargos"},
         ],

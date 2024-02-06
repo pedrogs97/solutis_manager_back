@@ -1,4 +1,5 @@
 """Lending schemas"""
+
 from datetime import date
 from typing import List, Optional
 
@@ -68,6 +69,7 @@ class LendingSerializerSchema(BaseSchema):
     witnesses: List[WitnessSerializerSchema]
     cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
     type: str
+    status: str
     manager: str
     observations: Optional[str]
     signed_date: Optional[str] = Field(serialization_alias="signedDate")
@@ -83,7 +85,6 @@ class NewLendingSchema(BaseSchema):
 
     employee_id: int = Field(alias="employeeId")
     asset_id: int = Field(alias="assetId")
-    document_id: Optional[int] = Field(alias="documentId", default=None)
     workload_id: int = Field(alias="workloadId")
     witnesses_id: List[int] = Field(alias="witnessesId")
     cost_center_id: int = Field(alias="costCenterId")
@@ -101,7 +102,6 @@ class NewLendingSchema(BaseSchema):
 class NewLendingDocSchema(BaseSchema):
     """New contract info schema"""
 
-    number: str
     employee_id: int = Field(alias="employeeId")
     lending_id: int = Field(alias="lendingId")
     legal_person: bool = Field(alias="legalPerson", default=False)

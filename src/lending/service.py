@@ -20,6 +20,7 @@ from src.lending.models import (
     DocumentModel,
     DocumentTypeModel,
     LendingModel,
+    LendingStatusModel,
     LendingTypeModel,
     WitnessModel,
     WorkloadModel,
@@ -164,6 +165,7 @@ class LendingService:
             ),
             glpi_number=lending.glpi_number,
             type=lending.type.name,
+            status=lending.status.name if lending.status else "",
             goal=lending.goal,
             business_executive=lending.business_executive,
             project=lending.project,
@@ -200,21 +202,6 @@ class LendingService:
             if not asset:
                 errors.append(
                     {"field": "assetId", "error": f"Ativo não existe. {asset}"}
-                )
-
-        document = None
-        if data.document_id:
-            document = (
-                db_session.query(DocumentModel)
-                .filter(DocumentModel.id == data.document_id)
-                .first()
-            )
-            if not document:
-                errors.append(
-                    {
-                        "field": "documentId",
-                        "error": f"Documento não existe. {document}",
-                    }
                 )
 
         if data.workload_id:
@@ -301,7 +288,6 @@ class LendingService:
         return (
             employee,
             asset,
-            document,
             workload,
             cost_center,
             witnesses,
@@ -319,7 +305,6 @@ class LendingService:
         (
             employee,
             asset,
-            document,
             workload,
             cost_center,
             witnesses,
@@ -339,7 +324,6 @@ class LendingService:
 
         new_lending_db.employee = employee
         new_lending_db.asset = asset
-        new_lending_db.document = document
         new_lending_db.workload = workload
         new_lending_db.cost_center = cost_center
         new_lending_db.type = lending_type
@@ -384,6 +368,7 @@ class LendingService:
             .outerjoin(WorkloadModel)
             .outerjoin(CostCenterModel)
             .outerjoin(LendingTypeModel)
+            .outerjoin(LendingStatusModel)
         )
 
         params = Params(page=page, size=size)

@@ -1,4 +1,5 @@
 """Lending models"""
+
 from typing import List
 
 from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table
@@ -111,6 +112,26 @@ class LendingTypeModel(Base):
         return f"{self.name}"
 
 
+class LendingStatusModel(Base):
+    """
+    Lending status model
+
+    * Arquivo pendente
+    * Ativo
+    * Arquivo de distrato pendente
+    * Inativo
+    """
+
+    __tablename__ = "lending_status"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    name = Column("name", String(length=40), nullable=False)
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.name}"
+
+
 class LendingModel(Base):
     """Lending model"""
 
@@ -133,6 +154,9 @@ class LendingModel(Base):
     type_id = Column(
         "type_id", ForeignKey("lending_type.id"), nullable=False, default=1
     )
+
+    status: Mapped[LendingStatusModel] = relationship()
+    status_id = Column("status_id", ForeignKey("lending_status.id"), nullable=True)
 
     witnesses: Mapped[List[WitnessModel]] = relationship(
         secondary=lending_witnesses,

@@ -1,4 +1,5 @@
 """Lending router"""
+
 from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
@@ -241,7 +242,7 @@ def post_create_revoke_contract(
     return FileResponse(new_doc.path)
 
 
-@lending_router.post("/contracts/revoke/")
+@lending_router.post("/contracts/revoke/upload/")
 async def post_revoke_contract(
     data: Annotated[UploadSignedRevokeContractSchema, Form()],
     file: UploadFile,
@@ -314,7 +315,7 @@ def post_create_revoke_term(
     return FileResponse(new_doc.path)
 
 
-@lending_router.post("/terms/revoke/")
+@lending_router.post("/terms/revoke/upload/")
 async def post_revoke_term(
     data: Annotated[UploadSignedRevokeContractSchema, Form()],
     file: UploadFile,
