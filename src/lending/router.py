@@ -434,7 +434,7 @@ def get_list_documents_route(
     return documents
 
 
-@lending_router.post("/documents/download/{document_id}/", response_class=FileResponse)
+@lending_router.get("/documents/download/{document_id}/", response_class=FileResponse)
 def get_download_document(
     document_id: int,
     db_session: Session = Depends(get_db_session),
