@@ -128,6 +128,10 @@ class AssetShortSerializerSchema(BaseSchema):
         serialization_alias="registerNumber",
         default=None,
     )
+    asset_type: Optional[str] = Field(
+        serialization_alias="assetType",
+        default=None,
+    )
 
 
 class AssetSerializerSchema(BaseSchema):

@@ -144,10 +144,16 @@ class LendingService:
         for witness in lending.witnesses:
             witnesses_serialzier.append(self.serialize_witness(witness))
 
+        asset_short = AssetShortSerializerSchema(
+            asset_type=lending.asset.type.name,
+            description=lending.asset.description,
+            register_number=lending.asset.register_number,
+        )
+
         return LendingSerializerSchema(
             id=lending.id,
             employee=self.serialize_employee(lending.employee),
-            asset=AssetShortSerializerSchema(**lending.asset.__dict__),
+            asset=asset_short,
             document=lending.document.id if lending.document else None,
             workload=WorkloadSerializerSchema(**lending.workload.__dict__),
             witnesses=witnesses_serialzier,
