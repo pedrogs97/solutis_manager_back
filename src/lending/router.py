@@ -27,6 +27,7 @@ from src.lending.schemas import (
     NewLendingDocSchema,
     NewLendingSchema,
     NewRevokeContractDocSchema,
+    UpdateLendingSchema,
 )
 from src.lending.service import DocumentService, LendingService
 
@@ -133,6 +134,32 @@ def get_lending_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     serializer = lending_service.get_lending(lending_id, db_session)
+    db_session.close()
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@lending_router.patch("/{lending_id}/")
+def patch_lending_route(
+    lending_id: int,
+    data: UpdateLendingSchema,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "lending", "action": "view"})
+    ),
+):
+    """
+    Update lending information for a specific lending ID.
+    """
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer = lending_service.update_lending(
+        lending_id, data, db_session, authenticated_user
+    )
     db_session.close()
     return JSONResponse(
         content=serializer.model_dump(by_alias=True),

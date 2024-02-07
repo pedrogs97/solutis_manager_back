@@ -1,4 +1,5 @@
 """People filters"""
+
 from datetime import date
 from typing import List, Optional
 
@@ -98,31 +99,18 @@ class EmployeeFilter(Filter):
     """Employee filters"""
 
     code__ilike: Optional[str] = None
-    code__like: Optional[str] = None
-    status: Optional[str] = None
     status__ilike: Optional[str] = None
-    status__like: Optional[str] = None
     full_name__ilike: Optional[str] = None
-    full_name__like: Optional[str] = None
     taxpayer_identification__ilike: Optional[str] = None
-    taxpayer_identification__like: Optional[str] = None
     national_identification__ilike: Optional[str] = None
-    national_identification__like: Optional[str] = None
     cell_phone__ilike: Optional[str] = None
-    cell_phone__like: Optional[str] = None
     email__ilike: Optional[str] = None
-    email__like: Optional[str] = None
     manager__ilike: Optional[str] = None
-    manager__like: Optional[str] = None
     registration__ilike: Optional[str] = None
-    registration__like: Optional[str] = None
     legal_person: Optional[bool] = None
     employer_number__ilike: Optional[str] = None
-    employer_number__like: Optional[str] = None
     employer_address__ilike: Optional[str] = None
-    employer_address__like: Optional[str] = None
     employer_name__ilike: Optional[str] = None
-    employer_name__like: Optional[str] = None
     birthday__gte: Optional[date] = None
     birthday__lte: Optional[date] = None
     admission_date__gte: Optional[date] = None
@@ -151,4 +139,5 @@ class EmployeeFilter(Filter):
             "full_name",
             "taxpayer_identification",
             "registration",
+            "email",
         ]

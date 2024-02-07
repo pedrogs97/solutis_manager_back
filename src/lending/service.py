@@ -36,6 +36,7 @@ from src.lending.schemas import (
     NewLendingSchema,
     NewLendingTermContextSchema,
     NewRevokeContractDocSchema,
+    UpdateLendingSchema,
     WitnessContextSchema,
     WitnessSerializerSchema,
     WorkloadSerializerSchema,
@@ -337,13 +338,13 @@ class LendingService:
 
         service_log.set_log(
             "lending",
-            "asset",
+            "lending",
             "Criação de Contrato de Comodato",
             new_lending_db.id,
             authenticated_user,
             db_session,
         )
-        logger.info("New Asset. %s", str(new_lending_db))
+        logger.info("New Lending. %s", str(new_lending_db))
 
         return self.serialize_lending(new_lending_db)
 
@@ -352,6 +353,33 @@ class LendingService:
     ) -> LendingSerializerSchema:
         """Get a lending"""
         lending = self.__get_lending_or_404(lending_id, db_session)
+        return self.serialize_lending(lending)
+
+    def update_lending(
+        self,
+        lending_id: int,
+        data: UpdateLendingSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> LendingSerializerSchema:
+        """Update a lending"""
+        lending = self.__get_lending_or_404(lending_id, db_session)
+
+        lending.observations = data.observations
+        db_session.add(lending)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "lending",
+            f"Atualização de {lending.type.name}",
+            lending.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Update Lending. %s", str(lending))
+
         return self.serialize_lending(lending)
 
     def get_lendings(

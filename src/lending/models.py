@@ -182,4 +182,4 @@ class LendingModel(Base):
 
     def __str__(self) -> str:
         """Returns model as string"""
-        return f"{self.id} - {self.number}"
+        return f"{self.id} - {self.number} ({self.type.name})"

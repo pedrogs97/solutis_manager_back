@@ -80,6 +80,12 @@ class LendingSerializerSchema(BaseSchema):
     location: str
 
 
+class UpdateLendingSchema(BaseSchema):
+    """Update lending"""
+
+    observations: Optional[str]
+
+
 class NewLendingSchema(BaseSchema):
     """New lending schema"""
 
