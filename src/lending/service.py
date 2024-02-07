@@ -553,6 +553,12 @@ class DocumentService:
             .first()
         )
 
+        lending_pending = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Arquivo pendente")
+            .first()
+        )
+
         current_lending = (
             db_session.query(LendingModel)
             .filter(LendingModel.id == new_lending_doc.lending_id)
@@ -691,6 +697,7 @@ class DocumentService:
 
         current_lending.document = new_doc
         current_lending.number = new_code
+        current_lending.status = lending_pending
 
         db_session.add(current_lending)
         db_session.commit()
@@ -719,6 +726,12 @@ class DocumentService:
         doc_type = (
             db_session.query(DocumentTypeModel)
             .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        lending_pending = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Arquivo de distrato pendente")
             .first()
         )
 
@@ -860,8 +873,7 @@ class DocumentService:
 
         current_lending.document = new_doc
         current_lending.number = new_code
-        current_lending.witnesses.append(witness1)
-        current_lending.witnesses.append(witness2)
+        current_lending.status = lending_pending
 
         db_session.add(current_lending)
         db_session.commit()
@@ -890,6 +902,12 @@ class DocumentService:
         doc_type = (
             db_session.query(DocumentTypeModel)
             .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        lending_pending = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Arquivo pendente")
             .first()
         )
 
@@ -954,6 +972,7 @@ class DocumentService:
 
         current_lending.document = new_doc
         current_lending.number = new_code
+        current_lending.status = lending_pending
 
         db_session.add(current_lending)
         db_session.commit()
@@ -982,6 +1001,12 @@ class DocumentService:
         doc_type = (
             db_session.query(DocumentTypeModel)
             .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        lending_pending = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Arquivo de distrato pendente")
             .first()
         )
 
@@ -1046,6 +1071,7 @@ class DocumentService:
 
         current_lending.document = new_doc
         current_lending.number = new_code
+        current_lending.status = lending_pending
 
         db_session.add(current_lending)
         db_session.commit()
@@ -1078,6 +1104,13 @@ class DocumentService:
             .filter(DocumentTypeModel.name == type_doc)
             .first()
         )
+
+        lending_signed = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Ativo")
+            .first()
+        )
+
         lending = self.__get_lending_or_404(lendingId, db_session)
 
         code = lending.number
@@ -1100,6 +1133,7 @@ class DocumentService:
         db_session.commit()
 
         lending.signed_date = date.today()
+        lending.status = lending_signed
         db_session.add(lending)
         db_session.commit()
 
@@ -1130,6 +1164,13 @@ class DocumentService:
             .filter(DocumentTypeModel.name == type_doc)
             .first()
         )
+
+        lending_signed = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Inativo")
+            .first()
+        )
+
         lending = self.__get_lending_or_404(lendingId, db_session)
 
         code = lending.number
@@ -1149,6 +1190,11 @@ class DocumentService:
         new_doc.doc_type = doc_type
 
         db_session.add(new_doc)
+        db_session.commit()
+
+        lending.revoke_signed_date = date.today()
+        lending.status = lending_signed
+        db_session.add(lending)
         db_session.commit()
 
         service_log.set_log(
@@ -1187,9 +1233,11 @@ class DocumentService:
         )
         return paginated
 
-    def get_document(self, document_id: int, db_session: Session) -> str:
+    def get_document(
+        self, document_id: int, db_session: Session
+    ) -> DocumentSerializerSchema:
         """Get a document"""
 
         document = self.__get_document_or_404(document_id, db_session)
 
-        return document.path
+        return self.serialize_document(document)

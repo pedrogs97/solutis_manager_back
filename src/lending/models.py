@@ -177,6 +177,7 @@ class LendingModel(Base):
     location = Column("location", String(length=100), nullable=True)
     observations = Column("observations", String(length=255), nullable=True)
     signed_date = Column("signed_date", Date, nullable=True)
+    revoke_signed_date = Column("revoke_signed_date", Date, nullable=True)
     glpi_number = Column("glpi_number", String(length=25), nullable=True)
 
     def __str__(self) -> str:

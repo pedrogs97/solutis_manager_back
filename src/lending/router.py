@@ -448,10 +448,13 @@ def get_download_document(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    document_path = document_service.get_document(
+    document = document_service.get_document(
         document_id,
         db_session,
     )
 
     db_session.close()
-    return FileResponse(document_path)
+    return FileResponse(
+        document.path,
+        headers={"Content-Disposition": f'attachment; filename="{document.file_name}"'},
+    )
