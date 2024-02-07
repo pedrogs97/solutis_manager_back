@@ -73,6 +73,7 @@ class LendingSerializerSchema(BaseSchema):
     manager: str
     observations: Optional[str]
     signed_date: Optional[str] = Field(serialization_alias="signedDate")
+    revoke_signed_date: Optional[str] = Field(serialization_alias="revokeSignedDate")
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
     goal: Optional[str] = Field(alias="goal", default=None)
     project: Optional[str] = None

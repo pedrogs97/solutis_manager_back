@@ -167,6 +167,11 @@ class LendingService:
                 if lending.signed_date
                 else None
             ),
+            revoke_signed_date=(
+                lending.revoke_signed_date.strftime(DEFAULT_DATE_FORMAT)
+                if lending.revoke_signed_date
+                else None
+            ),
             glpi_number=lending.glpi_number,
             type=lending.type.name,
             status=lending.status.name if lending.status else "",
