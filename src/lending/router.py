@@ -215,7 +215,9 @@ def post_create_contract(
     )
 
     db_session.close()
-    return FileResponse(new_doc.path)
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(new_doc.path, filename=new_doc.file_name, headers=headers)
 
 
 @lending_router.post("/contracts/upload/")
@@ -263,7 +265,9 @@ def post_create_revoke_contract(
     )
 
     db_session.close()
-    return FileResponse(new_doc.path)
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(new_doc.path, filename=new_doc.file_name, headers=headers)
 
 
 @lending_router.post("/contracts/revoke/upload/")
@@ -311,7 +315,9 @@ def post_create_term(
     )
 
     db_session.close()
-    return FileResponse(new_doc.path)
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(new_doc.path, filename=new_doc.file_name, headers=headers)
 
 
 @lending_router.post("/terms/upload/")
@@ -362,7 +368,9 @@ def post_create_revoke_term(
     )
 
     db_session.close()
-    return FileResponse(new_doc.path)
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(new_doc.path, filename=new_doc.file_name, headers=headers)
 
 
 @lending_router.post("/terms/revoke/upload/")
@@ -454,7 +462,6 @@ def get_download_document(
     )
 
     db_session.close()
-    return FileResponse(
-        document.path,
-        headers={"Content-Disposition": f'attachment; filename="{document.file_name}"'},
-    )
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(document.path, filename=document.file_name, headers=headers)
