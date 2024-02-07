@@ -432,3 +432,26 @@ def get_list_documents_route(
     documents = document_service.get_documents(db_session, document_filters, page, size)
     db_session.close()
     return documents
+
+
+@lending_router.post("/documents/download/{document_id}/", response_class=FileResponse)
+def get_download_document(
+    document_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "view"})
+    ),
+):
+    """Download a document"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    document_path = document_service.get_document(
+        document_id,
+        db_session,
+    )
+
+    db_session.close()
+    return FileResponse(document_path)

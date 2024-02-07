@@ -145,6 +145,7 @@ class LendingService:
             witnesses_serialzier.append(self.serialize_witness(witness))
 
         asset_short = AssetShortSerializerSchema(
+            id=lending.asset.id,
             asset_type=lending.asset.type.name,
             description=lending.asset.description,
             register_number=lending.asset.register_number,
@@ -1185,3 +1186,10 @@ class DocumentService:
             ],
         )
         return paginated
+
+    def get_document(self, document_id: int, db_session: Session) -> str:
+        """Get a document"""
+
+        document = self.__get_document_or_404(document_id, db_session)
+
+        return document.path
