@@ -75,7 +75,9 @@ class LendingSerializerSchema(BaseSchema):
     revoke_signed_date: Optional[str] = Field(serialization_alias="revokeSignedDate")
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
     project: Optional[str] = None
-    business_executive: str = Field(serialization_alias="businessExecutive")
+    business_executive: Optional[str] = Field(
+        serialization_alias="businessExecutive", default=None
+    )
     location: str
 
 
