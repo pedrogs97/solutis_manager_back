@@ -138,7 +138,9 @@ class AssetService:
             operational_system=asset.operational_system,
             serial_number=asset.serial_number,
             imei=asset.imei,
-            acquisition_date=asset.acquisition_date.isoformat(),
+            acquisition_date=(
+                asset.acquisition_date.isoformat() if asset.acquisition_date else None
+            ),
             value=asset.value,
             ms_office=asset.ms_office,
             line_number=asset.line_number,
@@ -149,9 +151,7 @@ class AssetService:
             quantity=asset.quantity,
             unit=asset.unit,
             by_agile=asset.by_agile,
-            invoice_asset_number=(
-                asset.invoice.invoice.number if asset.invoice else None
-            ),
+            invoice_number=(asset.invoice.number if asset.invoice else None),
         )
 
     def serialize_asset_type(
@@ -329,7 +329,7 @@ class AssetService:
 
         asset_list = asset_filters.filter(
             db_session.query(AssetModel)
-            .join(AssetTypeModel)
+            .outerjoin(AssetTypeModel)
             .outerjoin(AssetClothingSizeModel)
             .outerjoin(AssetStatusModel)
         )

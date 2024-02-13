@@ -1,4 +1,5 @@
 """Scheduler Service"""
+
 import logging
 from time import time
 from typing import List
@@ -39,13 +40,7 @@ from src.datasync.service import (
     totvs_to_nationality_schema,
     totvs_to_role_schema,
     update_asset_totvs,
-    update_asset_type_totvs,
-    update_cost_center_totvs,
     update_employee_totvs,
-    update_gender_totvs,
-    update_marital_status_totvs,
-    update_nationality_totvs,
-    update_role_totvs,
     verify_changes,
 )
 
@@ -95,7 +90,8 @@ class SchedulerService:
     p.ATIVO, p.DATAAQUISICAO, p.PATRIMONIO, p.QUANTIDADE, p.UNIDADE, p.OBSERVACOES,
     p.CODIGOBARRA, c.NOME AS CENTROCUSTO, p.VALORBASE, p.VRDEPACUCORRIGIDA, pc.SERIE,
     pc.IMEI, pc.ACESSORIOS, pc.OPERADORA, pc.SISTEMAOPERACIONAL, pc.PACOTEOFFICE,
-    pc.PADRAOEQUIP, ga.DATAEXPIRACAO AS GARANTIA, pc.MANUT5 AS LINHA, f.NOMEFANTASIA as FORNECEDOR
+    pc.PADRAOEQUIP, ga.DATAEXPIRACAO AS GARANTIA, pc.MANUT5 AS LINHA,
+    f.NOMEFANTASIA as FORNECEDOR, p.NUMERODOCUMENTO as NOTA, d.SALDORESIDUAL as DEPRECIACAO
     FROM CorporeRM_SI.dbo.IPATRIMONIO AS p
     LEFT JOIN IGRUPOPATRIMONIO AS g
     ON g.IDGRUPOPATRIMONIO = p.IDGRUPOPATRIMONIO
@@ -107,6 +103,12 @@ class SchedulerService:
     ON ga.IDPATRIMONIO = p.IDPATRIMONIO
     LEFT JOIN FCFO as f
     ON f.CODCFO = p.CODFORNECEDOR
+    LEFT JOIN
+    (SELECT TOP 1 IDPATRIMONIO, SALDORESIDUAL
+        FROM ISALDOCALCULOPATRIMONIOMOEDA
+        WHERE IDPATRIMONIO IN (SELECT IDPATRIMONIO FROM ISALDOCALCULOPATRIMONIOMOEDA WHERE RECMODIFIEDON = (SELECT MAX(RECMODIFIEDON) FROM ISALDOCALCULOPATRIMONIOMOEDA))
+        ORDER BY IDPATRIMONIO DESC) as d
+    ON d.IDPATRIMONIO = p.IDPATRIMONIO
     WHERE (p.CODCOLIGADA = 1)"""
 
     SQL_IGRUPOPATRIMONIO = """SELECT IDGRUPOPATRIMONIO, CODGRUPOPATRIMONIO, DESCRICAO
@@ -193,7 +195,6 @@ class SchedulerService:
             ):
                 new_changes.append(marital_status_totvs)
                 insert(marital_status_totvs, EmployeeMaritalStatusTOTVSModel)
-        update_marital_status_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -218,7 +219,6 @@ class SchedulerService:
             ):
                 new_changes.append(gender_totvs)
                 insert(gender_totvs, EmployeeGenderTOTVSModel)
-        update_gender_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -245,7 +245,6 @@ class SchedulerService:
             ):
                 new_changes.append(nationality_totvs)
                 insert(nationality_totvs, EmployeeNationalityTOTVSModel)
-        update_nationality_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -270,7 +269,6 @@ class SchedulerService:
             ):
                 new_changes.append(cost_center_totvs)
                 insert(cost_center_totvs, CostCenterTOTVSModel)
-        update_cost_center_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -295,7 +293,6 @@ class SchedulerService:
             ):
                 new_changes.append(asset_type_totvs)
                 insert(asset_type_totvs, AssetTypeTOTVSModel)
-        update_asset_type_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))
@@ -343,7 +340,6 @@ class SchedulerService:
             ):
                 new_changes.append(role_totvs)
                 insert(role_totvs, EmployeeRoleTOTVSModel)
-        update_role_totvs(new_changes)
         end = time()
         elapsed_time = end - start
         logger.info(self.TIME_INFO, str(elapsed_time))

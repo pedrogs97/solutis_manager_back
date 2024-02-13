@@ -1,5 +1,6 @@
 """Lenging service"""
 
+import locale
 import logging
 import os
 from datetime import date
@@ -15,6 +16,7 @@ from src.asset.models import AssetModel
 from src.asset.schemas import AssetShortSerializerSchema
 from src.auth.models import UserModel
 from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
+from src.datasync.models import CostCenterTOTVSModel
 from src.lending.filters import DocumentFilter, LendingFilter, WorkloadFilter
 from src.lending.models import (
     DocumentModel,
@@ -42,7 +44,7 @@ from src.lending.schemas import (
     WorkloadSerializerSchema,
 )
 from src.log.services import LogService
-from src.people.models import CostCenterModel, EmployeeModel
+from src.people.models import EmployeeModel
 from src.people.schemas import (
     EmployeeEducationalLevelSerializerSchema,
     EmployeeGenderSerializerSchema,
@@ -62,6 +64,7 @@ from src.utils import (
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
+locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
 
 class LendingService:
@@ -133,9 +136,6 @@ class LendingService:
         return WitnessSerializerSchema(
             id=witness.id,
             employee=employee_serializer,
-            signed=(
-                witness.signed.strftime(DEFAULT_DATE_FORMAT) if witness.signed else None
-            ),
         )
 
     def serialize_lending(self, lending: LendingModel) -> LendingSerializerSchema:
@@ -175,7 +175,6 @@ class LendingService:
             glpi_number=lending.glpi_number,
             type=lending.type.name,
             status=lending.status.name if lending.status else "",
-            goal=lending.goal,
             business_executive=lending.business_executive,
             project=lending.project,
             location=lending.location,
@@ -226,8 +225,8 @@ class LendingService:
 
         if data.cost_center_id:
             cost_center = (
-                db_session.query(CostCenterModel)
-                .filter(CostCenterModel.id == data.cost_center_id)
+                db_session.query(CostCenterTOTVSModel)
+                .filter(CostCenterTOTVSModel.id == data.cost_center_id)
                 .first()
             )
             if not cost_center:
@@ -272,7 +271,7 @@ class LendingService:
                     if not employee_obj:
                         ids_not_found.append(witness_obj)
                     else:
-                        new_witness = WitnessModel(employee=employee)
+                        new_witness = WitnessModel(employee=employee_obj)
                         db_session.add(new_witness)
                         db_session.commit()
                         db_session.flush()
@@ -324,7 +323,6 @@ class LendingService:
             manager=new_lending.manager,
             observations=new_lending.observations,
             glpi_number=new_lending.glpi_number,
-            goal=new_lending.goal,
             business_executive=new_lending.business_executive,
             project=new_lending.project,
             location=new_lending.location,
@@ -401,7 +399,7 @@ class LendingService:
             .outerjoin(EmployeeModel)
             .outerjoin(AssetModel)
             .outerjoin(WorkloadModel)
-            .outerjoin(CostCenterModel)
+            .outerjoin(CostCenterTOTVSModel)
             .outerjoin(LendingTypeModel)
             .outerjoin(LendingStatusModel)
         )
@@ -563,6 +561,161 @@ class DocumentService:
         str_code = str(new_code)
         return asset.type.acronym + str_code.zfill(6 - len(str_code))
 
+    def __get_term_detail(self, asset: AssetModel, cost_center: str) -> List[dict]:
+        """Get asset term detail"""
+        detail = []
+
+        if not asset.type:
+            return detail
+
+        if asset.type.id == 4:
+            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append({"key": "Marca", "value": asset.brand})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "C.C.", "value": cost_center})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        if asset.type.id == 5:
+            detail.append({"key": "IMEI", "value": asset.imei})
+            detail.append({"key": "Operadora", "value": asset.operator})
+            detail.append({"key": "Número Linha", "value": asset.line_number})
+            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append({"key": "Acessórios", "value": asset.accessories})
+            detail.append({"key": "Anotações", "value": asset.observations})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        if asset.type.id == 7:
+            detail.append(
+                {"key": "Descrição Kit Ferramentas", "value": asset.observations}
+            )
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        if asset.type.id == 10:
+            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "C.C.", "value": cost_center})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        if asset.type.id == 11:
+            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append({"key": "Marca", "value": asset.brand})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "C.C.", "value": cost_center})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        if asset.type.id == 12:
+            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append({"key": "Marca", "value": asset.brand})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "C.C.", "value": cost_center})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        if asset.type.id == 13:
+            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append({"key": "C.C.", "value": cost_center})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        return detail
+
+    def __get_contract_detail(self, asset: AssetModel) -> List[dict]:
+        """Get asset contract detail"""
+        detail = []
+
+        if not asset.type:
+            return detail
+
+        if asset.type.id in (1, 2, 14, 15):
+            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "Descrição", "value": asset.description})
+            detail.append({"key": "Acessórios", "value": asset.accessories})
+            detail.append(
+                {"key": "Pacote Office", "value": "SIM" if asset.ms_office else "NÃO"}
+            )
+            detail.append({"key": "Padrão Equipamento", "value": asset.pattern})
+            detail.append(
+                {"key": "Sistema Operacional", "value": asset.operational_system}
+            )
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        if asset.type.id == 3:
+            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "Descrição", "value": asset.description})
+            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        if asset.type.id == 8:
+            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "Descrição", "value": asset.description})
+            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        if asset.type.id == 9:
+            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "Descrição", "value": asset.description})
+            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                }
+            )
+
+        return detail
+
     def serialize_document(self, doc: DocumentModel) -> DocumentSerializerSchema:
         """Serialize document"""
         return DocumentSerializerSchema(
@@ -615,6 +768,8 @@ class DocumentService:
 
         witness2 = current_lending.witnesses[1]
 
+        detail = self.__get_contract_detail(asset)
+
         if new_lending_doc.legal_person:
             contract_path = create_lending_contract_pj(
                 NewLendingPjContextSchema(
@@ -635,14 +790,7 @@ class DocumentService:
                     manager=current_lending.manager,
                     business_executive=current_lending.business_executive,
                     workload=workload.name,
-                    register_number=asset.register_number,
-                    serial_number=asset.serial_number,
-                    description=asset.description,
-                    accessories=asset.accessories,
-                    ms_office="SIM" if asset.ms_office else "Não",
-                    pattern=asset.pattern,
-                    operational_system=asset.operational_system,
-                    value=str(asset.value),
+                    detail=detail,
                     date=date.today().strftime(DEFAULT_DATE_FORMAT),
                     witnesses=[
                         WitnessContextSchema(
@@ -657,9 +805,11 @@ class DocumentService:
                     cnpj=employee.employer_number,
                     company_address=employee.employer_address,
                     company=employee.employer_name,
-                    goal=current_lending.goal,
                     project=current_lending.project,
                     location=current_lending.location,
+                    contract_date=employee.employer_contract_date.strftime(
+                        DEFAULT_DATE_FORMAT
+                    ),
                 )
             )
         else:
@@ -682,14 +832,7 @@ class DocumentService:
                     manager=current_lending.manager,
                     business_executive=current_lending.business_executive,
                     workload=workload.name,
-                    register_number=asset.register_number,
-                    serial_number=asset.serial_number,
-                    description=asset.description,
-                    accessories=asset.accessories,
-                    ms_office="SIM" if asset.ms_office else "Não",
-                    pattern=asset.pattern,
-                    operational_system=asset.operational_system,
-                    value=str(asset.value),
+                    detail=detail,
                     date=date.today().strftime(DEFAULT_DATE_FORMAT),
                     witnesses=[
                         WitnessContextSchema(
@@ -704,7 +847,6 @@ class DocumentService:
                     cnpj=employee.employer_number,
                     company_address=employee.employer_address,
                     company=employee.employer_name,
-                    goal=current_lending.goal,
                     project=current_lending.project,
                     location=current_lending.location,
                 )
@@ -791,6 +933,8 @@ class DocumentService:
 
         witness2 = current_lending.witnesses[1]
 
+        detail = self.__get_contract_detail(asset)
+
         if revoke_lending_doc.legal_person:
             contract_path = create_revoke_lending_contract_pj(
                 NewLendingPjContextSchema(
@@ -811,14 +955,7 @@ class DocumentService:
                     manager=current_lending.manager,
                     business_executive=current_lending.business_executive,
                     workload=workload.name,
-                    register_number=asset.register_number,
-                    serial_number=asset.serial_number,
-                    description=asset.description,
-                    accessories=asset.accessories,
-                    ms_office="SIM" if asset.ms_office else "Não",
-                    pattern=asset.pattern,
-                    operational_system=asset.operational_system,
-                    value=str(asset.value),
+                    detail=detail,
                     date=date.today().strftime(DEFAULT_DATE_FORMAT),
                     witnesses=[
                         WitnessContextSchema(
@@ -833,8 +970,11 @@ class DocumentService:
                     cnpj=employee.employer_number,
                     company_address=employee.employer_address,
                     company=employee.employer_name,
-                    goal=current_lending.goal,
+                    object=employee.employer_contract_object,
                     project=current_lending.project,
+                    contract_date=employee.employer_contract_date.strftime(
+                        DEFAULT_DATE_FORMAT
+                    ),
                     location=current_lending.location,
                 )
             )
@@ -858,14 +998,7 @@ class DocumentService:
                     manager=current_lending.manager,
                     business_executive=current_lending.business_executive,
                     workload=workload.name,
-                    register_number=asset.register_number,
-                    serial_number=asset.serial_number,
-                    description=asset.description,
-                    accessories=asset.accessories,
-                    ms_office="SIM" if asset.ms_office else "Não",
-                    pattern=asset.pattern,
-                    operational_system=asset.operational_system,
-                    value=str(asset.value),
+                    detail=detail,
                     date=date.today().strftime(DEFAULT_DATE_FORMAT),
                     witnesses=[
                         WitnessContextSchema(
@@ -880,7 +1013,6 @@ class DocumentService:
                     cnpj=employee.employer_number,
                     company_address=employee.employer_address,
                     company=employee.employer_name,
-                    goal=current_lending.goal,
                     project=current_lending.project,
                     location=current_lending.location,
                 )
@@ -961,6 +1093,8 @@ class DocumentService:
 
         employee = current_lending.employee
 
+        detail = self.__get_term_detail(asset, current_lending.cost_center.name)
+
         contract_path = create_lending_term(
             NewLendingTermContextSchema(
                 number=new_code,
@@ -975,10 +1109,7 @@ class DocumentService:
                 role=employee.role.name,
                 cc=current_lending.cost_center.name,
                 manager=current_lending.manager,
-                description=asset.description,
-                size=asset.clothing_size.name if asset.clothing_size else "N/A",
-                quantity=asset.quantity,
-                value=str(asset.value),
+                detail=detail,
                 date=date.today().strftime(DEFAULT_DATE_FORMAT),
                 project=current_lending.project,
                 location=current_lending.location,
@@ -1060,6 +1191,8 @@ class DocumentService:
 
         employee = current_lending.employee
 
+        detail = self.__get_term_detail(asset, current_lending.cost_center.name)
+
         contract_path = create_lending_term(
             NewLendingTermContextSchema(
                 number=new_code,
@@ -1074,10 +1207,7 @@ class DocumentService:
                 role=employee.role.name,
                 cc=current_lending.cost_center.name,
                 manager=current_lending.manager,
-                description=asset.description,
-                size=asset.clothing_size.name if asset.clothing_size else "N/A",
-                quantity=asset.quantity,
-                value=str(asset.value),
+                detail=detail,
                 date=date.today().strftime(DEFAULT_DATE_FORMAT),
                 project=current_lending.project,
                 location=current_lending.location,

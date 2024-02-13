@@ -77,10 +77,9 @@
                     <tbody>
                         <tr>
                             <td colspan="4" style="border: solid 2px #000000;padding-left: 2px;padding-bottom: 3px;padding-top: 2px;">
-                                <div>Descrição: <span style="font-weight: 800;">{{ description }}</span></div>
-                                <div>Tamanho: <span style="font-weight: 800;">{{ size }}</span></div>
-                                <div>Quantidade: <span style="font-weight: 800;">{{ quantity }}</span></div>
-                                <div><span style="font-weight: 800;">Valor: </span><span style="font-weight: 800;">R${{ value }}</span></div>
+                                {% for item in detail %}
+                                <div>{{item.key}}: <span style="font-weight: 800;">{{ item.value }}</span></div>
+                                {% endfor %}
                             </td>
                         </tr>
                     </tbody>

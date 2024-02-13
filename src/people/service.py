@@ -1,4 +1,5 @@
 """People service"""
+
 import logging
 from typing import List, Union
 
@@ -10,7 +11,14 @@ from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
 from src.config import DEFAULT_DATE_FORMAT
-from src.datasync.models import EmployeeEducationalLevelTOTVSModel
+from src.datasync.models import (
+    CostCenterTOTVSModel,
+    EmployeeEducationalLevelTOTVSModel,
+    EmployeeGenderTOTVSModel,
+    EmployeeMaritalStatusTOTVSModel,
+    EmployeeNationalityTOTVSModel,
+    EmployeeRoleTOTVSModel,
+)
 from src.lending.models import LendingModel
 from src.lending.schemas import CostCenterSerializerSchema, LendingSerializerSchema
 from src.lending.service import LendingService
@@ -24,14 +32,7 @@ from src.people.filters import (
     EmployeeNationalityFilter,
     EmployeeRoleFilter,
 )
-from src.people.models import (
-    CostCenterModel,
-    EmployeeGenderModel,
-    EmployeeMaritalStatusModel,
-    EmployeeModel,
-    EmployeeNationalityModel,
-    EmployeeRoleModel,
-)
+from src.people.models import EmployeeModel
 from src.people.schemas import (
     EmployeeEducationalLevelSerializerSchema,
     EmployeeGenderSerializerSchema,
@@ -73,8 +74,8 @@ class EmployeeService:
         errors = []
         if data.role:
             role = (
-                db_session.query(EmployeeRoleModel)
-                .filter(EmployeeRoleModel.id == data.role)
+                db_session.query(EmployeeRoleTOTVSModel)
+                .filter(EmployeeRoleTOTVSModel.id == data.role)
                 .first()
             )
             if not role:
@@ -82,8 +83,8 @@ class EmployeeService:
 
         if data.nationality_id:
             nationality = (
-                db_session.query(EmployeeNationalityModel)
-                .filter(EmployeeNationalityModel.id == data.nationality_id)
+                db_session.query(EmployeeNationalityTOTVSModel)
+                .filter(EmployeeNationalityTOTVSModel.id == data.nationality_id)
                 .first()
             )
             if not nationality:
@@ -93,8 +94,8 @@ class EmployeeService:
 
         if data.marital_status_id:
             marital_status = (
-                db_session.query(EmployeeMaritalStatusModel)
-                .filter(EmployeeMaritalStatusModel.id == data.marital_status_id)
+                db_session.query(EmployeeMaritalStatusTOTVSModel)
+                .filter(EmployeeMaritalStatusTOTVSModel.id == data.marital_status_id)
                 .first()
             )
             if not marital_status:
@@ -104,8 +105,8 @@ class EmployeeService:
 
         if data.gender_id:
             gender = (
-                db_session.query(EmployeeGenderModel)
-                .filter(EmployeeGenderModel.id == data.gender_id)
+                db_session.query(EmployeeGenderTOTVSModel)
+                .filter(EmployeeGenderTOTVSModel.id == data.gender_id)
                 .first()
             )
             if not gender:
@@ -139,9 +140,11 @@ class EmployeeService:
         """Serialize employee"""
         return EmployeeSerializerSchema(
             id=employee.id,
-            role=EmployeeRoleSerializerSchema(**employee.role.__dict__)
-            if employee.role
-            else None,
+            role=(
+                EmployeeRoleSerializerSchema(**employee.role.__dict__)
+                if employee.role
+                else None
+            ),
             nationality=EmployeeNationalitySerializerSchema(
                 **employee.nationality.__dict__
             ),
@@ -149,25 +152,39 @@ class EmployeeService:
                 **employee.marital_status.__dict__
             ),
             gender=EmployeeGenderSerializerSchema(**employee.gender.__dict__),
-            educational_level=EmployeeEducationalLevelSerializerSchema(
-                **employee.educational_level.__dict__
-            )
-            if employee.educational_level
-            else None,
-            status=employee.status,
-            manager=employee.manager,
-            address=employee.address,
-            birthday=employee.birthday.strftime(DEFAULT_DATE_FORMAT),
-            cell_phone=employee.cell_phone,
+            educational_level=(
+                EmployeeEducationalLevelSerializerSchema(
+                    **employee.educational_level.__dict__
+                )
+                if employee.educational_level
+                else None
+            ),
             code=employee.code,
-            email=employee.email,
+            status=employee.status,
             full_name=employee.full_name,
-            legal_person=employee.legal_person,
             national_identification=employee.national_identification,
             taxpayer_identification=employee.taxpayer_identification,
-            admission_date=employee.admission_date.strftime(DEFAULT_DATE_FORMAT)
-            if employee.admission_date
-            else None,
+            address=employee.address,
+            cell_phone=employee.cell_phone,
+            email=employee.email,
+            birthday=employee.birthday.strftime(DEFAULT_DATE_FORMAT),
+            manager=employee.manager,
+            admission_date=(
+                employee.admission_date.strftime(DEFAULT_DATE_FORMAT)
+                if employee.admission_date
+                else None
+            ),
+            registration=employee.registration,
+            legal_person=employee.legal_person,
+            employer_address=employee.employer_address,
+            employer_name=employee.employer_name,
+            employer_number=employee.employer_number,
+            employer_contract_object=employee.employer_contract_object,
+            employer_contract_date=(
+                employee.employer_contract_date.strftime(DEFAULT_DATE_FORMAT)
+                if employee.employer_contract_date
+                else None
+            ),
         )
 
     def create_employee(
@@ -220,6 +237,10 @@ class EmployeeService:
             birthday=data.birthday,
             manager=data.manager,
             legal_person=True,
+            employer_number=data.employer_number,
+            employer_address=data.employer_address,
+            employer_contract_object=data.employer_contract_object,
+            employer_contract_date=data.employer_contract_date,
         )
 
         new_emplyoee.role = role
@@ -293,6 +314,16 @@ class EmployeeService:
             employee.birthday = data.birthday
         if data.manager:
             employee.manager = data.manager
+        if data.employer_number:
+            employee.employer_number = data.employer_number
+        if data.employer_address:
+            employee.employer_address = data.employer_address
+        if data.employer_name:
+            employee.employer_name = data.employer_name
+        if data.employer_contract_object:
+            employee.employer_contract_object = data.employer_contract_object
+        if data.employer_contract_date:
+            employee.employer_contract_date = data.employer_contract_date
 
         db_session.add(employee)
         db_session.commit()
@@ -347,10 +378,11 @@ class EmployeeService:
         """Get employees list"""
         employee_list = employee_filters.filter(
             db_session.query(EmployeeModel)
-            .join(EmployeeRoleModel)
-            .join(EmployeeNationalityModel)
-            .join(EmployeeMaritalStatusModel)
-            .join(EmployeeGenderModel)
+            .outerjoin(EmployeeRoleTOTVSModel)
+            .outerjoin(EmployeeEducationalLevelTOTVSModel)
+            .join(EmployeeNationalityTOTVSModel)
+            .join(EmployeeMaritalStatusTOTVSModel)
+            .join(EmployeeGenderTOTVSModel)
         )
 
         if fields == "":
@@ -384,30 +416,32 @@ class EmpleoyeeGeneralSerivce:
     """Employee general services"""
 
     def serialize_nationality(
-        self, nationality: EmployeeNationalityModel
+        self, nationality: EmployeeNationalityTOTVSModel
     ) -> EmployeeNationalitySerializerSchema:
         """Serialize nationality"""
         return EmployeeNationalitySerializerSchema(**nationality.__dict__)
 
     def serialize_marital_status(
-        self, marital_status: EmployeeMaritalStatusModel
+        self, marital_status: EmployeeMaritalStatusTOTVSModel
     ) -> EmployeeMatrimonialStatusSerializerSchema:
         """Serialize marital status"""
         return EmployeeMatrimonialStatusSerializerSchema(**marital_status.__dict__)
 
     def serialize_cost_center(
-        self, cost_center: CostCenterModel
+        self, cost_center: CostCenterTOTVSModel
     ) -> CostCenterSerializerSchema:
         """Serialize cost center"""
         return CostCenterSerializerSchema(**cost_center.__dict__)
 
     def serialize_gender(
-        self, gender: EmployeeGenderModel
+        self, gender: EmployeeGenderTOTVSModel
     ) -> EmployeeGenderSerializerSchema:
         """Serialize gender"""
         return EmployeeGenderSerializerSchema(**gender.__dict__)
 
-    def serialize_role(self, role: EmployeeRoleModel) -> EmployeeRoleSerializerSchema:
+    def serialize_role(
+        self, role: EmployeeRoleTOTVSModel
+    ) -> EmployeeRoleSerializerSchema:
         """Serialize role"""
         return EmployeeRoleSerializerSchema(**role.__dict__)
 
@@ -426,7 +460,7 @@ class EmpleoyeeGeneralSerivce:
         """Get nationalities list"""
 
         nationalities_list = nationality_filters.filter(
-            db_session.query(EmployeeNationalityModel)
+            db_session.query(EmployeeNationalityTOTVSModel)
         )
 
         if fields == "":
@@ -451,7 +485,7 @@ class EmpleoyeeGeneralSerivce:
         """Get marital status list"""
 
         marital_status_list = marital_status_filter.filter(
-            db_session.query(EmployeeMaritalStatusModel)
+            db_session.query(EmployeeMaritalStatusTOTVSModel)
         )
 
         if fields == "":
@@ -475,7 +509,9 @@ class EmpleoyeeGeneralSerivce:
     ) -> List[CostCenterSerializerSchema]:
         """Get center cost list"""
 
-        center_cost_list = center_cost_filter.filter(db_session.query(CostCenterModel))
+        center_cost_list = center_cost_filter.filter(
+            db_session.query(CostCenterTOTVSModel)
+        )
 
         if fields == "":
             return [
@@ -498,7 +534,9 @@ class EmpleoyeeGeneralSerivce:
     ) -> List[EmployeeGenderSerializerSchema]:
         """Get genders list"""
 
-        genders_list = genders_filters.filter(db_session.query(EmployeeGenderModel))
+        genders_list = genders_filters.filter(
+            db_session.query(EmployeeGenderTOTVSModel)
+        )
 
         if fields == "":
             return [
@@ -522,7 +560,7 @@ class EmpleoyeeGeneralSerivce:
     ) -> List[EmployeeRoleSerializerSchema]:
         """Get roles list"""
 
-        roles_list = roles_filter.filter(db_session.query(EmployeeRoleModel))
+        roles_list = roles_filter.filter(db_session.query(EmployeeRoleTOTVSModel))
 
         if fields == "":
             return [

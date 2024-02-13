@@ -1,4 +1,5 @@
 """People schemas"""
+
 from datetime import date
 from typing import Optional
 
@@ -125,6 +126,14 @@ class NewEmployeeSchema(BaseSchema):
         serialization_alias="employer_address",
         default=None,
     )
+    employer_contract_object: Optional[str] = Field(
+        serialization_alias="employerContractObject",
+        default=None,
+    )
+    employer_contract_date: Optional[str] = Field(
+        serialization_alias="employerContractDate",
+        default=None,
+    )
 
 
 class UpdateEmployeeSchema(BaseSchema):
@@ -189,6 +198,14 @@ class UpdateEmployeeSchema(BaseSchema):
         serialization_alias="employer_name",
         default=None,
     )
+    employer_contract_object: Optional[str] = Field(
+        serialization_alias="employerContractObject",
+        default=None,
+    )
+    employer_contract_date: Optional[str] = Field(
+        serialization_alias="employerContractDate",
+        default=None,
+    )
 
 
 class EmployeeSerializerSchema(BaseSchema):
@@ -227,6 +244,14 @@ class EmployeeSerializerSchema(BaseSchema):
     )
     employer_name: Optional[str] = Field(
         serialization_alias="employerName",
+        default=None,
+    )
+    employer_contract_object: Optional[str] = Field(
+        serialization_alias="employerContractObject",
+        default=None,
+    )
+    employer_contract_date: Optional[str] = Field(
+        serialization_alias="employerContractDate",
         default=None,
     )
 

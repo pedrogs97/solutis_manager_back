@@ -1,8 +1,9 @@
 """Invoice router"""
+
 from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
@@ -16,7 +17,7 @@ from src.config import (
     PAGINATION_NUMBER,
 )
 from src.invoice.filters import InvoiceFilter
-from src.invoice.schemas import NewInvoiceSchema, UploadInvoiceSchema
+from src.invoice.schemas import NewInvoiceSchema
 from src.invoice.service import InvoiceService
 
 invoice_service = InvoiceService()
@@ -24,8 +25,9 @@ invoice_router = APIRouter(prefix="/invoice", tags=["Invoice"])
 
 
 @invoice_router.post("/invoices/")
-def post_create_invoice_route(
-    data: NewInvoiceSchema,
+async def post_create_invoice_route(
+    data: Annotated[NewInvoiceSchema, Form()],
+    invoice_file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "invoice", "model": "invoice", "action": "add"})
@@ -36,7 +38,9 @@ def post_create_invoice_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = invoice_service.create_invoice(data, db_session, authenticated_user)
+    serializer = await invoice_service.create_invoice(
+        data, invoice_file, db_session, authenticated_user
+    )
     db_session.close()
     return JSONResponse(
         content=serializer.model_dump(by_alias=True),
@@ -70,6 +74,7 @@ def get_list_invoices_route(
         le=MAX_PAGINATION_NUMBER,
         description=PAGE_SIZE_DESCRIPTION,
     ),
+    deleted: bool = Query(False, description="Filter deleted"),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "invoice", "model": "invoice", "action": "view"})
@@ -80,7 +85,9 @@ def get_list_invoices_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    invoices = invoice_service.get_invoices(db_session, invoice_filters, page, size)
+    invoices = invoice_service.get_invoices(
+        db_session, invoice_filters, page, size, deleted
+    )
     db_session.close()
     return invoices
 
@@ -106,25 +113,20 @@ def get_invoice_route(
     )
 
 
-@invoice_router.post("/invoices/file/", response_class=FileResponse)
-async def post_import_invoice_file(
-    new_invoice_doc: Annotated[UploadInvoiceSchema, Form()],
-    file: UploadFile,
+@invoice_router.delete("/invoices/{invoice_id}/")
+def delete_invoice_route(
+    invoice_id: int,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "invoice", "model": "invoice", "action": "add"})
+        PermissionChecker({"module": "invoice", "model": "invoice", "action": "delete"})
     ),
 ):
-    """Import a new invoice file"""
+    """Delete an invoice route"""
     if not authenticated_user:
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-
-    serializer = await invoice_service.upload_invoice(
-        file, new_invoice_doc, db_session, authenticated_user
-    )
-
+    serializer = invoice_service.delete_invoice(invoice_id, db_session)
     db_session.close()
     return JSONResponse(
         content=serializer.model_dump(by_alias=True),

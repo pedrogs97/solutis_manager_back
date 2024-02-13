@@ -30,18 +30,23 @@ class AssetTypeSerializerSchema(BaseSchema):
     """
     Asset type serializer schema
 
-    * Computadores e Periféricos
-    * Máquinas e equipamentos
-    * Móveis e utensilios
-    * Veículos
-    * Instalações
-    * Benfeitorias em Imóveis
-    * Softwares Admnistrativos
+    * NOTEBOOK
+    * DESKTOP
+    * MONITOR
+    * WEBCAM
+    * TELEFONIA
+    * VESTIMENTA
+    * FERRAMENTAS
+    * IMPRESSORA
+    * TABLET
+    * HEADSET
+    * MOUSE/TECLADO
+    * HD EXTERNO
+    * PENDRIVE
     """
 
     id: int
     code: str
-    group_code: str = Field(serialization_alias="groupCode")
     name: str
 
 
@@ -145,8 +150,8 @@ class AssetSerializerSchema(BaseSchema):
     )
     status: Optional[AssetStatusSerializerSchema] = None
 
-    invoice_asset_number: Optional[str] = Field(
-        serialization_alias="invoiceAssetNumber",
+    invoice_number: Optional[str] = Field(
+        serialization_alias="invoiceNumber",
         default=None,
     )
 

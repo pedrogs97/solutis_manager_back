@@ -1,4 +1,5 @@
 """Datasync models"""
+
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, func
@@ -64,6 +65,7 @@ class AssetTOTVSModel(Base):
     description = Column("description", String(length=240), nullable=True)
     # fornecedor
     supplier = Column("supplier", String(length=100), nullable=True)
+    invoice_number = Column("invoice_number", String(length=255), nullable=True)
     assurance_date = Column("assurance_date", DateTime, nullable=True)
     observations = Column("observations", String(length=999), nullable=True)
     discard_reason = Column("discard_reason", String(length=255), nullable=True)
@@ -74,6 +76,7 @@ class AssetTOTVSModel(Base):
     imei = Column("imei", String(length=255), nullable=True)
     acquisition_date = Column("acquisition_date", DateTime, nullable=True)
     value = Column("value", Float, nullable=True)
+    depreciation = Column("depreciation", Float, nullable=True)
     # pacote office
     ms_office = Column("ms_office", Boolean, nullable=True)
     line_number = Column("line_number", String(length=255), nullable=True)

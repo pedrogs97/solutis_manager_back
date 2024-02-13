@@ -1,5 +1,5 @@
 """Invoice filters"""
-from decimal import Decimal
+
 from typing import List, Optional
 
 from fastapi_filter import FilterDepends, with_prefix
@@ -14,13 +14,6 @@ class InvoiceFilter(Filter):
 
     number__ilike: Optional[str] = None
     number__like: Optional[str] = None
-    description: Optional[str] = None
-    description__like: Optional[str] = None
-    description__ilike: Optional[str] = None
-    toal_value__lte: Optional[Decimal] = None
-    toal_value__gte: Optional[Decimal] = None
-    total_quantity__lte: Optional[Decimal] = None
-    total_quantity__gte: Optional[Decimal] = None
     asset: Optional[AssetShortFilter] = FilterDepends(
         with_prefix("asset", AssetShortFilter)
     )

@@ -6,15 +6,15 @@ from typing import List, Optional
 from fastapi_filter import FilterDepends, with_prefix
 from fastapi_filter.contrib.sqlalchemy import Filter
 
-from src.datasync.models import EmployeeEducationalLevelTOTVSModel
-from src.people.models import (
-    CostCenterModel,
-    EmployeeGenderModel,
-    EmployeeMaritalStatusModel,
-    EmployeeModel,
-    EmployeeNationalityModel,
-    EmployeeRoleModel,
+from src.datasync.models import (
+    CostCenterTOTVSModel,
+    EmployeeEducationalLevelTOTVSModel,
+    EmployeeGenderTOTVSModel,
+    EmployeeMaritalStatusTOTVSModel,
+    EmployeeNationalityTOTVSModel,
+    EmployeeRoleTOTVSModel,
 )
+from src.people.models import EmployeeModel
 
 
 class CostCenterFilter(Filter):
@@ -25,7 +25,7 @@ class CostCenterFilter(Filter):
     class Constants(Filter.Constants):
         """Filter constants"""
 
-        model = CostCenterModel
+        model = CostCenterTOTVSModel
 
 
 class EmployeeMaritalStatusFilter(Filter):
@@ -36,7 +36,7 @@ class EmployeeMaritalStatusFilter(Filter):
     class Constants(Filter.Constants):
         """Filter constants"""
 
-        model = EmployeeMaritalStatusModel
+        model = EmployeeMaritalStatusTOTVSModel
 
 
 class EmployeeGenderFilter(Filter):
@@ -47,7 +47,7 @@ class EmployeeGenderFilter(Filter):
     class Constants(Filter.Constants):
         """Filter constants"""
 
-        model = EmployeeGenderModel
+        model = EmployeeGenderTOTVSModel
 
 
 class EmployeeNationalityFilter(Filter):
@@ -58,7 +58,7 @@ class EmployeeNationalityFilter(Filter):
     class Constants(Filter.Constants):
         """Filter constants"""
 
-        model = EmployeeNationalityModel
+        model = EmployeeNationalityTOTVSModel
 
 
 class EmployeeRoleFilter(Filter):
@@ -69,7 +69,7 @@ class EmployeeRoleFilter(Filter):
     class Constants(Filter.Constants):
         """Filter constants"""
 
-        model = EmployeeRoleModel
+        model = EmployeeRoleTOTVSModel
 
 
 class EmployeeEducationalLevelFilter(Filter):

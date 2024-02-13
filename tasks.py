@@ -1,4 +1,5 @@
 """Task"""
+
 import base64
 import os
 from datetime import date
@@ -420,7 +421,7 @@ def __contract_pj():
         business_executive="Janaina Bitencurt",
         project="Solutis",
         workload="Home Office",
-        date_confirm=date.today().strftime(DEFAULT_DATE_FORMAT),
+        contract_date=date.today().strftime(DEFAULT_DATE_FORMAT),
         goal="objetivo teste",
         register_number="sa321431",
         serial_number="2151232",

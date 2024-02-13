@@ -13,19 +13,27 @@ from sqlalchemy.orm import Session
 
 from src.auth.filters import GroupFilter, PermissionFilter, UserFilter
 from src.auth.models import GroupModel, PermissionModel, UserModel
-from src.auth.schemas import (GroupSerializerSchema, NewGroupSchema,
-                              NewPasswordSchema, NewUserSchema,
-                              PermissionSerializerSchema,
-                              UserChangePasswordSchema,
-                              UserListSerializerSchema, UserSerializerSchema,
-                              UserUpdateSchema)
+from src.auth.schemas import (
+    GroupSerializerSchema,
+    NewGroupSchema,
+    NewPasswordSchema,
+    NewUserSchema,
+    PermissionSerializerSchema,
+    UserChangePasswordSchema,
+    UserListSerializerSchema,
+    UserSerializerSchema,
+    UserUpdateSchema,
+)
 from src.backends import Email365Client, bcrypt_context
-from src.config import (DEBUG, DEFAULT_DATE_FORMAT, PASSWORD_SUPER_USER,
-                        PERMISSIONS)
+from src.config import DEBUG, DEFAULT_DATE_FORMAT, PASSWORD_SUPER_USER, PERMISSIONS
 from src.database import Session_db
+from src.datasync.models import (
+    EmployeeGenderTOTVSModel,
+    EmployeeMaritalStatusTOTVSModel,
+    EmployeeNationalityTOTVSModel,
+)
 from src.log.services import LogService
-from src.people.models import (EmployeeGenderModel, EmployeeMaritalStatusModel,
-                               EmployeeModel, EmployeeNationalityModel)
+from src.people.models import EmployeeModel
 
 logger = logging.getLogger(__name__)
 
@@ -572,7 +580,7 @@ def create_super_user():
             db_session.commit()
             db_session.flush()
 
-        if not super_user.group:
+        if super_user and not super_user.group:
             super_user.group = group_admin
             db_session.commit()
 
@@ -616,9 +624,20 @@ def create_permissions():
                         action="add",
                         description=f"Permissão de adicionar um(a) {model_label} no módulo {module_label}.",
                     )
-                    db_session.add(new_perm_view)
-                    db_session.add(new_perm_edit)
-                    db_session.add(new_perm_add)
+
+                    new_perm_delete = PermissionModel(
+                        module=module,
+                        model=dict_model["name"],
+                        action="delete",
+                        description=f"Permissão de remover um(a) {model_label} no módulo {module_label}.",
+                    )
+                    new_permissions = [
+                        new_perm_view,
+                        new_perm_edit,
+                        new_perm_add,
+                        new_perm_delete,
+                    ]
+                    db_session.add_all(new_permissions)
         db_session.commit()
     except Exception as exc:
         msg = f"{exc.args[0]}"
@@ -634,23 +653,23 @@ def create_initial_data():
     try:
         db_session = Session_db()
         nationality = (
-            db_session.query(EmployeeNationalityModel)
-            .filter(EmployeeNationalityModel.code == "BR")
+            db_session.query(EmployeeNationalityTOTVSModel)
+            .filter(EmployeeNationalityTOTVSModel.code == "BR")
             .first()
         )
         if not nationality:
-            nationality = EmployeeNationalityModel(code="BR", description="Brasil")
+            nationality = EmployeeNationalityTOTVSModel(code="BR", description="Brasil")
             db_session.add(nationality)
             db_session.commit()
             db_session.flush()
 
         marital_status = (
-            db_session.query(EmployeeMaritalStatusModel)
-            .filter(EmployeeMaritalStatusModel.code == "S")
+            db_session.query(EmployeeMaritalStatusTOTVSModel)
+            .filter(EmployeeMaritalStatusTOTVSModel.code == "S")
             .first()
         )
         if not marital_status:
-            marital_status = EmployeeMaritalStatusModel(
+            marital_status = EmployeeMaritalStatusTOTVSModel(
                 code="S", description="Solteiro(a)"
             )
             db_session.add(marital_status)
@@ -658,12 +677,12 @@ def create_initial_data():
             db_session.flush()
 
         gender = (
-            db_session.query(EmployeeGenderModel)
-            .filter(EmployeeGenderModel.code == "M")
+            db_session.query(EmployeeGenderTOTVSModel)
+            .filter(EmployeeGenderTOTVSModel.code == "M")
             .first()
         )
         if not gender:
-            gender = EmployeeGenderModel(code="M", description="Masculino")
+            gender = EmployeeGenderTOTVSModel(code="M", description="Masculino")
             db_session.add(gender)
             db_session.commit()
             db_session.flush()

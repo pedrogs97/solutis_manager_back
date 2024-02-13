@@ -1,92 +1,16 @@
 """People models"""
+
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
-from src.datasync.models import EmployeeEducationalLevelTOTVSModel
-
-
-class CostCenterModel(Base):
-    """Cost center model"""
-
-    __tablename__ = "cost_center"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=25), nullable=False, unique=True)
-    name = Column("name", String(length=60), nullable=False)
-    classification = Column("group_name", String(length=60), nullable=False)
-
-    def __str__(self) -> str:
-        return f"{self.name} - {self.code}"
-
-
-class EmployeeMaritalStatusModel(Base):
-    """
-    Matrimonial status model
-
-    * C - Casado
-    * D - Desquitado
-    * E - Uniao Estável
-    * I - Divorciado
-    * O - Outros
-    * P - Separado
-    * S - Solteiro
-    * V - Viúvo
-    """
-
-    __tablename__ = "marital_status"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=1), nullable=False, unique=True)
-    description = Column("description", String(length=50), nullable=False)
-
-    def __str__(self):
-        return f"{self.description}"
-
-
-class EmployeeGenderModel(Base):
-    """
-    Gender model
-
-    * M - Masculino
-    * F - Feminino
-    """
-
-    __tablename__ = "genders"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=1), nullable=False, unique=True)
-    description = Column("description", String(length=50), nullable=False)
-
-    def __str__(self):
-        return f"{self.description}"
-
-
-class EmployeeNationalityModel(Base):
-    """
-    Nationality model
-
-    All countries
-    """
-
-    __tablename__ = "nationalities"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=3), nullable=False, unique=True)
-    description = Column("description", String(length=50), nullable=False)
-
-    def __str__(self):
-        return f"{self.description}"
-
-
-class EmployeeRoleModel(Base):
-    """Employee role model"""
-
-    __tablename__ = "employee_roles"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    code = Column("code", String(length=10), nullable=False, unique=True)
-    name = Column("name", String(length=100), nullable=False)
+from src.datasync.models import (
+    EmployeeEducationalLevelTOTVSModel,
+    EmployeeGenderTOTVSModel,
+    EmployeeMaritalStatusTOTVSModel,
+    EmployeeNationalityTOTVSModel,
+    EmployeeRoleTOTVSModel,
+)
 
 
 class EmployeeModel(Base):
@@ -96,23 +20,25 @@ class EmployeeModel(Base):
     __allow_unmapped__ = True
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    role: Mapped[EmployeeRoleModel] = relationship()
-    role_id = Column("role_id", ForeignKey(EmployeeRoleModel.id), nullable=True)
+    role: Mapped[EmployeeRoleTOTVSModel] = relationship()
+    role_id = Column("role_id", ForeignKey(EmployeeRoleTOTVSModel.id), nullable=True)
 
-    nationality: Mapped[EmployeeNationalityModel] = relationship()
+    nationality: Mapped[EmployeeNationalityTOTVSModel] = relationship()
     nationality_id = Column(
-        "nationality_id", ForeignKey(EmployeeNationalityModel.id), nullable=True
+        "nationality_id", ForeignKey(EmployeeNationalityTOTVSModel.id), nullable=True
     )
 
-    marital_status: Mapped[EmployeeMaritalStatusModel] = relationship()
+    marital_status: Mapped[EmployeeMaritalStatusTOTVSModel] = relationship()
     marital_status_id = Column(
         "marital_status_id",
-        ForeignKey(EmployeeMaritalStatusModel.id),
+        ForeignKey(EmployeeMaritalStatusTOTVSModel.id),
         nullable=True,
     )
 
-    gender: Mapped[EmployeeGenderModel] = relationship()
-    gender_id = Column("gender_id", ForeignKey(EmployeeGenderModel.id), nullable=False)
+    gender: Mapped[EmployeeGenderTOTVSModel] = relationship()
+    gender_id = Column(
+        "gender_id", ForeignKey(EmployeeGenderTOTVSModel.id), nullable=False
+    )
 
     educational_level: Mapped[EmployeeEducationalLevelTOTVSModel] = relationship()
     educational_level_id = Column(
@@ -143,6 +69,10 @@ class EmployeeModel(Base):
     employer_number = Column("employer_number", String(length=255), nullable=True)
     employer_address = Column("employer_address", String(length=255), nullable=True)
     employer_name = Column("employer_name", String(length=255), nullable=True)
+    employer_contract_object = Column(
+        "employer_contract_object", String(length=255), nullable=True
+    )
+    employer_contract_date = Column("employer_contract_date", Date, nullable=True)
 
     def __str__(self) -> str:
         return f"{self.code} - {self.full_name}"

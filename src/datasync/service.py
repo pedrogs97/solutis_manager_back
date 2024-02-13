@@ -1,4 +1,5 @@
 """Methods to access database"""
+
 import json
 import logging
 from datetime import date, datetime
@@ -8,9 +9,17 @@ from pydantic_core import ValidationError
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
-from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
+from src.asset.models import AssetModel, AssetTypeModel
 from src.backends import get_db_session
-from src.datasync.models import EmployeeEducationalLevelTOTVSModel, SyncModel
+from src.datasync.models import (
+    AssetTypeTOTVSModel,
+    EmployeeEducationalLevelTOTVSModel,
+    EmployeeGenderTOTVSModel,
+    EmployeeMaritalStatusTOTVSModel,
+    EmployeeNationalityTOTVSModel,
+    EmployeeRoleTOTVSModel,
+    SyncModel,
+)
 from src.datasync.schemas import (
     AssetTotvsSchema,
     AssetTypeTotvsSchema,
@@ -23,14 +32,8 @@ from src.datasync.schemas import (
     EmployeeRoleTotvsSchema,
     EmployeeTotvsSchema,
 )
-from src.people.models import (
-    CostCenterModel,
-    EmployeeGenderModel,
-    EmployeeMaritalStatusModel,
-    EmployeeModel,
-    EmployeeNationalityModel,
-    EmployeeRoleModel,
-)
+from src.invoice.models import InvoiceModel
+from src.people.models import EmployeeModel
 
 logger = logging.getLogger(__name__)
 
@@ -84,22 +87,22 @@ def totvs_to_employee_schema(
             full_name=row["NOME"] if row["NOME"] is not None else "",
             birthday=birthday_datetime.date(),
             taxpayer_identification=row["CPF"] if row["CPF"] is not None else "",
-            national_identification=row["CARTIDENTIDADE"]
-            if row["CARTIDENTIDADE"] is not None
-            else "",
+            national_identification=(
+                row["CARTIDENTIDADE"] if row["CARTIDENTIDADE"] is not None else ""
+            ),
             marital_status=row["CIVIL"] if row["CIVIL"] is not None else "",
-            nationality=row["NACIONALIDADE"]
-            if row["NACIONALIDADE"] is not None
-            else "",
+            nationality=(
+                row["NACIONALIDADE"] if row["NACIONALIDADE"] is not None else ""
+            ),
             role=row["CARGO"] if row["CARGO"] is not None else "",
             status=row["SITUACAO"] if row["SITUACAO"] is not None else "",
             address=address,
             cell_phone=row["TELEFONE1"] if row["TELEFONE1"] is not None else "",
             email=row["EMAIL"] if row["EMAIL"] is not None else "",
             gender=row["SEXO"] if row["SEXO"] is not None else "",
-            admission_date=admission_datetime.date()
-            if admission_datetime is not None
-            else None,
+            admission_date=(
+                admission_datetime.date() if admission_datetime is not None else None
+            ),
             registration=row["MATRICULA"] if row["MATRICULA"] else "",
             educational_level=row["ESCOLARIDADE"] if row["ESCOLARIDADE"] else "",
         )
@@ -215,12 +218,16 @@ def totvs_to_asset_type_schema(
     """
     try:
         return AssetTypeTotvsSchema(
-            code=str(row["IDGRUPOPATRIMONIO"])
-            if row["IDGRUPOPATRIMONIO"] is not None
-            else "",
-            group_code=row["CODGRUPOPATRIMONIO"]
-            if row["CODGRUPOPATRIMONIO"] is not None
-            else "",
+            code=(
+                str(row["IDGRUPOPATRIMONIO"])
+                if row["IDGRUPOPATRIMONIO"] is not None
+                else ""
+            ),
+            group_code=(
+                row["CODGRUPOPATRIMONIO"]
+                if row["CODGRUPOPATRIMONIO"] is not None
+                else ""
+            ),
             name=row["DESCRICAO"] if row["DESCRICAO"] is not None else "",
         )
     except ValidationError as err:
@@ -239,7 +246,7 @@ def totvs_to_asset_schema(
     ATIVO, DATAAQUISICAO, PATRIMONIO, QUANTIDADE, UNIDADE, OBSERVACOES,
     CODIGOBARRA, CENTROCUSTO, VALORBASE, VRDEPACUCORRIGIDA, SERIE,
     IMEI, ACESSORIOS, OPERADORA, SISTEMAOPERACIONAL, PACOTEOFFICE,
-    PADRAOEQUIP, GARANTIA, LINHA, FORNECEDOR
+    PADRAOEQUIP, GARANTIA, LINHA, FORNECEDOR, NOTA, DEPRECIACAO
     """
     try:
         acquisition_date: datetime = row["DATAAQUISICAO"]
@@ -252,18 +259,23 @@ def totvs_to_asset_schema(
             register_number=row["PATRIMONIO"] if row["PATRIMONIO"] is not None else "",
             description=row["DESCRICAO"] if row["DESCRICAO"] is not None else "",
             supplier=row["FORNECEDOR"] if row["FORNECEDOR"] is not None else "",
+            invoice_number=row["NOTA"] if row["NOTA"] is not None else "",
             assurance_date=assurance_date,
             observations=row["OBSERVACOES"] if row["OBSERVACOES"] is not None else "",
             pattern=row["PADRAOEQUIP"] if row["PADRAOEQUIP"] is not None else "",
-            operational_system=row["SISTEMAOPERACIONAL"]
-            if row["SISTEMAOPERACIONAL"] is not None
-            else "",
+            operational_system=(
+                row["SISTEMAOPERACIONAL"]
+                if row["SISTEMAOPERACIONAL"] is not None
+                else ""
+            ),
             serial_number=row["SERIE"] if row["SERIE"] is not None else "",
             imei=row["IMEI"] if row["IMEI"] is not None else "",
             acquisition_date=acquisition_date,
-            value=float(str(row["VALORBASE"]).replace(",", "."))
-            if row["VALORBASE"] is not None
-            else 0.0,
+            value=(
+                float(str(row["VALORBASE"]).replace(",", "."))
+                if row["VALORBASE"] is not None
+                else 0.0
+            ),
             ms_office=row["PACOTEOFFICE"] == "SIM",
             line_number=row["LINHA"] if row["LINHA"] is not None else "",
             operator=row["OPERADORA"] if row["OPERADORA"] is not None else "",
@@ -271,6 +283,11 @@ def totvs_to_asset_schema(
             quantity=int(row["QUANTIDADE"]) if row["QUANTIDADE"] is not None else 0,
             unit=row["UNIDADE"] if row["UNIDADE"] is not None else "",
             active=row["ATIVO"] is not None and row["ATIVO"] == 1,
+            depreciation=(
+                float(str(row["DEPRECIACAO"]).replace(",", "."))
+                if row["DEPRECIACAO"] is not None
+                else 0.0
+            ),
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
@@ -358,10 +375,10 @@ def insert(schema: BaseTotvsSchema, model_type: Type, identifier="code") -> None
         current_info = query.first()
         if current_info:
             logger.info("Update: %s", str(new_info))
-            db_session.delete(current_info)
-            db_session.commit()
-            db_session.flush()
-            db_session.add(new_info)
+            for key, value in schema_dict.items():
+                if key != identifier:
+                    setattr(current_info, key, value)
+            db_session.add(current_info)
             db_session.commit()
         else:
             logger.info("New: %s", str(new_info))
@@ -379,295 +396,219 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
     """Updates employees from totvs"""
     db_session = get_db_session()
     updates: List[EmployeeModel] = []
-    for totvs_employee in totvs_employees:
-        employee_db = (
-            db_session.query(EmployeeModel)
-            .filter(
-                or_(
-                    EmployeeModel.code == totvs_employee.code,
-                    EmployeeModel.taxpayer_identification
-                    == totvs_employee.taxpayer_identification,
+    try:
+        for totvs_employee in totvs_employees:
+            employee_db = (
+                db_session.query(EmployeeModel)
+                .filter(
+                    or_(
+                        EmployeeModel.code == totvs_employee.code,
+                        EmployeeModel.taxpayer_identification
+                        == totvs_employee.taxpayer_identification,
+                    )
                 )
+                .first()
             )
-            .first()
-        )
-        if employee_db:
-            db_session.delete(employee_db)
-            db_session.commit()
-            db_session.flush()
 
-        role = (
-            db_session.query(EmployeeRoleModel)
-            .filter(EmployeeRoleModel.name == totvs_employee.role)
-            .first()
-        )
-        nationality = (
-            db_session.query(EmployeeNationalityModel)
-            .filter(EmployeeNationalityModel.description == totvs_employee.nationality)
-            .first()
-        )
-        marital_status = (
-            db_session.query(EmployeeMaritalStatusModel)
-            .filter(
-                EmployeeMaritalStatusModel.description == totvs_employee.marital_status
+            role = (
+                db_session.query(EmployeeRoleTOTVSModel)
+                .filter(EmployeeRoleTOTVSModel.name == totvs_employee.role)
+                .first()
             )
-            .first()
-        )
-        gender = (
-            db_session.query(EmployeeGenderModel)
-            .filter(EmployeeGenderModel.description == totvs_employee.gender)
-            .first()
-        )
 
-        educational_level = (
-            db_session.query(EmployeeEducationalLevelTOTVSModel)
-            .filter(
-                EmployeeEducationalLevelTOTVSModel.description
-                == totvs_employee.educational_level
+            nationality = (
+                db_session.query(EmployeeNationalityTOTVSModel)
+                .filter(
+                    EmployeeNationalityTOTVSModel.description
+                    == totvs_employee.nationality
+                )
+                .first()
             )
-            .first()
-        )
 
-        dict_employee = {
-            **totvs_employee.model_dump(
-                exclude={
-                    "role",
-                    "nationality",
-                    "marital_status",
-                    "gender",
-                    "educational_level",
-                }
-            ),
-            "role": role,
-            "nationality": nationality,
-            "marital_status": marital_status,
-            "gender": gender,
-            "educational_level": educational_level,
-        }
-        update_employee = EmployeeModel(**dict_employee)
-        exist = None
-        for update in updates:
-            if (
-                update.code == update_employee.code
-                or update.taxpayer_identification
-                == update_employee.taxpayer_identification
-            ):
-                exist = update
-                break
-        if exist:
-            updates.remove(exist)
-        updates.append(update_employee)
+            marital_status = (
+                db_session.query(EmployeeMaritalStatusTOTVSModel)
+                .filter(
+                    EmployeeMaritalStatusTOTVSModel.description
+                    == totvs_employee.marital_status
+                )
+                .first()
+            )
+            gender = (
+                db_session.query(EmployeeGenderTOTVSModel)
+                .filter(EmployeeGenderTOTVSModel.description == totvs_employee.gender)
+                .first()
+            )
 
-    db_session.add_all(updates)
-    db_session.commit()
-    logger.info("Update Employee from TOTVS. Total=%s", str(len(updates)))
+            educational_level = (
+                db_session.query(EmployeeEducationalLevelTOTVSModel)
+                .filter(
+                    EmployeeEducationalLevelTOTVSModel.description
+                    == totvs_employee.educational_level
+                )
+                .first()
+            )
+
+            dict_employee = {
+                **totvs_employee.model_dump(
+                    exclude={
+                        "role",
+                        "nationality",
+                        "marital_status",
+                        "gender",
+                        "educational_level",
+                    }
+                ),
+                "role_id": role.id if role else None,
+                "nationality_id": nationality.id if nationality else None,
+                "marital_status_id": marital_status.id if marital_status else None,
+                "gender_id": gender.id,
+                "educational_level_id": (
+                    educational_level.id if educational_level else None
+                ),
+            }
+
+            exist = None
+            for update in updates:
+                if (
+                    update.code == dict_employee["code"]
+                    or update.taxpayer_identification
+                    == dict_employee["taxpayer_identification"]
+                ):
+                    exist = update
+                    break
+            if exist:
+                updates.remove(exist)
+
+            if employee_db:
+                for key, value in dict_employee.items():
+                    if key not in ("code", "taxpayer_identification"):
+                        setattr(employee_db, key, value)
+                updates.append(employee_db)
+            else:
+                update_employee = EmployeeModel(**dict_employee)
+                updates.append(update_employee)
+
+        db_session.add_all(updates)
+        db_session.commit()
+        logger.info("Update Employee from TOTVS. Total=%s", str(len(updates)))
+    except Exception as err:
+        logger.error("Error: %s", err.args[0])
     db_session.close()
 
 
-def update_marital_status_totvs(
-    totvs_marital_status: List[EmployeeMaritalStatusTotvsSchema],
-):
-    """Updates marital_status from totvs"""
-    db_session = get_db_session()
-    updates: List[EmployeeMaritalStatusModel] = []
-    for totvs_marital_status_item in totvs_marital_status:
-        db_marital_status = (
-            db_session.query(EmployeeMaritalStatusModel)
-            .filter(EmployeeMaritalStatusModel.code == totvs_marital_status_item.code)
-            .first()
-        )
-        if db_marital_status:
-            db_marital_status.description = totvs_marital_status_item.description
-            updates.append(db_marital_status)
-            continue
+def update_invoice_number(
+    invoice_number: str, asset: AssetModel, db_session
+) -> InvoiceModel:
+    """Updates asset invoice"""
+    asset_invoice_db = (
+        db_session.query(InvoiceModel)
+        .filter(InvoiceModel.number == invoice_number)
+        .first()
+    )
 
-        updates.append(
-            EmployeeMaritalStatusModel(**totvs_marital_status_item.model_dump())
-        )
-
-    db_session.add_all(updates)
-    db_session.commit()
-
-    logger.info("Update Matrimonial Status from TOTVS. Total=%s", str(len(updates)))
-    db_session.close()
-
-
-def update_gender_totvs(
-    totvs_gender: List[EmployeeGenderTotvsSchema],
-):
-    """Updates gender from totvs"""
-    db_session = get_db_session()
-    updates: List[EmployeeGenderModel] = []
-    for totvs_gender_item in totvs_gender:
-        db_gender = (
-            db_session.query(EmployeeGenderModel)
-            .filter(EmployeeGenderModel.code == totvs_gender_item.code)
-            .first()
-        )
-        if db_gender:
-            db_gender.description = totvs_gender_item.description
-            updates.append(db_gender)
-            continue
-
-        updates.append(EmployeeGenderModel(**totvs_gender_item.model_dump()))
-
-    db_session.add_all(updates)
-    db_session.commit()
-    logger.info("Update Gender from TOTVS. Total=%s", str(len(updates)))
-    db_session.close()
-
-
-def update_nationality_totvs(
-    totvs_nationality: List[EmployeeNationalityTotvsSchema],
-):
-    """Updates nationality from totvs"""
-    db_session = get_db_session()
-    updates: List[EmployeeNationalityModel] = []
-    for totvs_nationality_item in totvs_nationality:
-        db_nationality = (
-            db_session.query(EmployeeNationalityModel)
-            .filter(EmployeeNationalityModel.code == totvs_nationality_item.code)
-            .first()
-        )
-        if db_nationality:
-            db_nationality.description = totvs_nationality_item.description
-            updates.append(db_nationality)
-            continue
-
-        updates.append(EmployeeNationalityModel(**totvs_nationality_item.model_dump()))
-
-    db_session.add_all(updates)
-    db_session.commit()
-    logger.info("Update Nationality from TOTVS. Total=%s", str(len(updates)))
-    db_session.close()
-
-
-def update_role_totvs(
-    totvs_role: List[EmployeeRoleTotvsSchema],
-):
-    """Updates role from totvs"""
-    db_session = get_db_session()
-    updates: List[EmployeeRoleModel] = []
-    for totvs_role_item in totvs_role:
-        db_role = (
-            db_session.query(EmployeeRoleModel)
-            .filter(EmployeeRoleModel.code == totvs_role_item.code)
-            .first()
-        )
-        if db_role:
-            db_role.name = totvs_role_item.name
-            updates.append(db_role)
-            continue
-
-        updates.append(EmployeeRoleModel(**totvs_role_item.model_dump()))
-
-    db_session.add_all(updates)
-    db_session.commit()
-    logger.info("Update Role from TOTVS. Total=%s", str(len(updates)))
-    db_session.close()
+    if not asset_invoice_db:
+        asset_invoice_new = InvoiceModel(number=invoice_number)
+        asset_invoice_new.asset = asset
+        db_session.add(asset_invoice_new)
+        db_session.commit()
+    elif asset_invoice_db.asset.code != asset.code:
+        asset_invoice_db.asset = asset
+        db_session.add(asset_invoice_db)
+        db_session.commit()
 
 
 def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
     """Updates assets from totvs"""
     db_session = get_db_session()
     updates: List[AssetModel] = []
-    for totvs_asset in totvs_assets:
-        asset_db = (
-            db_session.query(AssetModel)
-            .filter(AssetModel.code == totvs_asset.code)
-            .first()
-        )
-        if asset_db:
-            db_session.delete(asset_db)
-            db_session.commit()
-            db_session.flush()
-
-        default_asset_status = db_session.query(AssetStatusModel).get(1)
-
-        asset_type = (
-            db_session.query(AssetTypeModel)
-            .filter(AssetTypeModel.name == totvs_asset.type)
-            .first()
-        )
-
-        if not asset_type:
-            continue
-
-        dict_asset = {
-            **totvs_asset.model_dump(exclude={"asset_type", "cost_center"}),
-            "type": asset_type,
-            "status": default_asset_status,
-        }
-
-        update_asset = AssetModel(**dict_asset)
-        exist = None
-        for update in updates:
-            if update.code == update_asset.code:
-                exist = update
-                break
-        if exist:
-            updates.remove(exist)
-        updates.append(update_asset)
-
-    db_session.add_all(updates)
-    db_session.commit()
-    logger.info("Update Assets from TOTVS. Total=%s", str(len(updates)))
-    db_session.close()
-
-
-def update_asset_type_totvs(
-    totvs_asset_type: List[AssetTypeTotvsSchema],
-):
-    """Updates asset type from totvs"""
-    db_session = get_db_session()
-    updates: List[AssetTypeModel] = []
-    for totvs_asset_type_item in totvs_asset_type:
-        db_asset_type = (
-            db_session.query(AssetTypeModel)
-            .filter(AssetTypeModel.code == totvs_asset_type_item.code)
-            .first()
-        )
-        if db_asset_type:
-            db_asset_type.group_code = totvs_asset_type_item.group_code
-            db_asset_type.name = totvs_asset_type_item.name
-            updates.append(db_asset_type)
-            continue
-
-        updates.append(
-            AssetTypeModel(
-                **totvs_asset_type_item.model_dump(),
-                acronym=totvs_asset_type_item.name[:3].upper(),
+    invoices: List[dict] = []
+    try:
+        for totvs_asset in totvs_assets:
+            asset_db = (
+                db_session.query(AssetModel)
+                .filter(AssetModel.code == totvs_asset.code)
+                .first()
             )
-        )
 
-    db_session.add_all(updates)
-    db_session.commit()
-    logger.info("Update Asset Types from TOTVS. Total=%s", str(len(updates)))
-    db_session.close()
+            dict_totvs_asset = totvs_asset.model_dump(
+                exclude={
+                    "type",
+                    "cost_center",
+                    "invoice_number",
+                }
+            )
 
+            asset_description_splited = totvs_asset.description.split(" ")
+            if len(asset_description_splited) > 1:
+                asset_simple_description = asset_description_splited[0]
+                asset_description = (
+                    asset_simple_description + " " + asset_description_splited[1]
+                )
 
-def update_cost_center_totvs(
-    totvs_cost_center: List[CostCenterTotvsSchema],
-):
-    """Updates asset type from totvs"""
-    db_session = get_db_session()
-    updates: List[CostCenterModel] = []
-    for totvs_cost_center_item in totvs_cost_center:
-        db_cost_center = (
-            db_session.query(CostCenterModel)
-            .filter(CostCenterModel.code == totvs_cost_center_item.code)
-            .first()
-        )
-        if db_cost_center:
-            db_cost_center.code = totvs_cost_center_item.code
-            db_cost_center.classification = totvs_cost_center_item.classification
-            db_cost_center.name = totvs_cost_center_item.name
-            updates.append(db_cost_center)
-            continue
+                asset_type = (
+                    db_session.query(AssetTypeModel)
+                    .filter(
+                        or_(
+                            AssetTypeModel.name.like(asset_simple_description),
+                            AssetTypeModel.name.like(asset_description),
+                        )
+                    )
+                    .first()
+                )
+            else:
+                asset_simple_description = asset_description_splited[0]
+                asset_type = (
+                    db_session.query(AssetTypeModel)
+                    .filter(AssetTypeModel.name.like(asset_simple_description))
+                    .first()
+                )
 
-        updates.append(CostCenterModel(**totvs_cost_center_item.model_dump()))
+            asset_group = (
+                db_session.query(AssetTypeTOTVSModel)
+                .filter(AssetTypeTOTVSModel.name == totvs_asset.type)
+                .first()
+            )
 
-    db_session.add_all(updates)
-    db_session.commit()
-    logger.info("Update Cost Centers from TOTVS. Total=%s", str(len(updates)))
+            dict_asset = {
+                **dict_totvs_asset,
+                "asset_group_id": asset_group.id if asset_group else None,
+                "type": asset_type,
+            }
+
+            exist_index = 0
+            for index, update in enumerate(updates):
+                if update.code == dict_asset["code"]:
+                    exist_index = index
+                    break
+            if exist_index:
+                updates.pop(exist_index)
+
+            if asset_db:
+                for key, value in dict_asset.items():
+                    if key != "code":
+                        setattr(asset_db, key, value)
+
+                updates.append(asset_db)
+
+                if totvs_asset.invoice_number:
+                    invoices.append(
+                        {"invoice": totvs_asset.invoice_number, "asset": asset_db}
+                    )
+            else:
+                new_asset = AssetModel(**dict_asset)
+                updates.append(new_asset)
+
+                if totvs_asset.invoice_number:
+                    invoices.append(
+                        {"invoice": totvs_asset.invoice_number, "asset": new_asset}
+                    )
+
+        db_session.add_all(updates)
+        db_session.commit()
+        db_session.flush()
+        for invoice in invoices:
+            update_invoice_number(invoice["invoice"], invoice["asset"], db_session)
+        logger.info("Update Assets from TOTVS. Total=%s", str(len(updates)))
+    except Exception as err:
+        logger.error("Error: %s", err.args[0])
     db_session.close()

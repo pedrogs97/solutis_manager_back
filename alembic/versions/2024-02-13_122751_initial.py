@@ -1,8 +1,8 @@
-"""initial version 1
+"""initial
 
-Revision ID: c7e5687f1d62
+Revision ID: 16b0954a48e4
 Revises:
-Create Date: 2024-01-09 22:13:49.287853
+Create Date: 2024-02-13 12:27:51.113189
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'c7e5687f1d62'
+revision: str = '16b0954a48e4'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,7 +33,6 @@ def upgrade() -> None:
     op.create_table('asset_type',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('code', sa.String(length=25), nullable=False),
-    sa.Column('group_code', sa.String(length=150), nullable=False),
     sa.Column('name', sa.String(length=150), nullable=False),
     sa.Column('acronym', sa.String(length=3), nullable=True),
     sa.PrimaryKeyConstraint('id'),
@@ -56,8 +55,9 @@ def upgrade() -> None:
     sa.Column('register_number', sa.String(length=30), nullable=True),
     sa.Column('description', sa.String(length=240), nullable=True),
     sa.Column('supplier', sa.String(length=100), nullable=True),
+    sa.Column('invoice_number', sa.String(length=255), nullable=True),
     sa.Column('assurance_date', sa.DateTime(), nullable=True),
-    sa.Column('observations', sa.String(length=600), nullable=True),
+    sa.Column('observations', sa.String(length=999), nullable=True),
     sa.Column('discard_reason', sa.String(length=255), nullable=True),
     sa.Column('pattern', sa.String(length=255), nullable=True),
     sa.Column('operational_system', sa.String(length=255), nullable=True),
@@ -65,6 +65,7 @@ def upgrade() -> None:
     sa.Column('imei', sa.String(length=255), nullable=True),
     sa.Column('acquisition_date', sa.DateTime(), nullable=True),
     sa.Column('value', sa.Float(), nullable=True),
+    sa.Column('depreciation', sa.Float(), nullable=True),
     sa.Column('ms_office', sa.Boolean(), nullable=True),
     sa.Column('line_number', sa.String(length=255), nullable=True),
     sa.Column('operator', sa.String(length=255), nullable=True),
@@ -72,14 +73,6 @@ def upgrade() -> None:
     sa.Column('accessories', sa.String(length=255), nullable=True),
     sa.Column('unit', sa.String(length=3), nullable=True),
     sa.Column('quantity', sa.Integer(), nullable=True),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('code')
-    )
-    op.create_table('cost_center',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('code', sa.String(length=25), nullable=False),
-    sa.Column('name', sa.String(length=60), nullable=False),
-    sa.Column('group_name', sa.String(length=60), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
     )
@@ -103,13 +96,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
     )
-    op.create_table('employee_roles',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('code', sa.String(length=10), nullable=False),
-    sa.Column('name', sa.String(length=100), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('code')
-    )
     op.create_table('employees_totvs',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('code', sa.String(length=10), nullable=False),
@@ -127,16 +113,10 @@ def upgrade() -> None:
     sa.Column('birthday', sa.Date(), nullable=False),
     sa.Column('admission_date', sa.Date(), nullable=True),
     sa.Column('registration', sa.String(length=16), nullable=True),
+    sa.Column('education_level', sa.String(length=50), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code'),
     sa.UniqueConstraint('taxpayer_identification')
-    )
-    op.create_table('genders',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('code', sa.String(length=1), nullable=False),
-    sa.Column('description', sa.String(length=50), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('code')
     )
     op.create_table('genders_totvs',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -150,13 +130,14 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('invoices',
+    op.create_table('lending_status',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('number', sa.String(length=11), nullable=False),
-    sa.Column('total_value', sa.Float(), nullable=False),
-    sa.Column('total_quantity', sa.Integer(), nullable=False),
-    sa.Column('path', sa.String(length=255), nullable=True),
-    sa.Column('file_name', sa.String(length=100), nullable=False),
+    sa.Column('name', sa.String(length=40), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('lending_type',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('name', sa.String(length=40), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('maintenance_action',
@@ -169,23 +150,9 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=15), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('marital_status',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('code', sa.String(length=1), nullable=False),
-    sa.Column('description', sa.String(length=50), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('code')
-    )
     op.create_table('marital_status_totvs',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('code', sa.String(length=1), nullable=False),
-    sa.Column('description', sa.String(length=50), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('code')
-    )
-    op.create_table('nationalities',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('code', sa.String(length=3), nullable=False),
     sa.Column('description', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
@@ -220,6 +187,11 @@ def upgrade() -> None:
     sa.Column('execution_time', sa.Float(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('verification_category',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('name', sa.String(length=150), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('verification_type',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(length=100), nullable=True),
@@ -232,7 +204,8 @@ def upgrade() -> None:
     )
     op.create_table('asset',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('type_id', sa.Integer(), nullable=False),
+    sa.Column('asset_group_id', sa.Integer(), nullable=True),
+    sa.Column('type_id', sa.Integer(), nullable=True),
     sa.Column('status_id', sa.Integer(), nullable=True),
     sa.Column('clothing_size_id', sa.Integer(), nullable=True),
     sa.Column('code', sa.String(length=255), nullable=True),
@@ -240,14 +213,16 @@ def upgrade() -> None:
     sa.Column('description', sa.String(length=255), nullable=True),
     sa.Column('supplier', sa.String(length=100), nullable=True),
     sa.Column('assurance_date', sa.String(length=150), nullable=True),
-    sa.Column('observations', sa.String(length=255), nullable=True),
+    sa.Column('observations', sa.String(length=999), nullable=True),
     sa.Column('discard_reason', sa.String(length=255), nullable=True),
     sa.Column('pattern', sa.String(length=100), nullable=True),
+    sa.Column('brand', sa.String(length=150), nullable=True),
     sa.Column('operational_system', sa.String(length=100), nullable=True),
     sa.Column('serial_number', sa.String(length=255), nullable=True),
     sa.Column('imei', sa.String(length=255), nullable=True),
     sa.Column('acquisition_date', sa.DateTime(), nullable=True),
     sa.Column('value', sa.Float(), nullable=True),
+    sa.Column('depreciation', sa.Float(), nullable=True),
     sa.Column('ms_office', sa.Boolean(), nullable=True),
     sa.Column('line_number', sa.String(length=20), nullable=True),
     sa.Column('operator', sa.String(length=50), nullable=True),
@@ -258,6 +233,7 @@ def upgrade() -> None:
     sa.Column('unit', sa.String(length=10), nullable=True),
     sa.Column('active', sa.Boolean(), nullable=True),
     sa.Column('by_agile', sa.Boolean(), nullable=True),
+    sa.ForeignKeyConstraint(['asset_group_id'], ['asset_types_totvs.id'], ),
     sa.ForeignKeyConstraint(['clothing_size_id'], ['asset_clothing_size.id'], ),
     sa.ForeignKeyConstraint(['status_id'], ['asset_status.id'], ),
     sa.ForeignKeyConstraint(['type_id'], ['asset_type.id'], ),
@@ -278,6 +254,7 @@ def upgrade() -> None:
     sa.Column('nationality_id', sa.Integer(), nullable=True),
     sa.Column('marital_status_id', sa.Integer(), nullable=True),
     sa.Column('gender_id', sa.Integer(), nullable=False),
+    sa.Column('educational_level_id', sa.Integer(), nullable=True),
     sa.Column('code', sa.String(length=10), nullable=True),
     sa.Column('status', sa.String(length=100), nullable=True),
     sa.Column('full_name', sa.String(length=120), nullable=False),
@@ -294,10 +271,13 @@ def upgrade() -> None:
     sa.Column('employer_number', sa.String(length=255), nullable=True),
     sa.Column('employer_address', sa.String(length=255), nullable=True),
     sa.Column('employer_name', sa.String(length=255), nullable=True),
-    sa.ForeignKeyConstraint(['gender_id'], ['genders.id'], ),
-    sa.ForeignKeyConstraint(['marital_status_id'], ['marital_status.id'], ),
-    sa.ForeignKeyConstraint(['nationality_id'], ['nationalities.id'], ),
-    sa.ForeignKeyConstraint(['role_id'], ['employee_roles.id'], ),
+    sa.Column('employer_contract_object', sa.String(length=255), nullable=True),
+    sa.Column('employer_contract_date', sa.Date(), nullable=True),
+    sa.ForeignKeyConstraint(['educational_level_id'], ['educational_totvs.id'], ),
+    sa.ForeignKeyConstraint(['gender_id'], ['genders_totvs.id'], ),
+    sa.ForeignKeyConstraint(['marital_status_id'], ['marital_status_totvs.id'], ),
+    sa.ForeignKeyConstraint(['nationality_id'], ['nationalities_totvs.id'], ),
+    sa.ForeignKeyConstraint(['role_id'], ['roles_totvs.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code'),
     sa.UniqueConstraint('taxpayer_identification')
@@ -338,17 +318,22 @@ def upgrade() -> None:
     op.create_table('verification',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('asset_type_id', sa.Integer(), nullable=False),
+    sa.Column('category_id', sa.Integer(), nullable=True),
     sa.Column('question', sa.String(length=100), nullable=True),
     sa.Column('step', sa.String(length=2), nullable=True),
     sa.ForeignKeyConstraint(['asset_type_id'], ['asset_type.id'], ),
+    sa.ForeignKeyConstraint(['category_id'], ['verification_category.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('invoice_assets',
-    sa.Column('invoice_id', sa.Integer(), nullable=False),
+    op.create_table('invoices',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('number', sa.String(length=11), nullable=False),
+    sa.Column('path', sa.String(length=255), nullable=True),
+    sa.Column('file_name', sa.String(length=100), nullable=True),
     sa.Column('asset_id', sa.Integer(), nullable=False),
+    sa.Column('deleted_at', sa.Date(), nullable=True),
     sa.ForeignKeyConstraint(['asset_id'], ['asset.id'], ),
-    sa.ForeignKeyConstraint(['invoice_id'], ['invoices.id'], ),
-    sa.PrimaryKeyConstraint('invoice_id', 'asset_id')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('lending',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -356,16 +341,24 @@ def upgrade() -> None:
     sa.Column('asset_id', sa.Integer(), nullable=False),
     sa.Column('document_id', sa.Integer(), nullable=True),
     sa.Column('workload_id', sa.Integer(), nullable=False),
+    sa.Column('type_id', sa.Integer(), nullable=False),
+    sa.Column('status_id', sa.Integer(), nullable=True),
     sa.Column('cost_center_id', sa.Integer(), nullable=False),
     sa.Column('number', sa.String(length=30), nullable=True),
     sa.Column('manager', sa.String(length=50), nullable=True),
+    sa.Column('business_executive', sa.String(length=50), nullable=True),
+    sa.Column('project', sa.String(length=100), nullable=True),
+    sa.Column('location', sa.String(length=100), nullable=True),
     sa.Column('observations', sa.String(length=255), nullable=True),
     sa.Column('signed_date', sa.Date(), nullable=True),
+    sa.Column('revoke_signed_date', sa.Date(), nullable=True),
     sa.Column('glpi_number', sa.String(length=25), nullable=True),
     sa.ForeignKeyConstraint(['asset_id'], ['asset.id'], ),
-    sa.ForeignKeyConstraint(['cost_center_id'], ['cost_center.id'], ),
+    sa.ForeignKeyConstraint(['cost_center_id'], ['cost_centers_totvs.id'], ),
     sa.ForeignKeyConstraint(['document_id'], ['document.id'], ),
     sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ),
+    sa.ForeignKeyConstraint(['status_id'], ['lending_status.id'], ),
+    sa.ForeignKeyConstraint(['type_id'], ['lending_type.id'], ),
     sa.ForeignKeyConstraint(['workload_id'], ['workload.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -387,25 +380,20 @@ def upgrade() -> None:
     sa.Column('is_staff', sa.Boolean(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('last_login', sa.DateTime(), nullable=True),
+    sa.Column('department', sa.String(length=255), nullable=False),
+    sa.Column('manager', sa.String(length=255), nullable=False),
     sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ),
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
     )
-    op.create_table('witness',
+    op.create_table('verification_answer_option',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('employee_id', sa.Integer(), nullable=False),
-    sa.Column('signed', sa.Date(), nullable=True),
-    sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ),
+    sa.Column('verification_id', sa.Integer(), nullable=True),
+    sa.Column('name', sa.String(length=100), nullable=True),
+    sa.ForeignKeyConstraint(['verification_id'], ['verification.id'], ),
     sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('lending_witnesses',
-    sa.Column('lending_id', sa.Integer(), nullable=False),
-    sa.Column('witness_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['lending_id'], ['lending.id'], ),
-    sa.ForeignKeyConstraint(['witness_id'], ['witness.id'], ),
-    sa.PrimaryKeyConstraint('lending_id', 'witness_id')
     )
     op.create_table('logs',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -442,20 +430,36 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['verification_id'], ['verification.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('witness',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('employee_id', sa.Integer(), nullable=False),
+    sa.Column('lending_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ),
+    sa.ForeignKeyConstraint(['lending_id'], ['lending.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('lending_witnesses',
+    sa.Column('lending_id', sa.Integer(), nullable=False),
+    sa.Column('witness_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['lending_id'], ['lending.id'], ),
+    sa.ForeignKeyConstraint(['witness_id'], ['witness.id'], ),
+    sa.PrimaryKeyConstraint('lending_id', 'witness_id')
+    )
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('lending_witnesses')
+    op.drop_table('witness')
     op.drop_table('verification_answer')
     op.drop_table('token')
     op.drop_table('logs')
-    op.drop_table('lending_witnesses')
-    op.drop_table('witness')
+    op.drop_table('verification_answer_option')
     op.drop_table('user')
     op.drop_table('maintenance_attachment')
     op.drop_table('lending')
-    op.drop_table('invoice_assets')
+    op.drop_table('invoices')
     op.drop_table('verification')
     op.drop_table('upgrade')
     op.drop_table('maintenance')
@@ -465,25 +469,22 @@ def downgrade() -> None:
     op.drop_table('asset')
     op.drop_table('workload')
     op.drop_table('verification_type')
+    op.drop_table('verification_category')
     op.drop_table('syncs_totvs')
     op.drop_table('roles_totvs')
     op.drop_table('permission')
     op.drop_table('nationalities_totvs')
-    op.drop_table('nationalities')
     op.drop_table('marital_status_totvs')
-    op.drop_table('marital_status')
     op.drop_table('maintenance_status')
     op.drop_table('maintenance_action')
-    op.drop_table('invoices')
+    op.drop_table('lending_type')
+    op.drop_table('lending_status')
     op.drop_table('group')
     op.drop_table('genders_totvs')
-    op.drop_table('genders')
     op.drop_table('employees_totvs')
-    op.drop_table('employee_roles')
     op.drop_table('educational_totvs')
     op.drop_table('document_type')
     op.drop_table('cost_centers_totvs')
-    op.drop_table('cost_center')
     op.drop_table('assets_totvs')
     op.drop_table('asset_types_totvs')
     op.drop_table('asset_type')

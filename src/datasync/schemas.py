@@ -1,4 +1,5 @@
 """Datasync schemas"""
+
 from datetime import date, datetime
 from typing import Optional
 
@@ -52,6 +53,7 @@ class AssetTotvsSchema(BaseTotvsSchema):
     description: str
     # fornecedor
     supplier: str
+    invoice_number: str
     # garantia
     assurance_date: Optional[datetime]
     observations: str
@@ -76,6 +78,7 @@ class AssetTotvsSchema(BaseTotvsSchema):
     unit: str
     # unidade da quantidade
     quantity: int
+    depreciation: float
 
 
 class EmployeeEducationalLevelTotvsSchema(BaseTotvsSchema):

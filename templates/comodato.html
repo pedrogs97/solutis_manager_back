@@ -104,14 +104,9 @@
                 <tbody>
                     <tr>
                         <td colspan="4" style="border: solid 2px #000000;padding-left: 2px;padding-bottom: 3px;padding-top: 2px;">
-                            <div>N° Patromônio: <span style="font-weight: 800;">{{ register_number }}</span></div>
-                            <div>S/N: <span style="font-weight: 800;">{{ serial_number }}</span></div>
-                            <div>Descrição: <span style="font-weight: 800;">{{ description }}</span></div>
-                            <div>Acessórios: <span style="font-weight: 800;">{{ accessories }}</span></div>
-                            <div>Pacote Office: <span style="font-weight: 800;">{{ ms_office }}</span></div>
-                            <div>Padrão Equipamento <span style="font-weight: 800;">{{ pattern }}</span></div>
-                            <div>Sistema Operacional: <span style="font-weight: 800;">{{ operational_system }}</span></div>
-                            <div><span style="font-weight: 800;">Valor de Aquisição: </span><span style="font-weight: 800;">R${{ value }}</span></div>
+                            {% for item in detail %}
+                                <div>{{item.key}}: <span style="font-weight: 800;">{{ item.value }}</span></div>
+                            {% endfor %}
                         </td>
                     </tr>
                 </tbody>

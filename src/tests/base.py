@@ -1,4 +1,5 @@
 """Base test"""
+
 from datetime import datetime
 
 import pytest
@@ -18,14 +19,14 @@ from src.config import (
     get_database_url,
 )
 from src.database import Base
-from src.main import appAPI
-from src.people.models import (
-    EmployeeGenderModel,
-    EmployeeMaritalStatusModel,
-    EmployeeModel,
-    EmployeeNationalityModel,
-    EmployeeRoleModel,
+from src.datasync.models import (
+    EmployeeGenderTOTVSModel,
+    EmployeeMaritalStatusTOTVSModel,
+    EmployeeNationalityTOTVSModel,
+    EmployeeRoleTOTVSModel,
 )
+from src.main import appAPI
+from src.people.models import EmployeeModel
 
 
 class TestBase:
@@ -157,10 +158,14 @@ class TestBase:
     def create_base_employee(self):
         """Create base employee for test"""
         db_session = self.testing_session_local()
-        base_nationality = EmployeeNationalityModel(code="BR", description="Brasil")
-        base_marital_status = EmployeeMaritalStatusModel(code="C", description="Casado")
-        base_gender = EmployeeGenderModel(code="M", description="Masculino")
-        base_role = EmployeeRoleModel(code="ADS", name="Analista de Sistemas")
+        base_nationality = EmployeeNationalityTOTVSModel(
+            code="BR", description="Brasil"
+        )
+        base_marital_status = EmployeeMaritalStatusTOTVSModel(
+            code="C", description="Casado"
+        )
+        base_gender = EmployeeGenderTOTVSModel(code="M", description="Masculino")
+        base_role = EmployeeRoleTOTVSModel(code="ADS", name="Analista de Sistemas")
 
         db_session.add(base_gender)
         db_session.add(base_marital_status)

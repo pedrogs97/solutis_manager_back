@@ -4,27 +4,33 @@ from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, St
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
-from src.invoice.models import InvoiceAssets
+from src.datasync.models import AssetTypeTOTVSModel
+from src.invoice.models import InvoiceModel
 
 
 class AssetTypeModel(Base):
     """
     Asset type model
 
-    * Computadores e Periféricos
-    * Máquinas e equipamentos
-    * Móveis e utensilios
-    * Veículos
-    * Instalações
-    * Benfeitorias em Imóveis
-    * Softwares Admnistrativos
+    * NOTEBOOK
+    * DESKTOP
+    * MONITOR
+    * WEBCAM
+    * TELEFONIA
+    * VESTIMENTA
+    * FERRAMENTAS
+    * IMPRESSORA
+    * TABLET
+    * HEADSET
+    * MOUSE/TECLADO
+    * HD EXTERNO
+    * PENDRIVE
     """
 
     __tablename__ = "asset_type"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     code = Column("code", String(length=25), nullable=False, unique=True)
-    group_code = Column("group_code", String(length=150), nullable=False)
     name = Column("name", String(length=150), nullable=False)
     acronym = Column("acronym", String(length=3), nullable=True)
 
@@ -86,8 +92,13 @@ class AssetModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
 
+    asset_group: Mapped[AssetTypeTOTVSModel] = relationship()
+    asset_group_id = Column(
+        "asset_group_id", ForeignKey(AssetTypeTOTVSModel.id), nullable=True
+    )
+
     type: Mapped[AssetTypeModel] = relationship(lazy="joined")
-    type_id = Column("type_id", ForeignKey("asset_type.id"), nullable=False)
+    type_id = Column("type_id", ForeignKey("asset_type.id"), nullable=True)
 
     status_id = Column(
         "status_id", ForeignKey("asset_status.id"), nullable=True, default=1
@@ -99,7 +110,7 @@ class AssetModel(Base):
     )
     clothing_size: Mapped[AssetClothingSizeModel] = relationship(lazy="joined")
 
-    invoice: Mapped[InvoiceAssets] = relationship(viewonly=True, uselist=False)
+    invoice: Mapped[InvoiceModel] = relationship(viewonly=True, uselist=False)
 
     code = Column("code", String(length=255), nullable=True, unique=True)
     # tombo - registro patrimonial
@@ -112,11 +123,13 @@ class AssetModel(Base):
     discard_reason = Column("discard_reason", String(length=255), nullable=True)
     # padrão
     pattern = Column("pattern", String(length=100), nullable=True)
+    brand = Column("brand", String(length=150), nullable=True)
     operational_system = Column("operational_system", String(length=100), nullable=True)
     serial_number = Column("serial_number", String(length=255), nullable=True)
     imei = Column("imei", String(length=255), nullable=True)
     acquisition_date = Column("acquisition_date", DateTime, nullable=True)
     value = Column("value", Float, nullable=True)
+    depreciation = Column("depreciation", Float, nullable=True)
     # pacote office
     ms_office = Column("ms_office", Boolean, nullable=True)
     line_number = Column("line_number", String(length=20), nullable=True)

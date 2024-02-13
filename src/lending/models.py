@@ -7,7 +7,8 @@ from sqlalchemy.orm import Mapped, relationship
 
 from src.asset.models import AssetModel
 from src.database import Base
-from src.people.models import CostCenterModel, EmployeeModel
+from src.datasync.models import CostCenterTOTVSModel
+from src.people.models import EmployeeModel
 
 
 class DocumentTypeModel(Base):
@@ -74,26 +75,6 @@ lending_witnesses = Table(
 )
 
 
-class WitnessModel(Base):
-    """Witness model"""
-
-    __tablename__ = "witness"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-
-    employee: Mapped[EmployeeModel] = relationship()
-    employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=False)
-    lendings = relationship(
-        "LendingModel", secondary=lending_witnesses, back_populates="witnesses"
-    )
-
-    signed = Column("signed", Date, nullable=True)
-
-    def __str__(self) -> str:
-        """Returns model as string"""
-        return f"{self.id}"
-
-
 class LendingTypeModel(Base):
     """
     Lending type model
@@ -139,40 +120,38 @@ class LendingModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     employee: Mapped[EmployeeModel] = relationship()
-    employee_id = Column("employee_id", ForeignKey("employees.id"), nullable=False)
+    employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
 
     asset: Mapped[AssetModel] = relationship()
-    asset_id = Column("asset_id", ForeignKey("asset.id"), nullable=False)
+    asset_id = Column("asset_id", ForeignKey(AssetModel.id), nullable=False)
 
     document: Mapped[DocumentModel] = relationship()
-    document_id = Column("document_id", ForeignKey("document.id"), nullable=True)
+    document_id = Column("document_id", ForeignKey(DocumentModel.id), nullable=True)
     # lotação
     workload: Mapped[WorkloadModel] = relationship()
-    workload_id = Column("workload_id", ForeignKey("workload.id"), nullable=False)
+    workload_id = Column("workload_id", ForeignKey(WorkloadModel.id), nullable=False)
 
     type: Mapped[LendingTypeModel] = relationship()
     type_id = Column(
-        "type_id", ForeignKey("lending_type.id"), nullable=False, default=1
+        "type_id", ForeignKey(LendingTypeModel.id), nullable=False, default=1
     )
 
     status: Mapped[LendingStatusModel] = relationship()
-    status_id = Column("status_id", ForeignKey("lending_status.id"), nullable=True)
+    status_id = Column("status_id", ForeignKey(LendingStatusModel.id), nullable=True)
 
-    witnesses: Mapped[List[WitnessModel]] = relationship(
-        secondary=lending_witnesses,
-        back_populates="lendings",
+    witnesses: Mapped[List["WitnessModel"]] = relationship(
+        back_populates="lending",
     )
 
-    cost_center: Mapped[CostCenterModel] = relationship()
+    cost_center: Mapped[CostCenterTOTVSModel] = relationship()
     cost_center_id = Column(
-        "cost_center_id", ForeignKey("cost_center.id"), nullable=False
+        "cost_center_id", ForeignKey(CostCenterTOTVSModel.id), nullable=False
     )
 
     # código gerado
     number = Column("number", String(length=30), nullable=True)
     manager = Column("manager", String(length=50))
     business_executive = Column("business_executive", String(length=50), nullable=True)
-    goal = Column("goal", String(length=255), nullable=True)
     project = Column("project", String(length=100), nullable=True)
     location = Column("location", String(length=100), nullable=True)
     observations = Column("observations", String(length=255), nullable=True)
@@ -183,3 +162,20 @@ class LendingModel(Base):
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.id} - {self.number} ({self.type.name})"
+
+
+class WitnessModel(Base):
+    """Witness model"""
+
+    __tablename__ = "witness"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+
+    employee: Mapped[EmployeeModel] = relationship()
+    employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
+    lending: Mapped[LendingModel] = relationship(back_populates="witnesses")
+    lending_id = Column("lending_id", ForeignKey(LendingModel.id), nullable=True)
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.id}"

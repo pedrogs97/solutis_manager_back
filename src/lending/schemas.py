@@ -1,6 +1,5 @@
 """Lending schemas"""
 
-from datetime import date
 from typing import List, Optional
 
 from pydantic import Field
@@ -55,7 +54,6 @@ class WitnessSerializerSchema(BaseSchema):
 
     id: int
     employee: EmployeeSerializerSchema
-    signed: Optional[str]
 
 
 class LendingSerializerSchema(BaseSchema):
@@ -75,9 +73,8 @@ class LendingSerializerSchema(BaseSchema):
     signed_date: Optional[str] = Field(serialization_alias="signedDate")
     revoke_signed_date: Optional[str] = Field(serialization_alias="revokeSignedDate")
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
-    goal: Optional[str] = Field(alias="goal", default=None)
     project: Optional[str] = None
-    business_executive: str = Field(alias="businessExecutive", default=None)
+    business_executive: str = Field(serialization_alias="businessExecutive")
     location: str
 
 
@@ -99,7 +96,6 @@ class NewLendingSchema(BaseSchema):
     manager: str
     observations: Optional[str] = None
     glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
-    goal: Optional[str] = Field(alias="goal", default=None)
     project: Optional[str] = None
     business_executive: str = Field(alias="businessExecutive", default=None)
     location: str
@@ -144,14 +140,7 @@ class NewLendingContextSchema(BaseSchema):
     business_executive: str
     project: str
     workload: str
-    register_number: str
-    serial_number: str
-    description: str
-    accessories: str
-    ms_office: str
-    pattern: str
-    operational_system: str
-    value: str
+    detail: List[dict]
     date: str
     witnesses: List[WitnessContextSchema]
     location: str
@@ -177,16 +166,9 @@ class NewLendingPjContextSchema(BaseSchema):
     business_executive: str
     project: str
     workload: str
-    date_confirm: str
-    goal: str
-    register_number: str
-    serial_number: str
-    description: str
-    accessories: str
-    ms_office: str
-    pattern: str
-    operational_system: str
-    value: str
+    contract_date: str
+    object: str
+    detail: List[dict]
     date: str
     witnesses: List[WitnessContextSchema]
     location: str
@@ -206,10 +188,7 @@ class NewLendingTermContextSchema(BaseSchema):
     cc: str
     manager: str
     project: str
-    description: str
-    size: str
-    quantity: int
-    value: str
+    detail: List[dict]
     date: str
     location: str
 

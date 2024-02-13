@@ -70,12 +70,8 @@ class AssetFilter(Filter):
     """Asset filters"""
 
     code__ilike: Optional[str] = None
-    code__like: Optional[str] = None
-    description__like: Optional[str] = None
     description__ilike: Optional[str] = None
-    register_number__like: Optional[str] = None
     register_number__ilike: Optional[str] = None
-    supplier__like: Optional[str] = None
     supplier__ilike: Optional[str] = None
     acquisition_date__gte: Optional[date] = None
     acquisition_date__lte: Optional[date] = None
