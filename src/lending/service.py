@@ -255,29 +255,20 @@ class LendingService:
             witnesses = []
             ids_not_found = []
             for witness in data.witnesses_id:
-                witness_obj = (
-                    db_session.query(WitnessModel)
-                    .filter(WitnessModel.id == witness)
+                employee_obj = (
+                    db_session.query(EmployeeModel)
+                    .filter(EmployeeModel.id == witness)
                     .first()
                 )
 
-                if not witness_obj:
-                    employee_obj = (
-                        db_session.query(EmployeeModel)
-                        .filter(EmployeeModel.id == witness)
-                        .first()
-                    )
-
-                    if not employee_obj:
-                        ids_not_found.append(witness_obj)
-                    else:
-                        new_witness = WitnessModel(employee=employee_obj)
-                        db_session.add(new_witness)
-                        db_session.commit()
-                        db_session.flush()
-                        witnesses.append(new_witness)
+                if not employee_obj:
+                    ids_not_found.append(witness)
                 else:
-                    witnesses.append(witness_obj)
+                    new_witness = WitnessModel(employee=employee_obj)
+                    db_session.add(new_witness)
+                    db_session.commit()
+                    db_session.flush()
+                    witnesses.append(new_witness)
 
             if ids_not_found:
                 errors.append(
