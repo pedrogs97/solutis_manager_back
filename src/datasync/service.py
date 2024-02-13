@@ -545,6 +545,11 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
                     asset_simple_description + " " + asset_description_splited[1]
                 )
 
+                if asset_simple_description.startswith(
+                    ("CADEIRA", "MESA", "ARMARIO", "GAVETEIRO", "ROUPEIRO", "SOFA")
+                ):
+                    asset_simple_description = "MOBILIÁRIO"
+
                 asset_type = (
                     db_session.query(AssetTypeModel)
                     .filter(

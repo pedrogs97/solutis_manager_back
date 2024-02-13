@@ -103,5 +103,12 @@
         "code": "0015",
         "name": "MAC MINI",
         "acronym": "MCM"
+    },
+    {
+        "table": "asset_type",
+        "id": 16,
+        "code": "0016",
+        "name": "MOBILIÁRIO",
+        "acronym": "MBO"
     }
 ]

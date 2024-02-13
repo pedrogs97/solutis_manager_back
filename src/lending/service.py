@@ -215,6 +215,7 @@ class LendingService:
                     {"field": "assetId", "error": f"Ativo não existe. {asset}"}
                 )
 
+        workload = None
         if data.workload_id:
             workload = (
                 db_session.query(WorkloadModel)
@@ -254,8 +255,8 @@ class LendingService:
                     }
                 )
 
+        witnesses = []
         if data.witnesses_id:
-            witnesses = []
             ids_not_found = []
             for witness in data.witnesses_id:
                 employee_obj = (

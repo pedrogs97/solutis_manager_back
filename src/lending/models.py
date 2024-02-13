@@ -136,7 +136,7 @@ class LendingModel(Base):
     )
     # lotação
     workload: Mapped[WorkloadModel] = relationship()
-    workload_id = Column("workload_id", ForeignKey(WorkloadModel.id), nullable=False)
+    workload_id = Column("workload_id", ForeignKey(WorkloadModel.id), nullable=True)
 
     type: Mapped[LendingTypeModel] = relationship()
     type_id = Column(

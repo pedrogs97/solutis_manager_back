@@ -90,8 +90,8 @@ class NewLendingSchema(BaseSchema):
 
     employee_id: int = Field(alias="employeeId")
     asset_id: int = Field(alias="assetId")
-    workload_id: int = Field(alias="workloadId")
-    witnesses_id: List[int] = Field(alias="witnessesId")
+    workload_id: Optional[int] = Field(alias="workloadId", default=None)
+    witnesses_id: Optional[List[int]] = Field(alias="witnessesId", default=[])
     cost_center_id: int = Field(alias="costCenterId")
     type_id: int = Field(alias="typeId")
     manager: str
