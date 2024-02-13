@@ -160,7 +160,11 @@ class LendingService:
             document_revoke=(
                 lending.document_revoke.id if lending.document_revoke else None
             ),
-            workload=WorkloadSerializerSchema(**lending.workload.__dict__),
+            workload=(
+                WorkloadSerializerSchema(**lending.workload.__dict__)
+                if lending.workload
+                else None
+            ),
             witnesses=witnesses_serialzier,
             cost_center=CostCenterSerializerSchema(**lending.cost_center.__dict__),
             manager=lending.manager,
