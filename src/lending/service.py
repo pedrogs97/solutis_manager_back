@@ -185,6 +185,7 @@ class LendingService:
             business_executive=lending.business_executive,
             project=lending.project,
             location=lending.location,
+            number=lending.number,
         )
 
     def serialize_workload(self, workload: WorkloadModel) -> WorkloadSerializerSchema:

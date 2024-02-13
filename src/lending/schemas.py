@@ -62,6 +62,7 @@ class LendingSerializerSchema(BaseSchema):
     id: int
     employee: EmployeeSerializerSchema
     asset: AssetShortSerializerSchema
+    number: Optional[str] = None
     document: Optional[int]
     document_revoke: Optional[int] = Field(serialization_alias="documentRevoke")
     workload: Optional[WorkloadSerializerSchema] = None

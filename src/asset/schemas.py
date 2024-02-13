@@ -303,6 +303,7 @@ class UpdateAssetSchema(BaseSchema):
     """Update asset schema"""
 
     observations: Optional[str] = None
+    type_id: Optional[int] = Field(alias="typeId", default=None)
 
 
 class InactivateAssetSchema(BaseSchema):

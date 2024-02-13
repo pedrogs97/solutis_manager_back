@@ -1,7 +1,7 @@
 """Asset service"""
 
 import logging
-from typing import List
+from typing import List, Union
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -51,7 +51,9 @@ class AssetService:
 
         return asset
 
-    def __validate_nested(self, data: NewAssetSchema, db_session: Session) -> tuple:
+    def __validate_nested(
+        self, data: Union[NewAssetSchema, UpdateAssetSchema], db_session: Session
+    ) -> tuple:
         """Validates clothing size, type and status values"""
         errors = []
         asset_type = None
@@ -71,7 +73,7 @@ class AssetService:
                     }
                 )
 
-        if data.clothing_size_id:
+        if hasattr(data, "clothing_size_id") and data.clothing_size_id:
             clothing_size = (
                 db_session.query(AssetClothingSizeModel)
                 .filter(AssetClothingSizeModel.id == data.clothing_size_id)
@@ -85,7 +87,7 @@ class AssetService:
                     }
                 )
 
-        if data.status_id:
+        if hasattr(data, "status_id") and data.status_id:
             asset_status = (
                 db_session.query(AssetStatusModel)
                 .filter(AssetStatusModel.id == data.status_id)
@@ -270,6 +272,13 @@ class AssetService:
         if data.observations:
             asset.observations = data.observations
 
+        (
+            asset_type,
+            _,
+            _,
+        ) = self.__validate_nested(data, db_session)
+
+        asset.type = asset_type
         db_session.add(asset)
         db_session.commit()
         db_session.flush()
