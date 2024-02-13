@@ -6,7 +6,7 @@ from typing import List, Optional
 from fastapi_filter import FilterDepends, with_prefix
 from fastapi_filter.contrib.sqlalchemy import Filter
 
-from src.asset.filters import AssetShortFilter
+from src.asset.filters import AssetShortFilter, AssetTypeFilter
 from src.lending.models import (
     DocumentModel,
     DocumentTypeModel,
@@ -92,6 +92,9 @@ class LendingFilter(Filter):
     )
     asset: Optional[AssetShortFilter] = FilterDepends(
         with_prefix("asset", AssetShortFilter)
+    )
+    asset_type: Optional[AssetTypeFilter] = FilterDepends(
+        with_prefix("asset_type", AssetTypeFilter)
     )
     workload: Optional[WorkloadFilter] = FilterDepends(
         with_prefix("workload", WorkloadFilter)

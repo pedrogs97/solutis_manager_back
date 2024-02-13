@@ -20,7 +20,7 @@ from src.datasync.models import (
     EmployeeRoleTOTVSModel,
 )
 from src.lending.models import LendingModel
-from src.lending.schemas import CostCenterSerializerSchema, LendingSerializerSchema
+from src.lending.schemas import CostCenterSerializerSchema
 from src.lending.service import LendingService
 from src.log.services import LogService
 from src.people.filters import (
@@ -350,7 +350,7 @@ class EmployeeService:
 
     def get_employee_lending_history(
         self, employee_id: int, db_session: Session
-    ) -> List[LendingSerializerSchema]:
+    ) -> List[dict]:
         """Get an employee lending history"""
         employee = self.__get_employee_or_404(employee_id, db_session)
 

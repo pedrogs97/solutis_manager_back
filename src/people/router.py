@@ -1,4 +1,5 @@
 """People routes"""
+
 from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
@@ -150,9 +151,7 @@ def get_emplooyee_lending_history_route(
     )
     db_session.close()
     return JSONResponse(
-        content=[
-            serializer.model_copy(by_alias=True) for serializer in serializer_list
-        ],
+        content=serializer_list,
         status_code=status.HTTP_200_OK,
     )
 

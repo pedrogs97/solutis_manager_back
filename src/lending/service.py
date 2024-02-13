@@ -12,7 +12,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
-from src.asset.models import AssetModel
+from src.asset.models import AssetModel, AssetStatusModel
 from src.asset.schemas import AssetShortSerializerSchema
 from src.auth.models import UserModel
 from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
@@ -342,7 +342,7 @@ class LendingService:
         service_log.set_log(
             "lending",
             "lending",
-            "Criação de Contrato de Comodato",
+            "Criação de Comodato",
             new_lending_db.id,
             authenticated_user,
             db_session,
@@ -870,6 +870,11 @@ class DocumentService:
         )
         logger.info("New Document. %s", str(new_doc))
 
+        asset.status = db_session.query(AssetStatusModel).get(2)
+        db_session.add(asset)
+        db_session.commit()
+        db_session.flush()
+
         current_lending.document = new_doc
         current_lending.number = new_code
         current_lending.status = lending_pending
@@ -1036,6 +1041,11 @@ class DocumentService:
         )
         logger.info("New Document. %s", str(new_doc))
 
+        current_lending.asset.status = db_session.query(AssetStatusModel).get(1)
+        db_session.add(current_lending.asset)
+        db_session.commit()
+        db_session.flush()
+
         current_lending.document_revoke = new_doc
         current_lending.number = new_code
         current_lending.status = lending_pending
@@ -1133,6 +1143,11 @@ class DocumentService:
             db_session,
         )
         logger.info("New Document. %s", str(new_doc))
+
+        asset.status = db_session.query(AssetStatusModel).get(7)
+        db_session.add(asset)
+        db_session.commit()
+        db_session.flush()
 
         current_lending.document = new_doc
         current_lending.number = new_code
@@ -1355,6 +1370,11 @@ class DocumentService:
 
         db_session.add(new_doc)
         db_session.commit()
+
+        lending.asset.status = db_session.query(AssetStatusModel).get(1)
+        db_session.add(lending.asset)
+        db_session.commit()
+        db_session.flush()
 
         lending.revoke_signed_date = date.today()
         lending.document_revoke = new_doc

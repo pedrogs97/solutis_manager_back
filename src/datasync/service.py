@@ -9,7 +9,7 @@ from pydantic_core import ValidationError
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
-from src.asset.models import AssetModel, AssetTypeModel
+from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
 from src.backends import get_db_session
 from src.datasync.models import (
     AssetTypeTOTVSModel,
@@ -574,10 +574,18 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
                 .first()
             )
 
+            status = 1 if totvs_asset.active else 6
+            asset_status = (
+                db_session.query(AssetStatusModel)
+                .filter(AssetStatusModel.id == status)
+                .first()
+            )
+
             dict_asset = {
                 **dict_totvs_asset,
                 "asset_group_id": asset_group.id if asset_group else None,
                 "type": asset_type,
+                "status": asset_status,
             }
 
             exist_index = 0

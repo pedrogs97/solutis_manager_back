@@ -189,6 +189,7 @@ class AssetSerializerSchema(BaseSchema):
         default=None,
     )
     value: float
+    depreciation: Optional[float] = None
     # pacote office
     ms_office: Optional[bool] = Field(
         serialization_alias="msOffice",
@@ -304,6 +305,7 @@ class UpdateAssetSchema(BaseSchema):
 
     observations: Optional[str] = None
     type_id: Optional[int] = Field(alias="typeId", default=None)
+    status_id: Optional[int] = Field(alias="statusId", default=None)
 
 
 class InactivateAssetSchema(BaseSchema):

@@ -87,7 +87,7 @@ class AssetService:
                     }
                 )
 
-        if hasattr(data, "status_id") and data.status_id:
+        if data.status_id:
             asset_status = (
                 db_session.query(AssetStatusModel)
                 .filter(AssetStatusModel.id == data.status_id)
@@ -144,6 +144,7 @@ class AssetService:
                 asset.acquisition_date.isoformat() if asset.acquisition_date else None
             ),
             value=asset.value,
+            depreciation=asset.depreciation,
             ms_office=asset.ms_office,
             line_number=asset.line_number,
             operator=asset.operator,
@@ -275,10 +276,14 @@ class AssetService:
         (
             asset_type,
             _,
-            _,
+            asset_status,
         ) = self.__validate_nested(data, db_session)
 
-        asset.type = asset_type
+        if asset_type:
+            asset.type = asset_type
+        if asset_status:
+            asset.status = asset_status
+
         db_session.add(asset)
         db_session.commit()
         db_session.flush()
