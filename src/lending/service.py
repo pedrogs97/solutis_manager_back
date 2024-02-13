@@ -1290,6 +1290,7 @@ class DocumentService:
         db_session.commit()
 
         lending.signed_date = date.today()
+        lending.document = new_doc
         lending.status = lending_signed
         db_session.add(lending)
         db_session.commit()
@@ -1350,6 +1351,7 @@ class DocumentService:
         db_session.commit()
 
         lending.revoke_signed_date = date.today()
+        lending.document_revoke = new_doc
         lending.status = lending_signed
         db_session.add(lending)
         db_session.commit()
