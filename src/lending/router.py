@@ -337,7 +337,7 @@ def post_create_term(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    new_doc = document_service.create_contract(
+    new_doc = document_service.create_term(
         new_lending_doc, "Termo de Responsabilidade", db_session, authenticated_user
     )
 
