@@ -63,7 +63,7 @@ class LendingSerializerSchema(BaseSchema):
     employee: EmployeeSerializerSchema
     asset: AssetShortSerializerSchema
     document: Optional[int]
-    document_revoke: Optional[int]
+    document_revoke: Optional[int] = Field(serialization_alias="documentRevoke")
     workload: WorkloadSerializerSchema
     witnesses: List[WitnessSerializerSchema]
     cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
