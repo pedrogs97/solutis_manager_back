@@ -37,6 +37,7 @@ class AssetTypeFilter(Filter):
     """Asset type filters"""
 
     name: Optional[str] = None
+    id__in: Optional[List[int]] = None
 
     class Constants(Filter.Constants):
         """Filter constants"""
