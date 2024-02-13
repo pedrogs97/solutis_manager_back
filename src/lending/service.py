@@ -157,6 +157,9 @@ class LendingService:
             employee=self.serialize_employee(lending.employee),
             asset=asset_short,
             document=lending.document.id if lending.document else None,
+            document_revoke=(
+                lending.document_revoke.id if lending.document_revoke else None
+            ),
             workload=WorkloadSerializerSchema(**lending.workload.__dict__),
             witnesses=witnesses_serialzier,
             cost_center=CostCenterSerializerSchema(**lending.cost_center.__dict__),
@@ -1027,7 +1030,7 @@ class DocumentService:
         )
         logger.info("New Document. %s", str(new_doc))
 
-        current_lending.document = new_doc
+        current_lending.document_revoke = new_doc
         current_lending.number = new_code
         current_lending.status = lending_pending
 
@@ -1223,7 +1226,7 @@ class DocumentService:
         )
         logger.info("New Document. %s", str(new_doc))
 
-        current_lending.document = new_doc
+        current_lending.document_revoke = new_doc
         current_lending.number = new_code
         current_lending.status = lending_pending
 

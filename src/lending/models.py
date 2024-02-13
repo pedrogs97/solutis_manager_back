@@ -125,8 +125,15 @@ class LendingModel(Base):
     asset: Mapped[AssetModel] = relationship()
     asset_id = Column("asset_id", ForeignKey(AssetModel.id), nullable=False)
 
-    document: Mapped[DocumentModel] = relationship()
     document_id = Column("document_id", ForeignKey(DocumentModel.id), nullable=True)
+    document: Mapped[DocumentModel] = relationship(foreign_keys=[document_id])
+
+    document_revoke_id = Column(
+        "document_revoke_id", ForeignKey(DocumentModel.id), nullable=True
+    )
+    document_revoke: Mapped[DocumentModel] = relationship(
+        foreign_keys=[document_revoke_id]
+    )
     # lotação
     workload: Mapped[WorkloadModel] = relationship()
     workload_id = Column("workload_id", ForeignKey(WorkloadModel.id), nullable=False)
