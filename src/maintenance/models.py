@@ -3,7 +3,9 @@
 from sqlalchemy import Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
+from src.asset.models import AssetModel
 from src.database import Base
+from src.people.models import EmployeeModel
 
 
 class MaintenanceActionModel(Base):
@@ -50,10 +52,20 @@ class MaintenanceModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     action: Mapped[MaintenanceActionModel] = relationship()
-    action_id = Column("action_id", ForeignKey("maintenance_action.id"), nullable=False)
+    action_id = Column(
+        "action_id", ForeignKey(MaintenanceActionModel.id), nullable=False
+    )
 
     status: Mapped[MaintenanceStatusModel] = relationship()
-    status_id = Column("status_id", ForeignKey("maintenance_status.id"), nullable=False)
+    status_id = Column(
+        "status_id", ForeignKey(MaintenanceStatusModel.id), nullable=False
+    )
+
+    asset: Mapped[AssetModel] = relationship()
+    asset_id = Column("asset_id", ForeignKey(AssetModel.id), nullable=False)
+
+    employee: Mapped[EmployeeModel] = relationship()
+    employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
 
     attachments = relationship(
         "MaintenanceAttachmentModel", back_populates="maintenance"

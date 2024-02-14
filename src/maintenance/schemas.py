@@ -1,4 +1,5 @@
 """Maintenance schemas"""
+
 from datetime import date
 from typing import List, Optional
 
@@ -24,12 +25,14 @@ class MaintenanceStatusSerializerSchema(BaseSchema):
 class NewMaintenanceSchema(BaseSchema):
     """New Maintenance schema"""
 
-    action_id: int
+    action_id: int = Field(alias="actionId")
     glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
     supplier_service_order: Optional[str] = Field(
         alias="supplierServiceOrder", default=None
     )
     supplier_number: Optional[str] = Field(alias="supplierNumber", default=None)
+    asset_id: int = Field(alias="assetId")
+    employee_id: int = Field(alias="employeeId")
 
 
 class UpdateMaintenanceSchema(BaseSchema):

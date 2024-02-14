@@ -11,6 +11,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
+from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.log.services import LogService
 from src.maintenance.filters import MaintenanceFilter
@@ -28,6 +29,7 @@ from src.maintenance.schemas import (
     NewMaintenanceSchema,
     UpdateMaintenanceSchema,
 )
+from src.people.service import EmployeeService
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -142,6 +144,10 @@ class MaintenanceService:
 
         action_type = self.__get_maintenance_action_or_404(data.action_id, db_session)
 
+        asset = AssetService().__get_asset_or_404(data.asset_id, db_session)
+
+        employee = EmployeeService().__get_employee_or_404(data.employee_id, db_session)
+
         pending_status = (
             db_session.query(MaintenanceStatusModel)
             .filter(MaintenanceStatusModel.name == "Pendente")
@@ -160,8 +166,10 @@ class MaintenanceService:
             supplier_service_order=data.supplier_service_order,
             supplier_number=data.supplier_number,
         )
-        new_maintenance.status = (pending_status,)
-        new_maintenance.action = (action_type,)
+        new_maintenance.status = pending_status
+        new_maintenance.action = action_type
+        new_maintenance.asset = asset
+        new_maintenance.employee = employee
 
         db_session.add(new_maintenance)
         db_session.commit()
