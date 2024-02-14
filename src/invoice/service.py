@@ -3,6 +3,7 @@
 import logging
 import os
 from datetime import date
+from typing import List
 
 from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
@@ -16,7 +17,7 @@ from src.auth.models import UserModel
 from src.config import BASE_DIR, DEBUG, DEFAULT_DATE_FORMAT, MEDIA_UPLOAD_DIR
 from src.invoice.filters import InvoiceFilter
 from src.invoice.models import InvoiceModel
-from src.invoice.schemas import InvoiceSerializerSchema, NewInvoiceSchema
+from src.invoice.schemas import InvoiceSerializerSchema
 from src.log.services import LogService
 from src.utils import upload_file
 
@@ -78,16 +79,20 @@ class InvoiceService:
 
     async def create_invoice(
         self,
-        new_invoice: NewInvoiceSchema,
+        assets_id: List[int],
+        number: str,
         invoice_file: UploadFile,
         db_session: Session,
         authenticated_user: UserModel,
     ) -> InvoiceSerializerSchema:
         """Creates new invoice"""
 
-        new_invoice_db = InvoiceModel(number=new_invoice.number)
-        asset = self.__get_asset_or_404(new_invoice.asset_id, db_session)
-        new_invoice_db.asset = asset
+        assets_db = []
+        for asset_id in assets_id:
+            assets_db.append(self.__get_asset_or_404(asset_id, db_session))
+
+        new_invoice_db = InvoiceModel(number=number)
+        new_invoice_db.assets = assets_db
 
         code = new_invoice_db.number
 

@@ -508,7 +508,7 @@ def update_invoice_number(
 
     if not asset_invoice_db:
         asset_invoice_new = InvoiceModel(number=invoice_number)
-        asset_invoice_new.asset = asset
+        asset_invoice_new.assets.append(asset)
         db_session.add(asset_invoice_new)
         db_session.commit()
     elif asset_invoice_db.asset.code != asset.code:
@@ -521,7 +521,6 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
     """Updates assets from totvs"""
     db_session = get_db_session()
     updates: List[AssetModel] = []
-    invoices: List[dict] = []
     try:
         for totvs_asset in totvs_assets:
             asset_db = (
@@ -581,11 +580,23 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
                 .first()
             )
 
+            asset_invoice = None
+            if totvs_asset.invoice_number:
+                asset_invoice = (
+                    db_session.query(InvoiceModel)
+                    .filter(InvoiceModel.number == totvs_asset.invoice_number)
+                    .first()
+                )
+
+                if not asset_invoice:
+                    asset_invoice = InvoiceModel(number=totvs_asset.invoice_number)
+
             dict_asset = {
                 **dict_totvs_asset,
                 "asset_group_id": asset_group.id if asset_group else None,
                 "type": asset_type,
                 "status": asset_status,
+                "invoice": asset_invoice,
             }
 
             exist_index = 0
@@ -602,25 +613,13 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
                         setattr(asset_db, key, value)
 
                 updates.append(asset_db)
-
-                if totvs_asset.invoice_number:
-                    invoices.append(
-                        {"invoice": totvs_asset.invoice_number, "asset": asset_db}
-                    )
             else:
                 new_asset = AssetModel(**dict_asset)
                 updates.append(new_asset)
 
-                if totvs_asset.invoice_number:
-                    invoices.append(
-                        {"invoice": totvs_asset.invoice_number, "asset": new_asset}
-                    )
-
         db_session.add_all(updates)
         db_session.commit()
         db_session.flush()
-        for invoice in invoices:
-            update_invoice_number(invoice["invoice"], invoice["asset"], db_session)
         logger.info("Update Assets from TOTVS. Total=%s", str(len(updates)))
     except Exception as err:
         logger.error("Error: %s", err.args[0])

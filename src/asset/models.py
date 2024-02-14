@@ -98,19 +98,20 @@ class AssetModel(Base):
     )
 
     type: Mapped[AssetTypeModel] = relationship(lazy="joined")
-    type_id = Column("type_id", ForeignKey("asset_type.id"), nullable=True)
+    type_id = Column("type_id", ForeignKey(AssetTypeModel.id), nullable=True)
 
     status_id = Column(
-        "status_id", ForeignKey("asset_status.id"), nullable=True, default=1
+        "status_id", ForeignKey(AssetStatusModel.id), nullable=True, default=1
     )
     status: Mapped[AssetStatusModel] = relationship(lazy="joined")
 
     clothing_size_id = Column(
-        "clothing_size_id", ForeignKey("asset_clothing_size.id"), nullable=True
+        "clothing_size_id", ForeignKey(AssetClothingSizeModel.id), nullable=True
     )
     clothing_size: Mapped[AssetClothingSizeModel] = relationship(lazy="joined")
 
-    invoice: Mapped[InvoiceModel] = relationship(viewonly=True, uselist=False)
+    invoice: Mapped[InvoiceModel] = relationship(back_populates="assets")
+    invoice_id = Column("invoice_id", ForeignKey(InvoiceModel.id), nullable=True)
 
     code = Column("code", String(length=255), nullable=True, unique=True)
     # tombo - registro patrimonial

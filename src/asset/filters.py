@@ -73,6 +73,7 @@ class AssetFilter(Filter):
     code__ilike: Optional[str] = None
     description__ilike: Optional[str] = None
     register_number__ilike: Optional[str] = None
+    serial_number__ilike: Optional[str] = None
     supplier__ilike: Optional[str] = None
     acquisition_date__gte: Optional[date] = None
     acquisition_date__lte: Optional[date] = None

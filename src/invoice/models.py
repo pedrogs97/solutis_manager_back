@@ -1,6 +1,8 @@
 """invoice models"""
 
-from sqlalchemy import Column, Date, ForeignKey, Integer, String
+from typing import List
+
+from sqlalchemy import Column, Date, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -18,8 +20,7 @@ class InvoiceModel(Base):
     path = Column("path", String(length=255), nullable=True)
     file_name = Column("file_name", String(length=100), nullable=True)
 
-    asset: Mapped["AssetModel"] = relationship()
-    asset_id: Mapped[int] = Column(ForeignKey("asset.id"), nullable=False)
+    assets: Mapped[List["AssetModel"]] = relationship(back_populates="invoice")
 
     deleted_at = Column("deleted_at", Date, nullable=True)
 

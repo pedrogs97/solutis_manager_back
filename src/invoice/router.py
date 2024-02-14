@@ -1,6 +1,6 @@
 """Invoice router"""
 
-from typing import Annotated, Union
+from typing import Annotated, List, Union
 
 from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -17,7 +17,6 @@ from src.config import (
     PAGINATION_NUMBER,
 )
 from src.invoice.filters import InvoiceFilter
-from src.invoice.schemas import NewInvoiceSchema
 from src.invoice.service import InvoiceService
 
 invoice_service = InvoiceService()
@@ -26,7 +25,8 @@ invoice_router = APIRouter(prefix="/invoice", tags=["Invoice"])
 
 @invoice_router.post("/invoices/")
 async def post_create_invoice_route(
-    data: Annotated[NewInvoiceSchema, Form()],
+    assetsId: Annotated[List[int], Form()],
+    number: Annotated[str, Form()],
     invoice_file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -39,7 +39,11 @@ async def post_create_invoice_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     serializer = await invoice_service.create_invoice(
-        data, invoice_file, db_session, authenticated_user
+        assets_id=assetsId,
+        number=number,
+        invoice_file=invoice_file,
+        db_session=db_session,
+        authenticated_user=authenticated_user,
     )
     db_session.close()
     return JSONResponse(
