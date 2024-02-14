@@ -1,6 +1,6 @@
 """Invoice router"""
 
-from typing import Annotated, List, Union
+from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -17,6 +17,7 @@ from src.config import (
     PAGINATION_NUMBER,
 )
 from src.invoice.filters import InvoiceFilter
+from src.invoice.schemas import NewInvoiceSchema
 from src.invoice.service import InvoiceService
 
 invoice_service = InvoiceService()
@@ -24,10 +25,8 @@ invoice_router = APIRouter(prefix="/invoice", tags=["Invoice"])
 
 
 @invoice_router.post("/invoices/")
-async def post_create_invoice_route(
-    assetsId: Annotated[List[int], Form()],
-    number: Annotated[str, Form()],
-    invoice_file: UploadFile,
+def post_create_invoice_route(
+    data: NewInvoiceSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "invoice", "model": "invoice", "action": "add"})
@@ -38,12 +37,39 @@ async def post_create_invoice_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = await invoice_service.create_invoice(
-        assets_id=assetsId,
-        number=number,
-        invoice_file=invoice_file,
-        db_session=db_session,
-        authenticated_user=authenticated_user,
+
+    serializer = invoice_service.create_invoice(
+        data,
+        db_session,
+        authenticated_user,
+    )
+    db_session.close()
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_201_CREATED,
+    )
+
+
+@invoice_router.post("/invoices/document/upload")
+async def post_upload_document_invoice_route(
+    invoice: Annotated[int, Form()],
+    invoice_file: UploadFile,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "invoice", "model": "invoice", "action": "edit"})
+    ),
+):
+    """Upload document invoice route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    serializer = await invoice_service.upload_document_invoice(
+        invoice,
+        invoice_file,
+        db_session,
+        authenticated_user,
     )
     db_session.close()
     return JSONResponse(

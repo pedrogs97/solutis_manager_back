@@ -17,3 +17,10 @@ class InvoiceSerializerSchema(BaseSchema):
     file_name: Optional[str] = None
     deleted_at: Optional[str] = Field(serialization_alias="deletedAt", default=None)
     asset: AssetShortSerializerSchema
+
+
+class NewInvoiceSchema(BaseSchema):
+    """New invoice schema"""
+
+    number: str
+    assets_id: int = Field(alias="assetsId")

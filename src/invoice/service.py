@@ -3,7 +3,6 @@
 import logging
 import os
 from datetime import date
-from typing import List
 
 from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
@@ -17,7 +16,7 @@ from src.auth.models import UserModel
 from src.config import BASE_DIR, DEBUG, DEFAULT_DATE_FORMAT, MEDIA_UPLOAD_DIR
 from src.invoice.filters import InvoiceFilter
 from src.invoice.models import InvoiceModel
-from src.invoice.schemas import InvoiceSerializerSchema
+from src.invoice.schemas import InvoiceSerializerSchema, NewInvoiceSchema
 from src.log.services import LogService
 from src.utils import upload_file
 
@@ -77,37 +76,20 @@ class InvoiceService:
             ),
         )
 
-    async def create_invoice(
+    def create_invoice(
         self,
-        assets_id: List[int],
-        number: str,
-        invoice_file: UploadFile,
+        data: NewInvoiceSchema,
         db_session: Session,
         authenticated_user: UserModel,
     ) -> InvoiceSerializerSchema:
         """Creates new invoice"""
 
         assets_db = []
-        for asset_id in assets_id:
+        for asset_id in data.assets_id:
             assets_db.append(self.__get_asset_or_404(asset_id, db_session))
 
-        new_invoice_db = InvoiceModel(number=number)
+        new_invoice_db = InvoiceModel(number=data.number)
         new_invoice_db.assets = assets_db
-
-        code = new_invoice_db.number
-
-        file_name = f"{code}.pdf"
-
-        upload_dir = (
-            os.path.join(BASE_DIR, "storage", "media") if DEBUG else MEDIA_UPLOAD_DIR
-        )
-
-        file_path = await upload_file(
-            file_name, "invoice", invoice_file.file.read(), upload_dir
-        )
-
-        new_invoice_db.path = file_path
-        new_invoice_db.file_name = file_name
 
         db_session.add(new_invoice_db)
         db_session.commit()
@@ -122,18 +104,60 @@ class InvoiceService:
             db_session,
         )
 
+        logger.info("New Invoice. %s", str(new_invoice_db))
+
+        return self.serialize_invoice(new_invoice_db)
+
+    async def upload_document_invoice(
+        self,
+        invoice: int,
+        invoice_file: UploadFile,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> InvoiceSerializerSchema:
+        """Upload document invoice"""
+
+        invoice_db = self.__get_invoice_or_404(invoice, db_session)
+
+        code = invoice_db.number
+
+        file_name = f"{code}.pdf"
+
+        upload_dir = (
+            os.path.join(BASE_DIR, "storage", "media") if DEBUG else MEDIA_UPLOAD_DIR
+        )
+
+        file_path = await upload_file(
+            file_name, "invoice", invoice_file.file.read(), upload_dir
+        )
+
+        invoice_db.path = file_path
+        invoice_db.file_name = file_name
+
+        db_session.add(invoice_db)
+        db_session.commit()
+
         service_log.set_log(
             "invoice",
-            "invoice",
-            "Importação de Nota Fiscal",
-            new_invoice_db.id,
+            "asset",
+            "Atualização de Nota Fiscal",
+            invoice_db.id,
             authenticated_user,
             db_session,
         )
 
-        logger.info("New Invoice. %s", str(new_invoice_db))
+        service_log.set_log(
+            "invoice",
+            "invoice",
+            "Importação de Nota Fiscal",
+            invoice_db.id,
+            authenticated_user,
+            db_session,
+        )
 
-        return self.serialize_invoice(new_invoice_db)
+        logger.info("Update Invoice. %s", str(invoice_db))
+
+        return self.serialize_invoice(invoice_db)
 
     def get_invoice(
         self, invoice_id: int, db_session: Session
