@@ -7,6 +7,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from src.asset.filters import (
@@ -346,7 +347,7 @@ class AssetService:
             .outerjoin(AssetTypeModel)
             .outerjoin(AssetClothingSizeModel)
             .outerjoin(AssetStatusModel)
-        )
+        ).order_by(desc(AssetModel.id))
 
         params = Params(page=page, size=size)
         if fields == "":

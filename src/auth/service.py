@@ -9,6 +9,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from src.auth.filters import GroupFilter, PermissionFilter, UserFilter
@@ -220,7 +221,7 @@ class UserSerivce:
         """
         user_list = user_filters.filter(
             db_session.query(UserModel).join(GroupModel).outerjoin(EmployeeModel)
-        )
+        ).order_by(desc(UserModel.id))
 
         params = Params(page=page, size=size)
         paginated = paginate(
@@ -846,7 +847,9 @@ class GroupService:
         fields: str = "",
     ) -> Page[GroupSerializerSchema]:
         """Get group list"""
-        group_list = group_filter.filter(db_session.query(GroupModel))
+        group_list = group_filter.filter(db_session.query(GroupModel)).order_by(
+            desc(GroupModel.id)
+        )
 
         params = Params(page=page, size=size)
         if fields == "":
@@ -981,7 +984,9 @@ class PermissionService:
         permission_filter: PermissionFilter,
     ) -> Page[PermissionSerializerSchema]:
         """Get permission list"""
-        permission_list = permission_filter.filter(db_session.query(PermissionModel))
+        permission_list = permission_filter.filter(
+            db_session.query(PermissionModel)
+        ).order_by(desc(PermissionModel.id))
 
         return [
             self.serialize_permission(permission).model_dump(by_alias=True)

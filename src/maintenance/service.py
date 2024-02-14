@@ -1,4 +1,5 @@
 """Maintenance service"""
+
 import logging
 from datetime import date
 from typing import List
@@ -7,6 +8,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
@@ -197,7 +199,7 @@ class MaintenanceService:
             db_session.query(MaintenanceModel)
             .join(MaintenanceActionModel)
             .join(MaintenanceStatusModel)
-        )
+        ).order_by(desc(MaintenanceModel.id))
 
         params = Params(page=page, size=size)
         paginated = paginate(
@@ -261,7 +263,11 @@ class MaintenanceService:
     ) -> List[MaintenanceActionSerializerSchema]:
         """Get maintenance actions"""
 
-        maintenance_actions = db_session.query(MaintenanceActionModel).all()
+        maintenance_actions = (
+            db_session.query(MaintenanceActionModel)
+            .order_by(desc(MaintenanceActionModel.id))
+            .all()
+        )
         return [
             self.serialize_maintenance_action(action).model_dump(by_alias=True)
             for action in maintenance_actions
@@ -272,7 +278,11 @@ class MaintenanceService:
     ) -> List[MaintenanceStatusSerializerSchema]:
         """Get maintenance status"""
 
-        maintenance_status = db_session.query(MaintenanceActionModel).all()
+        maintenance_status = (
+            db_session.query(MaintenanceActionModel)
+            .order_by(desc(MaintenanceActionModel.id))
+            .all()
+        )
         return [
             self.serialize_maintenance_status(status).model_dump(by_alias=True)
             for status in maintenance_status

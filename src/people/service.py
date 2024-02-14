@@ -7,6 +7,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
@@ -357,6 +358,7 @@ class EmployeeService:
         historic_model = (
             db_session.query(LendingModel)
             .filter(LendingModel.employee_id == employee.id)
+            .order_by(desc(LendingModel.id))
             .all()
         )
 
@@ -383,7 +385,7 @@ class EmployeeService:
             .join(EmployeeNationalityTOTVSModel)
             .join(EmployeeMaritalStatusTOTVSModel)
             .join(EmployeeGenderTOTVSModel)
-        )
+        ).order_by(desc(EmployeeModel.id))
 
         if fields == "":
             params = Params(page=page, size=size)
@@ -461,7 +463,7 @@ class EmpleoyeeGeneralSerivce:
 
         nationalities_list = nationality_filters.filter(
             db_session.query(EmployeeNationalityTOTVSModel)
-        )
+        ).order_by(desc(EmployeeNationalityTOTVSModel.id))
 
         if fields == "":
             return [
@@ -486,7 +488,7 @@ class EmpleoyeeGeneralSerivce:
 
         marital_status_list = marital_status_filter.filter(
             db_session.query(EmployeeMaritalStatusTOTVSModel)
-        )
+        ).order_by(desc(EmployeeMaritalStatusTOTVSModel.id))
 
         if fields == "":
             return [
@@ -511,7 +513,7 @@ class EmpleoyeeGeneralSerivce:
 
         center_cost_list = center_cost_filter.filter(
             db_session.query(CostCenterTOTVSModel)
-        )
+        ).order_by(desc(CostCenterTOTVSModel.id))
 
         if fields == "":
             return [
@@ -536,7 +538,7 @@ class EmpleoyeeGeneralSerivce:
 
         genders_list = genders_filters.filter(
             db_session.query(EmployeeGenderTOTVSModel)
-        )
+        ).order_by(desc(EmployeeGenderTOTVSModel.id))
 
         if fields == "":
             return [
@@ -560,7 +562,9 @@ class EmpleoyeeGeneralSerivce:
     ) -> List[EmployeeRoleSerializerSchema]:
         """Get roles list"""
 
-        roles_list = roles_filter.filter(db_session.query(EmployeeRoleTOTVSModel))
+        roles_list = roles_filter.filter(
+            db_session.query(EmployeeRoleTOTVSModel)
+        ).order_by(desc(EmployeeRoleTOTVSModel.id))
 
         if fields == "":
             return [
@@ -584,7 +588,7 @@ class EmpleoyeeGeneralSerivce:
 
         educational_levels_list = educational_level_filter.filter(
             db_session.query(EmployeeEducationalLevelTOTVSModel)
-        )
+        ).order_by(desc(EmployeeEducationalLevelTOTVSModel.id))
 
         if fields == "":
             return [

@@ -10,6 +10,7 @@ from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from src.asset.models import AssetModel, AssetStatusModel
@@ -402,7 +403,7 @@ class LendingService:
             .outerjoin(CostCenterTOTVSModel)
             .outerjoin(LendingTypeModel)
             .outerjoin(LendingStatusModel)
-        )
+        ).order_by(desc(LendingModel.id))
 
         params = Params(page=page, size=size)
         paginated = paginate(
@@ -423,7 +424,9 @@ class LendingService:
     ) -> List[WorkloadSerializerSchema]:
         """Get workloads list"""
 
-        workloads_list = workload_filters.filter(db_session.query(WorkloadModel))
+        workloads_list = workload_filters.filter(
+            db_session.query(WorkloadModel)
+        ).order_by(desc(WorkloadModel.id))
 
         if fields == "":
             return [
@@ -488,7 +491,7 @@ class LendingService:
 
         witnesses_list = witnesses_filters.filter(
             db_session.query(WitnessModel).join(EmployeeModel)
-        )
+        ).order_by(desc(WitnessModel.id))
 
         if fields == "":
             return [
@@ -1405,7 +1408,7 @@ class DocumentService:
 
         document_list = document_filters.filter(
             db_session.query(DocumentModel).join(DocumentTypeModel)
-        )
+        ).order_by(desc(DocumentModel.id))
 
         params = Params(page=page, size=size)
         paginated = paginate(

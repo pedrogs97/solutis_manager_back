@@ -1,9 +1,11 @@
 """Verification service"""
+
 import logging
 from typing import List
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from src.asset.models import AssetTypeModel
@@ -212,6 +214,7 @@ class VerificationService:
         verifications = (
             db_session.query(VerificationModel)
             .filter(VerificationModel.asset_type_id == asset_type_id)
+            .order_by(desc(VerificationModel.id))
             .all()
         )
 
@@ -284,6 +287,7 @@ class VerificationService:
         answers = (
             db_session.query(VerificationAnswerModel)
             .filter(VerificationAnswerModel.lending_id == lending_id)
+            .order_by(desc(VerificationAnswerModel.id))
             .all()
         )
 

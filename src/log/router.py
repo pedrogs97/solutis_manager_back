@@ -1,11 +1,12 @@
 """Log routes"""
+
 from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import JSONResponse
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy import or_
+from sqlalchemy import desc, or_
 from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
@@ -61,7 +62,7 @@ def get_list_logs_route(
                     LogModel.module.ilike(f"%{search}"),
                 )
             )
-        )
+        ).order_by(desc(LogModel.id))
     else:
         log_list = db_session.query(LogModel)
 
@@ -87,9 +88,9 @@ def get_list_logs_route(
                 logged_in=log.logged_in.strftime(DEFAULT_DATE_TIME_FORMAT),
                 user={
                     "id": log.user.id,
-                    "fullName": log.user.employee.full_name
-                    if log.user.employee
-                    else "",
+                    "fullName": (
+                        log.user.employee.full_name if log.user.employee else ""
+                    ),
                 },
             )
             for log in log_list

@@ -8,6 +8,7 @@ from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from src.asset.models import AssetModel
@@ -61,7 +62,7 @@ class InvoiceService:
         assets = [
             AssetShortSerializerSchema(
                 id=asset.id,
-                asset_type=asset.type.name,
+                asset_type=asset.type.name if asset.type else None,
                 description=asset.description,
                 register_number=asset.register_number,
             )
@@ -190,14 +191,15 @@ class InvoiceService:
         deleted: bool = False,
     ) -> Page[InvoiceSerializerSchema]:
         """Get invoices list"""
-        if not deleted:
-            invoice_list_query = invoice_filters.filter(
-                db_session.query(InvoiceModel).filter(
-                    InvoiceModel.deleted_at.is_not(None)
-                )
-            )
-        else:
-            invoice_list_query = invoice_filters.filter(db_session.query(InvoiceModel))
+        invoice_list_query = db_session.query(InvoiceModel)
+        # if not deleted:
+        #     invoice_list_query = invoice_filters.filter(
+        #         invoice_list_query.filter(InvoiceModel.deleted_at != None)
+        #     )
+        # else:
+        invoice_list_query = invoice_filters.filter(invoice_list_query).order_by(
+            desc(InvoiceModel.id)
+        )
 
         params = Params(page=page, size=size)
         paginated = paginate(
