@@ -58,17 +58,22 @@ class InvoiceService:
     def serialize_invoice(self, invoice: InvoiceModel) -> InvoiceSerializerSchema:
         """Serialize invoice"""
 
+        assets = [
+            AssetShortSerializerSchema(
+                id=asset.id,
+                asset_type=asset.type.name,
+                description=asset.description,
+                register_number=asset.register_number,
+            )
+            for asset in invoice.assets
+        ]
+
         return InvoiceSerializerSchema(
             id=invoice.id,
             number=invoice.number,
             path=invoice.path,
             file_name=invoice.file_name,
-            asset=AssetShortSerializerSchema(
-                id=invoice.asset.id,
-                asset_type=invoice.asset.type.name,
-                description=invoice.asset.description,
-                register_number=invoice.asset.register_number,
-            ),
+            assets=assets,
             deleted_at=(
                 invoice.deleted_at.strftime(DEFAULT_DATE_FORMAT)
                 if invoice.deleted_at

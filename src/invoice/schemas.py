@@ -1,6 +1,6 @@
 """Invoice schemas"""
 
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import Field
 
@@ -16,11 +16,11 @@ class InvoiceSerializerSchema(BaseSchema):
     path: Optional[str] = None
     file_name: Optional[str] = None
     deleted_at: Optional[str] = Field(serialization_alias="deletedAt", default=None)
-    asset: AssetShortSerializerSchema
+    assets: List[AssetShortSerializerSchema]
 
 
 class NewInvoiceSchema(BaseSchema):
     """New invoice schema"""
 
     number: str
-    assets_id: int = Field(alias="assetsId")
+    assets_id: List[int] = Field(alias="assetsId")
