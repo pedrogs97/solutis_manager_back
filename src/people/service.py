@@ -144,7 +144,7 @@ class EmployeeService:
         new_code = last_code + 1
         str_code = str(new_code)
         return "".join(
-            random.choice(last_employee.full_name) for _ in range(3)
+            random.choice(last_employee.full_name.replace(" ", "")) for _ in range(3)
         ) + str_code.zfill(16 - len(str_code))
 
     def serialize_employee(self, employee: EmployeeModel) -> EmployeeSerializerSchema:
@@ -258,6 +258,7 @@ class EmployeeService:
             employer_address=data.employer_address,
             employer_contract_object=data.employer_contract_object,
             employer_contract_date=data.employer_contract_date,
+            employer_name=data.employer_name,
         )
 
         new_emplyoee.role = role

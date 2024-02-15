@@ -134,6 +134,10 @@ class NewEmployeeSchema(BaseSchema):
         serialization_alias="employerContractDate",
         default=None,
     )
+    employer_name: Optional[str] = Field(
+        serialization_alias="employerName",
+        default=None,
+    )
 
 
 class UpdateEmployeeSchema(BaseSchema):
@@ -254,6 +258,15 @@ class EmployeeSerializerSchema(BaseSchema):
         serialization_alias="employerContractDate",
         default=None,
     )
+
+
+class EmployeeShortSerializerSchema(BaseSchema):
+    """Employee short serializer schema"""
+
+    id: int
+    code: Optional[str] = None
+    full_name: str = Field(serialization_alias="fullName")
+    registration: Optional[str] = None
 
 
 class EmployeeMatrimonialStatusTotvsSchema(BaseSchema):

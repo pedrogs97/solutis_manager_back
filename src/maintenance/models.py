@@ -110,7 +110,13 @@ class UpgradeModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     status: Mapped[MaintenanceStatusModel] = relationship()
-    status_id = Column("status_id", ForeignKey("maintenance_status.id"))
+    status_id = Column("status_id", ForeignKey(MaintenanceStatusModel.id))
+
+    asset: Mapped[AssetModel] = relationship()
+    asset_id = Column("asset_id", ForeignKey(AssetModel.id), nullable=False)
+
+    employee: Mapped[EmployeeModel] = relationship()
+    employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
 
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)
