@@ -1,6 +1,7 @@
 """People service"""
 
 import logging
+import random
 from typing import List, Union
 
 from fastapi import status
@@ -137,6 +138,15 @@ class EmployeeService:
 
         return (role, nationality, marital_status, gender, educational_level)
 
+    def __generate_code(self, last_employee: EmployeeModel) -> str:
+        """Generate new code for employee"""
+        last_code = last_employee.id
+        new_code = last_code + 1
+        str_code = str(new_code)
+        return "".join(
+            random.choice(last_employee.full_name) for _ in range(3)
+        ) + str_code.zfill(16 - len(str_code))
+
     def serialize_employee(self, employee: EmployeeModel) -> EmployeeSerializerSchema:
         """Serialize employee"""
         return EmployeeSerializerSchema(
@@ -227,7 +237,13 @@ class EmployeeService:
             gender,
             educational_level,
         ) = self.__validate_nested(data, db_session)
+
+        new_registration = self.__generate_code(
+            db_session.query(EmployeeModel).all()[-1]
+        )
+
         new_emplyoee = EmployeeModel(
+            registration=new_registration,
             code=data.code,
             full_name=data.full_name,
             taxpayer_identification=data.taxpayer_identification,

@@ -6,7 +6,7 @@ from typing import List, Optional
 from fastapi_filter import FilterDepends, with_prefix
 from fastapi_filter.contrib.sqlalchemy import Filter
 
-from src.asset.filters import AssetShortFilter
+from src.asset.filters import AssetIdFilter
 from src.maintenance.models import (
     MaintenanceActionModel,
     MaintenanceModel,
@@ -55,9 +55,7 @@ class MaintenanceFilter(Filter):
     maintenance_status: Optional[MaintenanceStatusFilter] = FilterDepends(
         with_prefix("maintenance_status", MaintenanceStatusFilter)
     )
-    asset: Optional[AssetShortFilter] = FilterDepends(
-        with_prefix("asset", AssetShortFilter)
-    )
+    asset: Optional[AssetIdFilter] = FilterDepends(with_prefix("asset", AssetIdFilter))
     order_by: List[str] = ["glpi_number"]
     search: Optional[str] = None
 

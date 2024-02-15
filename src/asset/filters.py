@@ -33,6 +33,17 @@ class AssetShortFilter(Filter):
         search_model_fields = ["code"]
 
 
+class AssetIdFilter(Filter):
+    """Asset id filters"""
+
+    id: Optional[int] = None
+
+    class Constants(Filter.Constants):
+        """Filter constants"""
+
+        model = AssetModel
+
+
 class AssetTypeFilter(Filter):
     """Asset type filters"""
 
