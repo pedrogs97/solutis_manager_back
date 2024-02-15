@@ -94,6 +94,7 @@ class NewEmployeeSchema(BaseSchema):
         serialization_alias="educational_level_id",
     )
 
+    registration: Optional[str] = None
     code: Optional[int] = None
     status: Optional[str] = "Ativo"
     full_name: str = Field(
@@ -197,17 +198,16 @@ class UpdateEmployeeSchema(BaseSchema):
         serialization_alias="employer_address",
         default=None,
     )
+    employer_contract_object: Optional[str] = Field(
+        alias="employerContractObject",
+        default=None,
+    )
+    employer_contract_date: Optional[date] = Field(
+        alias="employerContractDate",
+        default=None,
+    )
     employer_name: Optional[str] = Field(
         alias="employerName",
-        serialization_alias="employer_name",
-        default=None,
-    )
-    employer_contract_object: Optional[str] = Field(
-        serialization_alias="employerContractObject",
-        default=None,
-    )
-    employer_contract_date: Optional[str] = Field(
-        serialization_alias="employerContractDate",
         default=None,
     )
 
