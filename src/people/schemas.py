@@ -166,6 +166,7 @@ class UpdateEmployeeSchema(BaseSchema):
         serialization_alias="educational_level_id",
         default=None,
     )
+    registration: Optional[str] = None
     code: Optional[str] = None
     status: Optional[str] = None
     full_name: Optional[str] = Field(
