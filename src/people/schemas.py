@@ -127,15 +127,15 @@ class NewEmployeeSchema(BaseSchema):
         default=None,
     )
     employer_contract_object: Optional[str] = Field(
-        serialization_alias="employerContractObject",
+        alias="employerContractObject",
         default=None,
     )
-    employer_contract_date: Optional[str] = Field(
-        serialization_alias="employerContractDate",
+    employer_contract_date: Optional[date] = Field(
+        alias="employerContractDate",
         default=None,
     )
     employer_name: Optional[str] = Field(
-        serialization_alias="employerName",
+        alias="employerName",
         default=None,
     )
 
