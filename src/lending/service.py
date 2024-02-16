@@ -806,7 +806,12 @@ class DocumentService:
                         ),
                     ],
                     cnpj=employee.employer_number,
-                    company_address=employee.employer_address,
+                    company_address=(
+                        employee.employer_address
+                        if employee.employer_address
+                        else employee.address
+                    ),
+                    object=employee.employer_contract_object,
                     company=employee.employer_name,
                     project=current_lending.project,
                     location=current_lending.location,

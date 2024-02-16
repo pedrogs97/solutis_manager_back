@@ -26,6 +26,10 @@ COPY ./templates /solutis-agile/templates
 WORKDIR /solutis-agile
 
 RUN apt-get update -y && apt-get install curl -y \
+    && apt-get install -y locales \
+    && dpkg-reconfigure -f noninteractive locales \
+    && locale-gen pt_BR \
+    && update-locale \
     && apt-get install wkhtmltopdf -y \
     && apt-get install python3-dev python3.9-dev default-libmysqlclient-dev build-essential -y \
     && curl -sSL https://install.python-poetry.org | python3 - \

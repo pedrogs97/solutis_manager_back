@@ -5,7 +5,7 @@ from typing import List, Optional
 from pydantic import Field
 
 from src.asset.schemas import AssetShortSerializerSchema
-from src.people.schemas import EmployeeSerializerSchema
+from src.people.schemas import EmployeeSerializerSchema, EmployeeShortSerializerSchema
 from src.schemas import BaseSchema
 
 
@@ -80,6 +80,27 @@ class LendingSerializerSchema(BaseSchema):
         serialization_alias="businessExecutive", default=None
     )
     location: str
+
+
+class LendingAssetHistorySerializerSchema(BaseSchema):
+    """Lending history serializer schema"""
+
+    id: int
+    employee: EmployeeShortSerializerSchema
+    asset: int
+    number: Optional[str]
+    document: Optional[int]
+    document_revoke: Optional[int] = Field(serialization_alias="documentRevoke")
+    workload: str
+    witnesses: List[int]
+    cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
+    type: str
+    status: Optional[str]
+    observations: Optional[str]
+    signed_date: Optional[str] = Field(serialization_alias="signedDate")
+    revoke_signed_date: Optional[str] = Field(serialization_alias="revokeSignedDate")
+    glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
+    project: str
 
 
 class UpdateLendingSchema(BaseSchema):

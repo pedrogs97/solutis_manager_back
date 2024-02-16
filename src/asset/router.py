@@ -1,4 +1,5 @@
 """Asset router"""
+
 from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
@@ -147,6 +148,27 @@ def get_asset_route(
     db_session.close()
     return JSONResponse(
         content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@asset_router.get("/history/{asset_id}/")
+def get_asset_history_route(
+    asset_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "asset", "model": "asset", "action": "view"})
+    ),
+):
+    """Get an asset route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    history = asset_service.get_asset_lending_history(asset_id, db_session)
+    db_session.close()
+    return JSONResponse(
+        content=history,
         status_code=status.HTTP_200_OK,
     )
 

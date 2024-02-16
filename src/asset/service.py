@@ -32,7 +32,14 @@ from src.asset.schemas import (
     UpdateAssetSchema,
 )
 from src.auth.models import UserModel
+from src.config import DEFAULT_DATE_FORMAT
+from src.lending.models import LendingModel
+from src.lending.schemas import (
+    CostCenterSerializerSchema,
+    LendingAssetHistorySerializerSchema,
+)
 from src.log.services import LogService
+from src.people.schemas import EmployeeShortSerializerSchema
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -449,3 +456,53 @@ class AssetService:
             )
             for asset_status in asset_clothing_size
         ]
+
+    def get_asset_lending_history(
+        self, asset_id: int, db_session: Session
+    ) -> List[dict]:
+        """Get an asset lending history"""
+        asset = self.__get_asset_or_404(asset_id, db_session)
+
+        historic_asset = (
+            db_session.query(LendingModel)
+            .filter(LendingModel.asset_id == asset.id)
+            .order_by(desc(LendingModel.id))
+            .all()
+        )
+
+        historic_serialize = [
+            LendingAssetHistorySerializerSchema(
+                asset=h.asset.id,
+                id=h.id,
+                cost_center=CostCenterSerializerSchema(**h.cost_center.__dict__),
+                document=h.document.id if h.document else None,
+                document_revoke=h.document_revoke.id if h.document_revoke else None,
+                employee=EmployeeShortSerializerSchema(
+                    id=h.employee.id,
+                    code=h.employee.code,
+                    full_name=h.employee.full_name,
+                    registration=h.employee.registration,
+                ),
+                glpi_number=h.glpi_number,
+                number=h.number,
+                observations=h.observations,
+                project=h.project,
+                revoke_signed_date=(
+                    h.revoke_signed_date.strftime(DEFAULT_DATE_FORMAT)
+                    if h.revoke_signed_date
+                    else None
+                ),
+                signed_date=(
+                    h.signed_date.strftime(DEFAULT_DATE_FORMAT)
+                    if h.signed_date
+                    else None
+                ),
+                status=h.status.name if h.status else None,
+                type=h.type.name,
+                witnesses=[witness.id for witness in h.witnesses],
+                workload=h.workload.name,
+            ).model_dump(by_alias=True)
+            for h in historic_asset
+        ]
+
+        return historic_serialize
