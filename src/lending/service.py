@@ -511,6 +511,8 @@ class LendingService:
 class DocumentService:
     """Document service"""
 
+    NOT_PROVIDE = "Não informado"
+
     def __get_document_or_404(
         self, document_id: int, db_session: Session
     ) -> DocumentModel:
@@ -572,14 +574,24 @@ class DocumentService:
             return detail
 
         if asset.type.id == 4:
-            detail.append({"key": "Modelo", "value": asset.model})
-            detail.append({"key": "Marca", "value": asset.brand})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
+            detail.append(
+                {
+                    "key": "Marca",
+                    "value": asset.brand if asset.brand else self.NOT_PROVIDE,
+                }
+            )
             detail.append({"key": "Número de Série", "value": asset.serial_number})
             detail.append({"key": "C.C.", "value": cost_center})
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
@@ -587,13 +599,18 @@ class DocumentService:
             detail.append({"key": "IMEI", "value": asset.imei})
             detail.append({"key": "Operadora", "value": asset.operator})
             detail.append({"key": "Número Linha", "value": asset.line_number})
-            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
             detail.append({"key": "Acessórios", "value": asset.accessories})
             detail.append({"key": "Anotações", "value": asset.observations})
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
@@ -604,52 +621,82 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
         if asset.type.id == 10:
-            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
             detail.append({"key": "Número de Série", "value": asset.serial_number})
             detail.append({"key": "C.C.", "value": cost_center})
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
         if asset.type.id == 11:
-            detail.append({"key": "Modelo", "value": asset.model})
-            detail.append({"key": "Marca", "value": asset.brand})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
+            detail.append(
+                {
+                    "key": "Marca",
+                    "value": asset.brand if asset.brand else self.NOT_PROVIDE,
+                }
+            )
             detail.append({"key": "Número de Série", "value": asset.serial_number})
             detail.append({"key": "C.C.", "value": cost_center})
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
         if asset.type.id == 12:
-            detail.append({"key": "Modelo", "value": asset.model})
-            detail.append({"key": "Marca", "value": asset.brand})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
+            detail.append(
+                {
+                    "key": "Marca",
+                    "value": asset.brand if asset.brand else self.NOT_PROVIDE,
+                }
+            )
             detail.append({"key": "Número de Série", "value": asset.serial_number})
             detail.append({"key": "C.C.", "value": cost_center})
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
         if asset.type.id == 13:
-            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
             detail.append({"key": "C.C.", "value": cost_center})
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
@@ -670,14 +717,26 @@ class DocumentService:
             detail.append(
                 {"key": "Pacote Office", "value": "SIM" if asset.ms_office else "NÃO"}
             )
-            detail.append({"key": "Padrão Equipamento", "value": asset.pattern})
             detail.append(
-                {"key": "Sistema Operacional", "value": asset.operational_system}
+                {
+                    "key": "Padrão Equipamento",
+                    "value": asset.pattern if asset.pattern else self.NOT_PROVIDE,
+                }
+            )
+            detail.append(
+                {
+                    "key": "Sistema Operacional",
+                    "value": (
+                        asset.operational_system
+                        if asset.operational_system
+                        else self.NOT_PROVIDE
+                    ),
+                }
             )
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
@@ -685,11 +744,16 @@ class DocumentService:
             detail.append({"key": "N° Patrimônio", "value": asset.register_number})
             detail.append({"key": "Número de Série", "value": asset.serial_number})
             detail.append({"key": "Descrição", "value": asset.description})
-            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
@@ -697,11 +761,16 @@ class DocumentService:
             detail.append({"key": "N° Patrimônio", "value": asset.register_number})
             detail.append({"key": "Número de Série", "value": asset.serial_number})
             detail.append({"key": "Descrição", "value": asset.description})
-            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
@@ -709,15 +778,59 @@ class DocumentService:
             detail.append({"key": "N° Patrimônio", "value": asset.register_number})
             detail.append({"key": "Número de Série", "value": asset.serial_number})
             detail.append({"key": "Descrição", "value": asset.description})
-            detail.append({"key": "Modelo", "value": asset.model})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=None),
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
                 }
             )
 
         return detail
+
+    def __validate_witnesses(
+        self, witnesses: List[int], db_session: Session
+    ) -> List[WitnessModel]:
+        """Validate witnesses"""
+        errors = []
+        witnesses_validated = []
+        ids_not_found = []
+        for witness in witnesses:
+            employee_obj = (
+                db_session.query(EmployeeModel)
+                .filter(EmployeeModel.id == witness)
+                .first()
+            )
+
+            if not employee_obj:
+                ids_not_found.append(witness)
+            else:
+                new_witness = WitnessModel(employee=employee_obj)
+                db_session.add(new_witness)
+                db_session.commit()
+                db_session.flush()
+                witnesses_validated.append(new_witness)
+
+        if ids_not_found:
+            errors.append(
+                {
+                    "field": "witnessId",
+                    "error": {"Testemunhas não encontradas": ids_not_found},
+                }
+            )
+
+        if errors:
+            raise HTTPException(
+                detail=errors,
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return witnesses_validated
 
     def serialize_document(self, doc: DocumentModel) -> DocumentSerializerSchema:
         """Serialize document"""
@@ -942,9 +1055,13 @@ class DocumentService:
 
         employee = current_lending.employee
 
-        witness1 = current_lending.witnesses[0]
+        revoke_witnesses = self.__validate_witnesses(
+            revoke_lending_doc.witnesses_id, db_session
+        )
 
-        witness2 = current_lending.witnesses[1]
+        witness1 = revoke_witnesses[0]
+
+        witness2 = revoke_witnesses[1]
 
         detail = self.__get_contract_detail(asset)
 

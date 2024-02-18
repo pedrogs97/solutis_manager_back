@@ -121,6 +121,14 @@ class AssetService:
             asset_status,
         )
 
+    def __generate_registration_number(self, db_session: Session) -> str:
+        """Generate new registration number"""
+        last_asset = db_session.query(AssetModel).all()[-1]
+
+        new_register_number = str(last_asset.id)
+
+        return new_register_number.zfill(16 - len(new_register_number))
+
     def serialize_asset(self, asset: AssetModel) -> AssetSerializerSchema:
         """Serialize asset"""
         return AssetSerializerSchema(
@@ -199,7 +207,8 @@ class AssetService:
         ):
             errors.append({"field": "code", "error": "Este Código já existe."})
         if (
-            db_session.query(AssetModel)
+            data.register_number
+            and db_session.query(AssetModel)
             .filter(AssetModel.register_number == data.register_number)
             .first()
         ):
@@ -216,6 +225,11 @@ class AssetService:
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
+        if data.register_number:
+            register_number = data.register_number
+        else:
+            register_number = self.__generate_registration_number(db_session)
+
         (
             asset_type,
             clothing_size,
@@ -224,7 +238,7 @@ class AssetService:
 
         new_asset = AssetModel(
             code=data.code,
-            register_number=data.register_number,
+            register_number=register_number,
             description=data.description,
             supplier=data.supplier,
             assurance_date=data.assurance_date,

@@ -236,7 +236,7 @@ class NewAssetSchema(BaseSchema):
     )
 
     code: Optional[str] = None
-    # tombo - regiOptional[str]o patrimonial
+    # tombo - regitro patrimonial
     register_number: Optional[str] = Field(
         alias="registerNumber",
         serialization_alias="register_number",

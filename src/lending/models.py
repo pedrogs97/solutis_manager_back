@@ -2,7 +2,7 @@
 
 from typing import List
 
-from sqlalchemy import Column, Date, ForeignKey, Integer, String, Table
+from sqlalchemy import Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 from src.asset.models import AssetModel
@@ -65,14 +65,6 @@ class WorkloadModel(Base):
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.name}"
-
-
-lending_witnesses = Table(
-    "lending_witnesses",
-    Base.metadata,
-    Column("lending_id", ForeignKey("lending.id"), primary_key=True),
-    Column("witness_id", ForeignKey("witness.id"), primary_key=True),
-)
 
 
 class LendingTypeModel(Base):

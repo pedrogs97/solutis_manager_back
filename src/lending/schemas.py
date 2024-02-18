@@ -139,6 +139,7 @@ class NewRevokeContractDocSchema(BaseSchema):
 
     lending_id: int = Field(alias="lendingId")
     legal_person: bool = Field(alias="legalPerson", default=False)
+    witnesses_id: Optional[List[int]] = Field(alias="witnessesId", default=[])
 
 
 class WitnessContextSchema(BaseSchema):
