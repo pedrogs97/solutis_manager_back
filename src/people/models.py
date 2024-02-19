@@ -73,6 +73,9 @@ class EmployeeModel(Base):
         "employer_contract_object", String(length=255), nullable=True
     )
     employer_contract_date = Column("employer_contract_date", Date, nullable=True)
+    employer_end_contract_date = Column(
+        "employer_end_contract_date", Date, nullable=True
+    )
 
     def __str__(self) -> str:
         return f"{self.code} - {self.full_name}"

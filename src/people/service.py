@@ -196,6 +196,11 @@ class EmployeeService:
                 if employee.employer_contract_date
                 else None
             ),
+            employer_end_contract_date=(
+                employee.employer_end_contract_date.strftime(DEFAULT_DATE_FORMAT)
+                if employee.employer_end_contract_date
+                else None
+            ),
         )
 
     def create_employee(
@@ -342,6 +347,8 @@ class EmployeeService:
             employee.employer_contract_object = data.employer_contract_object
         if data.employer_contract_date:
             employee.employer_contract_date = data.employer_contract_date
+        if data.employer_end_contract_date:
+            employee.employer_end_contract_date = data.employer_end_contract_date
 
         db_session.add(employee)
         db_session.commit()

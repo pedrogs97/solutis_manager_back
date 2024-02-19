@@ -211,6 +211,10 @@ class UpdateEmployeeSchema(BaseSchema):
         alias="employerName",
         default=None,
     )
+    employer_end_contract_date: Optional[date] = Field(
+        alias="employerEndContractDate",
+        default=None,
+    )
 
 
 class EmployeeSerializerSchema(BaseSchema):
@@ -257,6 +261,10 @@ class EmployeeSerializerSchema(BaseSchema):
     )
     employer_contract_date: Optional[str] = Field(
         serialization_alias="employerContractDate",
+        default=None,
+    )
+    employer_end_contract_date: Optional[str] = Field(
+        serialization_alias="employerEndContractDate",
         default=None,
     )
 
