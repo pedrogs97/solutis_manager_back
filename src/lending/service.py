@@ -1167,13 +1167,11 @@ class DocumentService:
         logger.info("New Document. %s", str(new_doc))
 
         current_lending.asset.status = db_session.query(AssetStatusModel).get(1)
-        db_session.add(current_lending.asset)
-        db_session.commit()
-        db_session.flush()
-
         current_lending.document_revoke = new_doc
         current_lending.number = new_code
         current_lending.status = lending_pending
+        current_lending.witnesses.append(witness1)
+        current_lending.witnesses.append(witness2)
 
         db_session.add(current_lending)
         db_session.commit()
