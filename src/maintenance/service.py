@@ -163,7 +163,7 @@ class MaintenanceService:
             open_date=maintenance.open_date.strftime(DEFAULT_DATE_FORMAT),
             resolution=maintenance.resolution,
             supplier_number=maintenance.supplier_number,
-            supplier_serviceOrder=maintenance.supplier_service_order,
+            supplier_service_order=maintenance.supplier_service_order,
             asset=AssetShortSerializerSchema(
                 asset_type=(
                     maintenance.asset.type.name if maintenance.asset.type else None

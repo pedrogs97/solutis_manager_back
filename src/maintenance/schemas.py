@@ -104,8 +104,8 @@ class UpgradeSerializerSchema(BaseSchema):
 
     id: int
     status: str
-    open_date: date = Field(serialization_alias="openDate")
-    close_date: Optional[date] = Field(serialization_alias="closeDate", default=None)
+    open_date: str = Field(serialization_alias="openDate")
+    close_date: Optional[str] = Field(serialization_alias="closeDate", default=None)
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber", default=None)
     detailing: Optional[str]
     supplier: Optional[str]
