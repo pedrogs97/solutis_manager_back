@@ -1,9 +1,9 @@
 """Maintenance router"""
 
-from typing import Union
+from typing import Annotated, List, Union
 
-from fastapi import APIRouter, Depends, Query, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
@@ -131,6 +131,59 @@ def get_maintenance_route(
         content=serializer.model_dump(by_alias=True),
         status_code=status.HTTP_200_OK,
     )
+
+
+@maintenance_router.post("/upload/maintenance/")
+async def post_upload_maintenance_attachments(
+    files: List[UploadFile],
+    maintenanceId: Annotated[int, Form()],
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "asset", "model": "maintenance", "action": "edit"})
+    ),
+):
+    """Upload attachmetns route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer_list = await maintenance_service.upload_attachments(
+        files, maintenanceId, db_session, authenticated_user
+    )
+    db_session.close()
+    return JSONResponse(
+        content=[
+            serializer.model_dump(by_alias=True) for serializer in serializer_list
+        ],
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@maintenance_router.get(
+    "/attachments/download/{attachment_id}/", response_class=FileResponse
+)
+def get_download_attachment_maintenance(
+    attachment_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "asset", "model": "maintenance", "action": "view"})
+    ),
+):
+    """Download a attachment maintenance"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    attach = maintenance_service.get_attachment(
+        attachment_id,
+        db_session,
+    )
+
+    db_session.close()
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(attach.path, filename=attach.file_name, headers=headers)
 
 
 @maintenance_router.get("-actions/")
@@ -263,3 +316,56 @@ def get_upgrade_route(
         content=serializer.model_dump(by_alias=True),
         status_code=status.HTTP_200_OK,
     )
+
+
+@maintenance_router.post("/upload/upgrade/")
+async def post_upload_upgrade_attachments(
+    files: List[UploadFile],
+    upgradeId: Annotated[int, Form()],
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "asset", "model": "maintenance", "action": "edit"})
+    ),
+):
+    """Upload attachmetns route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer_list = await upgrade_service.upload_attachments(
+        files, upgradeId, db_session, authenticated_user
+    )
+    db_session.close()
+    return JSONResponse(
+        content=[
+            serializer.model_dump(by_alias=True) for serializer in serializer_list
+        ],
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@maintenance_router.get(
+    "-upgrade/attachments/download/{attachment_id}/", response_class=FileResponse
+)
+def get_download_attachment_upgrade(
+    attachment_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "asset", "model": "maintenance", "action": "view"})
+    ),
+):
+    """Download a attachment upgrade"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    attach = upgrade_service.get_attachment(
+        attachment_id,
+        db_session,
+    )
+
+    db_session.close()
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(attach.path, filename=attach.file_name, headers=headers)

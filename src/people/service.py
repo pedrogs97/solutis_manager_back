@@ -244,7 +244,7 @@ class EmployeeService:
         ) = self.__validate_nested(data, db_session)
 
         new_registration = self.__generate_code(
-            db_session.query(EmployeeModel).all()[-1]
+            db_session.query(EmployeeModel).order_by(EmployeeModel.id.desc()).first()
         )
 
         new_emplyoee = EmployeeModel(

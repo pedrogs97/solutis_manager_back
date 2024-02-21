@@ -564,7 +564,10 @@ class DocumentService:
             last_code = last_doc.id
             new_code = last_code + 1
         str_code = str(new_code)
-        return asset.type.acronym + str_code.zfill(6 - len(str_code))
+
+        asset_acronym = asset.type.acronym if asset.type else asset.description[:3]
+
+        return asset_acronym + str_code.zfill(6 - len(str_code))
 
     def __get_term_detail(self, asset: AssetModel, cost_center: str) -> List[dict]:
         """Get asset term detail"""
@@ -869,12 +872,10 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        if len(db_session.query(DocumentModel).all()):
-            new_code = self.__generate_code(
-                db_session.query(DocumentModel).all()[-1], asset
-            )
-        else:
-            new_code = self.__generate_code(None, asset)
+        new_code = self.__generate_code(
+            db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
+            asset,
+        )
 
         workload = current_lending.workload
 
@@ -1044,12 +1045,10 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        if len(db_session.query(DocumentModel).all()):
-            new_code = self.__generate_code(
-                db_session.query(DocumentModel).all()[-1], asset
-            )
-        else:
-            new_code = self.__generate_code(None, asset)
+        new_code = self.__generate_code(
+            db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
+            asset,
+        )
 
         workload = current_lending.workload
 
@@ -1217,12 +1216,10 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        if len(db_session.query(DocumentModel).all()):
-            new_code = self.__generate_code(
-                db_session.query(DocumentModel).all()[-1], asset
-            )
-        else:
-            new_code = self.__generate_code(None, asset)
+        new_code = self.__generate_code(
+            db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
+            asset,
+        )
 
         employee = current_lending.employee
 
@@ -1320,12 +1317,10 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        if len(db_session.query(DocumentModel).all()):
-            new_code = self.__generate_code(
-                db_session.query(DocumentModel).all()[-1], asset
-            )
-        else:
-            new_code = self.__generate_code(None, asset)
+        new_code = self.__generate_code(
+            db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
+            asset,
+        )
 
         employee = current_lending.employee
 
@@ -1485,7 +1480,7 @@ class DocumentService:
             UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "contracts")
 
         file_path = await upload_file(
-            file_name, "lending", contract.file.read(), UPLOAD_DIR
+            file_name, "revoke", contract.file.read(), UPLOAD_DIR
         )
 
         new_doc = DocumentModel(path=file_path, file_name=file_name)

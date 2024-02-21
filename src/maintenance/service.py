@@ -4,7 +4,7 @@ import logging
 from datetime import date
 from typing import List
 
-from fastapi import status
+from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from src.asset.models import AssetModel
 from src.asset.schemas import AssetShortSerializerSchema
 from src.auth.models import UserModel
-from src.config import DEFAULT_DATE_FORMAT
+from src.config import ATTACHMENTS_UPLOAD_DIR, DEFAULT_DATE_FORMAT
 from src.log.services import LogService
 from src.maintenance.filters import MaintenanceFilter, UpgradeFilter
 from src.maintenance.models import (
@@ -22,6 +22,7 @@ from src.maintenance.models import (
     MaintenanceAttachmentModel,
     MaintenanceModel,
     MaintenanceStatusModel,
+    UpgradeAttachmentModel,
     UpgradeModel,
 )
 from src.maintenance.schemas import (
@@ -33,10 +34,12 @@ from src.maintenance.schemas import (
     NewUpgradeSchema,
     UpdateMaintenanceSchema,
     UpdateUpgradeSchema,
+    UpgradeAttachmentSerializerSchema,
     UpgradeSerializerSchema,
 )
 from src.people.models import EmployeeModel
 from src.people.schemas import EmployeeShortSerializerSchema
+from src.utils import upload_file
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -64,6 +67,26 @@ class MaintenanceService:
             )
 
         return maintenance
+
+    def __get_attachment_or_404(
+        self, attachment_id: int, db_session: Session
+    ) -> MaintenanceAttachmentModel:
+        """Get attachment or 404"""
+        attachment = (
+            db_session.query(MaintenanceAttachmentModel)
+            .filter(MaintenanceAttachmentModel.id == attachment_id)
+            .first()
+        )
+        if not attachment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "field": "attachmentId",
+                    "error": "Anexo de Manutenção não encontrada.",
+                },
+            )
+
+        return attachment
 
     def __get_maintenance_action_or_404(
         self, maintenance_action_id: int, db_session: Session
@@ -132,6 +155,27 @@ class MaintenanceService:
             )
         return employee
 
+    def __generate_so_supplier(self, db_session: Session) -> str:
+        """Generate new service order supplier"""
+        default_code = 1
+
+        last_maintenance = (
+            db_session.query(MaintenanceModel)
+            .order_by(MaintenanceModel.id.desc())
+            .first()
+        )
+
+        if last_maintenance:
+            code = str(default_code + last_maintenance)
+
+            asset_acronym = (
+                last_maintenance.asset.type.acronym
+                if last_maintenance.asset.type
+                else last_maintenance.asset.description[:3]
+            )
+
+            return f"MA{asset_acronym}" + code.zfill(16 - len(code))
+
     def serialize_maintenance_attachment(
         self, maintenance_attachment: MaintenanceAttachmentModel
     ) -> MaintenanceAttachmentSerializerSchema:
@@ -178,6 +222,17 @@ class MaintenanceService:
                 full_name=maintenance.employee.full_name,
                 registration=maintenance.employee.registration,
             ),
+            open_date_supplier=(
+                maintenance.open_date_supplier.strftime(DEFAULT_DATE_FORMAT)
+                if maintenance.open_date_supplier
+                else None
+            ),
+            open_date_glpi=(
+                maintenance.open_date_glpi.strftime(DEFAULT_DATE_FORMAT)
+                if maintenance.open_date_glpi
+                else None
+            ),
+            incident_description=maintenance.incident_description,
         )
 
     def serialize_maintenance_action(
@@ -218,11 +273,16 @@ class MaintenanceService:
                 detail="Sem Status de Manutenção.",
             )
 
+        supplier_so = self.__generate_so_supplier(db_session)
+
         new_maintenance = MaintenanceModel(
             open_date=date.today(),
             glpi_number=data.glpi_number,
-            supplier_service_order=data.supplier_service_order,
+            supplier_service_order=supplier_so,
             supplier_number=data.supplier_number,
+            open_date_glpi=data.open_date_glpi,
+            open_date_supplier=data.open_date_supplier,
+            incident_description=data.incident_description,
         )
         new_maintenance.status = pending_status
         new_maintenance.action = action_type
@@ -265,6 +325,7 @@ class MaintenanceService:
             db_session.query(MaintenanceModel)
             .join(MaintenanceActionModel)
             .join(MaintenanceStatusModel)
+            .join(AssetModel)
         ).order_by(desc(MaintenanceModel.id))
 
         params = Params(page=page, size=size)
@@ -294,14 +355,11 @@ class MaintenanceService:
 
         maintenance.status = status_maintenance
 
-        if data.close_date:
-            maintenance.close_date = data.close_date
+        if data.close:
+            maintenance.close_date = date.today()
 
-        if data.glpi_number:
-            maintenance.glpi_number = data.glpi_number
-
-        if data.supplier_service_order:
-            maintenance.supplier_service_order = data.supplier_service_order
+        if data.open_date_supplier:
+            maintenance.open_date_supplier = data.open_date_supplier
 
         if data.supplier_number:
             maintenance.supplier_number = data.supplier_number
@@ -350,6 +408,53 @@ class MaintenanceService:
             for status in maintenance_status
         ]
 
+    async def upload_attachments(
+        self,
+        attachments: List[UploadFile],
+        maintenanceId: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> List[MaintenanceAttachmentSerializerSchema]:
+        """Upload attachments"""
+
+        return_list = []
+        attachments_to_add = []
+
+        for attach in attachments:
+            file_name = f"{attach.file.name}.pdf"
+            file_path = await upload_file(
+                file_name, "maintenance", attach.file.read(), ATTACHMENTS_UPLOAD_DIR
+            )
+
+            new_attach = MaintenanceAttachmentModel(path=file_path, file_name=file_name)
+            new_attach.maintenance_id = maintenanceId
+            attachments_to_add.append(new_attach)
+
+        db_session.add_all(attachments_to_add)
+        db_session.commit()
+        db_session.flush()
+
+        for attch_added in attachments_to_add:
+            service_log.set_log(
+                "asset",
+                "maintenance_attachment",
+                "Importação de Anexos de Manutenção",
+                new_attach.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("Upload Attachment. %s", str(attch_added))
+            return_list.append(self.serialize_maintenance_attachment(attch_added))
+
+        return return_list
+
+    def get_attachment(
+        self, attachment_id, db_session: Session
+    ) -> MaintenanceAttachmentSerializerSchema:
+        """Get an attachment maintenance"""
+        attachment = self.__get_attachment_or_404(attachment_id, db_session)
+        return self.serialize_maintenance_attachment(attachment)
+
 
 class UpgradeService:
     """Upgrade service"""
@@ -371,6 +476,26 @@ class UpgradeService:
             )
 
         return upgrade
+
+    def __get_attachment_or_404(
+        self, attachment_id: int, db_session: Session
+    ) -> UpgradeAttachmentModel:
+        """Get attachment or 404"""
+        attachment = (
+            db_session.query(UpgradeAttachmentModel)
+            .filter(UpgradeAttachmentModel.id == attachment_id)
+            .first()
+        )
+        if not attachment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "field": "attachmentId",
+                    "error": "Anexo de Melhoria não encontrada.",
+                },
+            )
+
+        return attachment
 
     def __get_upgrade_status_or_404(
         self, upgrade_status_id: int, db_session: Session
@@ -419,8 +544,21 @@ class UpgradeService:
             )
         return employee
 
+    def serialize_upgrade_attachment(
+        self, upgrade_attachment: UpgradeModel
+    ) -> UpgradeAttachmentSerializerSchema:
+        """Serialize upgrade attachement"""
+        return UpgradeAttachmentSerializerSchema(**upgrade_attachment.__dict__)
+
     def serialize_upgrade(self, upgrade: UpgradeModel) -> UpgradeSerializerSchema:
         """Serialize upgrade"""
+
+        attachements = []
+        if upgrade.attachments:
+            attachements = [
+                self.serialize_upgrade_attachment(attachement)
+                for attachement in upgrade.attachments
+            ]
 
         return UpgradeSerializerSchema(
             close_date=(
@@ -447,6 +585,8 @@ class UpgradeService:
             open_date=upgrade.open_date.strftime(DEFAULT_DATE_FORMAT),
             status=upgrade.status.name,
             supplier=upgrade.supplier,
+            attachments=attachements,
+            invoice_number=upgrade.invoice_number,
         )
 
     def create_upgrade(
@@ -478,6 +618,7 @@ class UpgradeService:
             detailing=data.detailing,
             supplier=data.supplier,
             observations=data.observations,
+            invoice_number=data.invoice_number,
         )
         new_upgrade.status = pending_status
         new_upgrade.asset = asset
@@ -544,14 +685,17 @@ class UpgradeService:
 
         upgrade.status = status_upgrade
 
-        if data.close_date:
-            upgrade.close_date = data.close_date
+        if data.close:
+            upgrade.close_date = date.today()
 
         if data.detailing:
             upgrade.detailing = data.detailing
 
         if data.observations:
             upgrade.observations = data.observations
+
+        if data.invoice_number:
+            upgrade.invoice_number = data.invoice_number
 
         db_session.add(upgrade)
         db_session.commit()
@@ -567,3 +711,50 @@ class UpgradeService:
         logger.info("Update Upgrade. %s", str(upgrade))
 
         return self.serialize_upgrade(upgrade)
+
+    async def upload_attachments(
+        self,
+        attachments: List[UploadFile],
+        upgradeId: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> List[UpgradeAttachmentSerializerSchema]:
+        """Upload attachments"""
+
+        return_list = []
+        attachments_to_add = []
+
+        for attach in attachments:
+            file_name = f"{attach.file.name}.pdf"
+            file_path = await upload_file(
+                file_name, "upgrade", attach.file.read(), ATTACHMENTS_UPLOAD_DIR
+            )
+
+            new_attach = UpgradeAttachmentModel(path=file_path, file_name=file_name)
+            new_attach.upgrade_id = upgradeId
+            attachments_to_add.append(new_attach)
+
+        db_session.add_all(attachments_to_add)
+        db_session.commit()
+        db_session.flush()
+
+        for attch_added in attachments_to_add:
+            service_log.set_log(
+                "asset",
+                "upgrade_attachment",
+                "Importação de Anexos de Melhoria",
+                new_attach.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("Upload Attachment. %s", str(attch_added))
+            return_list.append(self.serialize_upgrade_attachment(attch_added))
+
+        return return_list
+
+    def get_attachment(
+        self, attachment_id, db_session: Session
+    ) -> UpgradeAttachmentSerializerSchema:
+        """Get an attachment maintenance"""
+        attachment = self.__get_attachment_or_404(attachment_id, db_session)
+        return self.serialize_upgrade_attachment(attachment)

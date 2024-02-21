@@ -74,10 +74,16 @@ class MaintenanceModel(Base):
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)
     glpi_number = Column("gpli_number", String(length=50), nullable=True)
+    open_date_glpi = Column("open_date_glpi", Date, nullable=True)
+    open_date_supplier = Column("open_date_supplier", Date, nullable=True)
+    # chamado do fonecedor
+    supplier_number = Column("supplier_number", String(length=50), nullable=True)
     supplier_service_order = Column(
         "supplier_service_order", String(length=50), nullable=True
     )
-    supplier_number = Column("supplier_number", String(length=50), nullable=True)
+    incident_description = Column(
+        "incident_description", String(length=255), nullable=True
+    )
     resolution = Column("resolution", String(length=255), nullable=True)
 
     def __str__(self) -> str:
@@ -103,6 +109,24 @@ class MaintenanceAttachmentModel(Base):
         return f"{self.file_name}"
 
 
+class UpgradeAttachmentModel(Base):
+    """Upgrade attachment model"""
+
+    __tablename__ = "upgrade_attachment"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+
+    upgrade: Mapped["UpgradeModel"] = relationship(back_populates="attachments")
+    upgrade_id = Column("upgrade_id", ForeignKey("upgrade.id"))
+
+    path = Column(String(length=255), nullable=True)
+    file_name = Column(String(length=100))
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.file_name}"
+
+
 class UpgradeModel(Base):
     """Upgrade model"""
 
@@ -118,11 +142,14 @@ class UpgradeModel(Base):
     employee: Mapped[EmployeeModel] = relationship()
     employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
 
+    attachments = relationship("UpgradeAttachmentModel", back_populates="upgrade")
+
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)
     glpi_number = Column("glpi_number", String(length=50), nullable=True)
     detailing = Column("detailing", String(length=255), nullable=True)
     supplier = Column("supplier", String(length=100), nullable=True)
+    invoice_number = Column("invoice_number", String(length=100), nullable=True)
     observations = Column("observations", String(length=255), nullable=True)
 
     def __str__(self) -> str:
