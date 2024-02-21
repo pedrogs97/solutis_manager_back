@@ -42,11 +42,11 @@ class NewMaintenanceSchema(BaseSchema):
 class UpdateMaintenanceSchema(BaseSchema):
     """Update Maintenance schema"""
 
-    status_id: int
     close: Optional[bool] = False
     open_date_supplier: Optional[date] = Field(alias="openDateSupplier", default=None)
     supplier_number: Optional[str] = Field(alias="supplierNumber", default=None)
     resolution: Optional[str] = None
+    in_progress: Optional[bool] = Field(alias="inProgress", default=False)
 
 
 class MaintenanceAttachmentSerializerSchema(BaseSchema):
@@ -61,18 +61,18 @@ class MaintenanceSerializerSchema(BaseSchema):
     """Maintenance serializer schema"""
 
     id: int
-    action: str
+    action: MaintenanceActionSerializerSchema
     status: str
     open_date: str = Field(serialization_alias="openDate")
     close_date: Optional[str] = Field(serialization_alias="closeDate", default=None)
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber", default=None)
-    open_date_glpi: Optional[date] = Field(
+    open_date_glpi: Optional[str] = Field(
         serialization_alias="openDateGlpi", default=None
     )
     supplier_service_order: Optional[str] = Field(
         serialization_alias="supplierServiceOrder", default=None
     )
-    open_date_supplier: Optional[date] = Field(
+    open_date_supplier: Optional[str] = Field(
         serialization_alias="openDateSupplier", default=None
     )
     supplier_number: Optional[str] = Field(
@@ -102,11 +102,11 @@ class NewUpgradeSchema(BaseSchema):
 class UpdateUpgradeSchema(BaseSchema):
     """Update Upgrade schema"""
 
-    status_id: int
     detailing: Optional[str] = None
     observations: Optional[str] = None
     invoice_number: Optional[str] = Field(alias="invoiceNumber", default=None)
     close: Optional[bool] = False
+    in_progress: Optional[bool] = Field(alias="inProgress", default=False)
 
 
 class UpgradeAttachmentSerializerSchema(BaseSchema):

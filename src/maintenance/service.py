@@ -108,26 +108,6 @@ class MaintenanceService:
             )
         return vertification_type
 
-    def __get_maintenance_status_or_404(
-        self, maintenance_status_id: int, db_session: Session
-    ) -> MaintenanceStatusModel:
-        """Get maintenance status or 404"""
-        maintenance_status = (
-            db_session.query(MaintenanceStatusModel)
-            .filter(MaintenanceStatusModel.id == maintenance_status_id)
-            .first()
-        )
-        if not maintenance_status:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "field": "maintenanceStatusId",
-                    "error": "Status de manutenção não encontrado",
-                },
-            )
-
-        return maintenance_status
-
     def __get_asset_or_404(self, asset_id: int, db_session: Session) -> AssetModel:
         """Get asset or 404"""
         asset = db_session.query(AssetModel).filter(AssetModel.id == asset_id).first()
@@ -166,7 +146,7 @@ class MaintenanceService:
         )
 
         if last_maintenance:
-            code = str(default_code + last_maintenance)
+            code = str(default_code + last_maintenance.id)
 
             asset_acronym = (
                 last_maintenance.asset.type.acronym
@@ -195,7 +175,7 @@ class MaintenanceService:
 
         return MaintenanceSerializerSchema(
             id=maintenance.id,
-            action=maintenance.action.name,
+            action=MaintenanceActionSerializerSchema(**maintenance.action.__dict__),
             status=maintenance.status.name,
             attachments=attachements,
             close_date=(
@@ -349,14 +329,12 @@ class MaintenanceService:
         """Update a maintenance"""
         maintenance = self.__get_maintenance_or_404(maintenance_id, db_session)
 
-        status_maintenance = self.__get_maintenance_status_or_404(
-            data.status_id, db_session
-        )
-
-        maintenance.status = status_maintenance
+        if data.in_progress:
+            maintenance.status_id = 1
 
         if data.close:
             maintenance.close_date = date.today()
+            maintenance.status_id = 3
 
         if data.open_date_supplier:
             maintenance.open_date_supplier = data.open_date_supplier
@@ -496,26 +474,6 @@ class UpgradeService:
             )
 
         return attachment
-
-    def __get_upgrade_status_or_404(
-        self, upgrade_status_id: int, db_session: Session
-    ) -> MaintenanceStatusModel:
-        """Get upgrade status or 404"""
-        upgrade_status = (
-            db_session.query(MaintenanceStatusModel)
-            .filter(MaintenanceStatusModel.id == upgrade_status_id)
-            .first()
-        )
-        if not upgrade_status:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "field": "upgradeStatusId",
-                    "error": "Status de melhoria não encontrado",
-                },
-            )
-
-        return upgrade_status
 
     def __get_asset_or_404(self, asset_id: int, db_session: Session) -> AssetModel:
         """Get asset or 404"""
@@ -681,12 +639,12 @@ class UpgradeService:
         """Update a upgrade"""
         upgrade = self.__get_upgrade_or_404(upgrade_id, db_session)
 
-        status_upgrade = self.__get_upgrade_status_or_404(data.status_id, db_session)
-
-        upgrade.status = status_upgrade
+        if data.in_progress:
+            upgrade.status_id = 1
 
         if data.close:
             upgrade.close_date = date.today()
+            upgrade.status_id = 3
 
         if data.detailing:
             upgrade.detailing = data.detailing
