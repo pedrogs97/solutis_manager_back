@@ -104,7 +104,7 @@ def get_list_invoices_route(
         le=MAX_PAGINATION_NUMBER,
         description=PAGE_SIZE_DESCRIPTION,
     ),
-    deleted: bool = Query(False, description="Filter deleted"),
+    deleted: int = Query(0, description="Filter deleted"),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "invoice", "model": "invoice", "action": "view"})

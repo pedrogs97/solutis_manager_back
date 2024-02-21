@@ -131,6 +131,9 @@ class AssetService:
 
     def serialize_asset(self, asset: AssetModel) -> AssetSerializerSchema:
         """Serialize asset"""
+        last_maintenance = asset.maintenances[-1] if len(asset.maintenances) else None
+        last_upgrade = asset.upgrades[-1] if len(asset.upgrades) else None
+
         return AssetSerializerSchema(
             id=asset.id,
             type=(
@@ -171,6 +174,16 @@ class AssetService:
             unit=asset.unit,
             by_agile=asset.by_agile,
             invoice_number=(asset.invoice.number if asset.invoice else None),
+            maintenance_status=(
+                last_maintenance.status.name
+                if last_maintenance and last_maintenance.status.id != 3
+                else "-"
+            ),
+            upgrade_status=(
+                last_upgrade.status.name
+                if last_upgrade and last_upgrade.status.id != 3
+                else "-"
+            ),
         )
 
     def serialize_asset_type(

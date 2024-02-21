@@ -1,5 +1,7 @@
 """Asset models"""
 
+from typing import List
+
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
@@ -112,6 +114,9 @@ class AssetModel(Base):
 
     invoice: Mapped[InvoiceModel] = relationship(back_populates="assets")
     invoice_id = Column("invoice_id", ForeignKey(InvoiceModel.id), nullable=True)
+
+    maintenances: Mapped[List["MaintenanceModel"]] = relationship(viewonly=True)
+    upgrades: Mapped[List["UpgradeModel"]] = relationship(viewonly=True)
 
     code = Column("code", String(length=255), nullable=True, unique=True)
     # tombo - registro patrimonial

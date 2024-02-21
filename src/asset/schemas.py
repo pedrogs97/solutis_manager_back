@@ -214,6 +214,8 @@ class AssetSerializerSchema(BaseSchema):
         serialization_alias="byAgile",
         default=False,
     )
+    maintenance_status: str = Field(serialization_alias="maintenanceStatus")
+    upgrade_status: str = Field(serialization_alias="upgradeStatus")
 
 
 class NewAssetSchema(BaseSchema):

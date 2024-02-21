@@ -11,12 +11,12 @@
     },
     {
         "table": "lending_status",
-        "id": 2,
+        "id": 3,
         "name": "Arquivo de distrato pendente"
     },
     {
         "table": "lending_status",
-        "id": 2,
-        "name": "Inativo"
+        "id": 4,
+        "name": "Distrato realizado"
     }
 ]

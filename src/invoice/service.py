@@ -188,18 +188,18 @@ class InvoiceService:
         invoice_filters: InvoiceFilter,
         page: int = 1,
         size: int = 50,
-        deleted: bool = False,
+        deleted: int = 0,
     ) -> Page[InvoiceSerializerSchema]:
         """Get invoices list"""
         invoice_list_query = db_session.query(InvoiceModel)
-        # if not deleted:
-        #     invoice_list_query = invoice_filters.filter(
-        #         invoice_list_query.filter(InvoiceModel.deleted_at != None)
-        #     )
-        # else:
-        invoice_list_query = invoice_filters.filter(invoice_list_query).order_by(
-            desc(InvoiceModel.id)
-        )
+        if not deleted:
+            invoice_list_query = invoice_filters.filter(
+                invoice_list_query.filter(InvoiceModel.deleted_at.is_(None))
+            ).order_by(desc(InvoiceModel.id))
+        else:
+            invoice_list_query = invoice_filters.filter(
+                invoice_list_query.filter(InvoiceModel.deleted_at.is_not(None))
+            ).order_by(desc(InvoiceModel.id))
 
         params = Params(page=page, size=size)
         paginated = paginate(
