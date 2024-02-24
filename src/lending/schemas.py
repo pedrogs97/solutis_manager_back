@@ -1,5 +1,6 @@
 """Lending schemas"""
 
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import Field
@@ -7,6 +8,15 @@ from pydantic import Field
 from src.asset.schemas import AssetShortSerializerSchema
 from src.people.schemas import EmployeeSerializerSchema, EmployeeShortSerializerSchema
 from src.schemas import BaseSchema
+
+
+class LendingBUEnum(str, Enum):
+    """BU choices"""
+
+    ADS = "ADS"
+    CSA = "CSA"
+    BPS = "BPS"
+    CORP = "CORP"
 
 
 class CostCenterTotvsSchema(BaseSchema):
@@ -80,6 +90,7 @@ class LendingSerializerSchema(BaseSchema):
         serialization_alias="businessExecutive", default=None
     )
     location: str
+    bu: Optional[LendingBUEnum] = None
 
 
 class LendingAssetHistorySerializerSchema(BaseSchema):
@@ -124,6 +135,7 @@ class NewLendingSchema(BaseSchema):
     project: Optional[str] = None
     business_executive: str = Field(alias="businessExecutive", default=None)
     location: str
+    bu: LendingBUEnum
 
 
 class NewLendingDocSchema(BaseSchema):

@@ -147,6 +147,8 @@ class LendingModel(Base):
         "cost_center_id", ForeignKey(CostCenterTOTVSModel.id), nullable=False
     )
 
+    bu = Column("bu", String(length=5), nullable=True)
+
     # código gerado
     number = Column("number", String(length=30), nullable=True)
     manager = Column("manager", String(length=50))

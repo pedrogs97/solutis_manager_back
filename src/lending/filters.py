@@ -16,6 +16,7 @@ from src.lending.models import (
     WitnessModel,
     WorkloadModel,
 )
+from src.lending.schemas import LendingBUEnum
 from src.people.filters import CostCenterFilter, EmployeeFullNameFilter
 
 
@@ -108,6 +109,7 @@ class LendingFilter(Filter):
     status: Optional[LendingStatusFilter] = FilterDepends(
         with_prefix("status", LendingStatusFilter)
     )
+    bu: Optional[LendingBUEnum] = None
     order_by: List[str] = ["number"]
     search: Optional[str] = None
 
