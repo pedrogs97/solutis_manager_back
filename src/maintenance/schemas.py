@@ -54,7 +54,7 @@ class MaintenanceAttachmentSerializerSchema(BaseSchema):
 
     id: int
     path: Optional[str]
-    file_name: str = Field(alias="fileName")
+    file_name: Optional[str] = Field(alias="fileName", default=None)
 
 
 class MaintenanceSerializerSchema(BaseSchema):
