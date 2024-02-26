@@ -400,12 +400,12 @@ class MaintenanceService:
         attachments_to_add = []
 
         for attach in attachments:
-            file_name = f"{attach.file.name}.pdf"
+            file_name = f"{attach.filename}"
             file_path = await upload_file(
                 file_name,
-                "maintenance",
+                os.path.join("maintenance", str(maintenanceId)),
                 attach.file.read(),
-                os.path.join(ATTACHMENTS_UPLOAD_DIR, str(maintenanceId)),
+                ATTACHMENTS_UPLOAD_DIR,
             )
 
             new_attach = MaintenanceAttachmentModel(path=file_path, file_name=file_name)
@@ -687,12 +687,12 @@ class UpgradeService:
         attachments_to_add = []
 
         for attach in attachments:
-            file_name = f"{attach.file.name}.pdf"
+            file_name = f"{attach.filename}"
             file_path = await upload_file(
                 file_name,
-                "upgrade",
+                os.path.join("upgrade", str(upgradeId)),
                 attach.file.read(),
-                os.path.join(ATTACHMENTS_UPLOAD_DIR, str(upgradeId)),
+                ATTACHMENTS_UPLOAD_DIR,
             )
 
             new_attach = UpgradeAttachmentModel(path=file_path, file_name=file_name)
