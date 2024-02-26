@@ -1,6 +1,7 @@
 """Maintenance service"""
 
 import logging
+import os
 from datetime import date
 from typing import List
 
@@ -401,7 +402,10 @@ class MaintenanceService:
         for attach in attachments:
             file_name = f"{attach.file.name}.pdf"
             file_path = await upload_file(
-                file_name, "maintenance", attach.file.read(), ATTACHMENTS_UPLOAD_DIR
+                file_name,
+                "maintenance",
+                attach.file.read(),
+                os.path.join(ATTACHMENTS_UPLOAD_DIR, str(maintenanceId)),
             )
 
             new_attach = MaintenanceAttachmentModel(path=file_path, file_name=file_name)
@@ -685,7 +689,10 @@ class UpgradeService:
         for attach in attachments:
             file_name = f"{attach.file.name}.pdf"
             file_path = await upload_file(
-                file_name, "upgrade", attach.file.read(), ATTACHMENTS_UPLOAD_DIR
+                file_name,
+                "upgrade",
+                attach.file.read(),
+                os.path.join(ATTACHMENTS_UPLOAD_DIR, str(upgradeId)),
             )
 
             new_attach = UpgradeAttachmentModel(path=file_path, file_name=file_name)

@@ -1,0 +1,17 @@
+[
+    {
+        "table": "term_status",
+        "id": 1,
+        "name": "Ativo"
+    },
+    {
+        "table": "term_status",
+        "id": 2,
+        "name": "Arquivo de distrato pendente"
+    },
+    {
+        "table": "term_status",
+        "id": 3,
+        "name": "Distrato realizado"
+    }
+]
