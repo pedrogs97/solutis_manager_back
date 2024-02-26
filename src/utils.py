@@ -38,7 +38,7 @@ async def upload_file(
     folder_file = os.path.join(base_dir, type_file)
 
     if not os.path.isdir(folder_file):
-        os.mkdir(folder_file)
+        os.makedirs(folder_file, exist_ok=True)
 
     file_path = os.path.join(folder_file, file_name)
 
