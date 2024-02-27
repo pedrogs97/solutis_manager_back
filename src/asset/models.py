@@ -65,28 +65,6 @@ class AssetStatusModel(Base):
         return f"{self.name}"
 
 
-class AssetClothingSizeModel(Base):
-    """
-    Asset clothing size model
-
-    * PP
-    * P
-    * M
-    * G
-    * GG
-    * XG
-    """
-
-    __tablename__ = "asset_clothing_size"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    name = Column("name", String(length=5), nullable=False)
-
-    def __str__(self) -> str:
-        """Returns model as string"""
-        return f"{self.name}"
-
-
 class AssetModel(Base):
     """Asset model"""
 
@@ -106,11 +84,6 @@ class AssetModel(Base):
         "status_id", ForeignKey(AssetStatusModel.id), nullable=True, default=1
     )
     status: Mapped[AssetStatusModel] = relationship(lazy="joined")
-
-    clothing_size_id = Column(
-        "clothing_size_id", ForeignKey(AssetClothingSizeModel.id), nullable=True
-    )
-    clothing_size: Mapped[AssetClothingSizeModel] = relationship(lazy="joined")
 
     invoice: Mapped[InvoiceModel] = relationship(back_populates="assets")
     invoice_id = Column("invoice_id", ForeignKey(InvoiceModel.id), nullable=True)

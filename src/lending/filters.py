@@ -8,40 +8,13 @@ from fastapi_filter.contrib.sqlalchemy import Filter
 
 from src.asset.filters import AssetShortFilter, AssetTypeFilter
 from src.lending.models import (
-    DocumentModel,
-    DocumentTypeModel,
     LendingModel,
     LendingStatusModel,
-    LendingTypeModel,
     WitnessModel,
     WorkloadModel,
 )
 from src.lending.schemas import LendingBUEnum
 from src.people.filters import CostCenterFilter, EmployeeFullNameFilter
-
-
-class DocumentTypeFilter(Filter):
-    """Document type filters"""
-
-    name: Optional[str] = None
-
-    class Constants(Filter.Constants):
-        """Filter constants"""
-
-        model = DocumentTypeModel
-
-
-class DocumentFilter(Filter):
-    """Document filters"""
-
-    doc_type: Optional[DocumentTypeFilter] = FilterDepends(
-        with_prefix("doc_type", DocumentTypeFilter)
-    )
-
-    class Constants(Filter.Constants):
-        """Filter constants"""
-
-        model = DocumentModel
 
 
 class WorkloadFilter(Filter):
@@ -53,17 +26,6 @@ class WorkloadFilter(Filter):
         """Filter constants"""
 
         model = WorkloadModel
-
-
-class LendingTypeFilter(Filter):
-    """Lending type filters"""
-
-    name: Optional[str] = None
-
-    class Constants(Filter.Constants):
-        """Filter constants"""
-
-        model = LendingTypeModel
 
 
 class LendingStatusFilter(Filter):
@@ -102,9 +64,6 @@ class LendingFilter(Filter):
     )
     cost_center: Optional[CostCenterFilter] = FilterDepends(
         with_prefix("cost_center", CostCenterFilter)
-    )
-    type: Optional[LendingTypeFilter] = FilterDepends(
-        with_prefix("type", LendingTypeFilter)
     )
     status: Optional[LendingStatusFilter] = FilterDepends(
         with_prefix("status", LendingStatusFilter)

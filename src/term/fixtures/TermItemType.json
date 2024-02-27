@@ -1,0 +1,12 @@
+[
+    {
+        "table": "term_item_type",
+        "id": 1,
+        "name": "Kit Ferramenta"
+    },
+    {
+        "table": "term_item_type",
+        "id": 2,
+        "name": "Fardamento"
+    }
+]

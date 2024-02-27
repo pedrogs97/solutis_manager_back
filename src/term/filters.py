@@ -6,79 +6,24 @@ from typing import List, Optional
 from fastapi_filter import FilterDepends, with_prefix
 from fastapi_filter.contrib.sqlalchemy import Filter
 
-from src.asset.filters import AssetShortFilter, AssetTypeFilter
-from src.lending.models import (
-    DocumentModel,
-    DocumentTypeModel,
-    LendingModel,
-    LendingStatusModel,
-    LendingTypeModel,
-    WitnessModel,
-    WorkloadModel,
-)
-from src.lending.schemas import LendingBUEnum
+from src.lending.filters import WorkloadFilter
 from src.people.filters import CostCenterFilter, EmployeeFullNameFilter
+from src.term.models import TermModel, TermStatusModel
 
 
-class DocumentTypeFilter(Filter):
-    """Document type filters"""
-
-    name: Optional[str] = None
-
-    class Constants(Filter.Constants):
-        """Filter constants"""
-
-        model = DocumentTypeModel
-
-
-class DocumentFilter(Filter):
-    """Document filters"""
-
-    doc_type: Optional[DocumentTypeFilter] = FilterDepends(
-        with_prefix("doc_type", DocumentTypeFilter)
-    )
-
-    class Constants(Filter.Constants):
-        """Filter constants"""
-
-        model = DocumentModel
-
-
-class WorkloadFilter(Filter):
-    """Workload filters"""
+class TermStatusFilter(Filter):
+    """Term status filters"""
 
     name: Optional[str] = None
 
     class Constants(Filter.Constants):
         """Filter constants"""
 
-        model = WorkloadModel
+        model = TermStatusModel
 
 
-class LendingTypeFilter(Filter):
-    """Lending type filters"""
-
-    name: Optional[str] = None
-
-    class Constants(Filter.Constants):
-        """Filter constants"""
-
-        model = LendingTypeModel
-
-
-class LendingStatusFilter(Filter):
-    """Lending status filters"""
-
-    name: Optional[str] = None
-
-    class Constants(Filter.Constants):
-        """Filter constants"""
-
-        model = LendingStatusModel
-
-
-class LendingFilter(Filter):
-    """Lending filters"""
+class TermFilter(Filter):
+    """Term filters"""
 
     number__ilike: Optional[str] = None
     number__like: Optional[str] = None
@@ -91,43 +36,20 @@ class LendingFilter(Filter):
     employee: Optional[EmployeeFullNameFilter] = FilterDepends(
         with_prefix("employee", EmployeeFullNameFilter)
     )
-    asset: Optional[AssetShortFilter] = FilterDepends(
-        with_prefix("asset", AssetShortFilter)
-    )
-    asset_type: Optional[AssetTypeFilter] = FilterDepends(
-        with_prefix("asset_type", AssetTypeFilter)
-    )
     workload: Optional[WorkloadFilter] = FilterDepends(
         with_prefix("workload", WorkloadFilter)
     )
     cost_center: Optional[CostCenterFilter] = FilterDepends(
         with_prefix("cost_center", CostCenterFilter)
     )
-    type: Optional[LendingTypeFilter] = FilterDepends(
-        with_prefix("type", LendingTypeFilter)
+    status: Optional[TermStatusFilter] = FilterDepends(
+        with_prefix("status", TermStatusFilter)
     )
-    status: Optional[LendingStatusFilter] = FilterDepends(
-        with_prefix("status", LendingStatusFilter)
-    )
-    bu: Optional[LendingBUEnum] = None
     order_by: List[str] = ["number"]
     search: Optional[str] = None
 
     class Constants(Filter.Constants):
         """Filter constants"""
 
-        model = LendingModel
+        model = TermModel
         search_model_fields = ["number", "manager", "glpi_number"]
-
-
-class WitnessFilter(Filter):
-    """Witness filters"""
-
-    employee: Optional[EmployeeFullNameFilter] = FilterDepends(
-        with_prefix("employee", EmployeeFullNameFilter)
-    )
-
-    class Constants(Filter.Constants):
-        """Filter constants"""
-
-        model = WitnessModel

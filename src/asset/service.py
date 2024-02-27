@@ -10,20 +10,9 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from src.asset.filters import (
-    AssetClothingSizeFilter,
-    AssetFilter,
-    AssetStatusFilter,
-    AssetTypeFilter,
-)
-from src.asset.models import (
-    AssetClothingSizeModel,
-    AssetModel,
-    AssetStatusModel,
-    AssetTypeModel,
-)
+from src.asset.filters import AssetFilter, AssetStatusFilter, AssetTypeFilter
+from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
 from src.asset.schemas import (
-    AssetClothingSizeSerializer,
     AssetSerializerSchema,
     AssetStatusSerializerSchema,
     AssetTypeSerializerSchema,
@@ -81,20 +70,6 @@ class AssetService:
                     }
                 )
 
-        if hasattr(data, "clothing_size_id") and data.clothing_size_id:
-            clothing_size = (
-                db_session.query(AssetClothingSizeModel)
-                .filter(AssetClothingSizeModel.id == data.clothing_size_id)
-                .first()
-            )
-            if not clothing_size:
-                errors.append(
-                    {
-                        "field": "clothingSize",
-                        "error": f"Tamanho de roupa não existe. {clothing_size}",
-                    }
-                )
-
         if data.status_id:
             asset_status = (
                 db_session.query(AssetStatusModel)
@@ -138,11 +113,6 @@ class AssetService:
             id=asset.id,
             type=(
                 AssetTypeSerializerSchema(**asset.type.__dict__) if asset.type else None
-            ),
-            clothing_size=(
-                AssetClothingSizeSerializer(**asset.clothing_size.__dict__)
-                if asset.clothing_size
-                else None
             ),
             status=(
                 AssetStatusSerializerSchema(**asset.status.__dict__)
@@ -199,13 +169,6 @@ class AssetService:
         """Serialize asset status"""
 
         return AssetStatusSerializerSchema(**asset_status.__dict__)
-
-    def serialize_asset_clothing_size(
-        self, asset_clothing_size: AssetClothingSizeModel
-    ) -> AssetClothingSizeSerializer:
-        """Serialize asset clothing size"""
-
-        return AssetClothingSizeSerializer(**asset_clothing_size.__dict__)
 
     def create_asset(
         self, data: NewAssetSchema, db_session: Session, authenticated_user: UserModel
@@ -379,7 +342,6 @@ class AssetService:
         asset_list = asset_filters.filter(
             db_session.query(AssetModel)
             .outerjoin(AssetTypeModel)
-            .outerjoin(AssetClothingSizeModel)
             .outerjoin(AssetStatusModel)
         ).order_by(desc(AssetModel.id))
 
@@ -454,34 +416,6 @@ class AssetService:
                 include={*list_fields}, by_alias=True
             )
             for asset_status in asset_status
-        ]
-
-    def get_asset_clothing_size(
-        self,
-        db_session: Session,
-        filter_asset_clothing_size: AssetClothingSizeFilter,
-        fields: str = "",
-    ) -> List[AssetTypeSerializerSchema]:
-        """Get asset status list"""
-
-        asset_clothing_size = filter_asset_clothing_size.filter(
-            db_session.query(AssetClothingSizeModel)
-        )
-
-        if fields == "":
-            return [
-                self.serialize_asset_clothing_size(asset_clothing_size).model_dump(
-                    by_alias=True
-                )
-                for asset_clothing_size in asset_clothing_size
-            ]
-
-        list_fields = fields.split(",")
-        return [
-            self.serialize_asset_clothing_size(asset_status).model_dump(
-                include={*list_fields}, by_alias=True
-            )
-            for asset_status in asset_clothing_size
         ]
 
     def get_asset_lending_history(

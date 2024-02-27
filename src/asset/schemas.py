@@ -68,22 +68,6 @@ class AssetStatusSerializerSchema(BaseSchema):
     name: str
 
 
-class AssetClothingSizeSerializer(BaseSchema):
-    """
-    Asset clothing size serializer scehama
-
-    * PP
-    * P
-    * M
-    * G
-    * GG
-    * XG
-    """
-
-    id: int
-    name: str
-
-
 class AssetTotvsSchema(BaseSchema):
     """Asset schema"""
 
@@ -144,10 +128,6 @@ class AssetSerializerSchema(BaseSchema):
 
     id: int
     type: Optional[AssetTypeSerializerSchema] = None
-    clothing_size: Optional[AssetClothingSizeSerializer] = Field(
-        serialization_alias="clothingSize",
-        default=None,
-    )
     status: Optional[AssetStatusSerializerSchema] = None
 
     invoice_number: Optional[str] = Field(

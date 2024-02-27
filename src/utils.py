@@ -10,7 +10,7 @@ import jinja2
 import pdfkit
 
 from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR
-from src.lending.schemas import (
+from src.document.schemas import (
     NewLendingContextSchema,
     NewLendingPjContextSchema,
     NewLendingTermContextSchema,

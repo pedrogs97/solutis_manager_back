@@ -6,12 +6,7 @@ from typing import List, Optional
 from fastapi_filter import FilterDepends, with_prefix
 from fastapi_filter.contrib.sqlalchemy import Filter
 
-from src.asset.models import (
-    AssetClothingSizeModel,
-    AssetModel,
-    AssetStatusModel,
-    AssetTypeModel,
-)
+from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
 
 
 class AssetShortFilter(Filter):
@@ -67,17 +62,6 @@ class AssetStatusFilter(Filter):
         model = AssetStatusModel
 
 
-class AssetClothingSizeFilter(Filter):
-    """Asset clothing size filters"""
-
-    name: Optional[str] = None
-
-    class Constants(Filter.Constants):
-        """Filter constants"""
-
-        model = AssetClothingSizeModel
-
-
 class AssetFilter(Filter):
     """Asset filters"""
 
@@ -95,9 +79,6 @@ class AssetFilter(Filter):
     )
     asset_status: Optional[AssetStatusFilter] = FilterDepends(
         with_prefix("asset_status", AssetStatusFilter)
-    )
-    asset_clothing_size: Optional[AssetClothingSizeFilter] = FilterDepends(
-        with_prefix("asset_clothing_size", AssetClothingSizeFilter)
     )
     order_by: List[str] = ["code"]
     search: Optional[str] = None
