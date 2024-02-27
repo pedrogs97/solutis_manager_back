@@ -1466,7 +1466,7 @@ class DocumentService:
 
         lending_signed = (
             db_session.query(LendingStatusModel)
-            .filter(LendingStatusModel.name == "Inativo")
+            .filter(LendingStatusModel.name == "Distrato realizado")
             .first()
         )
 
