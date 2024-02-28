@@ -92,6 +92,7 @@ PERMISSIONS = {
     "lending": {
         "models": [
             {"name": "lending", "label": "Comodato"},
+            {"name": "term", "label": "Termo de Responsabilidade"},
             {"name": "document", "label": "Documentos"},
             {"name": "workload", "label": "Lotação"},
             {"name": "witness", "label": "Testemunha"},

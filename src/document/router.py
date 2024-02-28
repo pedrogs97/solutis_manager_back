@@ -16,19 +16,18 @@ from src.config import (
     PAGE_SIZE_DESCRIPTION,
     PAGINATION_NUMBER,
 )
-from src.lending.filters import DocumentFilter
-from src.lending.schemas import NewLendingDocSchema, NewRevokeContractDocSchema
-from src.lending.service import DocumentService, LendingService
+from src.document.filters import DocumentFilter
+from src.document.schemas import NewLendingDocSchema, NewRevokeContractDocSchema
+from src.document.service import DocumentService
 
 document_router = APIRouter(prefix="/documents", tags=["Document"])
 
-lending_service = LendingService()
 document_service = DocumentService()
 
 
 @document_router.post("/contracts/create/", response_class=FileResponse)
 def post_create_contract(
-    new_lending_doc: NewLendingDocSchema,
+    new_document_doc: NewLendingDocSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})
@@ -41,7 +40,7 @@ def post_create_contract(
         )
 
     new_doc = document_service.create_contract(
-        new_lending_doc, "Contrato de Comodato", db_session, authenticated_user
+        new_document_doc, "Contrato de Comodato", db_session, authenticated_user
     )
 
     db_session.close()
@@ -52,7 +51,7 @@ def post_create_contract(
 
 @document_router.post("/contracts/upload/")
 async def post_import_contract(
-    lendingId: Annotated[int, Form()],
+    documentId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -66,7 +65,7 @@ async def post_import_contract(
         )
 
     serializer = await document_service.upload_contract(
-        file, "Contrato de Comodato", lendingId, db_session, authenticated_user
+        file, "Contrato de Comodato", documentId, db_session, authenticated_user
     )
 
     db_session.close()
@@ -102,7 +101,7 @@ def post_create_revoke_contract(
 
 @document_router.post("/contracts/revoke/upload/")
 async def post_revoke_contract(
-    lendingId: Annotated[int, Form()],
+    documentId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -116,7 +115,7 @@ async def post_revoke_contract(
         )
 
     serializer = await document_service.upload_revoke_contract(
-        file, "Distrato de Comodato", lendingId, db_session, authenticated_user
+        file, "Distrato de Comodato", documentId, db_session, authenticated_user
     )
 
     db_session.close()
@@ -128,7 +127,7 @@ async def post_revoke_contract(
 
 @document_router.post("/terms/create/", response_class=FileResponse)
 def post_create_term(
-    new_lending_doc: NewLendingDocSchema,
+    new_document_doc: NewLendingDocSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})
@@ -141,7 +140,7 @@ def post_create_term(
         )
 
     new_doc = document_service.create_term(
-        new_lending_doc, "Termo de Responsabilidade", db_session, authenticated_user
+        new_document_doc, "Termo de Responsabilidade", db_session, authenticated_user
     )
 
     db_session.close()
@@ -152,7 +151,7 @@ def post_create_term(
 
 @document_router.post("/terms/upload/")
 async def post_import_term(
-    lendingId: Annotated[int, Form()],
+    documentId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -166,7 +165,7 @@ async def post_import_term(
         )
 
     serializer = await document_service.upload_contract(
-        file, "Termo de Responsabilidade", lendingId, db_session, authenticated_user
+        file, "Termo de Responsabilidade", documentId, db_session, authenticated_user
     )
 
     db_session.close()
@@ -178,7 +177,7 @@ async def post_import_term(
 
 @document_router.post("/terms/revoke/create/", response_class=FileResponse)
 def post_create_revoke_term(
-    new_lending_doc: NewRevokeContractDocSchema,
+    new_document_doc: NewRevokeContractDocSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})
@@ -191,7 +190,7 @@ def post_create_revoke_term(
         )
 
     new_doc = document_service.create_revoke_term(
-        new_lending_doc,
+        new_document_doc,
         "Distrato de Termo de Responsabilidade",
         db_session,
         authenticated_user,
@@ -205,7 +204,7 @@ def post_create_revoke_term(
 
 @document_router.post("/terms/revoke/upload/")
 async def post_revoke_term(
-    lendingId: Annotated[int, Form()],
+    documentId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -221,7 +220,7 @@ async def post_revoke_term(
     serializer = await document_service.upload_revoke_contract(
         file,
         "Distrato de Termo de Responsabilidade",
-        lendingId,
+        documentId,
         db_session,
         authenticated_user,
     )

@@ -1,7 +1,7 @@
 """Term schemas"""
 
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import Field
 
@@ -19,6 +19,16 @@ class SizesEnum(str, Enum):
     G = "G"
     GG = "GG"
     XG = "XG"
+
+
+class TermItemSerializerSchema(BaseSchema):
+    """Term Item serializer schema"""
+
+    id: int
+    description: Optional[str]
+    size: Optional[str]
+    quantity: Optional[int]
+    value: Optional[float]
 
 
 class TermSerializerSchema(BaseSchema):
@@ -43,6 +53,7 @@ class TermSerializerSchema(BaseSchema):
         serialization_alias="businessExecutive", default=None
     )
     location: str
+    item: TermItemSerializerSchema
 
 
 class TermAssetHistorySerializerSchema(BaseSchema):
@@ -87,67 +98,3 @@ class NewTermSchema(BaseSchema):
     size: Optional[SizesEnum] = None
     quantity: Optional[int] = None
     value: Optional[float] = None
-
-
-class NewTermDocSchema(BaseSchema):
-    """New contract info schema"""
-
-    employee_id: int = Field(alias="employeeId")
-    term_id: int = Field(alias="termId")
-    legal_person: bool = Field(alias="legalPerson", default=False)
-
-
-class NewRevokeContractDocSchema(BaseSchema):
-    """New contract info schema"""
-
-    term_id: int = Field(alias="termId")
-    legal_person: bool = Field(alias="legalPerson", default=False)
-
-
-class NewTermContextSchema(BaseSchema):
-    """Context for contract template"""
-
-    number: str
-    glpi_number: str
-    full_name: str
-    taxpayer_identification: str
-    national_identification: str
-    address: str
-    nationality: str
-    role: str
-    marital_status: str
-    cc: str
-    manager: str
-    business_executive: str
-    project: str
-    workload: str
-    detail: List[dict]
-    date: str
-    location: str
-
-
-class NewTermPjContextSchema(BaseSchema):
-    """Context for contract template"""
-
-    number: str
-    glpi_number: str
-    full_name: str
-    taxpayer_identification: str
-    national_identification: str
-    company: str
-    cnpj: str
-    company_address: str
-    address: str
-    nationality: str
-    role: str
-    marital_status: str
-    cc: str
-    manager: str
-    business_executive: str
-    project: str
-    workload: str
-    contract_date: str
-    object: str
-    detail: List[dict]
-    date: str
-    location: str

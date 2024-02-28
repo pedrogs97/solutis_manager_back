@@ -23,6 +23,9 @@ class DocumentSerializerSchema(BaseSchema):
     file_name: str = Field(serialization_alias="fileName")
 
 
+# Lending
+
+
 class NewLendingDocSchema(BaseSchema):
     """New contract info schema"""
 
@@ -97,8 +100,26 @@ class NewLendingPjContextSchema(BaseSchema):
     location: str
 
 
-class NewLendingTermContextSchema(BaseSchema):
-    """Context for contract template"""
+# TERM
+
+
+class NewTermDocSchema(BaseSchema):
+    """New term info schema"""
+
+    employee_id: int = Field(alias="employeeId")
+    term_id: int = Field(alias="termId")
+    legal_person: bool = Field(alias="legalPerson", default=False)
+
+
+class NewRevokeTermDocSchema(BaseSchema):
+    """New term info schema"""
+
+    term_id: int = Field(alias="termId")
+    legal_person: bool = Field(alias="legalPerson", default=False)
+
+
+class NewTermContextSchema(BaseSchema):
+    """Context for term template"""
 
     number: str
     glpi_number: str
@@ -108,9 +129,12 @@ class NewLendingTermContextSchema(BaseSchema):
     address: str
     nationality: str
     role: str
+    marital_status: str
     cc: str
     manager: str
+    business_executive: str
     project: str
+    workload: str
     detail: List[dict]
     date: str
     location: str

@@ -13,7 +13,7 @@ from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR
 from src.document.schemas import (
     NewLendingContextSchema,
     NewLendingPjContextSchema,
-    NewLendingTermContextSchema,
+    NewTermContextSchema,
 )
 
 
@@ -318,9 +318,7 @@ def create_revoke_lending_contract_pj(context: NewLendingPjContextSchema) -> str
     return contract_path
 
 
-def create_lending_term(
-    context: NewLendingTermContextSchema, type_term="termo.html"
-) -> str:
+def create_term(context: NewTermContextSchema, type_term="termo.html") -> str:
     """Creates new lending term"""
     template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
     template_env = jinja2.Environment(loader=template_loader)

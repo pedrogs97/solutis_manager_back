@@ -2,16 +2,21 @@
     {
         "table": "term_status",
         "id": 1,
-        "name": "Ativo"
+        "name": "Arquivo pendente"
     },
     {
         "table": "term_status",
         "id": 2,
-        "name": "Arquivo de distrato pendente"
+        "name": "Ativo"
     },
     {
         "table": "term_status",
         "id": 3,
+        "name": "Arquivo de distrato pendente"
+    },
+    {
+        "table": "term_status",
+        "id": 4,
         "name": "Distrato realizado"
     }
 ]

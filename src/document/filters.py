@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi_filter import FilterDepends, with_prefix
 from fastapi_filter.contrib.sqlalchemy import Filter
 
-from src.lending.models import DocumentModel, DocumentTypeModel
+from src.document.models import DocumentModel, DocumentTypeModel
 
 
 class DocumentTypeFilter(Filter):

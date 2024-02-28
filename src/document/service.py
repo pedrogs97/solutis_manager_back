@@ -23,19 +23,22 @@ from src.document.schemas import (
     NewLendingContextSchema,
     NewLendingDocSchema,
     NewLendingPjContextSchema,
-    NewLendingTermContextSchema,
     NewRevokeContractDocSchema,
+    NewRevokeTermDocSchema,
+    NewTermContextSchema,
+    NewTermDocSchema,
     WitnessContextSchema,
 )
 from src.lending.models import LendingModel, LendingStatusModel, WitnessModel
 from src.log.services import LogService
 from src.people.models import EmployeeModel
+from src.term.models import TermItemModel, TermModel, TermStatusModel
 from src.utils import (
     create_lending_contract,
     create_lending_contract_pj,
-    create_lending_term,
     create_revoke_lending_contract,
     create_revoke_lending_contract_pj,
+    create_term,
     upload_file,
 )
 
@@ -84,13 +87,30 @@ class DocumentService:
 
         return lending
 
+    def __get_term_or_404(self, term_id: int, db_session: Session) -> TermModel:
+        """Get term or 404"""
+        term = db_session.query(TermModel).filter(TermModel.id == term_id).first()
+        if not term:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "field": "termId",
+                    "error": "Termo de Responsabilidade não encontrado",
+                },
+            )
+
+        return term
+
     def __generate_code(
-        self, last_doc: Union[DocumentModel, None], asset: AssetModel
+        self,
+        last_doc: Union[DocumentModel, None],
+        asset: AssetModel,
+        type_code="lending",
     ) -> str:
         """Generate new code for document"""
         new_code = 1
 
-        if not asset:
+        if not asset and type_code == "lending":
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "assetId", "error": "Ativo não encontrado"},
@@ -101,16 +121,135 @@ class DocumentService:
             new_code = last_code + 1
         str_code = str(new_code)
 
-        asset_acronym = asset.type.acronym if asset.type else asset.description[:3]
+        if type_code == "lending":
+            acronym = asset.type.acronym if asset.type else asset.description[:3]
+        else:
+            acronym = ""
 
-        return asset_acronym + str_code.zfill(6 - len(str_code))
+        return acronym + str_code.zfill(6 - len(str_code))
 
-    def __get_term_detail(self, asset: AssetModel, cost_center: str) -> List[dict]:
+    def __get_term_detail(self, item: TermItemModel, item_type: str) -> List[dict]:
         """Get asset term detail"""
+        detail = []
+
+        if item_type == "Kit Ferramenta":
+            detail.append(
+                {
+                    "key": "Descrição Kit Ferramentas",
+                    "value": item.description,
+                }
+            )
+
+        if item_type == "Fardamento":
+            detail.append(
+                {
+                    "key": "Descrição",
+                    "value": item.description,
+                },
+                {
+                    "key": "Tamanho",
+                    "value": item.size,
+                },
+                {
+                    "key": "Quantidade",
+                    "value": item.quantity,
+                },
+                {
+                    "key": "Valor",
+                    "value": item.value,
+                },
+            )
+
+        return detail
+
+    def __get_contract_detail(self, asset: AssetModel, cost_center: str) -> List[dict]:
+        """Get asset contract detail"""
         detail = []
 
         if not asset.type:
             return detail
+
+        if asset.type.id in (1, 2, 14, 15):
+            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "Descrição", "value": asset.description})
+            detail.append({"key": "Acessórios", "value": asset.accessories})
+            detail.append(
+                {"key": "Pacote Office", "value": "SIM" if asset.ms_office else "NÃO"}
+            )
+            detail.append(
+                {
+                    "key": "Padrão Equipamento",
+                    "value": asset.pattern if asset.pattern else self.NOT_PROVIDE,
+                }
+            )
+            detail.append(
+                {
+                    "key": "Sistema Operacional",
+                    "value": (
+                        asset.operational_system
+                        if asset.operational_system
+                        else self.NOT_PROVIDE
+                    ),
+                }
+            )
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                }
+            )
+
+        if asset.type.id == 3:
+            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "Descrição", "value": asset.description})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                }
+            )
+
+        if asset.type.id == 8:
+            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "Descrição", "value": asset.description})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                }
+            )
+
+        if asset.type.id == 9:
+            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
+            detail.append({"key": "Número de Série", "value": asset.serial_number})
+            detail.append({"key": "Descrição", "value": asset.description})
+            detail.append(
+                {
+                    "key": "Modelo",
+                    "value": asset.model if asset.model else self.NOT_PROVIDE,
+                }
+            )
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                }
+            )
 
         if asset.type.id == 4:
             detail.append(
@@ -241,97 +380,6 @@ class DocumentService:
 
         return detail
 
-    def __get_contract_detail(self, asset: AssetModel) -> List[dict]:
-        """Get asset contract detail"""
-        detail = []
-
-        if not asset.type:
-            return detail
-
-        if asset.type.id in (1, 2, 14, 15):
-            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
-            detail.append({"key": "Número de Série", "value": asset.serial_number})
-            detail.append({"key": "Descrição", "value": asset.description})
-            detail.append({"key": "Acessórios", "value": asset.accessories})
-            detail.append(
-                {"key": "Pacote Office", "value": "SIM" if asset.ms_office else "NÃO"}
-            )
-            detail.append(
-                {
-                    "key": "Padrão Equipamento",
-                    "value": asset.pattern if asset.pattern else self.NOT_PROVIDE,
-                }
-            )
-            detail.append(
-                {
-                    "key": "Sistema Operacional",
-                    "value": (
-                        asset.operational_system
-                        if asset.operational_system
-                        else self.NOT_PROVIDE
-                    ),
-                }
-            )
-            detail.append(
-                {
-                    "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
-                }
-            )
-
-        if asset.type.id == 3:
-            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
-            detail.append({"key": "Número de Série", "value": asset.serial_number})
-            detail.append({"key": "Descrição", "value": asset.description})
-            detail.append(
-                {
-                    "key": "Modelo",
-                    "value": asset.model if asset.model else self.NOT_PROVIDE,
-                }
-            )
-            detail.append(
-                {
-                    "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
-                }
-            )
-
-        if asset.type.id == 8:
-            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
-            detail.append({"key": "Número de Série", "value": asset.serial_number})
-            detail.append({"key": "Descrição", "value": asset.description})
-            detail.append(
-                {
-                    "key": "Modelo",
-                    "value": asset.model if asset.model else self.NOT_PROVIDE,
-                }
-            )
-            detail.append(
-                {
-                    "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
-                }
-            )
-
-        if asset.type.id == 9:
-            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
-            detail.append({"key": "Número de Série", "value": asset.serial_number})
-            detail.append({"key": "Descrição", "value": asset.description})
-            detail.append(
-                {
-                    "key": "Modelo",
-                    "value": asset.model if asset.model else self.NOT_PROVIDE,
-                }
-            )
-            detail.append(
-                {
-                    "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
-                }
-            )
-
-        return detail
-
     def __validate_witnesses(
         self, witnesses: List[int], db_session: Session
     ) -> List[WitnessModel]:
@@ -421,7 +469,7 @@ class DocumentService:
 
         witness2 = current_lending.witnesses[1]
 
-        detail = self.__get_contract_detail(asset)
+        detail = self.__get_contract_detail(asset, current_lending.cost_center.name)
 
         if new_lending_doc.legal_person:
             contract_path = create_lending_contract_pj(
@@ -598,7 +646,7 @@ class DocumentService:
 
         witness2 = revoke_witnesses[1]
 
-        detail = self.__get_contract_detail(asset)
+        detail = self.__get_contract_detail(asset, current_lending.cost_center.name)
 
         if revoke_lending_doc.legal_person:
             contract_path = create_revoke_lending_contract_pj(
@@ -726,7 +774,7 @@ class DocumentService:
 
     def create_term(
         self,
-        new_lending_doc: NewLendingDocSchema,
+        new_term_doc: NewTermDocSchema,
         type_doc: str,
         db_session: Session,
         authenticated_user: UserModel,
@@ -738,34 +786,35 @@ class DocumentService:
             .first()
         )
 
-        lending_pending = (
-            db_session.query(LendingStatusModel)
-            .filter(LendingStatusModel.name == "Arquivo pendente")
+        term_pending = (
+            db_session.query(TermStatusModel)
+            .filter(TermStatusModel.name == "Arquivo pendente")
             .first()
         )
 
-        current_lending = (
-            db_session.query(LendingModel)
-            .filter(LendingModel.id == new_lending_doc.lending_id)
+        current_term = (
+            db_session.query(TermModel)
+            .filter(TermModel.id == new_term_doc.term_id)
             .first()
         )
 
-        asset = current_lending.asset
+        item = current_term.term_item
 
         new_code = self.__generate_code(
             db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
-            asset,
+            None,
+            "term",
         )
 
-        employee = current_lending.employee
+        employee = current_term.employee
 
-        detail = self.__get_term_detail(asset, current_lending.cost_center.name)
+        detail = self.__get_term_detail(item, current_term.type.name)
 
-        contract_path = create_lending_term(
-            NewLendingTermContextSchema(
+        contract_path = create_term(
+            NewTermContextSchema(
                 number=new_code,
                 glpi_number=(
-                    current_lending.glpi_number if current_lending.glpi_number else ""
+                    current_term.glpi_number if current_term.glpi_number else ""
                 ),
                 full_name=employee.full_name,
                 taxpayer_identification=employee.taxpayer_identification,
@@ -773,12 +822,12 @@ class DocumentService:
                 address=employee.address,
                 nationality=employee.nationality.description,
                 role=employee.role.name,
-                cc=current_lending.cost_center.name,
-                manager=current_lending.manager,
+                cc=current_term.cost_center.name,
+                manager=current_term.manager,
                 detail=detail,
                 date=date.today().strftime(DEFAULT_DATE_FORMAT),
-                project=current_lending.project,
-                location=current_lending.location,
+                project=current_term.project,
+                location=current_term.location,
             )
         )
 
@@ -800,34 +849,29 @@ class DocumentService:
         )
         logger.info("New Document. %s", str(new_doc))
 
-        asset.status = db_session.query(AssetStatusModel).get(7)
-        db_session.add(asset)
-        db_session.commit()
-        db_session.flush()
+        current_term.document = new_doc
+        current_term.number = new_code
+        current_term.status = term_pending
 
-        current_lending.document = new_doc
-        current_lending.number = new_code
-        current_lending.status = lending_pending
-
-        db_session.add(current_lending)
+        db_session.add(current_term)
         db_session.commit()
         db_session.flush()
 
         service_log.set_log(
             "lending",
-            "lending",
-            "Vinculação do Termo",
-            current_lending.id,
+            "term",
+            "Vinculação do Termo de Responsabilidade",
+            current_term.id,
             authenticated_user,
             db_session,
         )
-        logger.info("New Document add to Lending. %s", str(current_lending))
+        logger.info("New Document add to Term. %s", str(current_term))
 
         return self.serialize_document(new_doc)
 
     def create_revoke_term(
         self,
-        revoke_lending_doc: NewRevokeContractDocSchema,
+        revoke_term_doc: NewRevokeTermDocSchema,
         type_doc: str,
         db_session: Session,
         authenticated_user: UserModel,
@@ -839,34 +883,35 @@ class DocumentService:
             .first()
         )
 
-        lending_pending = (
-            db_session.query(LendingStatusModel)
-            .filter(LendingStatusModel.name == "Arquivo de distrato pendente")
+        term_pending = (
+            db_session.query(TermStatusModel)
+            .filter(TermStatusModel.name == "Arquivo de distrato pendente")
             .first()
         )
 
-        current_lending = (
-            db_session.query(LendingModel)
-            .filter(LendingModel.id == revoke_lending_doc.lending_id)
+        current_term = (
+            db_session.query(TermModel)
+            .filter(TermModel.id == revoke_term_doc.term_id)
             .first()
         )
 
-        asset = current_lending.asset
+        item = current_term.term_item
 
         new_code = self.__generate_code(
             db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
-            asset,
+            None,
+            "term",
         )
 
-        employee = current_lending.employee
+        employee = current_term.employee
 
-        detail = self.__get_term_detail(asset, current_lending.cost_center.name)
+        detail = self.__get_term_detail(item, current_term.type.name)
 
-        contract_path = create_lending_term(
-            NewLendingTermContextSchema(
+        contract_path = create_term(
+            NewTermContextSchema(
                 number=new_code,
                 glpi_number=(
-                    current_lending.glpi_number if current_lending.glpi_number else ""
+                    current_term.glpi_number if current_term.glpi_number else ""
                 ),
                 full_name=employee.full_name,
                 taxpayer_identification=employee.taxpayer_identification,
@@ -874,13 +919,14 @@ class DocumentService:
                 address=employee.address,
                 nationality=employee.nationality.description,
                 role=employee.role.name,
-                cc=current_lending.cost_center.name,
-                manager=current_lending.manager,
+                cc=current_term.cost_center.name,
+                manager=current_term.manager,
                 detail=detail,
                 date=date.today().strftime(DEFAULT_DATE_FORMAT),
-                project=current_lending.project,
-                location=current_lending.location,
-            )
+                project=current_term.project,
+                location=current_term.location,
+            ),
+            "distrato_termo.html",
         )
 
         new_doc = DocumentModel(path=contract_path, file_name=f"{new_code}.pdf")
@@ -901,23 +947,23 @@ class DocumentService:
         )
         logger.info("New Document. %s", str(new_doc))
 
-        current_lending.document_revoke = new_doc
-        current_lending.number = new_code
-        current_lending.status = lending_pending
+        current_term.document_revoke = new_doc
+        current_term.number = new_code
+        current_term.status = term_pending
 
-        db_session.add(current_lending)
+        db_session.add(current_term)
         db_session.commit()
         db_session.flush()
 
         service_log.set_log(
             "lending",
-            "lending",
-            "Vinculação do Termo",
-            current_lending.id,
+            "term",
+            "Revogação de Termo de Responsabilidade",
+            current_term.id,
             authenticated_user,
             db_session,
         )
-        logger.info("New Document add to Lending. %s", str(current_lending))
+        logger.info("New Document add to Term. %s", str(current_term))
 
         return self.serialize_document(new_doc)
 
@@ -1000,7 +1046,7 @@ class DocumentService:
 
         lending_signed = (
             db_session.query(LendingStatusModel)
-            .filter(LendingStatusModel.name == "Inativo")
+            .filter(LendingStatusModel.name == "Distrato realizado")
             .first()
         )
 

@@ -8,7 +8,7 @@ from fastapi_filter.contrib.sqlalchemy import Filter
 
 from src.lending.filters import WorkloadFilter
 from src.people.filters import CostCenterFilter, EmployeeFullNameFilter
-from src.term.models import TermModel, TermStatusModel
+from src.term.models import TermItemTypeModel, TermModel, TermStatusModel
 
 
 class TermStatusFilter(Filter):
@@ -20,6 +20,17 @@ class TermStatusFilter(Filter):
         """Filter constants"""
 
         model = TermStatusModel
+
+
+class TermItemTypeFilter(Filter):
+    """Term item type filters"""
+
+    name: Optional[str] = None
+
+    class Constants(Filter.Constants):
+        """Filter constants"""
+
+        model = TermItemTypeModel
 
 
 class TermFilter(Filter):
@@ -44,6 +55,9 @@ class TermFilter(Filter):
     )
     status: Optional[TermStatusFilter] = FilterDepends(
         with_prefix("status", TermStatusFilter)
+    )
+    type: Optional[TermItemTypeFilter] = FilterDepends(
+        with_prefix("type", TermItemTypeFilter)
     )
     order_by: List[str] = ["number"]
     search: Optional[str] = None

@@ -1,6 +1,5 @@
 """Term models"""
 
-from typing import List
 
 from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
@@ -59,7 +58,7 @@ class TermItemModel(Base):
     size = Column("size", String(length=3), nullable=True)
     quantity = Column("quantity", Integer, nullable=True)
     value = Column("value", Float, nullable=True)
-    term: Mapped["TermModel"] = relationship(back_populates="term_items")
+    term: Mapped["TermModel"] = relationship(back_populates="term_item")
     term_id = Column("term_id", ForeignKey("term.id"))
 
     def __str__(self) -> str:
@@ -100,10 +99,8 @@ class TermModel(Base):
     type: Mapped[TermItemTypeModel] = relationship()
     type_id = Column("type_id", ForeignKey(TermItemTypeModel.id))
 
-    term_items: Mapped[List[TermItemModel]] = relationship(back_populates="term")
-    term_items_id = Column(
-        "term_items_id", ForeignKey(TermItemModel.id), nullable=False
-    )
+    term_item: Mapped[TermItemModel] = relationship(back_populates="term")
+    term_item_id = Column("term_item_id", ForeignKey(TermItemModel.id), nullable=False)
 
     # código gerado
     number = Column("number", String(length=30), nullable=True)
@@ -119,20 +116,3 @@ class TermModel(Base):
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.id} - {self.number} ({self.type.name})"
-
-
-class WitnessModel(Base):
-    """Witness model"""
-
-    __tablename__ = "witness"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-
-    employee: Mapped[EmployeeModel] = relationship()
-    employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
-    term: Mapped[TermModel] = relationship(back_populates="witnesses")
-    term_id = Column("term_id", ForeignKey(TermModel.id), nullable=True)
-
-    def __str__(self) -> str:
-        """Returns model as string"""
-        return f"{self.id}"
