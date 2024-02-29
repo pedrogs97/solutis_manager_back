@@ -37,6 +37,7 @@ class NewMaintenanceSchema(BaseSchema):
     )
     asset_id: int = Field(alias="assetId")
     employee_id: int = Field(alias="employeeId")
+    resolution: Optional[str] = None
 
 
 class UpdateMaintenanceSchema(BaseSchema):
@@ -92,7 +93,7 @@ class NewUpgradeSchema(BaseSchema):
 
     asset_id: int = Field(alias="assetId")
     employee_id: int = Field(alias="employeeId")
-    glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
+    value: Optional[float] = None
     detailing: Optional[str] = None
     supplier: Optional[str] = None
     invoice_number: Optional[str] = Field(alias="invoiceNumber", default=None)
@@ -107,6 +108,7 @@ class UpdateUpgradeSchema(BaseSchema):
     invoice_number: Optional[str] = Field(alias="invoiceNumber", default=None)
     close: Optional[bool] = False
     in_progress: Optional[bool] = Field(alias="inProgress", default=False)
+    value: Optional[float] = None
 
 
 class UpgradeAttachmentSerializerSchema(BaseSchema):
@@ -124,7 +126,7 @@ class UpgradeSerializerSchema(BaseSchema):
     status: str
     open_date: str = Field(serialization_alias="openDate")
     close_date: Optional[str] = Field(serialization_alias="closeDate", default=None)
-    glpi_number: Optional[str] = Field(serialization_alias="glpiNumber", default=None)
+    value: Optional[float]
     detailing: Optional[str]
     supplier: Optional[str]
     invoice_number: Optional[str] = Field(

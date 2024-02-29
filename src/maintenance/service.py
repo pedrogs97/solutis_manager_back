@@ -264,6 +264,7 @@ class MaintenanceService:
             open_date_glpi=data.open_date_glpi,
             open_date_supplier=data.open_date_supplier,
             incident_description=data.incident_description,
+            resolution=data.resolution,
         )
         new_maintenance.status = pending_status
         new_maintenance.action = action_type
@@ -542,7 +543,7 @@ class UpgradeService:
                 id=upgrade.employee.id,
                 registration=upgrade.employee.registration,
             ),
-            glpi_number=upgrade.glpi_number,
+            value=upgrade.value,
             observations=upgrade.observations,
             open_date=upgrade.open_date.strftime(DEFAULT_DATE_FORMAT),
             status=upgrade.status.name,
@@ -576,7 +577,7 @@ class UpgradeService:
 
         new_upgrade = UpgradeModel(
             open_date=date.today(),
-            glpi_number=data.glpi_number,
+            value=data.value,
             detailing=data.detailing,
             supplier=data.supplier,
             observations=data.observations,
@@ -619,7 +620,7 @@ class UpgradeService:
         """Get upgrade list"""
 
         upgrade_list = upgrade_filters.filter(
-            db_session.query(UpgradeModel).join(MaintenanceStatusModel)
+            db_session.query(UpgradeModel).join(MaintenanceStatusModel).join(AssetModel)
         ).order_by(desc(UpgradeModel.id))
 
         params = Params(page=page, size=size)
@@ -658,6 +659,9 @@ class UpgradeService:
 
         if data.invoice_number:
             upgrade.invoice_number = data.invoice_number
+
+        if data.value:
+            upgrade.value = float(data.value)
 
         db_session.add(upgrade)
         db_session.commit()
