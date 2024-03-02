@@ -340,7 +340,6 @@ class TestAuthModule(TestBase):
 
         assert response.status_code == 201
         data = response.json()
-        print(data.keys())
         assert data["name"] == payload["name"]
         assert len(data.keys()) == len(expected_keys)
         assert all(a == b for a, b in zip(data.keys(), expected_keys))
@@ -369,7 +368,6 @@ class TestAuthModule(TestBase):
 
         assert response.status_code == 400
         data = response.json()
-        print(data)
         assert isinstance(data, list)
 
     def test_auth_get_groups(self, authenticated):

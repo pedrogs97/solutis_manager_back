@@ -546,7 +546,11 @@ class UserSerivce:
             user.email,
             "Nova senha",
             "new_password",
-            {"username": name, "new_password": self.make_new_random_password()},
+            {
+                "username": user.username,
+                "new_password": self.make_new_random_password(),
+                "full_name": name,
+            },
         )
         if mail_client.send_message():
             service_log.set_log(

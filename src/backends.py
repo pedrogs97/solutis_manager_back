@@ -284,7 +284,9 @@ class Email365Client:
         template = template_env.get_template(template_file)
 
         return template.render(
-            username=self.__extra["username"], new_password=self.__extra["new_password"]
+            username=self.__extra["username"],
+            new_password=self.__extra["new_password"],
+            full_name=self.__extra["full_name"],
         )
 
     def __prepare_message(self) -> None:

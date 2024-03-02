@@ -16,7 +16,11 @@ class TestEmail365Client:
             mail_to="teste@email.com",
             mail_subject="teste de email",
             type_message="new_password",
-            extra={"username": "teste", "new_password": "teste"},
+            extra={
+                "username": "teste",
+                "new_password": "teste",
+                "full_name": "teste nome completo",
+            },
         )
 
         result = client.send_message()
