@@ -341,7 +341,7 @@ class LendingService:
         service_log.set_log(
             "lending",
             "lending",
-            f"Atualização de Comodato",
+            "Atualização de Comodato",
             lending.id,
             authenticated_user,
             db_session,

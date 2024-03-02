@@ -1,6 +1,6 @@
 """Maintenance models"""
 
-from sqlalchemy import Column, Date, ForeignKey, Integer, String
+from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 from src.asset.models import AssetModel
@@ -146,7 +146,7 @@ class UpgradeModel(Base):
 
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)
-    glpi_number = Column("glpi_number", String(length=50), nullable=True)
+    value = Column("value", Float, nullable=True)
     detailing = Column("detailing", String(length=255), nullable=True)
     supplier = Column("supplier", String(length=100), nullable=True)
     invoice_number = Column("invoice_number", String(length=100), nullable=True)

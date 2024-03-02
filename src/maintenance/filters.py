@@ -74,7 +74,6 @@ class MaintenanceFilter(Filter):
 class UpgradeFilter(Filter):
     """Upgrade filters"""
 
-    glpi_number__ilike: Optional[str] = None
     supplier__ilike: Optional[str] = None
     open_date__lte: Optional[date] = None
     open_date__gte: Optional[date] = None
