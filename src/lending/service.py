@@ -284,6 +284,12 @@ class LendingService:
             witnesses,
         ) = self.__validate_nested(new_lending, db_session)
 
+        lending_pending = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Arquivo pendente")
+            .first()
+        )
+
         new_lending_db = LendingModel(
             manager=new_lending.manager,
             observations=new_lending.observations,
@@ -298,6 +304,7 @@ class LendingService:
         new_lending_db.asset = asset
         new_lending_db.workload = workload
         new_lending_db.cost_center = cost_center
+        new_lending_db.status = lending_pending
 
         new_lending_db.witnesses = witnesses
         db_session.add(new_lending_db)
