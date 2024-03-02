@@ -100,6 +100,7 @@ def create_lending_contract(context: NewLendingContextSchema) -> str:
         n_termo=f"data:image/png;base64,{n_termo_file}",
         ri_1=f"data:image/png;base64,{logo_file}",
         location=context.location,
+        bu=context.bu,
     )
 
     lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
@@ -226,6 +227,7 @@ def create_lending_contract_pj(context: NewLendingPjContextSchema) -> str:
         n_termo=f"data:image/png;base64,{n_termo_file}",
         ri_1=f"data:image/png;base64,{logo_file}",
         location=context.location,
+        bu=context.bu,
     )
 
     lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")

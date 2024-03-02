@@ -522,6 +522,7 @@ class DocumentService:
                     contract_date=employee.employer_contract_date.strftime(
                         DEFAULT_DATE_FORMAT
                     ),
+                    bu=current_lending.bu,
                 )
             )
         else:
@@ -561,6 +562,7 @@ class DocumentService:
                     company=employee.employer_name,
                     project=current_lending.project,
                     location=current_lending.location,
+                    bu=current_lending.bu,
                 )
             )
 
@@ -695,6 +697,7 @@ class DocumentService:
                         DEFAULT_DATE_FORMAT
                     ),
                     location=current_lending.location,
+                    bu=current_lending.bu,
                 )
             )
         else:
@@ -734,6 +737,7 @@ class DocumentService:
                     company=employee.employer_name,
                     project=current_lending.project,
                     location=current_lending.location,
+                    bu=current_lending.bu,
                 )
             )
 
@@ -775,6 +779,67 @@ class DocumentService:
             db_session,
         )
         logger.info("New Document add to Lending. %s", str(current_lending))
+
+        return self.serialize_document(new_doc)
+
+    async def upload_contract(
+        self,
+        contract: UploadFile,
+        type_doc: str,
+        lendingId: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Upload contract"""
+
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        lending_signed = (
+            db_session.query(LendingStatusModel)
+            .filter(LendingStatusModel.name == "Ativo")
+            .first()
+        )
+
+        lending = self.__get_lending_or_404(lendingId, db_session)
+
+        code = lending.number
+
+        file_name = f"{code}.pdf"
+
+        UPLOAD_DIR = CONTRACT_UPLOAD_DIR
+
+        if DEBUG:
+            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "contracts")
+
+        file_path = await upload_file(
+            file_name, "lending", contract.file.read(), UPLOAD_DIR
+        )
+
+        new_doc = DocumentModel(path=file_path, file_name=file_name)
+        new_doc.doc_type = doc_type
+
+        db_session.add(new_doc)
+        db_session.commit()
+
+        lending.signed_date = date.today()
+        lending.document = new_doc
+        lending.status = lending_signed
+        db_session.add(lending)
+        db_session.commit()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Importação de Contrato {type_doc}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Upload Document signed. %s", str(new_doc))
 
         return self.serialize_document(new_doc)
 
@@ -825,11 +890,14 @@ class DocumentService:
                 full_name=employee.full_name,
                 taxpayer_identification=employee.taxpayer_identification,
                 national_identification=employee.national_identification,
+                marital_status=employee.marital_status.description,
                 address=employee.address,
                 nationality=employee.nationality.description,
                 role=employee.role.name,
+                workload=current_term.workload.name,
                 cc=current_term.cost_center.code,
                 manager=current_term.manager,
+                business_executive=current_term.business_executive,
                 detail=detail,
                 date=date.today().strftime(DEFAULT_DATE_FORMAT),
                 project=current_term.project,
@@ -924,8 +992,11 @@ class DocumentService:
                 national_identification=employee.national_identification,
                 address=employee.address,
                 nationality=employee.nationality.description,
+                marital_status=employee.marital_status.description,
                 role=employee.role.name,
+                workload=current_term.workload.name,
                 cc=current_term.cost_center.code,
+                business_executive=current_term.business_executive,
                 manager=current_term.manager,
                 detail=detail,
                 date=date.today().strftime(DEFAULT_DATE_FORMAT),
@@ -970,67 +1041,6 @@ class DocumentService:
             db_session,
         )
         logger.info("New Document add to Term. %s", str(current_term))
-
-        return self.serialize_document(new_doc)
-
-    async def upload_contract(
-        self,
-        contract: UploadFile,
-        type_doc: str,
-        lendingId: int,
-        db_session: Session,
-        authenticated_user: UserModel,
-    ) -> DocumentSerializerSchema:
-        """Upload contract"""
-
-        doc_type = (
-            db_session.query(DocumentTypeModel)
-            .filter(DocumentTypeModel.name == type_doc)
-            .first()
-        )
-
-        lending_signed = (
-            db_session.query(LendingStatusModel)
-            .filter(LendingStatusModel.name == "Ativo")
-            .first()
-        )
-
-        lending = self.__get_lending_or_404(lendingId, db_session)
-
-        code = lending.number
-
-        file_name = f"{code}.pdf"
-
-        UPLOAD_DIR = CONTRACT_UPLOAD_DIR
-
-        if DEBUG:
-            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "contracts")
-
-        file_path = await upload_file(
-            file_name, "lending", contract.file.read(), UPLOAD_DIR
-        )
-
-        new_doc = DocumentModel(path=file_path, file_name=file_name)
-        new_doc.doc_type = doc_type
-
-        db_session.add(new_doc)
-        db_session.commit()
-
-        lending.signed_date = date.today()
-        lending.document = new_doc
-        lending.status = lending_signed
-        db_session.add(lending)
-        db_session.commit()
-
-        service_log.set_log(
-            "lending",
-            "document",
-            f"Importação de Contrato {type_doc}",
-            new_doc.id,
-            authenticated_user,
-            db_session,
-        )
-        logger.info("Upload Document signed. %s", str(new_doc))
 
         return self.serialize_document(new_doc)
 

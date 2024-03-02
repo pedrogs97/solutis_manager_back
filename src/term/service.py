@@ -238,22 +238,20 @@ class TermService:
         new_term_db.workload = workload
         new_term_db.cost_center = cost_center
 
-        db_session.add(new_term_db)
-        db_session.commit()
-        db_session.flush()
-
         if term_type.name == "Kit Ferramenta":
             new_term_item = TermItemModel(description=new_term.description)
-            new_term_item.term = new_term_db
         else:
             new_term_item = TermItemModel(
                 size=new_term.size,
                 quantity=new_term.quantity,
                 value=new_term.value,
             )
-            new_term_item.term = new_term_db
 
         db_session.add(new_term_item)
+        db_session.commit()
+        db_session.flush()
+
+        new_term_db.term_item = new_term_item
         db_session.add(new_term_db)
         db_session.commit()
         db_session.flush()

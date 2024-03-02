@@ -1,6 +1,5 @@
 """Term models"""
 
-
 from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
@@ -58,8 +57,7 @@ class TermItemModel(Base):
     size = Column("size", String(length=3), nullable=True)
     quantity = Column("quantity", Integer, nullable=True)
     value = Column("value", Float, nullable=True)
-    term: Mapped["TermModel"] = relationship(back_populates="term_item")
-    term_id = Column("term_id", ForeignKey("term.id"))
+    term: Mapped["TermModel"] = relationship(viewonly=True)
 
     def __str__(self) -> str:
         """Returns model as string"""

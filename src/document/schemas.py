@@ -29,7 +29,6 @@ class DocumentSerializerSchema(BaseSchema):
 class NewLendingDocSchema(BaseSchema):
     """New contract info schema"""
 
-    employee_id: int = Field(alias="employeeId")
     lending_id: int = Field(alias="lendingId")
     legal_person: bool = Field(alias="legalPerson", default=False)
 
@@ -70,6 +69,7 @@ class NewLendingContextSchema(BaseSchema):
     date: str
     witnesses: List[WitnessContextSchema]
     location: str
+    bu: str
 
 
 class NewLendingPjContextSchema(BaseSchema):
@@ -98,6 +98,7 @@ class NewLendingPjContextSchema(BaseSchema):
     date: str
     witnesses: List[WitnessContextSchema]
     location: str
+    bu: str
 
 
 # TERM
@@ -106,7 +107,6 @@ class NewLendingPjContextSchema(BaseSchema):
 class NewTermDocSchema(BaseSchema):
     """New term info schema"""
 
-    employee_id: int = Field(alias="employeeId")
     term_id: int = Field(alias="termId")
     legal_person: bool = Field(alias="legalPerson", default=False)
 
@@ -115,7 +115,6 @@ class NewRevokeTermDocSchema(BaseSchema):
     """New term info schema"""
 
     term_id: int = Field(alias="termId")
-    legal_person: bool = Field(alias="legalPerson", default=False)
 
 
 class NewTermContextSchema(BaseSchema):

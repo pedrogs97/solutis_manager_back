@@ -17,7 +17,12 @@ from src.config import (
     PAGINATION_NUMBER,
 )
 from src.document.filters import DocumentFilter
-from src.document.schemas import NewLendingDocSchema, NewRevokeContractDocSchema
+from src.document.schemas import (
+    NewLendingDocSchema,
+    NewRevokeContractDocSchema,
+    NewRevokeTermDocSchema,
+    NewTermDocSchema,
+)
 from src.document.service import DocumentService
 
 document_router = APIRouter(prefix="/documents", tags=["Document"])
@@ -127,7 +132,7 @@ async def post_revoke_contract(
 
 @document_router.post("/terms/create/", response_class=FileResponse)
 def post_create_term(
-    new_document_doc: NewLendingDocSchema,
+    new_document_doc: NewTermDocSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})
@@ -177,7 +182,7 @@ async def post_import_term(
 
 @document_router.post("/terms/revoke/create/", response_class=FileResponse)
 def post_create_revoke_term(
-    new_document_doc: NewRevokeContractDocSchema,
+    new_document_doc: NewRevokeTermDocSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "lending", "model": "document", "action": "add"})

@@ -32,12 +32,14 @@ from src.config import (
 from src.database import ExternalDatabase, get_database_url
 from src.datasync.router import datasync_router
 from src.datasync.scheduler import SchedulerService
+from src.document.router import document_router
 from src.exceptions import default_response_exception
 from src.invoice.router import invoice_router
 from src.lending.router import lending_router
 from src.log.router import log_router
 from src.maintenance.router import maintenance_router
 from src.people.router import people_router
+from src.term.router import term_router
 from src.verification.router import verification_router
 
 if not os.path.exists(f"{BASE_DIR}/logs/"):
@@ -144,6 +146,8 @@ appAPI.include_router(datasync_router, prefix=BASE_API)
 appAPI.include_router(asset_router, prefix=BASE_API)
 appAPI.include_router(maintenance_router, prefix=BASE_API)
 appAPI.include_router(verification_router, prefix=BASE_API)
+appAPI.include_router(document_router, prefix=BASE_API)
+appAPI.include_router(term_router, prefix=BASE_API)
 
 
 @appAPI.get("/health/", tags=["Service"])

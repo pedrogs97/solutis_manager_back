@@ -8,11 +8,13 @@ from src.auth.models import *
 from src.config import DB_SERVER, get_database_url
 from src.database import Base
 from src.datasync.models import *
+from src.document.models import *
 from src.invoice.models import *
 from src.lending.models import *
 from src.log.models import *
 from src.maintenance.models import *
 from src.people.models import *
+from src.term.models import *
 from src.verification.models import *
 
 # this is the Alembic Config object, which provides
