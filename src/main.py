@@ -82,7 +82,7 @@ async def lifespan(app: FastAPI):
     logger.info("Current jobs %s", scheduler.get_jobs())
     try:
         trigger = "cron"
-        hour = "12-18"
+        hour = "12,18"
         minute = "00"
         week = "mon-fri"
         # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00

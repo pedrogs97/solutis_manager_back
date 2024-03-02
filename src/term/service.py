@@ -154,12 +154,12 @@ class TermService:
                 )
 
         if data.type_id:
-            termType = (
+            term_type = (
                 db_session.query(TermItemTypeModel)
                 .filter(TermItemTypeModel.id == data.type_id)
                 .first()
             )
-            if not termType:
+            if not term_type:
                 errors.append(
                     {
                         "field": "typeId",
@@ -206,7 +206,7 @@ class TermService:
             employee,
             workload,
             cost_center,
-            termType,
+            term_type,
         )
 
     def create_term(
@@ -221,7 +221,7 @@ class TermService:
             employee,
             workload,
             cost_center,
-            termType,
+            term_type,
         ) = self.__validate_nested(new_term, db_session)
 
         new_term_db = TermModel(
@@ -233,7 +233,7 @@ class TermService:
             location=new_term.location,
         )
 
-        new_term_db.type = termType
+        new_term_db.type = term_type
         new_term_db.employee = employee
         new_term_db.workload = workload
         new_term_db.cost_center = cost_center
@@ -242,7 +242,7 @@ class TermService:
         db_session.commit()
         db_session.flush()
 
-        if termType.name == "Kit Ferramenta":
+        if term_type.name == "Kit Ferramenta":
             new_term_item = TermItemModel(description=new_term.description)
             new_term_item.term = new_term_db
         else:

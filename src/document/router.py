@@ -51,7 +51,7 @@ def post_create_contract(
 
 @document_router.post("/contracts/upload/")
 async def post_import_contract(
-    documentId: Annotated[int, Form()],
+    lendingId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -65,7 +65,7 @@ async def post_import_contract(
         )
 
     serializer = await document_service.upload_contract(
-        file, "Contrato de Comodato", documentId, db_session, authenticated_user
+        file, "Contrato de Comodato", lendingId, db_session, authenticated_user
     )
 
     db_session.close()
@@ -101,7 +101,7 @@ def post_create_revoke_contract(
 
 @document_router.post("/contracts/revoke/upload/")
 async def post_revoke_contract(
-    documentId: Annotated[int, Form()],
+    lendingId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -115,7 +115,7 @@ async def post_revoke_contract(
         )
 
     serializer = await document_service.upload_revoke_contract(
-        file, "Distrato de Comodato", documentId, db_session, authenticated_user
+        file, "Distrato de Comodato", lendingId, db_session, authenticated_user
     )
 
     db_session.close()
@@ -151,7 +151,7 @@ def post_create_term(
 
 @document_router.post("/terms/upload/")
 async def post_import_term(
-    documentId: Annotated[int, Form()],
+    termId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -164,8 +164,8 @@ async def post_import_term(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    serializer = await document_service.upload_contract(
-        file, "Termo de Responsabilidade", documentId, db_session, authenticated_user
+    serializer = await document_service.upload_term(
+        file, "Termo de Responsabilidade", termId, db_session, authenticated_user
     )
 
     db_session.close()
@@ -204,7 +204,7 @@ def post_create_revoke_term(
 
 @document_router.post("/terms/revoke/upload/")
 async def post_revoke_term(
-    documentId: Annotated[int, Form()],
+    termId: Annotated[int, Form()],
     file: UploadFile,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
@@ -217,10 +217,10 @@ async def post_revoke_term(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    serializer = await document_service.upload_revoke_contract(
+    serializer = await document_service.upload_revoke_term(
         file,
         "Distrato de Termo de Responsabilidade",
-        documentId,
+        termId,
         db_session,
         authenticated_user,
     )

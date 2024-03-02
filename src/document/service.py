@@ -146,14 +146,20 @@ class DocumentService:
                     "key": "Descrição",
                     "value": item.description,
                 },
+            )
+            detail.append(
                 {
                     "key": "Tamanho",
                     "value": item.size,
                 },
+            )
+            detail.append(
                 {
                     "key": "Quantidade",
                     "value": item.quantity,
                 },
+            )
+            detail.append(
                 {
                     "key": "Valor",
                     "value": item.value,
@@ -469,7 +475,7 @@ class DocumentService:
 
         witness2 = current_lending.witnesses[1]
 
-        detail = self.__get_contract_detail(asset, current_lending.cost_center.name)
+        detail = self.__get_contract_detail(asset, current_lending.cost_center.code)
 
         if new_lending_doc.legal_person:
             contract_path = create_lending_contract_pj(
@@ -487,7 +493,7 @@ class DocumentService:
                     nationality=employee.nationality.description,
                     role=employee.role.name,
                     marital_status=employee.marital_status.description,
-                    cc=current_lending.cost_center.name,
+                    cc=current_lending.cost_center.code,
                     manager=current_lending.manager,
                     business_executive=current_lending.business_executive,
                     workload=workload.name,
@@ -534,7 +540,7 @@ class DocumentService:
                     nationality=employee.nationality.description,
                     role=employee.role.name,
                     marital_status=employee.marital_status.description,
-                    cc=current_lending.cost_center.name,
+                    cc=current_lending.cost_center.code,
                     manager=current_lending.manager,
                     business_executive=current_lending.business_executive,
                     workload=workload.name,
@@ -646,7 +652,7 @@ class DocumentService:
 
         witness2 = revoke_witnesses[1]
 
-        detail = self.__get_contract_detail(asset, current_lending.cost_center.name)
+        detail = self.__get_contract_detail(asset, current_lending.cost_center.code)
 
         if revoke_lending_doc.legal_person:
             contract_path = create_revoke_lending_contract_pj(
@@ -664,7 +670,7 @@ class DocumentService:
                     nationality=employee.nationality.description,
                     role=employee.role.name,
                     marital_status=employee.marital_status.description,
-                    cc=current_lending.cost_center.name,
+                    cc=current_lending.cost_center.code,
                     manager=current_lending.manager,
                     business_executive=current_lending.business_executive,
                     workload=workload.name,
@@ -707,7 +713,7 @@ class DocumentService:
                     nationality=employee.nationality.description,
                     role=employee.role.name,
                     marital_status=employee.marital_status.description,
-                    cc=current_lending.cost_center.name,
+                    cc=current_lending.cost_center.code,
                     manager=current_lending.manager,
                     business_executive=current_lending.business_executive,
                     workload=workload.name,
@@ -822,7 +828,7 @@ class DocumentService:
                 address=employee.address,
                 nationality=employee.nationality.description,
                 role=employee.role.name,
-                cc=current_term.cost_center.name,
+                cc=current_term.cost_center.code,
                 manager=current_term.manager,
                 detail=detail,
                 date=date.today().strftime(DEFAULT_DATE_FORMAT),
@@ -919,7 +925,7 @@ class DocumentService:
                 address=employee.address,
                 nationality=employee.nationality.description,
                 role=employee.role.name,
-                cc=current_term.cost_center.name,
+                cc=current_term.cost_center.code,
                 manager=current_term.manager,
                 detail=detail,
                 date=date.today().strftime(DEFAULT_DATE_FORMAT),
@@ -1028,6 +1034,67 @@ class DocumentService:
 
         return self.serialize_document(new_doc)
 
+    async def upload_term(
+        self,
+        term_file: UploadFile,
+        type_doc: str,
+        termId: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Upload term"""
+
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        term_signed = (
+            db_session.query(TermStatusModel)
+            .filter(TermStatusModel.name == "Ativo")
+            .first()
+        )
+
+        term = self.__get_term_or_404(termId, db_session)
+
+        code = term.number
+
+        file_name = f"{code}.pdf"
+
+        UPLOAD_DIR = CONTRACT_UPLOAD_DIR
+
+        if DEBUG:
+            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "terms")
+
+        file_path = await upload_file(
+            file_name, "term", term_file.file.read(), UPLOAD_DIR
+        )
+
+        new_doc = DocumentModel(path=file_path, file_name=file_name)
+        new_doc.doc_type = doc_type
+
+        db_session.add(new_doc)
+        db_session.commit()
+
+        term.signed_date = date.today()
+        term.document = new_doc
+        term.status = term_signed
+        db_session.add(term)
+        db_session.commit()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Importação de Contrato {type_doc}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Upload Document signed. %s", str(new_doc))
+
+        return self.serialize_document(new_doc)
+
     async def upload_revoke_contract(
         self,
         contract: UploadFile,
@@ -1080,6 +1147,67 @@ class DocumentService:
         lending.document_revoke = new_doc
         lending.status = lending_signed
         db_session.add(lending)
+        db_session.commit()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Importação de Distrato {type_doc}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Upload Document renvoke. %s", str(new_doc))
+
+        return self.serialize_document(new_doc)
+
+    async def upload_revoke_term(
+        self,
+        term_file: UploadFile,
+        type_doc: str,
+        termId: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Upload term"""
+
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        term_signed = (
+            db_session.query(TermStatusModel)
+            .filter(TermStatusModel.name == "Distrato realizado")
+            .first()
+        )
+
+        term = self.__get_term_or_404(termId, db_session)
+
+        code = term.number
+
+        file_name = f"{code}.pdf"
+
+        UPLOAD_DIR = CONTRACT_UPLOAD_DIR
+
+        if DEBUG:
+            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "terms")
+
+        file_path = await upload_file(
+            file_name, "revoke", term_file.file.read(), UPLOAD_DIR
+        )
+
+        new_doc = DocumentModel(path=file_path, file_name=file_name)
+        new_doc.doc_type = doc_type
+
+        db_session.add(new_doc)
+        db_session.commit()
+
+        term.revoke_signed_date = date.today()
+        term.document_revoke = new_doc
+        term.status = term_signed
+        db_session.add(term)
         db_session.commit()
 
         service_log.set_log(
