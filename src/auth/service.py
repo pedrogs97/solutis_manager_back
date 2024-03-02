@@ -155,6 +155,14 @@ class UserSerivce:
         if not employee:
             errors.append({"field": "employeeId", "error": "Colaborador inválido"})
 
+        if employee and employee.user:
+            errors.append(
+                {
+                    "field": "employeeId",
+                    "error": "Colaborador já está vinculado a um usuário",
+                }
+            )
+
         user_test_username = (
             db_session.query(UserModel)
             .filter(UserModel.username == new_user.username)
@@ -204,6 +212,8 @@ class UserSerivce:
         self,
         db_session: Session,
         user_filters: UserFilter,
+        employee_empty: bool = False,
+        employee_not_empty: bool = False,
         page: int = 1,
         size: int = 50,
     ) -> Page[UserSerializerSchema]:
@@ -219,9 +229,30 @@ class UserSerivce:
         Returns:
             Page[UserSerializerSchema]: A `Page` object containing a paginated list of serialized user objects.
         """
-        user_list = user_filters.filter(
-            db_session.query(UserModel).join(GroupModel).outerjoin(EmployeeModel)
-        ).order_by(desc(UserModel.id))
+        if employee_empty:
+            user_list = (
+                user_filters.filter(
+                    db_session.query(UserModel)
+                    .join(GroupModel)
+                    .outerjoin(EmployeeModel),
+                )
+                .filter(UserModel.employee.is_(None))
+                .order_by(desc(UserModel.id))
+            )
+        elif employee_not_empty:
+            user_list = (
+                user_filters.filter(
+                    db_session.query(UserModel)
+                    .join(GroupModel)
+                    .outerjoin(EmployeeModel),
+                )
+                .filter(UserModel.employee.is_not(None))
+                .order_by(desc(UserModel.id))
+            )
+        else:
+            user_list = user_filters.filter(
+                db_session.query(UserModel).join(GroupModel).outerjoin(EmployeeModel)
+            ).order_by(desc(UserModel.id))
 
         params = Params(page=page, size=size)
         paginated = paginate(

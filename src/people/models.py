@@ -20,6 +20,8 @@ class EmployeeModel(Base):
     __allow_unmapped__ = True
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
+    user: Mapped["UserModel"] = relationship(viewonly=True)
+
     role: Mapped[EmployeeRoleTOTVSModel] = relationship()
     role_id = Column("role_id", ForeignKey(EmployeeRoleTOTVSModel.id), nullable=True)
 

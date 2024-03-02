@@ -1,4 +1,5 @@
 """Auth router"""
+
 from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Query, Response, status
@@ -130,6 +131,10 @@ def get_list_user_route(
         PermissionChecker({"module": "auth", "model": "user", "action": "view"})
     ),
     user_filters: UserFilter = FilterDepends(UserFilter),
+    employee_empty: bool = Query(False, description="Filter for empty employee"),
+    employee_not_empty: bool = Query(
+        False, description="Filter for not empty employee"
+    ),
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -145,7 +150,9 @@ def get_list_user_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    users = user_service.get_users(db_session, user_filters, page, size)
+    users = user_service.get_users(
+        db_session, user_filters, employee_empty, employee_not_empty, page, size
+    )
     db_session.close()
     return users
 
