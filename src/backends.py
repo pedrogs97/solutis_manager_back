@@ -213,9 +213,9 @@ def refresh_token_has_expired(token_str: str) -> bool:
     try:
         token_decoded = jwt.decode(token_str, SECRET_KEY, algorithms=ALGORITHM)
         if "exp" not in token_decoded:
-            return False
+            return True
     except ExpiredSignatureError:
-        return False
+        return True
     return (
         token_decoded["exp"] < int(datetime.utcnow().timestamp())
         and token_decoded["type"] == "refresh"
