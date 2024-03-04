@@ -135,7 +135,7 @@ def patch_term_route(
     data: UpdateTermSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "term", "action": "view"})
+        PermissionChecker({"module": "lending", "model": "term", "action": "edit"})
     ),
 ):
     """
