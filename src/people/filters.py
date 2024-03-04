@@ -98,6 +98,7 @@ class EmployeeFullNameFilter(Filter):
 class EmployeeFilter(Filter):
     """Employee filters"""
 
+    id__in: Optional[List[int]] = None
     code__ilike: Optional[str] = None
     status__ilike: Optional[str] = None
     full_name__ilike: Optional[str] = None
