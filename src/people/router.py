@@ -156,6 +156,29 @@ def get_emplooyee_lending_history_route(
     )
 
 
+@people_router.get("/employees/history/term/{employee_id}/")
+def get_emplooyee_term_history_route(
+    employee_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "people", "model": "employee", "action": "view"})
+    ),
+):
+    """Get an employee route"""
+    if not authenticated_user:
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer_list = employee_service.get_employee_term_history(
+        employee_id, db_session
+    )
+    db_session.close()
+    return JSONResponse(
+        content=serializer_list,
+        status_code=status.HTTP_200_OK,
+    )
+
+
 @people_router.get("/nationalities/")
 def get_list_nationalities_route(
     nationality_filters: EmployeeNationalityFilter = FilterDepends(

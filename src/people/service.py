@@ -42,8 +42,14 @@ from src.people.schemas import (
     EmployeeNationalitySerializerSchema,
     EmployeeRoleSerializerSchema,
     EmployeeSerializerSchema,
+    EmployeeShortSerializerSchema,
     NewEmployeeSchema,
     UpdateEmployeeSchema,
+)
+from src.term.models import TermModel
+from src.term.schemas import (
+    TermEmployeeHistorySerializerSchema,
+    TermItemSerializerSchema,
 )
 
 logger = logging.getLogger(__name__)
@@ -389,6 +395,55 @@ class EmployeeService:
 
         historic_serialize = [
             LendingService().serialize_lending(h).model_dump(by_alias=True)
+            for h in historic_model
+        ]
+
+        return historic_serialize
+
+    def get_employee_term_history(
+        self, employee_id: int, db_session: Session
+    ) -> List[dict]:
+        """Get an employee term history"""
+        employee = self.__get_employee_or_404(employee_id, db_session)
+
+        historic_model = (
+            db_session.query(TermModel)
+            .filter(TermModel.employee_id == employee.id)
+            .order_by(desc(TermModel.id))
+            .all()
+        )
+
+        historic_serialize = [
+            TermEmployeeHistorySerializerSchema(
+                cost_center=CostCenterSerializerSchema(**h.cost_center.__dict__),
+                document=h.document.id if h.document else None,
+                document_revoke=h.document_revoke.id if h.document_revoke else None,
+                id=h.id,
+                employee=EmployeeShortSerializerSchema(
+                    id=h.employee.id,
+                    code=h.employee.code,
+                    full_name=h.employee.full_name if h.employee else "Não informado",
+                    registration=h.employee.registration,
+                ),
+                glpi_number=h.glpi_number,
+                number=h.number,
+                observations=h.observations,
+                project=h.project,
+                revoke_signed_date=(
+                    h.revoke_signed_date.strftime(DEFAULT_DATE_FORMAT)
+                    if h.revoke_signed_date
+                    else None
+                ),
+                signed_date=(
+                    h.signed_date.strftime(DEFAULT_DATE_FORMAT)
+                    if h.signed_date
+                    else None
+                ),
+                status=h.status.name,
+                term_item=TermItemSerializerSchema(**h.term_item.__dict__),
+                type=h.type.name,
+                workload=h.workload.name if h.workload else "Não informado",
+            ).model_dump(by_alias=True)
             for h in historic_model
         ]
 

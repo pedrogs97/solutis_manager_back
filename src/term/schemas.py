@@ -98,3 +98,23 @@ class NewTermSchema(BaseSchema):
     size: Optional[SizesEnum] = None
     quantity: Optional[int] = None
     value: Optional[float] = None
+
+
+class TermEmployeeHistorySerializerSchema(BaseSchema):
+    """Term history serializer schema"""
+
+    id: int
+    employee: EmployeeShortSerializerSchema
+    document: Optional[int]
+    document_revoke: Optional[int] = Field(serialization_alias="documentRevoke")
+    cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
+    workload: str
+    status: Optional[str]
+    type: str
+    term_item: TermItemSerializerSchema = Field(serialization_alias="termItem")
+    number: Optional[str]
+    observations: Optional[str]
+    signed_date: Optional[str] = Field(serialization_alias="signedDate")
+    revoke_signed_date: Optional[str] = Field(serialization_alias="revokeSignedDate")
+    glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
+    project: str
