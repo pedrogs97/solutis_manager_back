@@ -139,6 +139,10 @@ class NewEmployeeSchema(BaseSchema):
         alias="employerName",
         default=None,
     )
+    employer_end_contract_date: Optional[date] = Field(
+        alias="employerEndContractDate",
+        default=None,
+    )
 
 
 class UpdateEmployeeSchema(BaseSchema):

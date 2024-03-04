@@ -263,6 +263,7 @@ class EmployeeService:
             employer_address=data.employer_address,
             employer_contract_object=data.employer_contract_object,
             employer_contract_date=data.employer_contract_date,
+            employer_end_contract_date=data.employer_end_contract_date,
             employer_name=data.employer_name,
         )
 
