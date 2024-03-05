@@ -43,6 +43,7 @@ def post_create_employee_route(
 ):
     """Creates employee route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -65,6 +66,7 @@ def patch_update_employee_route(
 ):
     """Update employee route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -104,6 +106,7 @@ def get_list_employees_route(
 ):
     """List employees and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -124,6 +127,7 @@ def get_emplooyee_route(
 ):
     """Get an employee route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -144,6 +148,7 @@ def get_emplooyee_lending_history_route(
 ):
     """Get an employee route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -167,6 +172,7 @@ def get_emplooyee_term_history_route(
 ):
     """Get an employee route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -195,6 +201,7 @@ def get_list_nationalities_route(
 ):
     """List nationalities and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -220,6 +227,7 @@ def get_list_marital_status_route(
 ):
     """List marital status and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -243,6 +251,7 @@ def get_list_center_cost_route(
 ):
     """List center cost and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -264,6 +273,7 @@ def get_list_genders_route(
 ):
     """List genders and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -283,6 +293,7 @@ def get_list_roles_route(
 ):
     """List roles and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -302,6 +313,7 @@ def get_list_educational_levels_route(
 ):
     """List educational levels and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

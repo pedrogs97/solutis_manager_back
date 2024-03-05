@@ -40,6 +40,7 @@ def post_create_contract(
 ):
     """Creates a new contract"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -65,6 +66,7 @@ async def post_import_contract(
 ):
     """Upload new contract"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -90,6 +92,7 @@ def post_create_revoke_contract(
 ):
     """Creates a new revoke contract"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -115,6 +118,7 @@ async def post_revoke_contract(
 ):
     """Creates a new revoke contract"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -140,6 +144,7 @@ def post_create_term(
 ):
     """Creates a new term"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -165,6 +170,7 @@ async def post_import_term(
 ):
     """Upload new term"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -190,6 +196,7 @@ def post_create_revoke_term(
 ):
     """Creates a new term"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -218,6 +225,7 @@ async def post_revoke_term(
 ):
     """Creates a new revoke term"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -268,6 +276,7 @@ def get_list_documents_route(
         JSONResponse: JSON response containing the retrieved documents with a status code of 200.
     """
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -286,6 +295,7 @@ def get_download_document(
 ):
     """Download a document"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

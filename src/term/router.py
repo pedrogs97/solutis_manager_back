@@ -46,6 +46,7 @@ def post_create_term_route(
         or a 401 Unauthorized response if the user is not authenticated.
     """
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -88,6 +89,7 @@ def get_list_terms_route(
         JSONResponse: JSON response containing the retrieved terms with a status code of 200.
     """
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -118,6 +120,7 @@ def get_term_route(
         JSONResponse: A JSON response containing the serialized term information and a status code.
     """
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -142,6 +145,7 @@ def patch_term_route(
     Update term information for a specific term ID.
     """
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

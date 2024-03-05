@@ -50,6 +50,7 @@ def post_create_lending_route(
         or a 401 Unauthorized response if the user is not authenticated.
     """
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -92,6 +93,7 @@ def get_list_lendings_route(
         JSONResponse: JSON response containing the retrieved lendings with a status code of 200.
     """
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -122,6 +124,7 @@ def get_lending_route(
         JSONResponse: A JSON response containing the serialized lending information and a status code.
     """
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -146,6 +149,7 @@ def patch_lending_route(
     Update lending information for a specific lending ID.
     """
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -170,6 +174,7 @@ def get_list_workloads_route(
 ):
     """List workloads and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -188,6 +193,7 @@ def post_create_witness_route(
 ):
     """Create new witness route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -207,6 +213,7 @@ def get_list_witness_route(
 ):
     """List witness and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

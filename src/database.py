@@ -1,10 +1,12 @@
 """Database connection"""
+
 import logging
 
 import pymssql
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 from src.config import (
     SQLSERVE_HOST_DB,
@@ -14,7 +16,9 @@ from src.config import (
     get_database_url,
 )
 
-Engine = create_engine(get_database_url(), pool_pre_ping=True)
+Engine = create_engine(
+    get_database_url(), poolclass=NullPool, pool_pre_ping=True, pool_recycle=60
+)
 Session_db = sessionmaker(
     autocommit=False,
     autoflush=False,

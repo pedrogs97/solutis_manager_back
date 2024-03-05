@@ -1,4 +1,5 @@
 """Verification router"""
+
 from typing import Union
 
 from fastapi import APIRouter, Depends, status
@@ -26,6 +27,7 @@ def post_create_verifications(
 ):
     """Creates new verification"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -51,6 +53,7 @@ def get_asset_type_verifications(
 ):
     """Get asset type verifications"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -77,6 +80,7 @@ def post_create_answer_verification(
 ):
     """Creates answer for a verification"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -100,6 +104,7 @@ def get_answer_verification_by_lending(
 ):
     """Creates answer for a verification"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

@@ -41,6 +41,7 @@ def post_create_maintenance_route(
 ):
     """Creates maintenance route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -65,6 +66,7 @@ def patch_update_maintenance_route(
 ):
     """Update maintenance route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -102,6 +104,7 @@ def get_list_maintenances_route(
 ):
     """List maintenances and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -122,6 +125,7 @@ def get_maintenance_route(
 ):
     """Get a maintenance route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -144,6 +148,7 @@ async def post_upload_maintenance_attachments(
 ):
     """Upload attachmetns route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -171,6 +176,7 @@ def get_download_attachment_maintenance(
 ):
     """Download a attachment maintenance"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -195,6 +201,7 @@ def get_list_maintenances_actions_route(
 ):
     """List maintenances actions route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -212,6 +219,7 @@ def get_list_maintenances_status_route(
 ):
     """List maintenances status route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -230,6 +238,7 @@ def post_create_upgrade_route(
 ):
     """Creates upgrade route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -252,6 +261,7 @@ def patch_update_upgrade_route(
 ):
     """Update upgrade route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -289,6 +299,7 @@ def get_list_upgrades_route(
 ):
     """List upgrades and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -307,6 +318,7 @@ def get_upgrade_route(
 ):
     """Get an upgrade route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -329,6 +341,7 @@ async def post_upload_upgrade_attachments(
 ):
     """Upload attachmetns route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -356,6 +369,7 @@ def get_download_attachment_upgrade(
 ):
     """Download a attachment upgrade"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

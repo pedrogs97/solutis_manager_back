@@ -59,6 +59,7 @@ def login_route(
     """Login user route"""
     user = get_user(data.username, data.password, db_session)
     if not user:
+        db_session.close()
         raise token_exception()
     token = get_user_token(user, db_session)
     db_session.close()
@@ -72,6 +73,7 @@ def refresh_token_route(
 ):
     """Refresh token route"""
     if refresh_token_has_expired(data.refresh_token):
+        db_session.close()
         return JSONResponse(
             content={"refreshToken": "Token inválido"},
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -80,6 +82,7 @@ def refresh_token_route(
     user = get_user_from_refresh(data.refresh_token, db_session)
 
     if not user:
+        db_session.close()
         return JSONResponse(
             content="Usuário não encontrado", status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -112,6 +115,7 @@ def post_create_user_route(
 ) -> Response:
     """New user route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -146,6 +150,7 @@ def get_list_user_route(
 ):
     """List users route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -172,6 +177,7 @@ def update_user_route(
 ) -> Response:
     """Update user route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -195,6 +201,7 @@ def update_user_password_route(
 ) -> Response:
     """Update user's password route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -225,6 +232,7 @@ def get_user_route(
 ) -> Response:
     """Get user route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -247,6 +255,7 @@ def post_create_group_route(
 ) -> Response:
     """New group route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -278,6 +287,7 @@ def get_list_group_route(
 ):
     """List groups route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -301,6 +311,7 @@ def update_group_route(
 ) -> Response:
     """Update group route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -335,6 +346,7 @@ def get_group_route(
 ) -> Response:
     """Get group route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -359,6 +371,7 @@ def get_list_permission_route(
 ):
     """List permissions route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -380,6 +393,7 @@ def post_send_new_password_route(
 ) -> JSONResponse:
     """Sends new password to the user"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

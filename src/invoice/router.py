@@ -34,6 +34,7 @@ def post_create_invoice_route(
 ):
     """Creates invoice route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -61,6 +62,7 @@ async def post_upload_document_invoice_route(
 ):
     """Upload document invoice route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -112,6 +114,7 @@ def get_list_invoices_route(
 ):
     """List invoices and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -132,6 +135,7 @@ def get_invoice_route(
 ):
     """Get an invoice route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -153,6 +157,7 @@ def delete_invoice_route(
 ):
     """Delete an invoice route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

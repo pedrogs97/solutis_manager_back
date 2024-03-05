@@ -35,6 +35,7 @@ def post_create_asset_route(
 ):
     """Creates asset route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -57,6 +58,7 @@ def patch_update_asset_route(
 ):
     """Update asset route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -80,6 +82,7 @@ def patch_inactivate_asset_route(
 ):
     """Update asset route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -118,6 +121,7 @@ def get_list_assets_route(
 ):
     """List assets and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -136,6 +140,7 @@ def get_asset_route(
 ):
     """Get an asset route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -157,6 +162,7 @@ def get_asset_history_route(
 ):
     """Get an asset route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -179,6 +185,7 @@ def get_list_asset_types_route(
 ):
     """List asset types and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
@@ -200,6 +207,7 @@ def get_list_asset_status_route(
 ):
     """List asset status and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )

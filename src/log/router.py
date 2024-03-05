@@ -44,6 +44,7 @@ def get_list_logs_route(
 ):
     """List logs and apply filters route"""
     if not authenticated_user:
+        db_session.close()
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
