@@ -289,11 +289,31 @@ class Email365Client:
             full_name=self.__extra["full_name"],
         )
 
+    def __prepare_new_user_password(self) -> str:
+        """Build new user password email"""
+        if "username" not in self.__extra:
+            raise ValueError("Username not found to send new password email")
+        if "password" not in self.__extra:
+            raise ValueError("New password not found to send new password email")
+
+        template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+        template_env = jinja2.Environment(loader=template_loader)
+        template_file = "new_user_password.html"
+        template = template_env.get_template(template_file)
+
+        return template.render(
+            username=self.__extra["username"],
+            password=self.__extra["password"],
+            full_name=self.__extra["full_name"],
+        )
+
     def __prepare_message(self) -> None:
         """Build email"""
         output_text = ""
         if self.__type == "new_password":
             output_text = self.__prepare_new_password()
+        if self.__type == "new_user":
+            output_text = self.__prepare_new_user_password()
 
         self.__message.attach(MIMEText(output_text, "html"))
 

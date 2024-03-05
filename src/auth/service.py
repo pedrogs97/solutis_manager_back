@@ -103,10 +103,10 @@ class UserSerivce:
         result_str = ""
         for i in range(1, 8):
             rand = random.randint(1, 10)
-            if rand % i != 0 or i % rand != 0:
-                result_str = "".join(random.choice(letters))
+            if rand % i != 0:
+                result_str += "".join(random.choice(letters))
             else:
-                result_str = "".join(random.choice(digits))
+                result_str += "".join(random.choice(digits))
 
         if DEBUG:
             logger.debug("New pass. %s", result_str)
@@ -205,6 +205,33 @@ class UserSerivce:
             db_session,
         )
         logger.info("New user add. %s", str(new_user_db))
+
+        name = (
+            new_user_db.employee.full_name
+            if new_user_db.employee
+            else new_user_db.username
+        )
+        mail_client = Email365Client(
+            new_user_db.email,
+            "Novo Usuário",
+            "new_user",
+            {
+                "username": new_user_db.username,
+                "password": self.make_new_random_password(),
+                "full_name": name,
+            },
+        )
+        if mail_client.send_message():
+            service_log.set_log(
+                "auth",
+                "user",
+                "Envio de novo usuário",
+                new_user_db.id,
+                authenticated_user,
+                db_session,
+            )
+        else:
+            logger.warning("Não foi possível enviar o e-mail")
 
         return self.serialize_user(new_user_db)
 
