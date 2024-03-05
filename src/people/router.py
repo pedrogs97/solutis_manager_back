@@ -88,6 +88,7 @@ def put_update_employee_route():
 @people_router.get("/employees/")
 def get_list_employees_route(
     employee_filters: EmployeeFilter = FilterDepends(EmployeeFilter),
+    ids: str = Query(""),
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -107,7 +108,7 @@ def get_list_employees_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     employees = employee_service.get_employees(
-        db_session, employee_filters, fields, page, size
+        db_session, employee_filters, ids, fields, page, size
     )
     db_session.close()
     return employees

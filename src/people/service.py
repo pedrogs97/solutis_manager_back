@@ -453,6 +453,7 @@ class EmployeeService:
         self,
         db_session: Session,
         employee_filters: EmployeeFilter,
+        ids: str = "",
         fields: str = "",
         page: int = 1,
         size: int = 50,
@@ -466,6 +467,14 @@ class EmployeeService:
             .join(EmployeeMaritalStatusTOTVSModel)
             .join(EmployeeGenderTOTVSModel)
         ).order_by(desc(EmployeeModel.id))
+
+        if ids != "":
+            list_ids = (
+                [int(str_id) for str_id in ids.split(",")] if "," in ids else [int(ids)]
+            )
+            employee_list = employee_list.union(
+                db_session.query(EmployeeModel).filter(EmployeeModel.id.in_(list_ids))
+            )
 
         if fields == "":
             params = Params(page=page, size=size)
