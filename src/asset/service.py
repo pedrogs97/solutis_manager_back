@@ -459,7 +459,6 @@ class AssetService:
                     else None
                 ),
                 status=h.status.name if h.status else None,
-                type=h.type.name,
                 witnesses=[witness.id for witness in h.witnesses],
                 workload=h.workload.name if h.workload else "",
             ).model_dump(by_alias=True)

@@ -472,8 +472,10 @@ class EmployeeService:
             list_ids = (
                 [int(str_id) for str_id in ids.split(",")] if "," in ids else [int(ids)]
             )
-            employee_list = employee_list.union(
-                db_session.query(EmployeeModel).filter(EmployeeModel.id.in_(list_ids))
+            employee_list = (
+                db_session.query(EmployeeModel)
+                .filter(EmployeeModel.id.in_(list_ids))
+                .union(employee_list)
             )
 
         if fields == "":

@@ -384,7 +384,7 @@ class UserSerivce:
                     user.employee = employee
 
             if data.username and user.username != data.username:
-                employee = (
+                user_find = (
                     db_session.query(UserModel)
                     .filter(
                         UserModel.username == data.username, UserModel.id != user_id
@@ -392,7 +392,7 @@ class UserSerivce:
                     .first()
                 )
 
-                if not employee:
+                if user_find:
                     errors.append(
                         {"field": "username", "error": "Nome de usuário já existe"}
                     )
@@ -401,13 +401,13 @@ class UserSerivce:
                     user.username = data.username
 
             if data.email and user.email != data.email:
-                employee = (
+                user_find = (
                     db_session.query(UserModel)
                     .filter(UserModel.email == data.email, UserModel.id != user_id)
                     .first()
                 )
 
-                if employee:
+                if user_find:
                     errors.append({"field": "email", "error": "E-mail já existe"})
                 else:
                     is_updated = True
