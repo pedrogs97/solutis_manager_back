@@ -184,9 +184,10 @@ class UserSerivce:
         if len(errors) > 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=errors)
 
+        password = self.make_new_random_password()
         user_dict = {
             **new_user.model_dump(),
-            "password": self.get_password_hash(self.make_new_random_password()),
+            "password": self.get_password_hash(password),
         }
 
         user_dict["group_id"] = group.id
@@ -217,7 +218,7 @@ class UserSerivce:
             "new_user",
             {
                 "username": new_user_db.username,
-                "password": self.make_new_random_password(),
+                "password": password,
                 "full_name": name,
             },
         )
@@ -569,17 +570,22 @@ class UserSerivce:
         user = self.__get_user_or_404(data.user_id, db_session)
 
         name = user.employee.full_name if user.employee else user.username
+        new_pass = self.make_new_random_password()
+
         mail_client = Email365Client(
             user.email,
             "Nova senha",
             "new_password",
             {
                 "username": user.username,
-                "new_password": self.make_new_random_password(),
+                "new_password": new_pass,
                 "full_name": name,
             },
         )
         if mail_client.send_message():
+            user.password = self.get_password_hash(new_pass)
+            db_session.add(user)
+            db_session.commit()
             service_log.set_log(
                 "auth",
                 "user",

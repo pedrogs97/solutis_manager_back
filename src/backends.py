@@ -324,7 +324,6 @@ class Email365Client:
             with smtplib.SMTP(
                 "smtp.office365.com", 587, local_hostname="solutis.com.br"
             ) as server:
-                server.set_debuglevel(1)
                 server.starttls()
                 server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
                 if fake:
