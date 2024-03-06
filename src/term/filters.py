@@ -40,8 +40,6 @@ class TermFilter(Filter):
     number__like: Optional[str] = None
     manager__like: Optional[str] = None
     manager__ilike: Optional[str] = None
-    glpi_number__like: Optional[str] = None
-    glpi_number__ilike: Optional[str] = None
     signed_date__gte: Optional[date] = None
     signed_date__lte: Optional[date] = None
     employee: Optional[EmployeeFullNameFilter] = FilterDepends(
@@ -66,4 +64,4 @@ class TermFilter(Filter):
         """Filter constants"""
 
         model = TermModel
-        search_model_fields = ["number", "manager", "glpi_number"]
+        search_model_fields = ["number", "manager"]
