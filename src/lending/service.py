@@ -11,7 +11,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from src.asset.models import AssetModel
+from src.asset.models import AssetModel, AssetTypeModel
 from src.asset.schemas import AssetShortSerializerSchema
 from src.auth.models import UserModel
 from src.config import DEFAULT_DATE_FORMAT
@@ -371,6 +371,7 @@ class LendingService:
             db_session.query(LendingModel)
             .outerjoin(EmployeeModel)
             .outerjoin(AssetModel)
+            .outerjoin(AssetTypeModel)
             .outerjoin(WorkloadModel)
             .outerjoin(CostCenterTOTVSModel)
             .outerjoin(LendingStatusModel)
