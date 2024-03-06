@@ -75,7 +75,7 @@ def post_create_answer_verification(
     data: NewVerificationAnswerSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "asset", "model": "answer", "action": "add"})
+        PermissionChecker({"module": "asset", "model": "verification", "action": "add"})
     ),
 ):
     """Creates answer for a verification"""
@@ -99,7 +99,9 @@ def get_answer_verification_by_lending(
     lending_id: int,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "asset", "model": "answer", "action": "view"})
+        PermissionChecker(
+            {"module": "asset", "model": "verification", "action": "view"}
+        )
     ),
 ):
     """Creates answer for a verification"""

@@ -810,9 +810,10 @@ class GroupService:
         group = db_session.query(GroupModel).filter(GroupModel.id == group_id).first()
 
         if not group:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"field": "group", "errror": "Perfil de usuário não encontrado"},
+                detail={"field": "name", "errror": "Perfil de usuário não encontrado"},
             )
 
         return group
@@ -866,9 +867,10 @@ class GroupService:
         )
 
         if group:
-            errors.append({"field": "group", "error": "Perfil de usuário já existe"})
+            errors.append({"field": "name", "error": "Perfil de usuário já existe"})
 
         if len(errors) > 0:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=errors,
@@ -966,6 +968,7 @@ class GroupService:
                 current_permissions.append(permission)
 
         if len(ids_not_found) > 0:
+            db_session.close()
             errors = {"permissions": {"Permissões não encontradas": ids_not_found}}
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -1026,8 +1029,10 @@ class GroupService:
             return self.serialize_group(group)
 
         except HTTPException as http_exc:
+            db_session.close()
             raise http_exc
         except Exception as exc:
+            db_session.close()
             msg = f"{exc.args[0]}"
             logger.warning("Could not update group. Error: %s", msg)
         return self.serialize_group(group)
