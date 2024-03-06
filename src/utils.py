@@ -333,7 +333,6 @@ def create_term(context: NewTermContextSchema, type_term="termo.html") -> str:
     logo_file = get_str_base64_image(LOGO_IMAGE)
     output_text = template.render(
         number=context.number,
-        glpi_number=context.glpi_number,
         full_name=context.full_name,
         taxpayer_identification=context.taxpayer_identification,
         national_identification=context.national_identification,

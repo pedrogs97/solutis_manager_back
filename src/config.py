@@ -104,6 +104,7 @@ PERMISSIONS = {
             {"name": "employee", "label": "Colaboradores"},
             {"name": "nationality", "label": "Nacionalidades"},
             {"name": "marital_status", "label": "Estado Civil"},
+            {"name": "center_cost", "label": "Centro de Custo"},
             {"name": "gender", "label": "Generos"},
             {"name": "role", "label": "Cargos"},
         ],

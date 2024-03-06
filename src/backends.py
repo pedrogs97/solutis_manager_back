@@ -190,6 +190,7 @@ def get_current_user(token: dict, db_session: Session) -> UserModel:
 
         return user_db
     except jwt.ExpiredSignatureError as exc:
+        db_session.close()
         raise get_user_exception() from exc
 
 

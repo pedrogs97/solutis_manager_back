@@ -69,6 +69,7 @@ class EmployeeService:
             .first()
         )
         if not employee:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "employeeId", "error": "Colaborador não encontrado"},
@@ -137,6 +138,7 @@ class EmployeeService:
                 )
 
         if len(errors) > 0:
+            db_session.close()
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -425,7 +427,6 @@ class EmployeeService:
                     full_name=h.employee.full_name if h.employee else "Não informado",
                     registration=h.employee.registration,
                 ),
-                glpi_number=h.glpi_number,
                 number=h.number,
                 observations=h.observations,
                 project=h.project,

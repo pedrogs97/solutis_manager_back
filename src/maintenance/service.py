@@ -59,6 +59,7 @@ class MaintenanceService:
             .first()
         )
         if not maintenance:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -79,6 +80,7 @@ class MaintenanceService:
             .first()
         )
         if not attachment:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -100,6 +102,7 @@ class MaintenanceService:
         )
 
         if not vertification_type:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -113,6 +116,7 @@ class MaintenanceService:
         """Get asset or 404"""
         asset = db_session.query(AssetModel).filter(AssetModel.id == asset_id).first()
         if not asset:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "assetId", "error": "Ativo não encontrado"},
@@ -130,6 +134,7 @@ class MaintenanceService:
             .first()
         )
         if not employee:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "employeeId", "error": "Colaborador não encontrado"},
@@ -249,6 +254,7 @@ class MaintenanceService:
         )
 
         if not pending_status:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Sem Status de Manutenção.",
@@ -450,6 +456,7 @@ class UpgradeService:
             db_session.query(UpgradeModel).filter(UpgradeModel.id == upgrade_id).first()
         )
         if not upgrade:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -470,6 +477,7 @@ class UpgradeService:
             .first()
         )
         if not attachment:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -484,6 +492,7 @@ class UpgradeService:
         """Get asset or 404"""
         asset = db_session.query(AssetModel).filter(AssetModel.id == asset_id).first()
         if not asset:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "assetId", "error": "Ativo não encontrado"},
@@ -501,6 +510,7 @@ class UpgradeService:
             .first()
         )
         if not employee:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "employeeId", "error": "Colaborador não encontrado"},
@@ -570,6 +580,7 @@ class UpgradeService:
         )
 
         if not pending_status:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Sem Status de Manutenção.",

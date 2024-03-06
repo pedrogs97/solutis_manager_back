@@ -44,6 +44,7 @@ class VerificationService:
             .first()
         )
         if not verification:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -65,6 +66,7 @@ class VerificationService:
         )
 
         if not asset_type:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -85,6 +87,7 @@ class VerificationService:
         )
 
         if not vertification_type:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -120,6 +123,7 @@ class VerificationService:
             db_session.query(LendingModel).filter(LendingModel.id == lending_id).first()
         )
         if not lending:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "lendingId", "error": "Comodato não encontrado"},

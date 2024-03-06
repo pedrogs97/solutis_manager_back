@@ -62,6 +62,7 @@ class DocumentService:
             .first()
         )
         if not document:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "documentId", "error": "Contrato não encontrado"},
@@ -77,6 +78,7 @@ class DocumentService:
             db_session.query(LendingModel).filter(LendingModel.id == lending_id).first()
         )
         if not lending:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -91,6 +93,7 @@ class DocumentService:
         """Get term or 404"""
         term = db_session.query(TermModel).filter(TermModel.id == term_id).first()
         if not term:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
@@ -418,6 +421,7 @@ class DocumentService:
             )
 
         if errors:
+            db_session.close()
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -884,9 +888,6 @@ class DocumentService:
         contract_path = create_term(
             NewTermContextSchema(
                 number=new_code,
-                glpi_number=(
-                    current_term.glpi_number if current_term.glpi_number else ""
-                ),
                 full_name=employee.full_name,
                 taxpayer_identification=employee.taxpayer_identification,
                 national_identification=employee.national_identification,

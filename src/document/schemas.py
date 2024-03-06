@@ -121,7 +121,6 @@ class NewTermContextSchema(BaseSchema):
     """Context for term template"""
 
     number: str
-    glpi_number: str
     full_name: str
     taxpayer_identification: str
     national_identification: str

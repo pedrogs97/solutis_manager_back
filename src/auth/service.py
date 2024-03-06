@@ -63,6 +63,7 @@ class UserSerivce:
         user = db_session.query(UserModel).filter(UserModel.id == user_id).first()
 
         if not user:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "userId", "error": "Usuário não encontrado"},

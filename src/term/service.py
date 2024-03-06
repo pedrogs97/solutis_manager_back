@@ -30,6 +30,7 @@ from src.term.models import TermItemModel, TermItemTypeModel, TermModel, TermSta
 from src.term.schemas import (
     NewTermSchema,
     TermItemSerializerSchema,
+    TermItemTypeSerializerSchema,
     TermSerializerSchema,
     UpdateTermSchema,
 )
@@ -122,8 +123,7 @@ class TermService:
                 if term.revoke_signed_date
                 else None
             ),
-            glpi_number=term.glpi_number,
-            type=term.type.name,
+            type=TermItemTypeSerializerSchema(**term.type.__dict__),
             status=term.status.name if term.status else "",
             business_executive=term.business_executive,
             project=term.project,
@@ -153,17 +153,17 @@ class TermService:
                     }
                 )
 
-        if data.type_id:
+        if data.type:
             term_type = (
                 db_session.query(TermItemTypeModel)
-                .filter(TermItemTypeModel.id == data.type_id)
+                .filter(TermItemTypeModel.id == data.type)
                 .first()
             )
             if not term_type:
                 errors.append(
                     {
                         "field": "typeId",
-                        "error": f"Tipo de termo não existe. {data.type_id}",
+                        "error": f"Tipo de termo não existe. {data.type}",
                     }
                 )
 
@@ -197,6 +197,7 @@ class TermService:
                 )
 
         if errors:
+            db_session.close()
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -227,7 +228,6 @@ class TermService:
         new_term_db = TermModel(
             manager=new_term.manager,
             observations=new_term.observations,
-            glpi_number=new_term.glpi_number,
             business_executive=new_term.business_executive,
             project=new_term.project,
             location=new_term.location,
@@ -245,6 +245,7 @@ class TermService:
                 size=new_term.size,
                 quantity=new_term.quantity,
                 value=new_term.value,
+                description=new_term.description,
             )
 
         db_session.add(new_term_item)

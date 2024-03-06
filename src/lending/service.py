@@ -255,6 +255,7 @@ class LendingService:
                 )
 
         if errors:
+            db_session.close()
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -426,6 +427,7 @@ class LendingService:
         )
 
         if not employee:
+            db_session.close()
             raise HTTPException(
                 detail={
                     "field": "employeeId",

@@ -31,6 +31,13 @@ class TermItemSerializerSchema(BaseSchema):
     value: Optional[float]
 
 
+class TermItemTypeSerializerSchema(BaseSchema):
+    """Term Item serializer schema"""
+
+    id: int
+    name: str
+
+
 class TermSerializerSchema(BaseSchema):
     """Term serializer schema"""
 
@@ -41,38 +48,18 @@ class TermSerializerSchema(BaseSchema):
     document_revoke: Optional[int] = Field(serialization_alias="documentRevoke")
     workload: Optional[WorkloadSerializerSchema] = None
     cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
-    type: str
+    type: TermItemTypeSerializerSchema
     status: str
     manager: str
     observations: Optional[str]
     signed_date: Optional[str] = Field(serialization_alias="signedDate")
     revoke_signed_date: Optional[str] = Field(serialization_alias="revokeSignedDate")
-    glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
     project: Optional[str] = None
     business_executive: Optional[str] = Field(
         serialization_alias="businessExecutive", default=None
     )
     location: str
     item: TermItemSerializerSchema
-
-
-class TermAssetHistorySerializerSchema(BaseSchema):
-    """Term history serializer schema"""
-
-    id: int
-    employee: EmployeeShortSerializerSchema
-    number: Optional[str]
-    document: Optional[int]
-    document_revoke: Optional[int] = Field(serialization_alias="documentRevoke")
-    workload: str
-    cost_center: CostCenterSerializerSchema = Field(serialization_alias="costCenter")
-    type: str
-    status: Optional[str]
-    observations: Optional[str]
-    signed_date: Optional[str] = Field(serialization_alias="signedDate")
-    revoke_signed_date: Optional[str] = Field(serialization_alias="revokeSignedDate")
-    glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
-    project: str
 
 
 class UpdateTermSchema(BaseSchema):
@@ -87,10 +74,9 @@ class NewTermSchema(BaseSchema):
     employee_id: int = Field(alias="employeeId")
     workload_id: Optional[int] = Field(alias="workloadId", default=None)
     cost_center_id: int = Field(alias="costCenterId")
-    type_id: int = Field(alias="typeId")
+    type: int = Field(alias="type")
     manager: str
     observations: Optional[str] = None
-    glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
     project: Optional[str] = None
     business_executive: str = Field(alias="businessExecutive", default=None)
     location: str
@@ -116,5 +102,4 @@ class TermEmployeeHistorySerializerSchema(BaseSchema):
     observations: Optional[str]
     signed_date: Optional[str] = Field(serialization_alias="signedDate")
     revoke_signed_date: Optional[str] = Field(serialization_alias="revokeSignedDate")
-    glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
     project: str

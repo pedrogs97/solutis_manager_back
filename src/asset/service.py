@@ -41,6 +41,7 @@ class AssetService:
         """Get asset or 404"""
         asset = db_session.query(AssetModel).filter(AssetModel.id == asset_id).first()
         if not asset:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "assetId", "error": "Ativo não encontrado"},
@@ -85,6 +86,7 @@ class AssetService:
                 )
 
         if len(errors) > 0:
+            db_session.close()
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -196,6 +198,7 @@ class AssetService:
             )
 
         if len(errors) > 0:
+            db_session.close()
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,

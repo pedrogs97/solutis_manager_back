@@ -37,6 +37,7 @@ class InvoiceService:
         )
 
         if not invoice:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "invoice", "error": "Nota fiscal não encontrada"},
@@ -49,6 +50,7 @@ class InvoiceService:
         asset = db_session.query(AssetModel).filter(AssetModel.id == asset_id).first()
 
         if not asset:
+            db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={"field": "assetId", "error": "Ativo não encontrado"},
