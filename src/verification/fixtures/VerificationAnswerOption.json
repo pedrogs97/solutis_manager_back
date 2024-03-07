@@ -132,24 +132,6 @@
         "verification_id": 7
     },
     {
-        "id": 23,
-        "table": "verification_answer_option",
-        "name": "CD",
-        "verification_id": 8
-    },
-    {
-        "id": 24,
-        "table": "verification_answer_option",
-        "name": "DVD",
-        "verification_id": 8
-    },
-    {
-        "id": 25,
-        "table": "verification_answer_option",
-        "name": "DVDRW",
-        "verification_id": 8
-    },
-    {
         "id": 26,
         "table": "verification_answer_option",
         "name": "Ok",

@@ -387,6 +387,16 @@ class DocumentService:
                 }
             )
 
+        if asset.type.id == 16:
+            detail.append({"key": "N° Patrimônio", "value": asset.register_number})
+            detail.append({"key": "Descrição", "value": asset.description})
+            detail.append(
+                {
+                    "key": "Valor R$",
+                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                }
+            )
+
         return detail
 
     def __validate_witnesses(
