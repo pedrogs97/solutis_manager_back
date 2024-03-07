@@ -85,7 +85,7 @@ PERMISSIONS = {
             {"name": "asset_type", "label": "Tipos de Ativo"},
             {"name": "asset_status", "label": "Status de Ativo"},
             {"name": "verification", "label": "Verificação de Ativo"},
-            {"name": "mantenance", "label": "Manutenções e Melhorias"},
+            {"name": "maintenance", "label": "Manutenções e Melhorias"},
         ],
         "label": "Ativos",
     },
