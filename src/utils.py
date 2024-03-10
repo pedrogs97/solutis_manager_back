@@ -228,6 +228,7 @@ def create_lending_contract_pj(context: NewLendingPjContextSchema) -> str:
         ri_1=f"data:image/png;base64,{logo_file}",
         location=context.location,
         bu=context.bu,
+        object=context.object,
     )
 
     lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
