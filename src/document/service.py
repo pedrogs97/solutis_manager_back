@@ -670,7 +670,7 @@ class DocumentService:
 
         detail = self.__get_contract_detail(asset, current_lending.cost_center.code)
 
-        if revoke_lending_doc.legal_person:
+        if employee.legal_person:
             contract_path = create_revoke_lending_contract_pj(
                 NewLendingPjContextSchema(
                     number=new_code,

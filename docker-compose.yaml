@@ -9,6 +9,7 @@ services:
     volumes:
       - ./src:/solutis-agile/src
       - ./alembic:/solutis-agile/alembic
+      - ./templates:/solutis-agile/templates
       - /mnt/storage:/storage
       - .logs:/solutis-agile/logs
     command: sh -c "uvicorn src.main:appAPI --host 0.0.0.0 --port 8080 --reload"
