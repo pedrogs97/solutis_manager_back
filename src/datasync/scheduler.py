@@ -133,6 +133,8 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PPESSOA)
         rows = cursor.fetchall()
+        cnxn = external_db.get_connection()
+        cnxn.close()
         new_changes: List[EmployeeTotvsSchema] = []
         for row in rows:
             employee_totvs = totvs_to_employee_schema(row)
@@ -156,6 +158,8 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PCODINSTRUCAO)
         rows = cursor.fetchall()
+        cnxn = external_db.get_connection()
+        cnxn.close()
         new_changes: List[EmployeeEducationalLevelTotvsSchema] = []
         for row in rows:
             educational_level_totvs = totvs_to_educational_level_schema(row)
@@ -183,6 +187,8 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PCODESTCIVIL)
         rows = cursor.fetchall()
+        cnxn = external_db.get_connection()
+        cnxn.close()
         new_changes: List[EmployeeMaritalStatusTotvsSchema] = []
         for row in rows:
             marital_status_totvs = totvs_to_marital_status_schema(row)
@@ -209,6 +215,8 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PCODESEXO)
         rows = cursor.fetchall()
+        cnxn = external_db.get_connection()
+        cnxn.close()
         new_changes: List[EmployeeGenderTotvsSchema] = []
         for row in rows:
             gender_totvs = totvs_to_gender_schema(row)
@@ -233,6 +241,8 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PCODNACAO)
         rows = cursor.fetchall()
+        cnxn = external_db.get_connection()
+        cnxn.close()
         new_changes: List[EmployeeNationalityTotvsSchema] = []
         for row in rows:
             nationality_totvs = totvs_to_nationality_schema(row)
@@ -259,6 +269,8 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_GCCUSTO)
         rows = cursor.fetchall()
+        cnxn = external_db.get_connection()
+        cnxn.close()
         new_changes: List[CostCenterTotvsSchema] = []
         for row in rows:
             cost_center_totvs = totvs_to_cost_center_schema(row)
@@ -283,6 +295,8 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_IGRUPOPATRIMONIO)
         rows = cursor.fetchall()
+        cnxn = external_db.get_connection()
+        cnxn.close()
         new_changes: List[AssetTypeTotvsSchema] = []
         for row in rows:
             asset_type_totvs = totvs_to_asset_type_schema(row)
@@ -307,6 +321,8 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_IPATRIMONIO)
         rows = cursor.fetchall()
+        cnxn = external_db.get_connection()
+        cnxn.close()
         new_changes: List[AssetTotvsSchema] = []
         for row in rows:
             asset_totvs = totvs_to_asset_schema(row)
@@ -330,6 +346,8 @@ class SchedulerService:
         cursor = external_db.get_cursor()
         cursor.execute(self.SQL_PFUNCAO)
         rows = cursor.fetchall()
+        cnxn = external_db.get_connection()
+        cnxn.close()
         new_changes: List[EmployeeRoleTotvsSchema] = []
         for row in rows:
             role_totvs = totvs_to_role_schema(row)

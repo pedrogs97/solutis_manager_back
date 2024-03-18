@@ -88,3 +88,15 @@ class AssetFilter(Filter):
 
         model = AssetModel
         search_model_fields = ["code", "description", "register_number", "supplier"]
+
+
+class AssetSelectFilter(Filter):
+    """Asset select filters"""
+
+    search: Optional[str] = None
+
+    class Constants(Filter.Constants):
+        """Filter constants"""
+
+        model = AssetModel
+        search_model_fields = ["description", "register_number"]

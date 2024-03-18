@@ -703,7 +703,11 @@ class DocumentService:
                         ),
                     ],
                     cnpj=employee.employer_number,
-                    company_address=employee.employer_address,
+                    company_address=(
+                        employee.employer_address
+                        if employee.employer_address
+                        else employee.address
+                    ),
                     company=employee.employer_name,
                     object=employee.employer_contract_object,
                     project=current_lending.project,

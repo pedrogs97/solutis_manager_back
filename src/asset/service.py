@@ -336,6 +336,7 @@ class AssetService:
         self,
         db_session: Session,
         asset_filters: AssetFilter,
+        ids: str = "",
         fields: str = "",
         page: int = 1,
         size: int = 50,
@@ -347,6 +348,16 @@ class AssetService:
             .outerjoin(AssetTypeModel)
             .outerjoin(AssetStatusModel)
         ).order_by(desc(AssetModel.id))
+
+        if ids != "":
+            list_ids = (
+                [int(str_id) for str_id in ids.split(",")] if "," in ids else [int(ids)]
+            )
+            asset_list = (
+                db_session.query(AssetModel)
+                .filter(AssetModel.id.in_(list_ids))
+                .union(asset_list)
+            )
 
         params = Params(page=page, size=size)
         if fields == "":

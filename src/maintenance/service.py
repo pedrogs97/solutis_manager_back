@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from src.asset.models import AssetModel
 from src.asset.schemas import AssetShortSerializerSchema
 from src.auth.models import UserModel
+from src.backends import Email365Client, get_db_session
 from src.config import ATTACHMENTS_UPLOAD_DIR, DEFAULT_DATE_FORMAT
 from src.log.services import LogService
 from src.maintenance.filters import MaintenanceFilter, UpgradeFilter
@@ -444,6 +445,37 @@ class MaintenanceService:
         attachment = self.__get_attachment_or_404(attachment_id, db_session)
         return self.serialize_maintenance_attachment(attachment)
 
+    @staticmethod
+    def check_pending_maintenances() -> None:
+        """Check pending maintenances"""
+        db_session = get_db_session()
+        pending_maintenances = (
+            db_session.query(MaintenanceModel)
+            .join(MaintenanceStatusModel)
+            .filter(MaintenanceStatusModel.name == "Pendente")
+            .all()
+        )
+
+        for maintenance in pending_maintenances:
+            if maintenance.employee and maintenance.employee.email:
+                email_client = Email365Client(
+                    maintenance.employee.email,
+                    "Manutenção Pendente",
+                    "notify_maintenance",
+                    {
+                        "id": maintenance.asset.id,
+                        "full_name": maintenance.employee.full_name,
+                        "asset_type": (
+                            maintenance.asset.type.name
+                            if maintenance.asset.type
+                            else "Ativo"
+                        ),
+                        "type": "Manutenção",
+                    },
+                )
+                email_client.send_message()
+        db_session.close()
+
 
 class UpgradeService:
     """Upgrade service"""
@@ -738,3 +770,32 @@ class UpgradeService:
         """Get an attachment maintenance"""
         attachment = self.__get_attachment_or_404(attachment_id, db_session)
         return self.serialize_upgrade_attachment(attachment)
+
+    @staticmethod
+    def check_pending_upgrades() -> None:
+        """Check pending upgrades"""
+        db_session = get_db_session()
+        pending_upgrades = (
+            db_session.query(UpgradeModel)
+            .join(MaintenanceStatusModel)
+            .filter(MaintenanceStatusModel.name == "Pendente")
+            .all()
+        )
+
+        for upgrade in pending_upgrades:
+            if upgrade.employee and upgrade.employee.email:
+                email_client = Email365Client(
+                    upgrade.employee.email,
+                    "Melhoria Pendente",
+                    "notify_maintenance",
+                    {
+                        "id": upgrade.asset.id,
+                        "full_name": upgrade.employee.full_name,
+                        "asset_type": (
+                            upgrade.asset.type.name if upgrade.asset.type else "Ativo"
+                        ),
+                        "type": "Melhoria",
+                    },
+                )
+                email_client.send_message()
+        db_session.close()

@@ -38,6 +38,7 @@ from src.invoice.router import invoice_router
 from src.lending.router import lending_router
 from src.log.router import log_router
 from src.maintenance.router import maintenance_router
+from src.maintenance.service import MaintenanceService, UpgradeService
 from src.people.router import people_router
 from src.term.router import term_router
 from src.verification.router import verification_router
@@ -70,6 +71,16 @@ def read_totvs_db():
     scheduler_service.read_totvs_db()
 
 
+def check_maintenance():
+    """Check maintenance"""
+    MaintenanceService.check_pending_maintenances()
+
+
+def check_upgrade():
+    """Check upgrade"""
+    UpgradeService.check_pending_upgrades()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifesapn app"""
@@ -87,6 +98,10 @@ async def lifespan(app: FastAPI):
         hour = "12,18"
         minute = "00"
         week = "mon-fri"
+        # check_trigger = "cron"
+        # check_hour = "8"
+        # check_minute = "00"
+        # check_week = "mon-fri"
         # -- configuração de prod/homol - roda todos os dias as 12:00 e 18:00
         scheduler.add_job(
             read_totvs_db,
@@ -100,6 +115,30 @@ async def lifespan(app: FastAPI):
             max_instances=1,
             replace_existing=True,
         )
+        # scheduler.add_job(
+        #     check_maintenance,
+        #     check_trigger,
+        #     id="check_maintenace",
+        #     day_of_week=check_week,
+        #     hour=check_hour,
+        #     minute=check_minute,
+        #     # Using max_instances=1 guarantees that only one job
+        #     # runs at the same time (in this event loop).
+        #     max_instances=1,
+        #     replace_existing=True,
+        # )
+        # scheduler.add_job(
+        #     check_upgrade,
+        #     check_trigger,
+        #     id="check_upgrade",
+        #     day_of_week=check_week,
+        #     hour=check_hour,
+        #     minute=check_minute,
+        #     # Using max_instances=1 guarantees that only one job
+        #     # runs at the same time (in this event loop).
+        #     max_instances=1,
+        #     replace_existing=True,
+        # )
     except ConflictingIdError:
         logger.info("Job alredy exist")
 

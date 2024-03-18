@@ -6,7 +6,7 @@ import time
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Annotated, Union
+from typing import Annotated, List, Union
 
 import jinja2
 import jwt
@@ -226,8 +226,32 @@ def refresh_token_has_expired(token_str: str) -> bool:
 class PermissionChecker:
     """Dependence class for check permissions"""
 
-    def __init__(self, required_permissions: PermissionSchema) -> None:
+    def __init__(
+        self, required_permissions: Union[PermissionSchema, List[PermissionSchema]]
+    ) -> None:
         self.required_permissions = required_permissions
+
+    def has_permissions(self, user: UserModel) -> bool:
+        """Check if user has permission"""
+
+        if user.group.name == "Administrador" and user.is_staff:
+            return True
+
+        if isinstance(self.required_permissions, list):
+            for perm in self.required_permissions:
+                if perm not in user.group.permissions:
+                    return False
+            return True
+
+        for perm in user.group.permissions:
+            if (
+                perm.module == self.required_permissions["module"]
+                and perm.model == self.required_permissions["model"]
+                and perm.action == self.required_permissions["action"]
+            ):
+                return True
+
+        return False
 
     def __call__(
         self,
@@ -240,17 +264,10 @@ class PermissionChecker:
                 return None
             user = get_current_user(token_decoded, db_session)
 
-            if user.group.name == "Administrador" and user.is_staff:
-                return user
+            if not self.has_permissions(user):
+                return None
 
-            for perm in user.group.permissions:
-                if (
-                    perm.module == self.required_permissions["module"]
-                    and perm.model == self.required_permissions["model"]
-                    and perm.action == self.required_permissions["action"]
-                ):
-                    return user
-            return None
+            return user
         except jwt.ExpiredSignatureError:
             logger.warning("Invalid token")
             return None
@@ -293,9 +310,9 @@ class Email365Client:
     def __prepare_new_user_password(self) -> str:
         """Build new user password email"""
         if "username" not in self.__extra:
-            raise ValueError("Username not found to send new password email")
+            raise ValueError("Username not found to send new user email")
         if "password" not in self.__extra:
-            raise ValueError("New password not found to send new password email")
+            raise ValueError("New password not found to send new user email")
 
         template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
         template_env = jinja2.Environment(loader=template_loader)
@@ -308,6 +325,28 @@ class Email365Client:
             full_name=self.__extra["full_name"],
         )
 
+    def __prepare_notify_maintenance(self) -> str:
+        """Build notify maintenance email"""
+        if "id" not in self.__extra:
+            raise ValueError("Id not found to notify maintenance email")
+        if "full_name" not in self.__extra:
+            raise ValueError("Employee name not found to send notify maintenance email")
+        if "asset_type" not in self.__extra:
+            raise ValueError("Asset type not found to send notify maintenance email")
+        if "type" not in self.__extra:
+            raise ValueError("Type not found to send notify maintenance email")
+
+        template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+        template_env = jinja2.Environment(loader=template_loader)
+        template_file = "notify_maintenance.html"
+        template = template_env.get_template(template_file)
+
+        return template.render(
+            id=self.__extra["id"],
+            full_name=self.__extra["full_name"],
+            type=self.__extra["type"],
+        )
+
     def __prepare_message(self) -> None:
         """Build email"""
         output_text = ""
@@ -315,6 +354,8 @@ class Email365Client:
             output_text = self.__prepare_new_password()
         if self.__type == "new_user":
             output_text = self.__prepare_new_user_password()
+        if self.__type == "notify_maintenance":
+            output_text = self.__prepare_notify_maintenance()
 
         self.__message.attach(MIMEText(output_text, "html"))
 

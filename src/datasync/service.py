@@ -396,6 +396,7 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
     """Updates employees from totvs"""
     db_session = get_db_session()
     updates: List[EmployeeModel] = []
+    news: List[EmployeeModel] = []
     try:
         for totvs_employee in totvs_employees:
             employee_db = (
@@ -438,6 +439,13 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
                 .filter(EmployeeGenderTOTVSModel.description == totvs_employee.gender)
                 .first()
             )
+
+            if not gender:
+                gender = (
+                    db_session.query(EmployeeGenderTOTVSModel)
+                    .filter(EmployeeGenderTOTVSModel.code == "M")
+                    .first()
+                )
 
             educational_level = (
                 db_session.query(EmployeeEducationalLevelTOTVSModel)
@@ -486,9 +494,10 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
                 updates.append(employee_db)
             else:
                 update_employee = EmployeeModel(**dict_employee)
-                updates.append(update_employee)
+                news.append(update_employee)
 
         db_session.add_all(updates)
+        db_session.add_all(news)
         db_session.commit()
         logger.info("Update Employee from TOTVS. Total=%s", str(len(updates)))
     except Exception as err:

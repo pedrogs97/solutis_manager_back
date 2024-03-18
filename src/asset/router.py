@@ -7,7 +7,12 @@ from fastapi.responses import JSONResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
-from src.asset.filters import AssetFilter, AssetStatusFilter, AssetTypeFilter
+from src.asset.filters import (
+    AssetFilter,
+    AssetSelectFilter,
+    AssetStatusFilter,
+    AssetTypeFilter,
+)
 from src.asset.schemas import InactivateAssetSchema, NewAssetSchema, UpdateAssetSchema
 from src.asset.service import AssetService
 from src.auth.models import UserModel
@@ -126,6 +131,33 @@ def get_list_assets_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     assets = asset_service.get_assets(db_session, asset_filters, fields, page, size)
+    db_session.close()
+    return assets
+
+
+@asset_router.get("-select/")
+def get_select_assets_route(
+    asset_filters: AssetSelectFilter = FilterDepends(AssetSelectFilter),
+    ids: str = Query(""),
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            [
+                {"module": "invoice", "model": "invoice", "action": "add"},
+                {"module": "lending", "model": "lending", "action": "add"},
+            ]
+        )
+    ),
+):
+    """List assets and apply filters route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    assets = asset_service.get_assets(
+        db_session, asset_filters, ids, "id,register_number,description"
+    )
     db_session.close()
     return assets
 

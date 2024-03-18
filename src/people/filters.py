@@ -142,3 +142,15 @@ class EmployeeFilter(Filter):
             "registration",
             "email",
         ]
+
+
+class EmployeeSelectFilter(Filter):
+    """Employee select filters"""
+
+    search: Optional[str] = None
+
+    class Constants(Filter.Constants):
+        """Filter constants"""
+
+        model = EmployeeModel
+        search_model_fields = ["full_name", "registration"]

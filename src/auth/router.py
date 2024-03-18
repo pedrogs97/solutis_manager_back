@@ -296,6 +296,35 @@ def get_list_group_route(
     return groups
 
 
+@auth_router.get(
+    "/groups-select/",
+    description="Retrie select list of groups. Can apply filters",
+)
+def get_select_group_route(
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            [
+                {"module": "auth", "model": "user", "action": "add"},
+                {"module": "auth", "model": "user", "action": "edit"},
+            ]
+        )
+    ),
+    group_filter: GroupFilter = FilterDepends(GroupFilter),
+    db_session: Session = Depends(get_db_session),
+):
+    """List groups route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    groups = group_service.get_groups(
+        db_session=db_session, group_filter=group_filter, fields="id, name"
+    )
+    db_session.close()
+    return groups
+
+
 @auth_router.patch(
     "/groups/{group_id}/",
     response_model=GroupSerializerSchema,

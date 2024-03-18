@@ -23,6 +23,7 @@ from src.people.filters import (
     EmployeeMaritalStatusFilter,
     EmployeeNationalityFilter,
     EmployeeRoleFilter,
+    EmployeeSelectFilter,
 )
 from src.people.schemas import NewEmployeeSchema, UpdateEmployeeSchema
 from src.people.service import EmpleoyeeGeneralSerivce, EmployeeService
@@ -112,6 +113,36 @@ def get_list_employees_route(
         )
     employees = employee_service.get_employees(
         db_session, employee_filters, ids, fields, page, size
+    )
+    db_session.close()
+    return employees
+
+
+@people_router.get("/employees-select/")
+def get_select_employees_route(
+    employee_filters: EmployeeSelectFilter = FilterDepends(EmployeeSelectFilter),
+    ids: str = Query(""),
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            [
+                {"module": "auth", "model": "user", "action": "add"},
+                {"module": "auth", "model": "user", "action": "edit"},
+                {"module": "lending", "model": "lending", "action": "add"},
+                {"module": "lending", "model": "term", "action": "add"},
+                {"module": "asset", "model": "maintenance", "action": "add"},
+            ]
+        )
+    ),
+):
+    """List for select employees route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    employees = employee_service.get_employees(
+        db_session, employee_filters, ids, "id,full_name"
     )
     db_session.close()
     return employees
