@@ -271,19 +271,26 @@ class AssetService:
         """Uptades an asset"""
         asset = self.__get_asset_or_404(asset_id, db_session)
 
-        if data.observations:
-            asset.observations = data.observations
+        if asset.by_agile:
+            dict_data = data.model_dump()
 
-        (
-            asset_type,
-            _,
-            asset_status,
-        ) = self.__validate_nested(data, db_session)
+            for key, value in dict_data.items():
+                if value and key not in ["type_id", "status_id"]:
+                    setattr(asset, key, value)
 
-        if asset_type:
-            asset.type = asset_type
-        if asset_status:
-            asset.status = asset_status
+            (
+                asset_type,
+                _,
+                asset_status,
+            ) = self.__validate_nested(data, db_session)
+
+            if asset_type:
+                asset.type = asset_type
+            if asset_status:
+                asset.status = asset_status
+        else:
+            if data.observations:
+                asset.observations = data.observations
 
         db_session.add(asset)
         db_session.commit()

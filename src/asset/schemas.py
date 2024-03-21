@@ -206,11 +206,6 @@ class NewAssetSchema(BaseSchema):
         serialization_alias="type_id",
         default=None,
     )
-    clothing_size_id: Optional[str] = Field(
-        alias="clothingSizeId",
-        serialization_alias="clothing_size_id",
-        default=None,
-    )
     status_id: Optional[str] = Field(
         alias="statusId",
         serialization_alias="status_id",
@@ -285,9 +280,63 @@ class NewAssetSchema(BaseSchema):
 class UpdateAssetSchema(BaseSchema):
     """Update asset schema"""
 
-    observations: Optional[str] = None
     type_id: Optional[int] = Field(alias="typeId", default=None)
     status_id: Optional[int] = Field(alias="statusId", default=None)
+    code: Optional[str] = None
+    # tombo - regitro patrimonial
+    register_number: Optional[str] = Field(
+        alias="registerNumber",
+        default=None,
+    )
+    description: Optional[str] = None
+    # fornecedor
+    supplier: Optional[str] = None
+    # garantia
+    assurance_date: Optional[date] = Field(
+        alias="assuranceDate",
+        default=None,
+    )
+    observations: Optional[str] = None
+    discard_reason: Optional[str] = Field(
+        alias="discardReason",
+        default=None,
+    )
+    # padrão
+    pattern: Optional[str] = None
+    operational_system: Optional[str] = Field(
+        alias="operationalSystem",
+        default=None,
+    )
+    serial_number: Optional[str] = Field(
+        alias="serialNumber",
+        default=None,
+    )
+    imei: Optional[str] = None
+    acquisition_date: Optional[date] = Field(
+        alias="acquisitionDate",
+        default=None,
+    )
+    value: Optional[float] = None
+    # pacote office
+    ms_office: Optional[bool] = Field(
+        alias="msOffice",
+        default=None,
+    )
+    line_number: Optional[str] = Field(
+        alias="lineNumber",
+        default=None,
+    )
+    # operadora
+    operator: Optional[str] = None
+    # modelo
+    model: Optional[str] = None
+    # acessórios
+    accessories: Optional[str] = None
+    configuration: Optional[str] = None
+    # quantidade do  ativo
+    quantity: Optional[int] = None
+    # unidade da quantidade
+    unit: Optional[str] = None
 
 
 class InactivateAssetSchema(BaseSchema):
