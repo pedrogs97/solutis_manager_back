@@ -130,7 +130,7 @@ def get_list_assets_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    assets = asset_service.get_assets(db_session, asset_filters, fields, page, size)
+    assets = asset_service.get_assets(db_session, asset_filters, "", fields, page, size)
     db_session.close()
     return assets
 

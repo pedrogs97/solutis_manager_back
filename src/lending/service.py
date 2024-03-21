@@ -392,7 +392,7 @@ class LendingService:
                 .outerjoin(CostCenterTOTVSModel)
                 .outerjoin(LendingStatusModel)
             )
-            .filter(not LendingModel.deleted)
+            .filter(LendingModel.deleted.is_(False))
             .order_by(desc(LendingModel.id))
         )
 
