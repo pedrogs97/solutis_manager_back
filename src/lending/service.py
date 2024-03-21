@@ -198,7 +198,22 @@ class LendingService:
             )
             if not asset:
                 errors.append(
-                    {"field": "assetId", "error": f"Ativo não existe. {asset}"}
+                    {"field": "assetId", "error": f"Ativo não existe. {data.asset_id}"}
+                )
+
+            asset_used = (
+                db_session.query(LendingModel)
+                .join(AssetModel)
+                .filter(AssetModel.id == data.asset_id)
+                .first()
+            )
+
+            if asset_used:
+                errors.append(
+                    {
+                        "field": "assetId",
+                        "error": f"Ativo já está vinculado a um comodato. {asset_used}",
+                    }
                 )
 
         workload = None
@@ -367,15 +382,19 @@ class LendingService:
     ) -> Page[LendingSerializerSchema]:
         """Get lendings list"""
 
-        lending_list = lending_filters.filter(
-            db_session.query(LendingModel)
-            .outerjoin(EmployeeModel)
-            .outerjoin(AssetModel)
-            .outerjoin(AssetTypeModel)
-            .outerjoin(WorkloadModel)
-            .outerjoin(CostCenterTOTVSModel)
-            .outerjoin(LendingStatusModel)
-        ).order_by(desc(LendingModel.id))
+        lending_list = (
+            lending_filters.filter(
+                db_session.query(LendingModel)
+                .outerjoin(EmployeeModel)
+                .outerjoin(AssetModel)
+                .outerjoin(AssetTypeModel)
+                .outerjoin(WorkloadModel)
+                .outerjoin(CostCenterTOTVSModel)
+                .outerjoin(LendingStatusModel)
+            )
+            .filter(not LendingModel.deleted)
+            .order_by(desc(LendingModel.id))
+        )
 
         params = Params(page=page, size=size)
         paginated = paginate(
@@ -479,3 +498,22 @@ class LendingService:
             )
             for witnesss in witnesses_list
         ]
+
+    def delete_lending(
+        self, lending_id: int, authenticated_user: UserModel, db_session: Session
+    ) -> None:
+        """Remove a lending"""
+        lending = self.__get_lending_or_404(lending_id, db_session)
+        lending.deleted = True
+        db_session.add(lending)
+        db_session.commit()
+        db_session.flush()
+        service_log.set_log(
+            "lending",
+            "lending",
+            "Exclusão de Comodato",
+            lending.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Delete lending. %s", str(lending))

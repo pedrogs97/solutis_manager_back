@@ -2,7 +2,7 @@
 
 from typing import List
 
-from sqlalchemy import Column, Date, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 from src.asset.models import AssetModel
@@ -99,6 +99,7 @@ class LendingModel(Base):
     signed_date = Column("signed_date", Date, nullable=True)
     revoke_signed_date = Column("revoke_signed_date", Date, nullable=True)
     glpi_number = Column("glpi_number", String(length=25), nullable=True)
+    deleted = Column("deleted", Boolean, nullable=False, default=False)
 
     def __str__(self) -> str:
         """Returns model as string"""

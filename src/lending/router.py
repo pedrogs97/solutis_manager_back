@@ -136,6 +136,30 @@ def get_lending_route(
     )
 
 
+@lending_router.delete("/{lending_id}/")
+def delete_lending_route(
+    lending_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "lending", "action": "delete"})
+    ),
+):
+    """
+    Delete a lending by ID.
+    """
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    lending_service.delete_lending(lending_id, authenticated_user, db_session)
+    db_session.close()
+    return JSONResponse(
+        content={"detail": "Excluído com sucesso"},
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
+
+
 @lending_router.patch("/{lending_id}/")
 def patch_lending_route(
     lending_id: int,

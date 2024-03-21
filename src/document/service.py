@@ -319,6 +319,7 @@ class DocumentService:
                     "value": asset.model if asset.model else self.NOT_PROVIDE,
                 }
             )
+            detail.append({"key": "Descrição", "value": asset.description})
             detail.append({"key": "Número de Série", "value": asset.serial_number})
             detail.append({"key": "C.C.", "value": cost_center})
             detail.append(
