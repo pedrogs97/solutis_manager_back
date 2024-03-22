@@ -203,10 +203,16 @@ class LendingService:
                 )
 
             if asset.status.id == 2:
+                linked_lending = (
+                    db_session.query(LendingModel)
+                    .join(AssetModel)
+                    .filter(AssetModel.id == data.asset_id)
+                    .first()
+                )
                 errors.append(
                     {
                         "field": "assetId",
-                        "error": f"Ativo já está vinculado a um comodato. {asset}",
+                        "error": f"Ativo já está vinculado a um comodato. {linked_lending}",
                     }
                 )
 
