@@ -350,15 +350,11 @@ class AssetService:
     ) -> Page[AssetSerializerSchema]:
         """Get assets list"""
 
-        asset_list = (
-            asset_filters.filter(
-                db_session.query(AssetModel)
-                .outerjoin(AssetTypeModel)
-                .outerjoin(AssetStatusModel)
-            )
-            .filter(AssetStatusModel.id.is_not(8))
-            .order_by(desc(AssetModel.id))
-        )
+        asset_list = asset_filters.filter(
+            db_session.query(AssetModel)
+            .outerjoin(AssetTypeModel)
+            .outerjoin(AssetStatusModel)
+        ).order_by(desc(AssetModel.id))
 
         if ids != "":
             list_ids = (
