@@ -74,6 +74,7 @@ class LendingSerializerSchema(BaseSchema):
     )
     location: str
     bu: Optional[LendingBUEnum] = None
+    deleted: bool = False
 
 
 class LendingAssetHistorySerializerSchema(BaseSchema):
