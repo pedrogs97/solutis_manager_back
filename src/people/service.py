@@ -390,7 +390,9 @@ class EmployeeService:
 
         historic_model = (
             db_session.query(LendingModel)
-            .filter(LendingModel.employee_id == employee.id)
+            .filter(
+                LendingModel.employee_id == employee.id, LendingModel.deleted.is_(False)
+            )
             .order_by(desc(LendingModel.id))
             .all()
         )

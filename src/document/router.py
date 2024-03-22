@@ -22,6 +22,7 @@ from src.document.schemas import (
     NewRevokeContractDocSchema,
     NewRevokeTermDocSchema,
     NewTermDocSchema,
+    RecrateLendingDocSchema,
 )
 from src.document.service import DocumentService
 
@@ -47,6 +48,31 @@ def post_create_contract(
 
     new_doc = document_service.create_contract(
         new_document_doc, "Contrato de Comodato", db_session, authenticated_user
+    )
+
+    db_session.close()
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(new_doc.path, filename=new_doc.file_name, headers=headers)
+
+
+@document_router.post("/contracts/recreate/", response_class=FileResponse)
+def post_recreate_contract(
+    recreate_document_doc: RecrateLendingDocSchema,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "add"})
+    ),
+):
+    """Recreates a new contract"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    new_doc = document_service.recreate_contract(
+        recreate_document_doc, db_session, authenticated_user
     )
 
     db_session.close()

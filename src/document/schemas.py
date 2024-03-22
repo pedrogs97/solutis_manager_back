@@ -33,6 +33,13 @@ class NewLendingDocSchema(BaseSchema):
     legal_person: bool = Field(alias="legalPerson", default=False)
 
 
+class RecrateLendingDocSchema(BaseSchema):
+    """Recrate contract info schema"""
+
+    lending_id: int = Field(alias="lendingId")
+    document_id: int = Field(alias="documentId")
+
+
 class NewRevokeContractDocSchema(BaseSchema):
     """New contract info schema"""
 

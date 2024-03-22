@@ -11,7 +11,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from src.asset.models import AssetModel, AssetTypeModel
+from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
 from src.asset.schemas import AssetShortSerializerSchema
 from src.auth.models import UserModel
 from src.config import DEFAULT_DATE_FORMAT
@@ -201,18 +201,43 @@ class LendingService:
                     {"field": "assetId", "error": f"Ativo não existe. {data.asset_id}"}
                 )
 
-            asset_used = (
-                db_session.query(LendingModel)
-                .join(AssetModel)
-                .filter(AssetModel.id == data.asset_id)
-                .first()
-            )
-
-            if asset_used:
+            if asset.status.id == 2:
                 errors.append(
                     {
                         "field": "assetId",
-                        "error": f"Ativo já está vinculado a um comodato. {asset_used}",
+                        "error": f"Ativo já está vinculado a um comodato. {asset}",
+                    }
+                )
+
+            if asset.status.id == 6:
+                errors.append(
+                    {
+                        "field": "assetId",
+                        "error": f"Ativo está inativo. {asset}",
+                    }
+                )
+
+            if asset.status.id == 5:
+                errors.append(
+                    {
+                        "field": "assetId",
+                        "error": f"Ativo está reservado. {asset}",
+                    }
+                )
+
+            if asset.status.id == 8:
+                errors.append(
+                    {
+                        "field": "assetId",
+                        "error": f"Ativo descartado. {asset}",
+                    }
+                )
+
+            if asset.status.id == 7:
+                errors.append(
+                    {
+                        "field": "assetId",
+                        "error": f"Ativo emprestado. {asset}",
                     }
                 )
 
@@ -505,6 +530,12 @@ class LendingService:
         """Remove a lending"""
         lending = self.__get_lending_or_404(lending_id, db_session)
         lending.deleted = True
+
+        lending.asset.status = db_session.query(AssetStatusModel).get(1)
+        db_session.add(lending.asset)
+        db_session.commit()
+        db_session.flush()
+
         db_session.add(lending)
         db_session.commit()
         db_session.flush()

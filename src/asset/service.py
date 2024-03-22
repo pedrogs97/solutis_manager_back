@@ -350,11 +350,15 @@ class AssetService:
     ) -> Page[AssetSerializerSchema]:
         """Get assets list"""
 
-        asset_list = asset_filters.filter(
-            db_session.query(AssetModel)
-            .outerjoin(AssetTypeModel)
-            .outerjoin(AssetStatusModel)
-        ).order_by(desc(AssetModel.id))
+        asset_list = (
+            asset_filters.filter(
+                db_session.query(AssetModel)
+                .outerjoin(AssetTypeModel)
+                .outerjoin(AssetStatusModel)
+            )
+            .filter(AssetStatusModel.id.is_not(8))
+            .order_by(desc(AssetModel.id))
+        )
 
         if ids != "":
             list_ids = (
@@ -447,7 +451,7 @@ class AssetService:
 
         historic_asset = (
             db_session.query(LendingModel)
-            .filter(LendingModel.asset_id == asset.id)
+            .filter(LendingModel.asset_id == asset.id, LendingModel.deleted.is_(False))
             .order_by(desc(LendingModel.id))
             .all()
         )

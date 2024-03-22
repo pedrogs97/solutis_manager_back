@@ -1,7 +1,6 @@
 """Lending models"""
 
-
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -39,6 +38,7 @@ class DocumentModel(Base):
     # caminho do arquivo
     path = Column("path", String(length=255), nullable=True)
     file_name = Column("file_name", String(length=100), nullable=False)
+    deleted = Column("deleted", Boolean, default=False)
 
     def __str__(self) -> str:
         """Returns model as string"""
