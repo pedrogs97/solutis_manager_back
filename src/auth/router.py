@@ -319,7 +319,7 @@ def get_select_group_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     groups = group_service.get_groups(
-        db_session=db_session, group_filter=group_filter, fields="id, name"
+        db_session=db_session, group_filter=group_filter, fields="id,name"
     )
     db_session.close()
     return groups

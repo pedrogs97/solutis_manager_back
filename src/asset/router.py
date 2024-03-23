@@ -139,6 +139,12 @@ def get_list_assets_route(
 def get_select_assets_route(
     asset_filters: AssetSelectFilter = FilterDepends(AssetSelectFilter),
     ids: str = Query(""),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker(
@@ -156,7 +162,7 @@ def get_select_assets_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     assets = asset_service.get_assets(
-        db_session, asset_filters, ids, "id,register_number,description"
+        db_session, asset_filters, ids, "id,register_number,imei,type", 1, size
     )
     db_session.close()
     return assets

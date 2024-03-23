@@ -122,6 +122,12 @@ def get_list_employees_route(
 def get_select_employees_route(
     employee_filters: EmployeeSelectFilter = FilterDepends(EmployeeSelectFilter),
     ids: str = Query(""),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker(
@@ -142,7 +148,7 @@ def get_select_employees_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     employees = employee_service.get_employees(
-        db_session, employee_filters, ids, "id,full_name"
+        db_session, employee_filters, ids, "id,full_name", 1, size
     )
     db_session.close()
     return employees
