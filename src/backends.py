@@ -17,7 +17,7 @@ from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from src.auth.models import TokenModel, UserModel
+from src.auth.models import PermissionModel, TokenModel, UserModel
 from src.auth.schemas import PermissionSchema
 from src.config import (
     ACCESS_TOKEN_EXPIRE_HOURS,
@@ -231,6 +231,16 @@ class PermissionChecker:
     ) -> None:
         self.required_permissions = required_permissions
 
+    def check_perm(
+        self, perm_to_check: PermissionSchema, user_perm: PermissionModel
+    ) -> bool:
+        """Check if user has permission"""
+        return (
+            perm_to_check["module"] == user_perm.module
+            and perm_to_check["model"] == user_perm.model
+            and perm_to_check["action"] == user_perm.action
+        )
+
     def has_permissions(self, user: UserModel) -> bool:
         """Check if user has permission"""
 
@@ -239,16 +249,13 @@ class PermissionChecker:
 
         if isinstance(self.required_permissions, list):
             for perm in self.required_permissions:
-                if perm not in user.group.permissions:
-                    return False
-            return True
+                for perm_user in user.group.permissions:
+                    if self.check_perm(perm, perm_user):
+                        return True
+            return False
 
         for perm in user.group.permissions:
-            if (
-                perm.module == self.required_permissions["module"]
-                and perm.model == self.required_permissions["model"]
-                and perm.action == self.required_permissions["action"]
-            ):
+            if self.check_perm(self.required_permissions, perm):
                 return True
 
         return False

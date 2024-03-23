@@ -150,7 +150,9 @@ def get_select_assets_route(
         PermissionChecker(
             [
                 {"module": "invoice", "model": "invoice", "action": "add"},
+                {"module": "invoice", "model": "invoice", "action": "edit"},
                 {"module": "lending", "model": "lending", "action": "add"},
+                {"module": "lending", "model": "lending", "action": "edit"},
             ]
         )
     ),

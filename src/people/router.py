@@ -135,8 +135,13 @@ def get_select_employees_route(
                 {"module": "auth", "model": "user", "action": "add"},
                 {"module": "auth", "model": "user", "action": "edit"},
                 {"module": "lending", "model": "lending", "action": "add"},
+                {"module": "lending", "model": "lending", "action": "edit"},
                 {"module": "lending", "model": "term", "action": "add"},
+                {"module": "lending", "model": "term", "action": "edit"},
                 {"module": "asset", "model": "maintenance", "action": "add"},
+                {"module": "asset", "model": "maintenance", "action": "edit"},
+                {"module": "asset", "model": "asset", "action": "add"},
+                {"module": "asset", "model": "asset", "action": "edit"},
             ]
         )
     ),
