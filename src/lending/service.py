@@ -202,51 +202,59 @@ class LendingService:
                     {"field": "assetId", "error": f"Ativo não existe. {data.asset_id}"}
                 )
 
-            if asset.status.id == 2:
-                linked_lending = (
-                    db_session.query(LendingModel)
-                    .join(AssetModel)
-                    .filter(AssetModel.id == data.asset_id)
-                    .first()
-                )
+            if not asset.type:
                 errors.append(
                     {
                         "field": "assetId",
-                        "error": f"Ativo já está vinculado a um comodato. {linked_lending}",
+                        "error": "Ativo não possui Tipo. Altere o Ativo.",
                     }
                 )
+            else:
+                if asset.status.id == 2:
+                    linked_lending = (
+                        db_session.query(LendingModel)
+                        .join(AssetModel)
+                        .filter(AssetModel.id == data.asset_id)
+                        .first()
+                    )
+                    errors.append(
+                        {
+                            "field": "assetId",
+                            "error": f"Ativo já está vinculado a um comodato. {linked_lending}",
+                        }
+                    )
 
-            if asset.status.id == 6:
-                errors.append(
-                    {
-                        "field": "assetId",
-                        "error": f"Ativo está inativo. {asset}",
-                    }
-                )
+                if asset.status.id == 6:
+                    errors.append(
+                        {
+                            "field": "assetId",
+                            "error": f"Ativo está inativo. {asset}",
+                        }
+                    )
 
-            if asset.status.id == 5:
-                errors.append(
-                    {
-                        "field": "assetId",
-                        "error": f"Ativo está reservado. {asset}",
-                    }
-                )
+                if asset.status.id == 5:
+                    errors.append(
+                        {
+                            "field": "assetId",
+                            "error": f"Ativo está reservado. {asset}",
+                        }
+                    )
 
-            if asset.status.id == 8:
-                errors.append(
-                    {
-                        "field": "assetId",
-                        "error": f"Ativo descartado. {asset}",
-                    }
-                )
+                if asset.status.id == 8:
+                    errors.append(
+                        {
+                            "field": "assetId",
+                            "error": f"Ativo descartado. {asset}",
+                        }
+                    )
 
-            if asset.status.id == 7:
-                errors.append(
-                    {
-                        "field": "assetId",
-                        "error": f"Ativo emprestado. {asset}",
-                    }
-                )
+                if asset.status.id == 7:
+                    errors.append(
+                        {
+                            "field": "assetId",
+                            "error": f"Ativo emprestado. {asset}",
+                        }
+                    )
 
         workload = None
         if data.workload_id:
