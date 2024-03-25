@@ -278,19 +278,23 @@ class AssetService:
                 if value and key not in ["type_id", "status_id"]:
                     setattr(asset, key, value)
 
-            (
-                asset_type,
-                _,
-                asset_status,
-            ) = self.__validate_nested(data, db_session)
-
-            if asset_type:
-                asset.type = asset_type
-            if asset_status:
-                asset.status = asset_status
         else:
             if data.observations:
                 asset.observations = data.observations
+
+            if data.model:
+                asset.model = data.model
+
+        (
+            asset_type,
+            _,
+            asset_status,
+        ) = self.__validate_nested(data, db_session)
+
+        if asset_type:
+            asset.type = asset_type
+        if asset_status:
+            asset.status = asset_status
 
         db_session.add(asset)
         db_session.commit()

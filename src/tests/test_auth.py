@@ -112,7 +112,7 @@ class TestAuthModule(TestBase):
             json={"refreshToken": refresh_token},
             headers={"Authorization": f"{token_type} {token}"},
         )
-        assert response.status_code == 401
+        assert response.status_code == 403
 
     def test_auth_logout_success(self, authenticated):
         """Test logout success case"""

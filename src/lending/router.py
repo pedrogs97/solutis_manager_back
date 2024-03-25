@@ -51,9 +51,7 @@ def post_create_lending_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = lending_service.create_lending(data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse(
@@ -94,9 +92,7 @@ def get_list_lendings_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     lendings = lending_service.get_lendings(db_session, lending_filters, page, size)
     db_session.close()
     return lendings
@@ -125,9 +121,7 @@ def get_lending_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = lending_service.get_lending(lending_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -149,9 +143,7 @@ def delete_lending_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     lending_service.delete_lending(lending_id, authenticated_user, db_session)
     db_session.close()
     return JSONResponse(
@@ -174,9 +166,7 @@ def patch_lending_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = lending_service.update_lending(
         lending_id, data, db_session, authenticated_user
     )
@@ -199,9 +189,7 @@ def get_list_workloads_route(
     """List workloads and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     workloads = lending_service.get_workloads(db_session, workload_filters, fields)
     db_session.close()
     return JSONResponse(content=workloads, status_code=status.HTTP_200_OK)
@@ -218,9 +206,7 @@ def post_create_witness_route(
     """Create new witness route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     witness = lending_service.create_witness(data, authenticated_user, db_session)
     db_session.close()
     return JSONResponse(content=witness, status_code=status.HTTP_200_OK)
@@ -238,9 +224,7 @@ def get_list_witness_route(
     """List witness and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     witness = lending_service.get_witnesses(db_session, witnesses_filters, fields)
     db_session.close()
     return JSONResponse(content=witness, status_code=status.HTTP_200_OK)

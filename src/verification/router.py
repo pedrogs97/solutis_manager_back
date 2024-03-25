@@ -28,9 +28,7 @@ def post_create_verifications(
     """Creates new verification"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = verification_service.create_verification(
         data, db_session, authenticated_user
     )
@@ -54,9 +52,7 @@ def get_asset_type_verifications(
     """Get asset type verifications"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     list_serializer = verification_service.get_asset_verifications(
         asset_type_id, db_session
@@ -81,9 +77,7 @@ def post_create_answer_verification(
     """Creates answer for a verification"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     ansers_list = verification_service.create_answer_verification(
         data, db_session, authenticated_user
     )
@@ -107,9 +101,7 @@ def get_answer_verification_by_lending(
     """Creates answer for a verification"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     ansers_list = verification_service.get_answer_verification_by_lending(
         lending_id, db_session
     )

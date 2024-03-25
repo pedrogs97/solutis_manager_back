@@ -47,9 +47,7 @@ def post_create_term_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = term_service.create_term(data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse(
@@ -90,9 +88,7 @@ def get_list_terms_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     terms = term_service.get_terms(db_session, term_filters, page, size)
     db_session.close()
     return terms
@@ -121,9 +117,7 @@ def get_term_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = term_service.get_term(term_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -146,9 +140,7 @@ def patch_term_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = term_service.update_term(term_id, data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse(

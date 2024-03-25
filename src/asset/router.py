@@ -41,9 +41,7 @@ def post_create_asset_route(
     """Creates asset route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = asset_service.create_asset(data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse(
@@ -64,9 +62,7 @@ def patch_update_asset_route(
     """Update asset route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = asset_service.update_asset(
         asset_id, data, db_session, authenticated_user
     )
@@ -88,9 +84,7 @@ def patch_inactivate_asset_route(
     """Update asset route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = asset_service.inactivate_asset(
         asset_id, data, db_session, authenticated_user
     )
@@ -127,9 +121,7 @@ def get_list_assets_route(
     """List assets and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     assets = asset_service.get_assets(db_session, asset_filters, "", fields, page, size)
     db_session.close()
     return assets
@@ -160,9 +152,7 @@ def get_select_assets_route(
     """List assets and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     assets = asset_service.get_assets(
         db_session, asset_filters, ids, "id,register_number,imei,type", 1, size
     )
@@ -181,9 +171,7 @@ def get_asset_route(
     """Get an asset route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = asset_service.get_asset(asset_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -203,9 +191,7 @@ def get_asset_history_route(
     """Get an asset route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     history = asset_service.get_asset_lending_history(asset_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -226,9 +212,7 @@ def get_list_asset_types_route(
     """List asset types and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     assets_types = asset_service.get_asset_types(db_session, filter_asset_type, fields)
     db_session.close()
     return JSONResponse(content=assets_types, status_code=status.HTTP_200_OK)
@@ -248,9 +232,7 @@ def get_list_asset_status_route(
     """List asset status and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     assets_status = asset_service.get_asset_status(
         db_session, filter_asset_status, fields
     )

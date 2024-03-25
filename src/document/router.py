@@ -42,9 +42,7 @@ def post_create_contract(
     """Creates a new contract"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     new_doc = document_service.create_contract(
         new_document_doc, "Contrato de Comodato", db_session, authenticated_user
@@ -67,9 +65,7 @@ def post_recreate_contract(
     """Recreates a new contract"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     new_doc = document_service.recreate_contract(
         recreate_document_doc, db_session, authenticated_user
@@ -93,9 +89,7 @@ async def post_import_contract(
     """Upload new contract"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     serializer = await document_service.upload_contract(
         file, "Contrato de Comodato", lendingId, db_session, authenticated_user
@@ -119,9 +113,7 @@ def post_create_revoke_contract(
     """Creates a new revoke contract"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     new_doc = document_service.create_revoke_contract(
         data, "Distrato de Comodato", db_session, authenticated_user
@@ -145,9 +137,7 @@ async def post_revoke_contract(
     """Creates a new revoke contract"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     serializer = await document_service.upload_revoke_contract(
         file, "Distrato de Comodato", lendingId, db_session, authenticated_user
@@ -171,9 +161,7 @@ def post_create_term(
     """Creates a new term"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     new_doc = document_service.create_term(
         new_document_doc, "Termo de Responsabilidade", db_session, authenticated_user
@@ -197,9 +185,7 @@ async def post_import_term(
     """Upload new term"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     serializer = await document_service.upload_term(
         file, "Termo de Responsabilidade", termId, db_session, authenticated_user
@@ -223,9 +209,7 @@ def post_create_revoke_term(
     """Creates a new term"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     new_doc = document_service.create_revoke_term(
         new_document_doc,
@@ -252,9 +236,7 @@ async def post_revoke_term(
     """Creates a new revoke term"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     serializer = await document_service.upload_revoke_term(
         file,
@@ -303,9 +285,7 @@ def get_list_documents_route(
     """
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     documents = document_service.get_documents(db_session, document_filters, page, size)
     db_session.close()
     return documents
@@ -322,9 +302,7 @@ def get_download_document(
     """Download a document"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     document = document_service.get_document(
         document_id,

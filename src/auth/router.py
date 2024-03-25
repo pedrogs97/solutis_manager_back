@@ -76,7 +76,7 @@ def refresh_token_route(
         db_session.close()
         return JSONResponse(
             content={"refreshToken": "Token inválido"},
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
         )
 
     user = get_user_from_refresh(data.refresh_token, db_session)
@@ -84,7 +84,7 @@ def refresh_token_route(
     if not user:
         db_session.close()
         return JSONResponse(
-            content="Usuário não encontrado", status_code=status.HTTP_401_UNAUTHORIZED
+            content="Usuário não encontrado", status_code=status.HTTP_403_FORBIDDEN
         )
 
     token = get_user_token(user, db_session)
@@ -116,9 +116,7 @@ def post_create_user_route(
     """New user route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = user_service.create_user(data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse(
@@ -151,9 +149,7 @@ def get_list_user_route(
     """List users route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     users = user_service.get_users(
         db_session, user_filters, employee_empty, employee_not_empty, page, size
@@ -178,9 +174,7 @@ def update_user_route(
     """Update user route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = user_service.update_user(db_session, user_id, data, authenticated_user)
     db_session.close()
     return JSONResponse(
@@ -202,9 +196,7 @@ def update_user_password_route(
     """Update user's password route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     user_service.update_password(data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse("", status_code=status.HTTP_200_OK)
@@ -233,9 +225,7 @@ def get_user_route(
     """Get user route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = user_service.get_user(user_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -256,9 +246,7 @@ def post_create_group_route(
     """New group route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = group_service.create_group(data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse(
@@ -288,9 +276,7 @@ def get_list_group_route(
     """List groups route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     groups = group_service.get_groups(db_session, group_filter, page, size, fields)
     db_session.close()
     return groups
@@ -315,9 +301,7 @@ def get_select_group_route(
     """List groups route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     groups = group_service.get_groups(
         db_session=db_session, group_filter=group_filter, fields="id,name"
     )
@@ -341,9 +325,7 @@ def update_group_route(
     """Update group route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = group_service.update_group(
         db_session, group_id, data, authenticated_user
     )
@@ -376,9 +358,7 @@ def get_group_route(
     """Get group route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
     serializer = group_service.get_group(group_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -401,9 +381,7 @@ def get_list_permission_route(
     """List permissions route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     permissions = permission_serivce.get_permissions(db_session, permission_filter)
     db_session.close()
@@ -423,9 +401,7 @@ def post_send_new_password_route(
     """Sends new password to the user"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(
-            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
 
     user_service.send_new_password(data, db_session, authenticated_user)
 
