@@ -285,6 +285,9 @@ class AssetService:
             if data.model:
                 asset.model = data.model
 
+            if data.line_number:
+                asset.line_number = data.line_number
+
         (
             asset_type,
             _,
