@@ -277,6 +277,7 @@ class PermissionChecker:
             return None
 
 
+# pylint: disable=too-few-public-methods
 class Email365Client:
     """Office 365 email client"""
 
