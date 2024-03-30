@@ -45,7 +45,9 @@ def post_create_employee_route(
     """Creates employee route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = employee_service.create_employee(data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse(
@@ -66,7 +68,9 @@ def patch_update_employee_route(
     """Update employee route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = employee_service.update_employee(
         employee_id, data, db_session, authenticated_user
     )
@@ -104,7 +108,9 @@ def get_list_employees_route(
     """List employees and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     employees = employee_service.get_employees(
         db_session, employee_filters, ids, fields, page, size
     )
@@ -128,6 +134,7 @@ def get_select_employees_route(
             [
                 {"module": "auth", "model": "user", "action": "add"},
                 {"module": "auth", "model": "user", "action": "edit"},
+                {"module": "auth", "model": "user", "action": "view"},
                 {"module": "lending", "model": "lending", "action": "add"},
                 {"module": "lending", "model": "lending", "action": "edit"},
                 {"module": "lending", "model": "term", "action": "add"},
@@ -143,7 +150,9 @@ def get_select_employees_route(
     """List for select employees route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     employees = employee_service.get_employees(
         db_session, employee_filters, ids, "id,full_name", 1, size
     )
@@ -162,7 +171,9 @@ def get_emplooyee_route(
     """Get an employee route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = employee_service.get_employee(employee_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -181,7 +192,9 @@ def get_emplooyee_lending_history_route(
     """Get an employee route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer_list = employee_service.get_employee_lending_history(
         employee_id, db_session
     )
@@ -203,7 +216,9 @@ def get_emplooyee_term_history_route(
     """Get an employee route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer_list = employee_service.get_employee_term_history(
         employee_id, db_session
     )
@@ -230,7 +245,9 @@ def get_list_nationalities_route(
     """List nationalities and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     nationalities = general_service.get_nationalities(
         db_session, nationality_filters, fields
     )
@@ -254,7 +271,9 @@ def get_list_marital_status_route(
     """List marital status and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     marital_status = general_service.get_marital_status(
         db_session, marital_status_filters, fields
     )
@@ -276,7 +295,9 @@ def get_list_center_cost_route(
     """List center cost and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     center_cost = general_service.get_center_cost(
         db_session, cost_center_filters, fields
     )
@@ -296,7 +317,9 @@ def get_list_genders_route(
     """List genders and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     genders = general_service.get_genders(db_session, gender_filters, fields)
     db_session.close()
     return JSONResponse(content=genders, status_code=status.HTTP_200_OK)
@@ -314,7 +337,9 @@ def get_list_roles_route(
     """List roles and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     roles = general_service.get_roles(db_session, role_filters, fields)
     db_session.close()
     return JSONResponse(content=roles, status_code=status.HTTP_200_OK)
@@ -332,7 +357,9 @@ def get_list_educational_levels_route(
     """List educational levels and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     educational_levels = general_service.get_educational_levels(
         db_session, educational_level_filters, fields
     )

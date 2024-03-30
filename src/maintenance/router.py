@@ -42,7 +42,9 @@ def post_create_maintenance_route(
     """Creates maintenance route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = maintenance_service.create_maintenance(
         data, db_session, authenticated_user
     )
@@ -65,7 +67,9 @@ def patch_update_maintenance_route(
     """Update maintenance route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = maintenance_service.update_maintenance(
         data, maintenance_id, db_session, authenticated_user
     )
@@ -101,7 +105,9 @@ def get_list_maintenances_route(
     """List maintenances and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     maintenances = maintenance_service.get_maintenances(
         db_session, maintenance_filters, page, size
     )
@@ -120,7 +126,9 @@ def get_maintenance_route(
     """Get a maintenance route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = maintenance_service.get_maintenance(maintenance_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -141,7 +149,9 @@ async def post_upload_maintenance_attachments(
     """Upload attachmetns route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer_list = await maintenance_service.upload_attachments(
         files, maintenanceId, db_session, authenticated_user
     )
@@ -167,7 +177,9 @@ def get_download_attachment_maintenance(
     """Download a attachment maintenance"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
 
     attach = maintenance_service.get_attachment(
         attachment_id,
@@ -190,7 +202,9 @@ def get_list_maintenances_actions_route(
     """List maintenances actions route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     actions = maintenance_service.get_maintenance_actions(db_session)
     db_session.close()
     return actions
@@ -206,7 +220,9 @@ def get_list_maintenances_status_route(
     """List maintenances status route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     maintenances_status = maintenance_service.get_maintenance_status(db_session)
     db_session.close()
     return maintenances_status
@@ -223,7 +239,9 @@ def post_create_upgrade_route(
     """Creates upgrade route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = upgrade_service.create_upgrade(data, db_session, authenticated_user)
     db_session.close()
     return JSONResponse(
@@ -244,7 +262,9 @@ def patch_update_upgrade_route(
     """Update upgrade route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = upgrade_service.update_upgrade(
         data, upgrade_id, db_session, authenticated_user
     )
@@ -280,7 +300,9 @@ def get_list_upgrades_route(
     """List upgrades and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     upgrades = upgrade_service.get_upgrades(db_session, upgrade_filters, page, size)
     db_session.close()
     return upgrades
@@ -297,7 +319,9 @@ def get_upgrade_route(
     """Get an upgrade route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = upgrade_service.get_upgrade(maintenance_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -318,7 +342,9 @@ async def post_upload_upgrade_attachments(
     """Upload attachmetns route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer_list = await upgrade_service.upload_attachments(
         files, upgradeId, db_session, authenticated_user
     )
@@ -344,7 +370,9 @@ def get_download_attachment_upgrade(
     """Download a attachment upgrade"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
 
     attach = upgrade_service.get_attachment(
         attachment_id,

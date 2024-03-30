@@ -106,7 +106,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     )
 
     if not user.group:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
     permissions = [
         f"{perm.module}_{perm.model}_{perm.action}" for perm in user.group.permissions

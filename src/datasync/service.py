@@ -556,6 +556,9 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
                 ):
                     asset_simple_description = "MOBILIÁRIO"
 
+                if asset_simple_description.startswith(("CELULAR")):
+                    asset_simple_description = "TELEFONIA"
+
                 asset_type = (
                     db_session.query(AssetTypeModel)
                     .filter(

@@ -442,7 +442,7 @@ class EmployeeService:
                     if h.signed_date
                     else None
                 ),
-                status=h.status.name,
+                status=h.status.name if h.status else "",
                 term_item=TermItemSerializerSchema(**h.term_item.__dict__),
                 type=h.type.name,
                 workload=h.workload.name if h.workload else "Não informado",

@@ -27,7 +27,9 @@ async def force_fetch_totvs(
 ):
     """Fetch data from TOTVS"""
     if not authenticated_user:
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
 
     scheduler = SchedulerService(force=True)
     background_tasks.add_task(scheduler.force_fetch)

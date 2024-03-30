@@ -35,7 +35,9 @@ def post_create_invoice_route(
     """Creates invoice route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
 
     serializer = invoice_service.create_invoice(
         data,
@@ -61,7 +63,9 @@ async def post_upload_document_invoice_route(
     """Upload document invoice route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
 
     serializer = await invoice_service.upload_document_invoice(
         invoice,
@@ -111,7 +115,9 @@ def get_list_invoices_route(
     """List invoices and apply filters route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     invoices = invoice_service.get_invoices(
         db_session, invoice_filters, page, size, deleted
     )
@@ -130,7 +136,9 @@ def get_invoice_route(
     """Get an invoice route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = invoice_service.get_invoice(invoice_id, db_session)
     db_session.close()
     return JSONResponse(
@@ -150,7 +158,9 @@ def delete_invoice_route(
     """Delete an invoice route"""
     if not authenticated_user:
         db_session.close()
-        return JSONResponse(content=NOT_ALLOWED, status_code=status.HTTP_403_FORBIDDEN)
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
     serializer = invoice_service.delete_invoice(invoice_id, db_session)
     db_session.close()
     return JSONResponse(
