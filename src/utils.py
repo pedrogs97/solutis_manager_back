@@ -370,13 +370,15 @@ def create_term(context: NewTermContextSchema, template_file="termo.html") -> st
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
-
     with open(template_path, encoding="utf-8") as file:
         pdfkit.from_file(
             file,
             contract_path,
-            options=options,
+            options={
+                "page-size": "A4",
+                "enable-local-file-access": None,
+                "encoding": "utf-8",
+            },
         )
 
     os.remove(template_path)
