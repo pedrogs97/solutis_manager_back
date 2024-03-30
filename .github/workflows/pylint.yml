@@ -20,4 +20,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py') --ignore=alembic,tests
+        pylint --ignore-patterns="alembic/[\S+].py" $(git ls-files '*.py')
