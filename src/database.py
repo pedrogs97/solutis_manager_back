@@ -47,6 +47,7 @@ class ExternalDatabase:
         # ENCRYPT defaults to yes starting in ODBC Driver 18.
         # It's good to always specify ENCRYPT=yes on the client side to avoid MITM attacks.
         if self.connection is None:
+            # pylint: disable=no-member
             self.connection = pymssql.connect(
                 server=SQLSERVE_HOST_DB,
                 user=SQLSERVE_USER_DB,

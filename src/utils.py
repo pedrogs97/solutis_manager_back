@@ -67,8 +67,9 @@ LOGO_IMAGE = "src/static/images/ri_1.png"
 
 def create_lending_contract(context: NewLendingContextSchema) -> str:
     """Creates new lending contract"""
-    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
-    template_env = jinja2.Environment(loader=template_loader)
+    template_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    )
     template_file = "comodato.html"
     template = template_env.get_template(template_file)
     signed_image = get_str_base64_image(SIGNED_DATE_IMAGE)
@@ -129,8 +130,9 @@ def create_lending_contract(context: NewLendingContextSchema) -> str:
 
 def create_revoke_lending_contract(context: NewLendingContextSchema) -> str:
     """Creates new revoke lending contract"""
-    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
-    template_env = jinja2.Environment(loader=template_loader)
+    template_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    )
     template_file = "distrato_comodato.html"
     template = template_env.get_template(template_file)
     signed_image = get_str_base64_image(SIGNED_DATE_IMAGE)
@@ -191,8 +193,9 @@ def create_revoke_lending_contract(context: NewLendingContextSchema) -> str:
 
 def create_lending_contract_pj(context: NewLendingPjContextSchema) -> str:
     """Creates new lending contract"""
-    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
-    template_env = jinja2.Environment(loader=template_loader)
+    template_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    )
     template_file = "comodato_pj.html"
     template = template_env.get_template(template_file)
     signed_image = get_str_base64_image(SIGNED_DATE_IMAGE)
@@ -258,8 +261,9 @@ def create_lending_contract_pj(context: NewLendingPjContextSchema) -> str:
 
 def create_revoke_lending_contract_pj(context: NewLendingPjContextSchema) -> str:
     """Creates new lending contract"""
-    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
-    template_env = jinja2.Environment(loader=template_loader)
+    template_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    )
     template_file = "distrato_comodato_pj.html"
     template = template_env.get_template(template_file)
     signed_image = get_str_base64_image(SIGNED_DATE_IMAGE)
@@ -323,11 +327,11 @@ def create_revoke_lending_contract_pj(context: NewLendingPjContextSchema) -> str
     return contract_path
 
 
-def create_term(context: NewTermContextSchema, type_term="termo.html") -> str:
+def create_term(context: NewTermContextSchema, template_file="termo.html") -> str:
     """Creates new lending term"""
-    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
-    template_env = jinja2.Environment(loader=template_loader)
-    template_file = type_term
+    template_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    )
     template = template_env.get_template(template_file)
     signed_image = get_str_base64_image(SIGNED_DATE_IMAGE)
     date_image = get_str_base64_image(DATE_IMAGE)

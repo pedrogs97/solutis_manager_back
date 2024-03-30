@@ -196,17 +196,14 @@ def get_current_user(token: dict, db_session: Session) -> UserModel:
 
 def token_is_valid(token: Union[TokenModel, dict]) -> bool:
     """Verifies token validity"""
-    if isinstance(token, TokenModel):
-        if not token:
-            return False
+    if token and isinstance(token, TokenModel):
         return token.expires_in > datetime.utcnow()
 
-    if isinstance(token, dict):
-        if not token or "exp" not in token:
-            return False
+    if isinstance(token, dict) and token and "exp" in token:
         return (
             token["exp"] > datetime.utcnow().timestamp() and token["type"] == "access"
         )
+    return False
 
 
 def refresh_token_has_expired(token_str: str) -> bool:

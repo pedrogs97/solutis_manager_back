@@ -102,7 +102,8 @@ async def lifespan(app: FastAPI):
         # check_hour = "8"
         # check_minute = "00"
         # check_week = "mon-fri"
-        # -- configuração de prod/homol - roda todos os dias as 12:00, 18:00 e 00:00 -- o server está em UTC
+        # -- configuração de prod/homol - roda todos os dias as 12:00, 18:00 e 00:00
+        # -- o server está em UTC
         scheduler.add_job(
             read_totvs_db,
             trigger,
@@ -221,6 +222,7 @@ def sqlserver_check():
     except AttributeError:
         logger.warning("Unvailable SQLSERVER.")
         return response
+    # pylint: disable=broad-except
     except Exception as err:
         logger.error("Internal error. %s", err.args[1])
         return f"{response}"
