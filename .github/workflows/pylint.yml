@@ -20,6 +20,7 @@ jobs:
         poetry export -f requirements.txt --output requirements.txt --without-hashes
         python -m pip install --upgrade pip
         pip install pylint
+        pip install --no-cache-dir --upgrade -r requirements.txt
     - name: Analysing the code with pylint
       run: |
         pylint src
