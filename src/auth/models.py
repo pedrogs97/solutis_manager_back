@@ -2,7 +2,16 @@
 
 from typing import List
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    func,
+)
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -48,6 +57,16 @@ class GroupModel(Base):
     permissions: Mapped[List[PermissionModel]] = relationship(
         secondary=group_permissions,
     )
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        "updated_at",
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+        server_onupdate=func.now(),
+    )
 
     def __str__(self) -> str:
         return str(self.name)
@@ -76,6 +95,16 @@ class UserModel(Base):
     last_login_in = Column("last_login", DateTime, nullable=True)
     department = Column("department", String(length=255), nullable=False, default="")
     manager = Column("manager", String(length=255), nullable=False, default="")
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        "updated_at",
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+        server_onupdate=func.now(),
+    )
 
     def __str__(self) -> str:
         return f"{self.email} - {self.group}"

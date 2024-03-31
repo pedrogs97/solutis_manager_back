@@ -1,6 +1,15 @@
 """People models"""
 
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -77,6 +86,16 @@ class EmployeeModel(Base):
     employer_contract_date = Column("employer_contract_date", Date, nullable=True)
     employer_end_contract_date = Column(
         "employer_end_contract_date", Date, nullable=True
+    )
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        "updated_at",
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+        server_onupdate=func.now(),
     )
 
     def __str__(self) -> str:

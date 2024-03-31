@@ -1,6 +1,6 @@
 """Maintenance models"""
 
-from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, relationship
 
 from src.asset.models import AssetModel
@@ -85,6 +85,16 @@ class MaintenanceModel(Base):
         "incident_description", String(length=255), nullable=True
     )
     resolution = Column("resolution", String(length=255), nullable=True)
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        "updated_at",
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+        server_onupdate=func.now(),
+    )
 
     def __str__(self) -> str:
         """Returns model as string"""

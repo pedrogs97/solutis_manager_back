@@ -2,7 +2,16 @@
 
 from typing import List
 
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, relationship
 
 from src.asset.models import AssetModel
@@ -100,6 +109,16 @@ class LendingModel(Base):
     revoke_signed_date = Column("revoke_signed_date", Date, nullable=True)
     glpi_number = Column("glpi_number", String(length=25), nullable=True)
     deleted = Column("deleted", Boolean, nullable=False, default=False)
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        "updated_at",
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+        server_onupdate=func.now(),
+    )
 
     def __str__(self) -> str:
         """Returns model as string"""

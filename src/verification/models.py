@@ -1,7 +1,8 @@
 """Verification models"""
+
 from typing import List
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, relationship
 
 from src.asset.models import AssetTypeModel
@@ -61,6 +62,16 @@ class VerificationAnswerOptionModel(Base):
     verification_id = Column("verification_id", ForeignKey("verification.id"))
 
     name = Column("name", String(length=100))
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        "updated_at",
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+        server_onupdate=func.now(),
+    )
 
     def __str__(self) -> str:
         """Returns model as string"""

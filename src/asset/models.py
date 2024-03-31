@@ -2,7 +2,16 @@
 
 from typing import List
 
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -123,6 +132,16 @@ class AssetModel(Base):
     unit = Column("unit", String(length=10), nullable=True)
     active = Column("active", Boolean, nullable=True, default=True)
     by_agile = Column("by_agile", Boolean, nullable=True, default=False)
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        "updated_at",
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+        server_onupdate=func.now(),
+    )
 
     def __str__(self) -> str:
         """Returns model as string"""
