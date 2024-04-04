@@ -2,6 +2,7 @@
 
 from typing import List
 
+from openpyxl import Workbook
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -24,6 +25,19 @@ class ReportService:
         db_session: Session,
     ):
         """Report by employee"""
+        columns = [
+            "COLABORADOR",
+            "CARGO",
+            "PROJETO",
+            "CENTRO DE CUSTO",
+            "GESTOR",
+            "EXECUTIVO",
+            "LOCAL DE TRABALHO",
+            "DESCRIÇÃO DO EQUIPAMENTO",
+            "PATRIMÔNIO",
+            "PADRÃO EQUIPAMENTO",
+            "STATUS",
+        ]
         previous_lending = (
             db_session.query(LogModel)
             .filter(
@@ -42,7 +56,8 @@ class ReportService:
             )
             .all()
         )
-
+        wb = Workbook()
+        ws = wb.create_sheet("CONSULTA POR COLABORADOR")
         return report_data
 
     def report_by_asset(self):
