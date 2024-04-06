@@ -44,10 +44,10 @@ class ReportService:
             ("L5", "PADRÃO EQUIPAMENTO"),
             ("M5", "STATUS"),
         ]
-        previous_lending = (
+        previous_employoee = (
             db_session.query(LogModel)
             .filter(
-                LogModel.model == "Lending",
+                LogModel.model == "emplyoee",
                 LogModel.operation.startswith("Criação"),
                 LogModel.logged_in.between(start_date, end_date),
             )
@@ -58,7 +58,9 @@ class ReportService:
             .filter(
                 LendingModel.employee_id.in_([employee.id for employee in employees]),
                 LendingModel.created_at.between(start_date, end_date),
-                or_(LendingModel.id.in_([lending.id for lending in previous_lending])),
+                or_(
+                    LendingModel.id.in_([lending.id for lending in previous_employoee])
+                ),
             )
             .all()
         )
