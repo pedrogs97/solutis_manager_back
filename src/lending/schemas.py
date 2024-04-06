@@ -103,6 +103,7 @@ class UpdateLendingSchema(BaseSchema):
     """Update lending"""
 
     observations: Optional[str]
+    ms_office: Optional[bool] = None
 
 
 class NewLendingSchema(BaseSchema):

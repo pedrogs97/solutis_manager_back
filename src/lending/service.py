@@ -399,6 +399,10 @@ class LendingService:
         lending = self.__get_lending_or_404(lending_id, db_session)
 
         lending.observations = data.observations
+
+        if data.ms_office is not None:
+            lending.ms_office = data.ms_office
+
         db_session.add(lending)
         db_session.commit()
         db_session.flush()
