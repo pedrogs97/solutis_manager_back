@@ -168,6 +168,7 @@ class LendingService:
             number=lending.number,
             bu=lending.bu,
             deleted=lending.deleted,
+            ms_office=lending.ms_office,
         )
 
     def serialize_workload(self, workload: WorkloadModel) -> WorkloadSerializerSchema:
@@ -354,6 +355,7 @@ class LendingService:
             project=new_lending.project,
             location=new_lending.location,
             bu=new_lending.bu,
+            ms_office=new_lending.ms_office,
         )
 
         new_lending_db.employee = employee

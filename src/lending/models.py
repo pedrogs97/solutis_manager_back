@@ -109,6 +109,7 @@ class LendingModel(Base):
     revoke_signed_date = Column("revoke_signed_date", Date, nullable=True)
     glpi_number = Column("glpi_number", String(length=25), nullable=True)
     deleted = Column("deleted", Boolean, nullable=False, default=False)
+    ms_office = Column("ms_office", Boolean, nullable=False, default=False)
     created_at = Column(
         "created_at", DateTime, nullable=False, server_default=func.now()
     )

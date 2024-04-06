@@ -44,6 +44,7 @@ ENV/
 *.sqlite3
 *.db
 .python-version
+*.xlsx
 
 # media
 **/media

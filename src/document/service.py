@@ -172,7 +172,9 @@ class DocumentService:
 
         return detail
 
-    def __get_contract_detail(self, asset: AssetModel, cost_center: str) -> List[dict]:
+    def __get_contract_detail(
+        self, asset: AssetModel, cost_center: str, ms_office: bool
+    ) -> List[dict]:
         """Get asset contract detail"""
         detail = []
 
@@ -185,7 +187,7 @@ class DocumentService:
             detail.append({"key": "Descrição", "value": asset.description})
             detail.append({"key": "Acessórios", "value": asset.accessories})
             detail.append(
-                {"key": "Pacote Office", "value": "SIM" if asset.ms_office else "NÃO"}
+                {"key": "Pacote Office", "value": "SIM" if ms_office else "NÃO"}
             )
             detail.append(
                 {
@@ -491,7 +493,9 @@ class DocumentService:
 
         witness2 = current_lending.witnesses[1]
 
-        detail = self.__get_contract_detail(asset, current_lending.cost_center.code)
+        detail = self.__get_contract_detail(
+            asset, current_lending.cost_center.code, current_lending.ms_office
+        )
 
         if new_lending_doc.legal_person:
             contract_path = create_lending_contract_pj(

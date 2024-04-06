@@ -72,6 +72,7 @@ class LendingSerializerSchema(BaseSchema):
     business_executive: Optional[str] = Field(
         serialization_alias="businessExecutive", default=None
     )
+    ms_office: bool = Field(serialization_alias="msOffice", default=False)
     location: str
     bu: Optional[LendingBUEnum] = None
     deleted: bool = False
@@ -95,6 +96,7 @@ class LendingAssetHistorySerializerSchema(BaseSchema):
     revoke_signed_date: Optional[str] = Field(serialization_alias="revokeSignedDate")
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber")
     project: str
+    ms_office: bool = Field(serialization_alias="msOffice", default=False)
 
 
 class UpdateLendingSchema(BaseSchema):
@@ -118,6 +120,7 @@ class NewLendingSchema(BaseSchema):
     business_executive: str = Field(alias="businessExecutive", default=None)
     location: str
     bu: LendingBUEnum
+    ms_office: bool = Field(alias="msOffice", default=False)
 
 
 class CreateWitnessSchema(BaseSchema):
