@@ -103,7 +103,7 @@ class UpdateLendingSchema(BaseSchema):
     """Update lending"""
 
     observations: Optional[str]
-    ms_office: Optional[bool] = None
+    ms_office: Optional[bool] = Field(serialization_alias="msOffice", default=None)
 
 
 class NewLendingSchema(BaseSchema):
