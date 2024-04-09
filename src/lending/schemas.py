@@ -103,7 +103,11 @@ class UpdateLendingSchema(BaseSchema):
     """Update lending"""
 
     observations: Optional[str]
-    ms_office: Optional[bool] = Field(serialization_alias="msOffice", default=None)
+    ms_office: Optional[bool] = Field(alias="msOffice", default=None)
+    manager: Optional[str] = None
+    project: Optional[str] = None
+    business_executive: Optional[str] = Field(alias="businessExecutive", default=None)
+    glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
 
 
 class NewLendingSchema(BaseSchema):

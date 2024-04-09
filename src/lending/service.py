@@ -400,8 +400,9 @@ class LendingService:
 
         lending.observations = data.observations
 
-        if data.ms_office is not None:
-            lending.ms_office = data.ms_office
+        for key, value in data.model_dump().items():
+            if value is not None:
+                setattr(lending, key, value)
 
         db_session.add(lending)
         db_session.commit()
