@@ -653,7 +653,9 @@ class DocumentService:
         witness2 = current_lending.witnesses[1]
 
         detail = self.__get_contract_detail(
-            current_lending.asset, current_lending.cost_center.code
+            current_lending.asset,
+            current_lending.cost_center.code,
+            current_lending.ms_office,
         )
 
         code = current_lending.number
@@ -832,7 +834,9 @@ class DocumentService:
 
         witness2 = revoke_witnesses[1]
 
-        detail = self.__get_contract_detail(asset, current_lending.cost_center.code)
+        detail = self.__get_contract_detail(
+            asset, current_lending.cost_center.code, current_lending.ms_office
+        )
 
         if employee.legal_person:
             contract_path = create_revoke_lending_contract_pj(

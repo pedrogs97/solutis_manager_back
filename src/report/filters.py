@@ -47,32 +47,38 @@ class LendingReportFilter(Filter):
             else [self.employees_ids]
         )
         roles_ids_list = (
-            self.roles_ids.split(",") if self.roles_ids.index(",") else [self.roles_ids]
+            self.roles_ids.split(",")
+            if self.roles_ids and self.roles_ids.index(",")
+            else [self.roles_ids]
         )
         projects_list = (
-            self.projects.split(",") if self.projects.index(",") else [self.projects]
+            self.projects.split(",")
+            if self.projects and self.projects.index(",")
+            else [self.projects]
         )
         business_executive_list = (
             self.business_executive.split(",")
-            if self.business_executive.index(",")
+            if self.business_executive and self.business_executive.index(",")
             else [self.business_executive]
         )
         workloads_ids_list = (
             self.workloads_ids.split(",")
-            if self.workloads_ids.index(",")
+            if self.workloads_ids and self.workloads_ids.index(",")
             else [self.workloads_ids]
         )
         register_number_list = (
             self.register_number.split(",")
-            if self.register_number.index(",")
+            if self.register_number and self.register_number.index(",")
             else [self.register_number]
         )
         patterns_list = (
-            self.patterns.split(",") if self.patterns.index(",") else [self.patterns]
+            self.patterns.split(",")
+            if self.patterns and self.patterns.index(",")
+            else [self.patterns]
         )
         asset_status_ids_list = (
             self.assets_status_ids.split(",")
-            if self.assets_status_ids.index(",")
+            if self.assets_status_ids and self.assets_status_ids.index(",")
             else [self.assets_status_ids]
         )
         report_data = (

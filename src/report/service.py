@@ -60,6 +60,10 @@ class ReportService:
         ("K5", "TIPO DE CONTRATO"),
     ]
 
+    REPORT_FILE_NAME = "report.xlsx"
+
+    NOT_PROVIDED = "Não informado"
+
     def __init__(self, by="CONSULTA POR COLABORADOR") -> None:
         self.output_file = io.BytesIO()
         self.workbook = Workbook(self.output_file)
@@ -90,15 +94,15 @@ class ReportService:
             "pattern": asset.pattern,
             "location": location,
             "acquisition_date": (
-                asset.acquisition_date if asset.acquisition_date else "Não informado"
+                asset.acquisition_date if asset.acquisition_date else self.NOT_PROVIDED
             ),
-            "invoice": asset.invoice.number if asset.invoice else "Não informado",
+            "invoice": asset.invoice.number if asset.invoice else self.NOT_PROVIDED,
             "assurance_date": (
-                asset.assurance_date if asset.assurance_date else "Não informado"
+                asset.assurance_date if asset.assurance_date else self.NOT_PROVIDED
             ),
             "value": asset.value,
             "depreciation": asset.depreciation,
-            "status": asset.status.name if asset.status else "Não informado",
+            "status": asset.status.name if asset.status else self.NOT_PROVIDED,
         }
 
     def asset_pattern_to_report(self, asset: AssetModel, lending: LendingModel) -> dict:
@@ -108,11 +112,11 @@ class ReportService:
             "business_executive": lending.business_executive,
             "bu": lending.bu,
             "colaborador": lending.employee.full_name,
-            "pattern": asset.pattern if asset.pattern else "Não informado",
+            "pattern": asset.pattern if asset.pattern else self.NOT_PROVIDED,
             "cost_center": lending.cost_center.name,
             "description": asset.description,
             "register_number": asset.register_number,
-            "type": asset.type.name if asset.type else "Não informado",
+            "type": asset.type.name if asset.type else self.NOT_PROVIDED,
         }
 
     def __format_cell(self, cell_format: Format) -> Format:
@@ -181,7 +185,7 @@ class ReportService:
         self.worksheet.autofit()
         self.workbook.close()
         self.output_file.seek(0)
-        with open("report.xlsx", "wb") as file:
+        with open(self.REPORT_FILE_NAME, "wb") as file:
             file.write(self.output_file.read())
         return self.output_file
 
@@ -223,7 +227,7 @@ class ReportService:
         self.worksheet.autofit()
         self.workbook.close()
         self.output_file.seek(0)
-        with open("report.xlsx", "wb") as file:
+        with open(self.REPORT_FILE_NAME, "wb") as file:
             file.write(self.output_file.read())
         return report_data
 
@@ -265,6 +269,6 @@ class ReportService:
         self.worksheet.autofit()
         self.workbook.close()
         self.output_file.seek(0)
-        with open("report.xlsx", "wb") as file:
+        with open(self.REPORT_FILE_NAME, "wb") as file:
             file.write(self.output_file.read())
         return report_data

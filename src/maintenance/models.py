@@ -45,6 +45,27 @@ class MaintenanceStatusModel(Base):
         return f"{self.name}"
 
 
+class MaintenanceHistoricModel(Base):
+    """Maintenance historic model"""
+
+    __tablename__ = "maintenance_historic"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    maintenance: Mapped["MaintenanceModel"] = relationship()
+    maintenance_id = Column("maintenance_id", ForeignKey("maintenance.id"))
+
+    status: Mapped[MaintenanceStatusModel] = relationship()
+    status_id = Column(
+        "status_id", ForeignKey(MaintenanceStatusModel.id), nullable=False
+    )
+
+    date = Column("date", Date, nullable=False, server_default=func.now())
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.id}"
+
+
 class MaintenanceModel(Base):
     """Maintenance model"""
 
@@ -135,6 +156,27 @@ class UpgradeAttachmentModel(Base):
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.file_name}"
+
+
+class UpgradeHistoricModel(Base):
+    """Upgrade historic model"""
+
+    __tablename__ = "upgrade_historic"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    upgrade: Mapped["UpgradeModel"] = relationship()
+    upgrade_id = Column("upgrade_id", ForeignKey("upgrade.id"))
+
+    status: Mapped[MaintenanceStatusModel] = relationship()
+    status_id = Column(
+        "status_id", ForeignKey(MaintenanceStatusModel.id), nullable=False
+    )
+
+    date = Column("date", Date, nullable=False, server_default=func.now())
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.id}"
 
 
 class UpgradeModel(Base):
