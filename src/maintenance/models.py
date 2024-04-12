@@ -1,6 +1,7 @@
 """Maintenance models"""
 
 from typing import List
+
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, relationship
 
@@ -79,7 +80,7 @@ class MaintenanceHistoricModel(Base):
         "status_id", ForeignKey(MaintenanceStatusModel.id), nullable=False
     )
 
-    date = Column("date", Date, nullable=False, server_default=func.now())
+    date = Column("date", Date, nullable=False)
 
     def __str__(self) -> str:
         """Returns model as string"""
@@ -110,14 +111,17 @@ class MaintenanceModel(Base):
 
     criticality: Mapped[MaintenanceCriticalityModel] = relationship()
     criticality_id = Column(
-        "criticality_id", ForeignKey(MaintenanceCriticalityModel.id), nullable=False, default=1
+        "criticality_id",
+        ForeignKey(MaintenanceCriticalityModel.id),
+        nullable=True,
+        default=1,
     )
 
     attachments = relationship(
         "MaintenanceAttachmentModel", back_populates="maintenance"
     )
 
-    historic: Mapped[List[MaintenanceHistoricModel]] = relationship(read_only=True)
+    historic: Mapped[List[MaintenanceHistoricModel]] = relationship(viewonly=True)
 
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)
@@ -133,7 +137,7 @@ class MaintenanceModel(Base):
         "incident_description", String(length=255), nullable=True
     )
     resolution = Column("resolution", String(length=255), nullable=True)
-    value = Column("value", Float, nullable=True)   
+    value = Column("value", Float, nullable=True)
     created_at = Column(
         "created_at", DateTime, nullable=False, server_default=func.now()
     )
@@ -200,7 +204,7 @@ class UpgradeHistoricModel(Base):
         "status_id", ForeignKey(MaintenanceStatusModel.id), nullable=False
     )
 
-    date = Column("date", Date, nullable=False, server_default=func.now())
+    date = Column("date", Date, nullable=False)
 
     def __str__(self) -> str:
         """Returns model as string"""
@@ -223,7 +227,7 @@ class UpgradeModel(Base):
     employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
 
     attachments = relationship("UpgradeAttachmentModel", back_populates="upgrade")
-    historic: Mapped[List[UpgradeHistoricModel]] = relationship(read_only=True)
+    historic: Mapped[List[UpgradeHistoricModel]] = relationship(viewonly=True)
 
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)

@@ -52,7 +52,8 @@ class TestBase:
         Outputs:
         None
         """
-        self.engine_server = create_engine(get_database_server_url())
+        if not self.engine_server:
+            self.engine_server = create_engine(get_database_server_url())
         connection = self.engine_server.connect()
         try:
             connection.rollback()
@@ -66,8 +67,11 @@ class TestBase:
             connection.rollback()
         connection.close()
 
-        self.engine = create_engine(get_database_url(test=True), poolclass=StaticPool)
-        Base.metadata.create_all(self.engine)
+        if not self.engine:
+            self.engine = create_engine(
+                get_database_url(test=True), poolclass=StaticPool
+            )
+            Base.metadata.create_all(self.engine)
         self.testing_session_local = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
         )

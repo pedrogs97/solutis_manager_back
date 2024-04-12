@@ -22,17 +22,18 @@ from src.maintenance.filters import MaintenanceFilter, UpgradeFilter
 from src.maintenance.models import (
     MaintenanceActionModel,
     MaintenanceAttachmentModel,
+    MaintenanceCriticalityModel,
+    MaintenanceHistoricModel,
     MaintenanceModel,
     MaintenanceStatusModel,
     UpgradeAttachmentModel,
-    UpgradeModel,
-    MaintenanceHistoricModel,
     UpgradeHistoricModel,
-    MaintenanceCriticalityModel,
+    UpgradeModel,
 )
 from src.maintenance.schemas import (
     MaintenanceActionSerializerSchema,
     MaintenanceAttachmentSerializerSchema,
+    MaintenanceCriticalityModelSerializerSchema,
     MaintenanceSerializerSchema,
     MaintenanceStatusSerializerSchema,
     NewMaintenanceSchema,
@@ -41,7 +42,6 @@ from src.maintenance.schemas import (
     UpdateUpgradeSchema,
     UpgradeAttachmentSerializerSchema,
     UpgradeSerializerSchema,
-    MaintenanceCriticalityModelSerializerSchema,
 )
 from src.people.models import EmployeeModel
 from src.people.schemas import EmployeeShortSerializerSchema
@@ -328,6 +328,7 @@ class MaintenanceService:
         historic = MaintenanceHistoricModel(
             maintenance_id=new_maintenance.id,
             status_id=pending_status.id,
+            date=date.today(),
         )
         db_session.add(historic)
         db_session.commit()
@@ -417,6 +418,7 @@ class MaintenanceService:
         historic = MaintenanceHistoricModel(
             maintenance_id=maintenance.id,
             status_id=maintenance.status_id,
+            date=date.today(),
         )
         db_session.add(historic)
         db_session.commit()
@@ -720,6 +722,7 @@ class UpgradeService:
         historic = UpgradeHistoricModel(
             maintenance_id=new_upgrade.id,
             status_id=pending_status.id,
+            date=date.today(),
         )
         db_session.add(historic)
         db_session.commit()
@@ -803,6 +806,7 @@ class UpgradeService:
         historic = UpgradeHistoricModel(
             maintenance_id=upgrade.id,
             status_id=upgrade.status_id,
+            date=date.today(),
         )
         db_session.add(historic)
         db_session.commit()

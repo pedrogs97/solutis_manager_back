@@ -26,7 +26,7 @@ class TestAuthModule(TestBase):
         )
         return response.json()
 
-    def test_auth_login_sucess(self, create_initial_data):
+    def test_auth_login_sucess(self, setup, create_initial_data):
         """Test login success case"""
         expected_keys = [
             "id",
@@ -59,7 +59,7 @@ class TestAuthModule(TestBase):
         data = response.json()
         assert data["id"] == user_id
 
-    def test_auth_login_invalid(self):
+    def test_auth_login_invalid(self, setup):
         """Test login invalid case"""
         response = self.client.post(
             f"{BASE_API}/auth/login/",
@@ -128,7 +128,7 @@ class TestAuthModule(TestBase):
         assert "message" in data
         assert data["message"] == "logout"
 
-    def test_auth_logout_invalid(self):
+    def test_auth_logout_invalid(self, setup):
         """Test logout invalid case"""
         response = self.client.post(
             f"{BASE_API}/auth/logout/",
