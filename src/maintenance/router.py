@@ -228,6 +228,32 @@ def get_list_maintenances_status_route(
     return maintenances_status
 
 
+@maintenance_router.get("-criticality/")
+def get_list_maintenances_criticality_route(
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            [
+                {"module": "asset", "model": "maintenance", "action": "view"},
+                {"module": "asset", "model": "maintenance", "action": "add"},
+                {"module": "asset", "model": "maintenance", "action": "edit"},
+            ]
+        )
+    ),
+):
+    """List maintenances criticality route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    maintenances_criticality = maintenance_service.get_maintenance_criticality(
+        db_session
+    )
+    db_session.close()
+    return maintenances_criticality
+
+
 @maintenance_router.post("-upgrade/")
 def post_create_upgrade_route(
     data: NewUpgradeSchema,

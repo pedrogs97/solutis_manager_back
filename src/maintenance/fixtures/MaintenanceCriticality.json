@@ -1,0 +1,17 @@
+[
+    {
+        "table": "maintenance_criticality",
+        "id": 1,
+        "name": "Baixa"
+    },
+    {
+        "table": "maintenance_criticality",
+        "id": 2,
+        "name": "Média"
+    },
+    {
+        "table": "maintenance_criticality",
+        "id": 2,
+        "name": "Alta"
+    }
+]

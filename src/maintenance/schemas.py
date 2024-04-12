@@ -24,10 +24,20 @@ class MaintenanceStatusSerializerSchema(BaseSchema):
     name: str
 
 
+class MaintenanceCriticalityModelSerializerSchema(BaseSchema):
+    """Maintenance status schema"""
+
+    id: int
+    name: str
+
+
 class NewMaintenanceSchema(BaseSchema):
     """New Maintenance schema"""
 
     action_id: int = Field(alias="actionId")
+    criticality_id: Optional[int] = Field(alias="criticalityId", default=None)
+    asset_id: int = Field(alias="assetId")
+    employee_id: int = Field(alias="employeeId")
     glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
     open_date_glpi: Optional[date] = Field(alias="openDateGlpi", default=None)
     open_date_supplier: Optional[date] = Field(alias="openDateSupplier", default=None)
@@ -35,19 +45,20 @@ class NewMaintenanceSchema(BaseSchema):
     incident_description: Optional[str] = Field(
         alias="incidentDescription", default=None
     )
-    asset_id: int = Field(alias="assetId")
-    employee_id: int = Field(alias="employeeId")
     resolution: Optional[str] = None
+    value: Optional[float] = None
 
 
 class UpdateMaintenanceSchema(BaseSchema):
     """Update Maintenance schema"""
 
+    criticality_id: Optional[int] = Field(alias="criticalityId", default=None)
     close: Optional[bool] = False
     open_date_supplier: Optional[date] = Field(alias="openDateSupplier", default=None)
     supplier_number: Optional[str] = Field(alias="supplierNumber", default=None)
     resolution: Optional[str] = None
     in_progress: Optional[bool] = Field(alias="inProgress", default=False)
+    value: Optional[float] = None
 
 
 class MaintenanceAttachmentSerializerSchema(BaseSchema):
@@ -64,6 +75,8 @@ class MaintenanceSerializerSchema(BaseSchema):
     id: int
     action: MaintenanceActionSerializerSchema
     status: str
+    criticality: Optional[MaintenanceCriticalityModelSerializerSchema] = None
+    value: float
     open_date: str = Field(serialization_alias="openDate")
     close_date: Optional[str] = Field(serialization_alias="closeDate", default=None)
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber", default=None)

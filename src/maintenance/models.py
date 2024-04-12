@@ -1,5 +1,6 @@
 """Maintenance models"""
 
+from typing import List
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, relationship
 
@@ -39,6 +40,25 @@ class MaintenanceStatusModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String(length=15), nullable=True)
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.name}"
+
+
+class MaintenanceCriticalityModel(Base):
+    """
+    Maintenance criticality model
+
+    * Baixa
+    * Média
+    * Alta
+    """
+
+    __tablename__ = "maintenance_criticality"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    name = Column("name", String(length=10), nullable=True)
 
     def __str__(self) -> str:
         """Returns model as string"""
@@ -88,9 +108,16 @@ class MaintenanceModel(Base):
     employee: Mapped[EmployeeModel] = relationship()
     employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
 
+    criticality: Mapped[MaintenanceCriticalityModel] = relationship()
+    criticality_id = Column(
+        "criticality_id", ForeignKey(MaintenanceCriticalityModel.id), nullable=False, default=1
+    )
+
     attachments = relationship(
         "MaintenanceAttachmentModel", back_populates="maintenance"
     )
+
+    historic: Mapped[List[MaintenanceHistoricModel]] = relationship(read_only=True)
 
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)
@@ -106,6 +133,7 @@ class MaintenanceModel(Base):
         "incident_description", String(length=255), nullable=True
     )
     resolution = Column("resolution", String(length=255), nullable=True)
+    value = Column("value", Float, nullable=True)   
     created_at = Column(
         "created_at", DateTime, nullable=False, server_default=func.now()
     )
@@ -195,6 +223,7 @@ class UpgradeModel(Base):
     employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
 
     attachments = relationship("UpgradeAttachmentModel", back_populates="upgrade")
+    historic: Mapped[List[UpgradeHistoricModel]] = relationship(read_only=True)
 
     open_date = Column("open_date", Date)
     close_date = Column("close_date", Date, nullable=True)

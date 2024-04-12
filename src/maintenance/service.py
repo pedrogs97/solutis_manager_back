@@ -2,7 +2,7 @@
 
 import logging
 import os
-from datetime import date
+from datetime import date, timedelta
 from typing import List
 
 from fastapi import UploadFile, status
@@ -26,6 +26,9 @@ from src.maintenance.models import (
     MaintenanceStatusModel,
     UpgradeAttachmentModel,
     UpgradeModel,
+    MaintenanceHistoricModel,
+    UpgradeHistoricModel,
+    MaintenanceCriticalityModel,
 )
 from src.maintenance.schemas import (
     MaintenanceActionSerializerSchema,
@@ -38,6 +41,7 @@ from src.maintenance.schemas import (
     UpdateUpgradeSchema,
     UpgradeAttachmentSerializerSchema,
     UpgradeSerializerSchema,
+    MaintenanceCriticalityModelSerializerSchema,
 )
 from src.people.models import EmployeeModel
 from src.people.schemas import EmployeeShortSerializerSchema
@@ -96,13 +100,13 @@ class MaintenanceService:
         self, maintenance_action_id: int, db_session: Session
     ) -> MaintenanceActionModel:
         """Get maintenance action or 404"""
-        vertification_type = (
+        maintenance_action = (
             db_session.query(MaintenanceActionModel)
             .filter(MaintenanceActionModel.id == maintenance_action_id)
             .first()
         )
 
-        if not vertification_type:
+        if not maintenance_action:
             db_session.close()
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -111,7 +115,28 @@ class MaintenanceService:
                     "error": "Ação de Manutenção não encontrada.",
                 },
             )
-        return vertification_type
+        return maintenance_action
+
+    def __get_maintenance_criticality_or_404(
+        self, maintenance_criticality_id: int, db_session: Session
+    ) -> MaintenanceCriticalityModel:
+        """Get maintenance criticality or 404"""
+        maintenance_criticality = (
+            db_session.query(MaintenanceCriticalityModel)
+            .filter(MaintenanceCriticalityModel.id == maintenance_criticality_id)
+            .first()
+        )
+
+        if not maintenance_criticality:
+            db_session.close()
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "field": "maintenanceCriticalityId",
+                    "error": "Ação de Manutenção não encontrada.",
+                },
+            )
+        return maintenance_criticality
 
     def __get_asset_or_404(self, asset_id: int, db_session: Session) -> AssetModel:
         """Get asset or 404"""
@@ -169,6 +194,12 @@ class MaintenanceService:
         """Serialize maintenance attachement"""
         return MaintenanceAttachmentSerializerSchema(**maintenance_attachment.__dict__)
 
+    def serialize_maintenance_criticality(
+        self, criticality: MaintenanceCriticalityModel
+    ) -> MaintenanceCriticalityModelSerializerSchema:
+        """Serialize maintenance criticality"""
+        return MaintenanceCriticalityModelSerializerSchema(**criticality.__dict__)
+
     def serialize_maintenance(
         self, maintenance: MaintenanceModel
     ) -> MaintenanceSerializerSchema:
@@ -220,6 +251,12 @@ class MaintenanceService:
                 else None
             ),
             incident_description=maintenance.incident_description,
+            value=maintenance.value,
+            criticality=(
+                self.serialize_maintenance_criticality(maintenance.criticality)
+                if maintenance.criticality
+                else None
+            ),
         )
 
     def serialize_maintenance_action(
@@ -248,6 +285,10 @@ class MaintenanceService:
 
         employee = self.__get_employee_or_404(data.employee_id, db_session)
 
+        criticality = self.__get_maintenance_criticality_or_404(
+            data.criticality_id, db_session
+        )
+
         pending_status = (
             db_session.query(MaintenanceStatusModel)
             .filter(MaintenanceStatusModel.name == "Pendente")
@@ -272,6 +313,8 @@ class MaintenanceService:
             open_date_supplier=data.open_date_supplier,
             incident_description=data.incident_description,
             resolution=data.resolution,
+            value=data.value,
+            criticality=criticality,
         )
         new_maintenance.status = pending_status
         new_maintenance.action = action_type
@@ -281,6 +324,13 @@ class MaintenanceService:
         db_session.add(new_maintenance)
         db_session.commit()
         db_session.flush()
+
+        historic = MaintenanceHistoricModel(
+            maintenance_id=new_maintenance.id,
+            status_id=pending_status.id,
+        )
+        db_session.add(historic)
+        db_session.commit()
 
         service_log.set_log(
             "asset",
@@ -354,7 +404,21 @@ class MaintenanceService:
         if data.resolution:
             maintenance.resolution = data.resolution
 
+        if data.criticality:
+            maintenance.criticality_id = data.criticality
+
+        if data.value:
+            maintenance.value = data.value
+
         db_session.add(maintenance)
+        db_session.commit()
+        db_session.flush()
+
+        historic = MaintenanceHistoricModel(
+            maintenance_id=maintenance.id,
+            status_id=maintenance.status_id,
+        )
+        db_session.add(historic)
         db_session.commit()
 
         service_log.set_log(
@@ -393,6 +457,21 @@ class MaintenanceService:
         return [
             self.serialize_maintenance_status(status).model_dump(by_alias=True)
             for status in maintenance_status
+        ]
+
+    def get_maintenance_criticality(self, db_session: Session) -> List[dict]:
+        """Get maintenance criticality"""
+
+        maintenance_criticality = (
+            db_session.query(MaintenanceCriticalityModel)
+            .order_by(desc(MaintenanceCriticalityModel.id))
+            .all()
+        )
+        return [
+            self.serialize_maintenance_criticality(criticality).model_dump(
+                by_alias=True
+            )
+            for criticality in maintenance_criticality
         ]
 
     async def upload_attachments(
@@ -449,10 +528,14 @@ class MaintenanceService:
     def check_pending_maintenances() -> None:
         """Check pending maintenances"""
         db_session = get_db_session()
+        later_date = date.today() - timedelta(days=15)
         pending_maintenances = (
             db_session.query(MaintenanceModel)
             .join(MaintenanceStatusModel)
-            .filter(MaintenanceStatusModel.name == "Pendente")
+            .filter(
+                MaintenanceStatusModel.name == "Pendente",
+                MaintenanceModel.updated_at <= later_date,
+            )
             .all()
         )
 
@@ -634,6 +717,13 @@ class UpgradeService:
         db_session.commit()
         db_session.flush()
 
+        historic = UpgradeHistoricModel(
+            maintenance_id=new_upgrade.id,
+            status_id=pending_status.id,
+        )
+        db_session.add(historic)
+        db_session.commit()
+
         service_log.set_log(
             "asset",
             "upgrade",
@@ -708,6 +798,14 @@ class UpgradeService:
 
         db_session.add(upgrade)
         db_session.commit()
+        db_session.flush()
+
+        historic = UpgradeHistoricModel(
+            maintenance_id=upgrade.id,
+            status_id=upgrade.status_id,
+        )
+        db_session.add(historic)
+        db_session.commit()
 
         service_log.set_log(
             "asset",
@@ -775,10 +873,14 @@ class UpgradeService:
     def check_pending_upgrades() -> None:
         """Check pending upgrades"""
         db_session = get_db_session()
+        later_date = date.today() - timedelta(days=15)
         pending_upgrades = (
             db_session.query(UpgradeModel)
             .join(MaintenanceStatusModel)
-            .filter(MaintenanceStatusModel.name == "Pendente")
+            .filter(
+                MaintenanceStatusModel.name == "Pendente",
+                UpgradeModel.updated_at <= later_date,
+            )
             .all()
         )
 
