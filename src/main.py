@@ -99,10 +99,10 @@ async def lifespan(app: FastAPI):
         hour = "15,21,3"
         minute = "00"
         week = "mon-fri"
-        # check_trigger = "cron"
-        # check_hour = "8"
-        # check_minute = "00"
-        # check_week = "mon-fri"
+        check_trigger = "cron"
+        check_hour = "8"
+        check_minute = "00"
+        check_week = "mon-fri"
         # -- configuração de prod/homol - roda todos os dias as 12:00, 18:00 e 00:00
         # -- o server está em UTC
         scheduler.add_job(
@@ -117,30 +117,30 @@ async def lifespan(app: FastAPI):
             max_instances=1,
             replace_existing=True,
         )
-        # scheduler.add_job(
-        #     check_maintenance,
-        #     check_trigger,
-        #     id="check_maintenace",
-        #     day_of_week=check_week,
-        #     hour=check_hour,
-        #     minute=check_minute,
-        #     # Using max_instances=1 guarantees that only one job
-        #     # runs at the same time (in this event loop).
-        #     max_instances=1,
-        #     replace_existing=True,
-        # )
-        # scheduler.add_job(
-        #     check_upgrade,
-        #     check_trigger,
-        #     id="check_upgrade",
-        #     day_of_week=check_week,
-        #     hour=check_hour,
-        #     minute=check_minute,
-        #     # Using max_instances=1 guarantees that only one job
-        #     # runs at the same time (in this event loop).
-        #     max_instances=1,
-        #     replace_existing=True,
-        # )
+        scheduler.add_job(
+            check_maintenance,
+            check_trigger,
+            id="check_maintenace",
+            day_of_week=check_week,
+            hour=check_hour,
+            minute=check_minute,
+            # Using max_instances=1 guarantees that only one job
+            # runs at the same time (in this event loop).
+            max_instances=1,
+            replace_existing=True,
+        )
+        scheduler.add_job(
+            check_upgrade,
+            check_trigger,
+            id="check_upgrade",
+            day_of_week=check_week,
+            hour=check_hour,
+            minute=check_minute,
+            # Using max_instances=1 guarantees that only one job
+            # runs at the same time (in this event loop).
+            max_instances=1,
+            replace_existing=True,
+        )
     except ConflictingIdError:
         logger.info("Job alredy exist")
 

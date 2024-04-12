@@ -251,7 +251,7 @@ class MaintenanceService:
                 else None
             ),
             incident_description=maintenance.incident_description,
-            value=maintenance.value,
+            value=maintenance.value if maintenance.value else float(0.0),
             criticality=(
                 self.serialize_maintenance_criticality(maintenance.criticality)
                 if maintenance.criticality
@@ -405,8 +405,8 @@ class MaintenanceService:
         if data.resolution:
             maintenance.resolution = data.resolution
 
-        if data.criticality:
-            maintenance.criticality_id = data.criticality
+        if data.criticality_id:
+            maintenance.criticality_id = data.criticality_id
 
         if data.value:
             maintenance.value = data.value
