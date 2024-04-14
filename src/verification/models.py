@@ -13,8 +13,10 @@ from src.lending.models import LendingModel
 class VerificationCategoryModel(Base):
     """Verification category model
 
-    * Envio
-    * Retorno
+    * Fonte de Alimentação / Carregador
+    * Notebook aberto
+    * Parte inferior
+    * Parte lateral
     """
 
     __tablename__ = "verification_category"

@@ -14,6 +14,7 @@ from src.document.schemas import (
     NewLendingContextSchema,
     NewLendingPjContextSchema,
     NewTermContextSchema,
+    VerificationContextSchema,
 )
 
 
@@ -366,6 +367,47 @@ def create_term(context: NewTermContextSchema, template_file="termo.html") -> st
 
     template_path = os.path.join(lending_path, f"template_{context.number}.html")
     contract_path = os.path.join(lending_path, f"{context.number}.pdf")
+
+    with open(template_path, "w", encoding="utf-8") as html_file:
+        html_file.write(output_text)
+
+    with open(template_path, encoding="utf-8") as file:
+        pdfkit.from_file(
+            file,
+            contract_path,
+            options={
+                "page-size": "A4",
+                "enable-local-file-access": None,
+                "encoding": "utf-8",
+            },
+        )
+
+    os.remove(template_path)
+    return contract_path
+
+
+def create_verification_document(context: VerificationContextSchema) -> str:
+    """Creates new verification document"""
+    template_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    )
+    template_file = "verification.html"
+    template = template_env.get_template(template_file)
+    logo_file = get_str_base64_image(LOGO_IMAGE)
+    output_text = template.render(
+        r1=logo_file,
+        verifications=context.verifications,
+    )
+
+    lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
+
+    if not os.path.exists(lending_path):
+        os.mkdir(lending_path)
+
+    template_path = os.path.join(
+        lending_path, f"template_{context.number}_verification.html"
+    )
+    contract_path = os.path.join(lending_path, f"{context.number} - verificação.pdf")
 
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)

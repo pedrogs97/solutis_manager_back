@@ -654,3 +654,358 @@ def test(cmd):
     __contract_pj()
     __termination_pj()
     cmd.run("echo conversion finished")
+
+
+@task
+def testverification(cmd):
+    """
+    Convert html to pdf using pdfkit which is a wrapper of wkhtmltopdf
+    """
+    cmd.run("echo conversion started")
+    template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+    template_env = jinja2.Environment(loader=template_loader)
+    template_file = "verification.html"
+    template = template_env.get_template(template_file)
+    logo_file = open("./src/static/images/ri_1.png", "rb")
+    logo_encoded_string = (
+        str(base64.b64encode(logo_file.read())).replace("b'", "").replace("'", "")
+    )
+    output_text = template.render(
+        ri_1=f"data:image/png;base64,{logo_encoded_string}",
+        verifications=[
+            {
+                "question": "Carregador - Estado do conector",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 42,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Danificado",
+                        "id": 43,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não tem",
+                        "id": 44,
+                    },
+                ],
+            },
+            {
+                "question": "Serial do carregador",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 45,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Danificado",
+                        "id": 46,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não tem",
+                        "id": 47,
+                    },
+                ],
+            },
+            {
+                "question": "Carregador - Estado do cabo de energia",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 48,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Danificado",
+                        "id": 49,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não tem",
+                        "id": 50,
+                    },
+                ],
+            },
+            {
+                "question": "Borrachas de proteção",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 1,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Danificado",
+                        "id": 2,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não tem",
+                        "id": 3,
+                    },
+                ],
+            },
+            {
+                "question": "Estado do LCD",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 4,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Riscado",
+                        "id": 5,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Quebrado",
+                        "id": 6,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não liga",
+                        "id": 7,
+                    },
+                ],
+            },
+            {
+                "question": "Estado do touchpad",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 8,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Riscado",
+                        "id": 9,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não funciona",
+                        "id": 10,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Impossível verificar pois não liga",
+                        "id": 11,
+                    },
+                ],
+            },
+            {
+                "question": "Estado da carcaça",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 12,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Riscado",
+                        "id": 13,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Quebrado",
+                        "id": 14,
+                    },
+                ],
+            },
+            {
+                "question": "Estado do Teclado",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 15,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Faltando tecla",
+                        "id": 16,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não funciona",
+                        "id": 17,
+                    },
+                ],
+            },
+            {
+                "question": "Carregador Bateria (entrada)",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 18,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Danificado",
+                        "id": 19,
+                    },
+                ],
+            },
+            {
+                "question": "Conectores USB/Ethernet/Modem",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 20,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Danificados",
+                        "id": 21,
+                    },
+                ],
+            },
+            {
+                "question": "Drive de Disco CD - DVD - DVDRW",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 22,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não funciona",
+                        "id": 23,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não tem",
+                        "id": 24,
+                    },
+                ],
+            },
+            {
+                "question": "Estado da carcaça (atrás da tela)",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 25,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Riscado",
+                        "id": 26,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Quebrado",
+                        "id": 27,
+                    },
+                ],
+            },
+            {
+                "question": "Bateria - Verificar serial (no notebook)",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 28,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não tem",
+                        "id": 29,
+                    },
+                ],
+            },
+            {
+                "question": "Borracha de apoio",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 30,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Faltam",
+                        "id": 31,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não tem",
+                        "id": 32,
+                    },
+                ],
+            },
+            {
+                "question": "Serial da máquina",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 33,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não tem",
+                        "id": 34,
+                    },
+                ],
+            },
+            {
+                "question": "Parafusos da carcaça",
+                "options": [
+                    {
+                        "checked": True,
+                        "option": "Ok",
+                        "id": 35,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Faltam",
+                        "id": 36,
+                    },
+                    {
+                        "checked": False,
+                        "option": "Não tem",
+                        "id": 37,
+                    },
+                ],
+            },
+        ],
+    )
+
+    if not os.path.exists(CONTRACT_UPLOAD_TEST_DIR):
+        os.mkdir(CONTRACT_UPLOAD_TEST_DIR)
+
+    html_path = os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html")
+    with open(html_path, "w", encoding="utf-8") as html_file:
+        html_file.write(output_text)
+
+    options = {
+        "page-size": "A4",
+        "enable-local-file-access": None,
+    }
+
+    with open(
+        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
+    ) as f:
+        pdfkit.from_file(
+            f,
+            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "verification_test.pdf"),
+            options=options,
+        )
+    os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
+    logo_file.close()
+    cmd.run("echo conversion finished")

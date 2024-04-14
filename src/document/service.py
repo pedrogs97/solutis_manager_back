@@ -28,6 +28,7 @@ from src.document.schemas import (
     NewTermContextSchema,
     NewTermDocSchema,
     RecrateLendingDocSchema,
+    VerificationContextSchema,
     WitnessContextSchema,
 )
 from src.lending.models import LendingModel, LendingStatusModel, WitnessModel
@@ -40,8 +41,10 @@ from src.utils import (
     create_revoke_lending_contract,
     create_revoke_lending_contract_pj,
     create_term,
+    create_verification_document,
     upload_file,
 )
+from src.verification.models import VerificationAnswerModel
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -927,7 +930,9 @@ class DocumentService:
                 )
             )
 
-        new_doc = DocumentModel(path=contract_path, file_name=f"{new_code}.pdf")
+        new_doc = DocumentModel(
+            path=contract_path, file_name=f"{new_code} - distrato.pdf"
+        )
 
         new_doc.doc_type = doc_type
 
@@ -1183,9 +1188,6 @@ class DocumentService:
         contract_path = create_term(
             NewTermContextSchema(
                 number=new_code,
-                glpi_number=(
-                    current_term.glpi_number if current_term.glpi_number else ""
-                ),
                 full_name=employee.full_name,
                 taxpayer_identification=employee.taxpayer_identification,
                 national_identification=employee.national_identification,
@@ -1205,7 +1207,9 @@ class DocumentService:
             "distrato_termo.html",
         )
 
-        new_doc = DocumentModel(path=contract_path, file_name=f"{new_code}.pdf")
+        new_doc = DocumentModel(
+            path=contract_path, file_name=f"{new_code} - distrato.pdf"
+        )
 
         new_doc.doc_type = doc_type
 
@@ -1467,3 +1471,66 @@ class DocumentService:
         document = self.__get_document_or_404(document_id, db_session)
 
         return self.serialize_document(document)
+
+    def get_verification_document(
+        self, lendind_id: int, db_session: Session, authenticated_user: UserModel
+    ):
+        """Get a verification document"""
+        lending = self.__get_lending_or_404(lendind_id, db_session)
+        lending_verification_answers = (
+            db_session.query(VerificationAnswerModel)
+            .join(LendingModel)
+            .filter(LendingModel.id == lending.id)
+            .all()
+        )
+        verifications_context = []
+        for answer in lending_verification_answers:
+            verification = answer.verification
+            options = []
+            for option in verification.options:
+                options.append(
+                    {
+                        "option": option.name,
+                        "checked": option.name == answer.answer,
+                        "id": option.id,
+                    }
+                )
+
+            verifications_context.append(
+                {
+                    "question": verification.question,
+                    "options": options,
+                }
+            )
+        context = {
+            "verifications": verifications_context,
+            "number": lending.number,
+        }
+        verification_document_path = create_verification_document(
+            VerificationContextSchema(**context)
+        )
+        new_doc = DocumentModel(
+            path=verification_document_path,
+            file_name=f"{lending.number} - verificação.pdf",
+        )
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == "Verificação")
+            .first()
+        )
+        new_doc.doc_type = doc_type
+
+        db_session.add(new_doc)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Criação de {doc_type}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New Document. %s", str(new_doc))
+        return new_doc

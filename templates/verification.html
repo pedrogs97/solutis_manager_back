@@ -1,0 +1,44 @@
+<!--793.7 x 1122.5-->
+<!--top 75.6px-->
+<!--left 85px-->
+<!--bottom 56.7px-->
+<!--right 65.8px-->
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <meta charset="utf-8">
+        <title>Verificação de Ativo</title>
+    </head>
+    <body style="text-align: justify;text-justify: inter-word;padding-left: 0.89in;padding-bottom: 0.69in;padding-right: 0.69in;font-family:Calibri, sans-serif;height: 11.69in;">
+        <div style="display: block;height: 11.69in;width: 8.27in;">
+            <div style="display: flex;justify-content: flex-end;width: 100%;">
+                <img style="width:1.14in;height:1.30in" src="{{ ri_1 }}" alt="logo"/>
+            </div>
+            <div style="display: flex; justify-content: center; margin-bottom: 30px;">
+                <p style="font-style:normal;font-weight:bold;font-size:14pt;color:#000000;">VERIFICAÇÃO DO ATIVO</p>
+            </div>
+            {% for verification in verifications %}
+                <div style="padding: 16px;">
+                    <table style="border-collapse: separate;border: solid 1px #000000;border-radius: 6px;padding: 4px;"  aria-describedby="table-detail">
+                        <thead><th style="width: fit-content;">{{ verification.question }}</th></thead>
+                        <tbody style="font-weight: 900;">
+                            {% for option in verification.options %}
+                                <tr style="margin-bottom: 10px;">
+                                    <td style="max-width: 24px;">
+                                        {% if option.checked %}
+                                            <input type="checkbox" checkd="{{ option.checked }}" id="{{ option.id }}" checked />
+                                        {% else %}
+                                            <input type="checkbox" id="{{ option.id }}" />
+                                        {% endif %}
+                                        <label for="{{ option.id }}" style="margin-left: 5px;">{{ option.option }}</label>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    </body>
+</html>

@@ -335,3 +335,30 @@ def get_download_document(
 
     headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
     return FileResponse(document.path, filename=document.file_name, headers=headers)
+
+
+@document_router.get("/download/verfication/{lending_id}/", response_class=FileResponse)
+def get_download_verification_document(
+    lending_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "view"})
+    ),
+):
+    """Download lending verification document"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    document = document_service.get_verification_document(
+        lending_id,
+        db_session,
+        authenticated_user,
+    )
+
+    db_session.close()
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(document.path, filename=document.file_name, headers=headers)

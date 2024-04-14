@@ -18,5 +18,10 @@
         "table": "document_type",
         "id": 4,
         "name": "Distrato de Termo de Responsabilidade"
+    },
+    {
+        "table": "document_type",
+        "id": 5,
+        "name": "Verificação"
     }
 ]

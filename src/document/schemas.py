@@ -143,3 +143,10 @@ class NewTermContextSchema(BaseSchema):
     detail: List[dict]
     date: str
     location: str
+
+
+class VerificationContextSchema(BaseSchema):
+    """Verification context for template"""
+
+    number: str
+    verifications: List[dict]
