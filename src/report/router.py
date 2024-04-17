@@ -1,7 +1,7 @@
 """Report router"""
 
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
@@ -18,7 +18,7 @@ report_router = APIRouter(prefix="/report", tags=["Report"])
 def get_report_by_employee_route(
     db_session: Session = Depends(get_db_session),
     report_filters: LendingReportFilter = FilterDepends(LendingReportFilter),
-):
+) -> StreamingResponse:
     """Login user route"""
     report_service = ReportService()
     file = report_service.report_by_employee(
@@ -27,11 +27,13 @@ def get_report_by_employee_route(
     )
     db_session.close()
     headers = {
-        "Access-Control-Expose-Headers": "Content-Disposition",
         "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
-        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     }
-    return Response(content=file, headers=headers)
+    return StreamingResponse(
+        content=file,
+        headers=headers,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 
 @report_router.get("/projects-select/")

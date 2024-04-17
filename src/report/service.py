@@ -185,8 +185,6 @@ class ReportService:
         self.worksheet.autofit()
         self.workbook.close()
         self.output_file.seek(0)
-        with open(self.REPORT_FILE_NAME, "wb") as file:
-            file.write(self.output_file.read())
         return self.output_file
 
     def report_by_asset(
@@ -227,8 +225,6 @@ class ReportService:
         self.worksheet.autofit()
         self.workbook.close()
         self.output_file.seek(0)
-        with open(self.REPORT_FILE_NAME, "wb") as file:
-            file.write(self.output_file.read())
         return report_data
 
     def report_by_asset_pattern(
@@ -269,6 +265,4 @@ class ReportService:
         self.worksheet.autofit()
         self.workbook.close()
         self.output_file.seek(0)
-        with open(self.REPORT_FILE_NAME, "wb") as file:
-            file.write(self.output_file.read())
         return report_data

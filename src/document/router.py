@@ -337,7 +337,9 @@ def get_download_document(
     return FileResponse(document.path, filename=document.file_name, headers=headers)
 
 
-@document_router.get("/download/verfication/{lending_id}/", response_class=FileResponse)
+@document_router.get(
+    "/download/verification/{lending_id}/", response_class=FileResponse
+)
 def get_download_verification_document(
     lending_id: int,
     db_session: Session = Depends(get_db_session),
@@ -361,4 +363,9 @@ def get_download_verification_document(
     db_session.close()
 
     headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
-    return FileResponse(document.path, filename=document.file_name, headers=headers)
+    return FileResponse(
+        document.path,
+        filename=document.file_name,
+        headers=headers,
+        media_type="application/pdf; charset=utf-8",
+    )

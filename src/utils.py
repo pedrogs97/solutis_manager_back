@@ -395,8 +395,8 @@ def create_verification_document(context: VerificationContextSchema) -> str:
     template = template_env.get_template(template_file)
     logo_file = get_str_base64_image(LOGO_IMAGE)
     output_text = template.render(
-        r1=logo_file,
         verifications=context.verifications,
+        logo=f"data:image/png;base64,{logo_file}",
     )
 
     lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
