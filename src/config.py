@@ -132,6 +132,15 @@ PERMISSIONS = {
         ],
         "label": "Logs",
     },
+    "report": {
+        "models": [
+            {
+                "name": "report",
+                "label": "Relatórios",
+            },
+        ],
+        "label": "Relatórios",
+    },
 }
 
 NOT_ALLOWED = "Não permitido"

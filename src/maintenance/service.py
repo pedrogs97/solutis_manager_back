@@ -720,7 +720,7 @@ class UpgradeService:
         db_session.flush()
 
         historic = UpgradeHistoricModel(
-            maintenance_id=new_upgrade.id,
+            upgrade_id=new_upgrade.id,
             status_id=pending_status.id,
             date=date.today(),
         )
@@ -804,7 +804,7 @@ class UpgradeService:
         db_session.flush()
 
         historic = UpgradeHistoricModel(
-            maintenance_id=upgrade.id,
+            upgrade_id=upgrade.id,
             status_id=upgrade.status_id,
             date=date.today(),
         )

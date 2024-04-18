@@ -3,6 +3,8 @@
 import io
 from typing import List
 
+from fastapi_pagination import Params
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 from xlsxwriter import Workbook
 from xlsxwriter.format import Format
@@ -149,6 +151,27 @@ class ReportService:
         cell_format.set_font_size(11)
         return cell_format
 
+    def report_list_by_employee(
+        self,
+        report_filters: LendingReportFilter,
+        db_session: Session,
+        page: int = 1,
+        size: int = 50,
+    ):
+        """Report list by employee"""
+        report_list = report_filters.filter(
+            db_session.query(LendingModel), db_session.query(LogModel)
+        ).all()
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            report_list,
+            params=params,
+            transformer=lambda report_list: [
+                self.lending_to_report(data) for data in report_list
+            ],
+        )
+        return paginated
+
     def report_by_employee(
         self,
         report_filters: LendingReportFilter,
@@ -186,6 +209,27 @@ class ReportService:
         self.workbook.close()
         self.output_file.seek(0)
         return self.output_file
+
+    def report_list_by_asset(
+        self,
+        report_filters: LendingReportFilter,
+        db_session: Session,
+        page: int = 1,
+        size: int = 50,
+    ):
+        """Report list by asset"""
+        report_list = report_filters.filter(
+            db_session.query(LendingModel), db_session.query(LogModel)
+        ).all()
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            report_list,
+            params=params,
+            transformer=lambda report_list: [
+                self.asset_to_report(data.asset, data.location) for data in report_list
+            ],
+        )
+        return paginated
 
     def report_by_asset(
         self,
@@ -226,6 +270,27 @@ class ReportService:
         self.workbook.close()
         self.output_file.seek(0)
         return report_data
+
+    def report_list_by_asset_pattern(
+        self,
+        report_filters: LendingReportFilter,
+        db_session: Session,
+        page: int = 1,
+        size: int = 50,
+    ):
+        """Report list by asset_pattern"""
+        report_list = report_filters.filter(
+            db_session.query(LendingModel), db_session.query(LogModel)
+        ).all()
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            report_list,
+            params=params,
+            transformer=lambda report_list: [
+                self.asset_pattern_to_report(data.asset, data) for data in report_list
+            ],
+        )
+        return paginated
 
     def report_by_asset_pattern(
         self,

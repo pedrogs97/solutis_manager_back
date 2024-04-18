@@ -8,7 +8,7 @@ from sqlalchemy.orm import Query
 from sqlalchemy.sql.expression import or_
 
 from src.asset.models import AssetModel
-from src.lending.models import LendingModel, WorkloadModel
+from src.lending.models import LendingModel, LendingStatusModel, WorkloadModel
 from src.log.models import LogModel
 from src.people.models import EmployeeModel
 
@@ -25,7 +25,7 @@ class LendingReportFilter(Filter):
     workloads_ids: Optional[str] = None
     register_number: Optional[str] = None
     patterns: Optional[str] = None
-    assets_status_ids: Optional[str] = None
+    status_ids: Optional[str] = None
 
     class Constants(Filter.Constants):
         """Filter constants"""
@@ -44,6 +44,7 @@ class LendingReportFilter(Filter):
 
         query = (
             query_lending.join(AssetModel)
+            .join(LendingStatusModel)
             .join(EmployeeModel)
             .join(WorkloadModel)
             .filter(
@@ -112,12 +113,12 @@ class LendingReportFilter(Filter):
             )
             query = query.filter(AssetModel.pattern.in_(patterns_list))
 
-        if self.assets_status_ids:
+        if self.status_ids:
             asset_status_ids_list = (
-                self.assets_status_ids.split(",")
-                if self.assets_status_ids.index(",")
-                else [self.assets_status_ids]
+                self.status_ids.split(",")
+                if self.status_ids.index(",")
+                else [self.status_ids]
             )
-            query = query.filter(AssetModel.status.in_(asset_status_ids_list))
+            query = query.filter(LendingStatusModel.id.in_(asset_status_ids_list))
 
         return query
