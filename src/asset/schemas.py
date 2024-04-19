@@ -196,6 +196,7 @@ class AssetSerializerSchema(BaseSchema):
     )
     maintenance_status: str = Field(serialization_alias="maintenanceStatus")
     upgrade_status: str = Field(serialization_alias="upgradeStatus")
+    alert: Optional[str] = ""
 
 
 class NewAssetSchema(BaseSchema):

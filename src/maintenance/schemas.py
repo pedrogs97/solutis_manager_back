@@ -47,6 +47,7 @@ class NewMaintenanceSchema(BaseSchema):
     )
     resolution: Optional[str] = None
     value: Optional[float] = None
+    has_assurance: Optional[bool] = Field(alias="hasAssurance", default=False)
 
 
 class UpdateMaintenanceSchema(BaseSchema):
@@ -59,6 +60,7 @@ class UpdateMaintenanceSchema(BaseSchema):
     resolution: Optional[str] = None
     in_progress: Optional[bool] = Field(alias="inProgress", default=False)
     value: Optional[float] = None
+    has_assurance: Optional[bool] = Field(alias="hasAssurance", default=False)
 
 
 class MaintenanceAttachmentSerializerSchema(BaseSchema):
@@ -77,6 +79,9 @@ class MaintenanceSerializerSchema(BaseSchema):
     status: str
     criticality: Optional[MaintenanceCriticalityModelSerializerSchema] = None
     value: float
+    has_assurance: Optional[bool] = Field(
+        serialization_alias="hasAssurance", default=False
+    )
     open_date: str = Field(serialization_alias="openDate")
     close_date: Optional[str] = Field(serialization_alias="closeDate", default=None)
     glpi_number: Optional[str] = Field(serialization_alias="glpiNumber", default=None)

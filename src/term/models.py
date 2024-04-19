@@ -35,6 +35,7 @@ class TermItemTypeModel(Base):
 
     * Kit Ferramenta
     * Fardamento
+    * Chip
     """
 
     __tablename__ = "term_item_type"
@@ -53,11 +54,13 @@ class TermItemModel(Base):
     __tablename__ = "term_item"
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
+    term: Mapped["TermModel"] = relationship(viewonly=True)
     description = Column("description", String(length=300))
     size = Column("size", String(length=3), nullable=True)
     quantity = Column("quantity", Integer, nullable=True)
     value = Column("value", Float, nullable=True)
-    term: Mapped["TermModel"] = relationship(viewonly=True)
+    line_number = Column("line_number", String(length=15), nullable=True)
+    operator = Column("operator", String(length=100), nullable=True)
 
     def __str__(self) -> str:
         """Returns model as string"""

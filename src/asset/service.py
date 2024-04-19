@@ -106,6 +106,29 @@ class AssetService:
 
         return new_register_number.zfill(16 - len(new_register_number))
 
+    def __get_asset_alert(self, asset: AssetModel) -> str:
+        """Get asset alert"""
+        message = ""
+        low_count = 0
+        medium_count = 0
+        high_count = 0
+
+        for maintenance in asset.maintenances:
+            if maintenance.criticality_id == 1:
+                low_count += 1
+            elif maintenance.criticality_id == 2:
+                medium_count += 1
+            elif maintenance.criticality_id == 3:
+                high_count += 1
+
+        if high_count > 3:
+            message = "Muitas manutenções críticas."
+        elif medium_count > 5:
+            message = "Muitas manutenções médias."
+        elif low_count > 10:
+            message = "Muitas manutenções leves."
+        return message
+
     def serialize_asset(self, asset: AssetModel) -> AssetSerializerSchema:
         """Serialize asset"""
         last_maintenance = asset.maintenances[-1] if len(asset.maintenances) else None
@@ -156,6 +179,7 @@ class AssetService:
                 if last_upgrade and last_upgrade.status.id != 3
                 else "-"
             ),
+            alert=self.__get_asset_alert(asset),
         )
 
     def serialize_asset_type(

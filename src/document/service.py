@@ -173,6 +173,26 @@ class DocumentService:
                 },
             )
 
+        if item_type == "Chip":
+            detail.append(
+                {
+                    "key": "Descrição",
+                    "value": item.description,
+                },
+            )
+            detail.append(
+                {
+                    "key": "Linha telefônica",
+                    "value": item.line_number,
+                },
+            )
+            detail.append(
+                {
+                    "key": "Operadora",
+                    "value": item.operator,
+                },
+            )
+
         return detail
 
     def __get_contract_detail(

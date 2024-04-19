@@ -29,6 +29,8 @@ class TermItemSerializerSchema(BaseSchema):
     size: Optional[str]
     quantity: Optional[int]
     value: Optional[float]
+    line_number: Optional[str] = Field(serialization_alias="lineNumber")
+    operator: Optional[str]
 
 
 class TermItemTypeSerializerSchema(BaseSchema):
@@ -84,6 +86,8 @@ class NewTermSchema(BaseSchema):
     size: Optional[SizesEnum] = None
     quantity: Optional[int] = None
     value: Optional[float] = None
+    line_number: Optional[str] = Field(alias="lineNumber", default=None)
+    operator: Optional[str] = None
 
 
 class TermEmployeeHistorySerializerSchema(BaseSchema):

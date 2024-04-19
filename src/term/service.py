@@ -240,6 +240,12 @@ class TermService:
 
         if term_type.name == "Kit Ferramenta":
             new_term_item = TermItemModel(description=new_term.description)
+        elif term_type.name == "Chip":
+            new_term_item = TermItemModel(
+                description=new_term.description,
+                line_number=new_term.line_number,
+                operator=new_term.operator,
+            )
         else:
             new_term_item = TermItemModel(
                 size=new_term.size,
@@ -292,7 +298,7 @@ class TermService:
         service_log.set_log(
             "term",
             "term",
-            f"Atualização de Termo de Responsabilidade",
+            "Atualização de Termo de Responsabilidade",
             term.id,
             authenticated_user,
             db_session,

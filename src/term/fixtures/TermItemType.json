@@ -8,5 +8,10 @@
         "table": "term_item_type",
         "id": 2,
         "name": "Fardamento"
+    },
+    {
+        "table": "term_item_type",
+        "id": 3,
+        "name": "Chip"
     }
 ]

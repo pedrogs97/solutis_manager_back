@@ -257,6 +257,7 @@ class MaintenanceService:
                 if maintenance.criticality
                 else None
             ),
+            has_assurance=maintenance.has_assurance,
         )
 
     def serialize_maintenance_action(
@@ -315,6 +316,7 @@ class MaintenanceService:
             resolution=data.resolution,
             value=data.value,
             criticality=criticality,
+            has_assurance=data.has_assurance,
         )
         new_maintenance.status = pending_status
         new_maintenance.action = action_type
@@ -410,6 +412,8 @@ class MaintenanceService:
 
         if data.value:
             maintenance.value = data.value
+
+        maintenance.has_assurance = data.has_assurance
 
         db_session.add(maintenance)
         db_session.commit()

@@ -13,7 +13,12 @@ from xlsxwriter.utility import xl_rowcol_to_cell
 from src.asset.models import AssetModel
 from src.lending.models import LendingModel
 from src.log.models import LogModel
-from src.report.filters import LendingReportFilter
+from src.maintenance.models import MaintenanceHistoricModel, UpgradeHistoricModel
+from src.report.filters import (
+    AssetPatternFilter,
+    AssetReportFilter,
+    LendingReportFilter,
+)
 
 
 class ReportService:
@@ -60,6 +65,20 @@ class ReportService:
         ("I5", "DESCRIÇÃO DO EQUIPAMENTO"),
         ("J5", "PATRIMÔNIO"),
         ("K5", "TIPO DE CONTRATO"),
+    ]
+
+    MAINTENANCE_COLS = [
+        ("C5", "DATA DA ABERTURA DO CHAMADO"),
+        ("D5", "DATA DE ENCERRAMENTO DO CHAMADO"),
+        ("E5", "NÚMERO DO CHAMADO"),
+        ("F5", "TIPO DE INCIDENTE"),
+        ("G5", "DESCRIÇÃO DO INCIDENTE/MELHORIA"),
+        ("H5", "DESCRIÇÃO DO EQUIPAMENTO"),
+        ("I5", "NÚMERO DE SÉRIE / IMEI"),
+        ("J5", "PADRÃO DO EQUIPAMENTO"),
+        ("K5", "GARANTIA"),
+        ("L5", "VALOR"),
+        ("M5", "STATUS"),
     ]
 
     REPORT_FILE_NAME = "report.xlsx"
@@ -212,7 +231,7 @@ class ReportService:
 
     def report_list_by_asset(
         self,
-        report_filters: LendingReportFilter,
+        report_filters: AssetReportFilter,
         db_session: Session,
         page: int = 1,
         size: int = 50,
@@ -233,7 +252,7 @@ class ReportService:
 
     def report_by_asset(
         self,
-        report_filters: LendingReportFilter,
+        report_filters: AssetReportFilter,
         db_session: Session,
     ):
         """Report by asset"""
@@ -269,11 +288,11 @@ class ReportService:
         self.worksheet.autofit()
         self.workbook.close()
         self.output_file.seek(0)
-        return report_data
+        return self.output_file
 
     def report_list_by_asset_pattern(
         self,
-        report_filters: LendingReportFilter,
+        report_filters: AssetPatternFilter,
         db_session: Session,
         page: int = 1,
         size: int = 50,
@@ -294,7 +313,7 @@ class ReportService:
 
     def report_by_asset_pattern(
         self,
-        report_filters: LendingReportFilter,
+        report_filters: AssetPatternFilter,
         db_session: Session,
     ):
         """Report by asset"""
@@ -330,4 +349,42 @@ class ReportService:
         self.worksheet.autofit()
         self.workbook.close()
         self.output_file.seek(0)
-        return report_data
+        return self.output_file
+
+    def report_by_maintenace(self, db_session: Session):
+        """Report by maintenance"""
+        report_data = (
+            db_session.query(MaintenanceHistoricModel)
+            .union(db_session.query(UpgradeHistoricModel))
+            .all()
+        )
+
+        self.worksheet.hide_gridlines(2)
+
+        self.worksheet.write(
+            "C3",
+            "CONSULTA POR MANUTENÇÃO / MELHORIA",
+            self.__format_cell_title(self.workbook.add_format()),
+        )
+
+        cell_col_header_format = self.__format_cell_col(self.workbook.add_format())
+
+        for col in self.MAINTENANCE_COLS:
+            self.worksheet.write(col[0], col[1], cell_col_header_format)
+
+        cell_data_format = self.__format_cell(self.workbook.add_format())
+
+        for i_row, item in enumerate(report_data):
+            for i_col, value in enumerate(
+                self.asset_pattern_to_report(item.asset, item).values()
+            ):
+                self.worksheet.write(
+                    xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),
+                    value,
+                    cell_data_format,
+                )
+
+        self.worksheet.autofit()
+        self.workbook.close()
+        self.output_file.seek(0)
+        return self.output_file

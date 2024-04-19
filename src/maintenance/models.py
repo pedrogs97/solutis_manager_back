@@ -2,7 +2,17 @@
 
 from typing import List
 
-from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, relationship
 
 from src.asset.models import AssetModel
@@ -138,6 +148,7 @@ class MaintenanceModel(Base):
     )
     resolution = Column("resolution", String(length=255), nullable=True)
     value = Column("value", Float, nullable=True)
+    has_assurance = Column("has_assurance", Boolean, default=False)
     created_at = Column(
         "created_at", DateTime, nullable=False, server_default=func.now()
     )
