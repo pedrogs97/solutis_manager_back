@@ -63,7 +63,7 @@ def get_list_logs_route(
                     LogModel.module.ilike(f"%{search}"),
                 )
             )
-        ).order_by(desc(LogModel.id))
+        )
     else:
         log_list = db_session.query(LogModel)
 
@@ -77,7 +77,7 @@ def get_list_logs_route(
 
     params = Params(page=page, size=size)
     paginated = paginate(
-        log_list,
+        log_list.order_by(desc(LogModel.id)),
         params=params,
         transformer=lambda log_list: [
             LogSerializerSchema(

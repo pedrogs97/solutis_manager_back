@@ -27,6 +27,8 @@ from src.report.service import ReportService
 
 report_router = APIRouter(prefix="/report", tags=["Report"])
 
+REPORT_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
 
 @report_router.get("/list/by-employee/")
 def get_list_report_by_employee_route(
@@ -83,7 +85,7 @@ def get_report_by_employee_route(
     return StreamingResponse(
         content=file,
         headers=headers,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        media_type=REPORT_MEDIA_TYPE,
     )
 
 
@@ -142,7 +144,7 @@ def get_report_by_asset_route(
     return StreamingResponse(
         content=file,
         headers=headers,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        media_type=REPORT_MEDIA_TYPE,
     )
 
 
@@ -201,7 +203,33 @@ def get_report_by_pattern_route(
     return StreamingResponse(
         content=file,
         headers=headers,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        media_type=REPORT_MEDIA_TYPE,
+    )
+
+
+@report_router.get("/by-maintenance/")
+def get_report_by_maintenance_route(
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "report", "model": "report", "action": "view"})
+    ),
+) -> StreamingResponse:
+    """Login user route"""
+    if not authenticated_user:
+        db_session.close()
+        return StreamingResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    report_service = ReportService()
+    file = report_service.report_by_maintenance(db_session)
+    db_session.close()
+    headers = {
+        "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
+    }
+    return StreamingResponse(
+        content=file,
+        headers=headers,
+        media_type=REPORT_MEDIA_TYPE,
     )
 
 

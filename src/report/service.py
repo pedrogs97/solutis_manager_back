@@ -13,7 +13,12 @@ from xlsxwriter.utility import xl_rowcol_to_cell
 from src.asset.models import AssetModel
 from src.lending.models import LendingModel
 from src.log.models import LogModel
-from src.maintenance.models import MaintenanceHistoricModel, UpgradeHistoricModel
+from src.maintenance.models import (
+    MaintenanceHistoricModel,
+    MaintenanceModel,
+    UpgradeHistoricModel,
+    UpgradeModel,
+)
 from src.report.filters import (
     AssetPatternFilter,
     AssetReportFilter,
@@ -75,10 +80,11 @@ class ReportService:
         ("G5", "DESCRIÇÃO DO INCIDENTE/MELHORIA"),
         ("H5", "DESCRIÇÃO DO EQUIPAMENTO"),
         ("I5", "NÚMERO DE SÉRIE / IMEI"),
-        ("J5", "PADRÃO DO EQUIPAMENTO"),
-        ("K5", "GARANTIA"),
-        ("L5", "VALOR"),
-        ("M5", "STATUS"),
+        ("J5", "PATRIMÔNIO"),
+        ("K5", "PADRÃO DO EQUIPAMENTO"),
+        ("L5", "GARANTIA"),
+        ("M5", "VALOR (R$)"),
+        ("N5", "STATUS"),
     ]
 
     REPORT_FILE_NAME = "report.xlsx"
@@ -121,7 +127,7 @@ class ReportService:
             "assurance_date": (
                 asset.assurance_date if asset.assurance_date else self.NOT_PROVIDED
             ),
-            "value": asset.value,
+            "value": "%.2f".format(asset.value),
             "depreciation": asset.depreciation,
             "status": asset.status.name if asset.status else self.NOT_PROVIDED,
         }
@@ -138,6 +144,56 @@ class ReportService:
             "description": asset.description,
             "register_number": asset.register_number,
             "type": asset.type.name if asset.type else self.NOT_PROVIDED,
+        }
+
+    def maintenance_to_report(self, maintenance: MaintenanceModel) -> dict:
+        """Convert maintenance to report"""
+        serial_number = (
+            maintenance.asset.serial_number
+            if maintenance.asset.serial_number
+            else self.NOT_PROVIDED
+        )
+        imei = maintenance.asset.imei if maintenance.asset.imei else self.NOT_PROVIDED
+        return {
+            "opening_date": maintenance.open_date,
+            "closing_date": maintenance.close_date,
+            "call_number": (
+                maintenance.glpi_number
+                if maintenance.glpi_number
+                else self.NOT_PROVIDED
+            ),
+            "incident_type": "MANUTENÇÃO",
+            "description": maintenance.resolution,
+            "equipment_description": maintenance.asset.description,
+            "serial_number": f"{serial_number} / {imei}",
+            "patrimony": maintenance.asset.register_number,
+            "pattern": maintenance.asset.pattern,
+            "assurance_date": maintenance.asset.assurance_date,
+            "value": str(maintenance.asset.value).replace(".", ","),  # format value
+            "status": maintenance.status.name,
+        }
+
+    def upgrade_to_report(self, upgrade: UpgradeModel) -> dict:
+        """Convert upgrade to report"""
+        serial_number = (
+            upgrade.asset.serial_number
+            if upgrade.asset.serial_number
+            else self.NOT_PROVIDED
+        )
+        imei = upgrade.asset.imei if upgrade.asset.imei else self.NOT_PROVIDED
+        return {
+            "opening_date": upgrade.open_date,
+            "closing_date": upgrade.close_date,
+            "call_number": self.NOT_PROVIDED,
+            "incident_type": "MELHORIA",
+            "description": upgrade.detailing,
+            "equipment_description": upgrade.asset.description,
+            "serial_number": f"{serial_number} / {imei}",
+            "patrimony": upgrade.asset.register_number,
+            "pattern": upgrade.asset.pattern,
+            "assurance_date": upgrade.asset.assurance_date,
+            "value": upgrade.asset.value,
+            "status": upgrade.status.name,
         }
 
     def __format_cell(self, cell_format: Format) -> Format:
@@ -351,7 +407,7 @@ class ReportService:
         self.output_file.seek(0)
         return self.output_file
 
-    def report_by_maintenace(self, db_session: Session):
+    def report_by_maintenance(self, db_session: Session):
         """Report by maintenance"""
         report_data = (
             db_session.query(MaintenanceHistoricModel)
@@ -376,7 +432,7 @@ class ReportService:
 
         for i_row, item in enumerate(report_data):
             for i_col, value in enumerate(
-                self.asset_pattern_to_report(item.asset, item).values()
+                self.maintenance_to_report(item.maintenance).values()
             ):
                 self.worksheet.write(
                     xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),
