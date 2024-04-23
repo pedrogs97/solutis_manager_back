@@ -233,6 +233,32 @@ def get_report_by_maintenance_route(
     )
 
 
+@report_router.get("/list/by-maintenance/")
+def get_list_report_by_maintenance_route(
+    db_session: Session = Depends(get_db_session),
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "report", "model": "report", "action": "view"})
+    ),
+) -> JSONResponse:
+    """Login user route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    report_service = ReportService()
+    report_list = report_service.report_list_by_maintenance(db_session, page, size)
+    db_session.close()
+    return report_list
+
+
 @report_router.get("/projects-select/")
 def get_projects(
     db_session: Session = Depends(get_db_session),

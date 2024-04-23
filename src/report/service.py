@@ -236,7 +236,7 @@ class ReportService:
         """Report list by employee"""
         report_list = report_filters.filter(
             db_session.query(LendingModel), db_session.query(LogModel)
-        ).all()
+        )
         params = Params(page=page, size=size)
         paginated = paginate(
             report_list,
@@ -295,7 +295,7 @@ class ReportService:
         """Report list by asset"""
         report_list = report_filters.filter(
             db_session.query(LendingModel), db_session.query(LogModel)
-        ).all()
+        )
         params = Params(page=page, size=size)
         paginated = paginate(
             report_list,
@@ -356,7 +356,8 @@ class ReportService:
         """Report list by asset_pattern"""
         report_list = report_filters.filter(
             db_session.query(LendingModel), db_session.query(LogModel)
-        ).all()
+        )
+
         params = Params(page=page, size=size)
         paginated = paginate(
             report_list,
@@ -444,3 +445,20 @@ class ReportService:
         self.workbook.close()
         self.output_file.seek(0)
         return self.output_file
+
+    def report_list_by_maintenance(
+        self, db_session: Session, page: int = 1, size: int = 50
+    ):
+        """Report list by maintenance"""
+        report_data = db_session.query(MaintenanceHistoricModel).union(
+            db_session.query(UpgradeHistoricModel)
+        )
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            report_data,
+            params=params,
+            transformer=lambda report_list: [
+                self.maintenance_to_report(data.maintenance) for data in report_list
+            ],
+        )
+        return paginated
