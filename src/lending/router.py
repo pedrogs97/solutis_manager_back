@@ -244,3 +244,41 @@ def get_list_witness_route(
     witness = lending_service.get_witnesses(db_session, witnesses_filters, fields)
     db_session.close()
     return JSONResponse(content=witness, status_code=status.HTTP_200_OK)
+
+
+@lending_router.get("/-status/")
+def get_lending_status_route(
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            [
+                {"module": "lending", "model": "lending", "action": "view"},
+                {"module": "report", "model": "report", "action": "view"},
+            ]
+        )
+    ),
+):
+    """
+    Get lending status for a specific lending ID.
+
+    Args:
+        lending_id (int): The ID of the lending to retrieve.
+        db_session (Session, optional): An instance of the SQLAlchemy Session class for database operations.
+            Defaults to Depends(get_db_session).
+        authenticated_user (Union[UserModel, None], optional): An instance of the UserModel class or None,
+            obtained from the PermissionChecker dependency. Defaults to Depends(PermissionChecker(...)).
+
+    Returns:
+        JSONResponse: A JSON response containing the serialized lending information and a status code.
+    """
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer = lending_service.get_lending_status(db_session)
+    db_session.close()
+    return JSONResponse(
+        content=serializer,
+        status_code=status.HTTP_200_OK,
+    )

@@ -570,3 +570,7 @@ class LendingService:
             db_session,
         )
         logger.info("Delete lending. %s", str(lending))
+
+    def get_lending_status(self, db_session: Session) -> List[LendingStatusModel]:
+        """Get lending status"""
+        return db_session.query(LendingStatusModel).all()

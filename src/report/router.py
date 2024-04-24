@@ -272,18 +272,21 @@ def get_projects(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    lendings_project = (
-        db_session.query(LendingModel)
+
+    unique_projects = (
+        db_session.query(LendingModel.business_executive)
         .filter(LendingModel.deleted.is_(False))
-        .group_by(LendingModel.project)
         .distinct()
-        .all()
     )
+
     db_session.close()
     return JSONResponse(
         content=[
-            {"label": lending_project.project, "value": lending_project.project}
-            for lending_project in lendings_project
+            {
+                "label": unique_tuple[0],
+                "value": unique_tuple[0],
+            }
+            for unique_tuple in unique_projects
         ],
         status_code=status.HTTP_200_OK,
     )
@@ -302,21 +305,21 @@ def get_business_executives(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    lendings_business = (
-        db_session.query(LendingModel)
+
+    unique_business_executives = (
+        db_session.query(LendingModel.business_executive)
         .filter(LendingModel.deleted.is_(False))
-        .group_by(LendingModel.business_executive)
         .distinct()
-        .all()
     )
+
     db_session.close()
     return JSONResponse(
         content=[
             {
-                "label": lending_business.business_executive,
-                "value": lending_business.business_executive,
+                "label": unique_tuple[0],
+                "value": unique_tuple[0],
             }
-            for lending_business in lendings_business
+            for unique_tuple in unique_business_executives
         ],
         status_code=status.HTTP_200_OK,
     )
@@ -335,22 +338,20 @@ def get_pattern(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    lendings_pattern = (
-        db_session.query(LendingModel)
-        .join(AssetModel, LendingModel.asset_id == AssetModel.id)
-        .filter(LendingModel.deleted.is_(False))
-        .group_by(AssetModel.pattern)
-        .distinct()
-        .all()
+
+    unique_patterns = filter(
+        lambda item: item[0] != "" and item[0] is not None,
+        db_session.query(AssetModel.pattern).distinct(),
     )
+
     db_session.close()
     return JSONResponse(
         content=[
             {
-                "label": lending_pattern.asset.pattern,
-                "value": lending_pattern.asset.pattern,
+                "label": unique_tuple[0],
+                "value": unique_tuple[0],
             }
-            for lending_pattern in lendings_pattern
+            for unique_tuple in unique_patterns
         ],
         status_code=status.HTTP_200_OK,
     )
