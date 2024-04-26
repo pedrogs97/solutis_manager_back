@@ -71,9 +71,14 @@ def post_recreate_contract(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
 
-    new_doc = document_service.recreate_contract(
-        recreate_document_doc, db_session, authenticated_user
-    )
+    if recreate_document_doc.type == "revoke":
+        new_doc = document_service.recreate_revoke_contract(
+            recreate_document_doc, db_session, authenticated_user
+        )
+    else:
+        new_doc = document_service.recreate_contract(
+            recreate_document_doc, db_session, authenticated_user
+        )
 
     db_session.close()
 

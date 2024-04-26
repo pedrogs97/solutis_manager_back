@@ -993,6 +993,166 @@ class DocumentService:
 
         return self.serialize_document(new_doc)
 
+    def recreate_revoke_contract(
+        self,
+        recreate_lending_doc: RecrateLendingDocSchema,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Recreate new contract, not signed"""
+        doc = self.__get_document_or_404(recreate_lending_doc.document_id, db_session)
+
+        current_lending = (
+            db_session.query(LendingModel)
+            .filter(LendingModel.id == recreate_lending_doc.lending_id)
+            .first()
+        )
+
+        workload = current_lending.workload
+
+        employee = current_lending.employee
+
+        witness1 = current_lending.witnesses[0]
+
+        witness2 = current_lending.witnesses[1]
+
+        detail = self.__get_contract_detail(
+            current_lending.asset,
+            current_lending.cost_center.code,
+            current_lending.ms_office,
+        )
+
+        code = current_lending.number
+
+        if employee.legal_person:
+            contract_path = create_revoke_lending_contract_pj(
+                NewLendingPjContextSchema(
+                    number=code,
+                    glpi_number=(
+                        current_lending.glpi_number
+                        if current_lending.glpi_number
+                        else ""
+                    ),
+                    full_name=employee.full_name,
+                    taxpayer_identification=employee.taxpayer_identification,
+                    national_identification=employee.national_identification,
+                    address=employee.address,
+                    nationality=employee.nationality.description,
+                    role=employee.role.name,
+                    marital_status=employee.marital_status.description,
+                    cc=current_lending.cost_center.code,
+                    manager=current_lending.manager,
+                    business_executive=current_lending.business_executive,
+                    workload=workload.name,
+                    detail=detail,
+                    date=date.today().strftime(DEFAULT_DATE_FORMAT),
+                    witnesses=[
+                        WitnessContextSchema(
+                            full_name=witness1.employee.full_name,
+                            taxpayer_identification=witness1.employee.taxpayer_identification,
+                        ),
+                        WitnessContextSchema(
+                            full_name=witness2.employee.full_name,
+                            taxpayer_identification=witness2.employee.taxpayer_identification,
+                        ),
+                    ],
+                    cnpj=employee.employer_number,
+                    company_address=(
+                        employee.employer_address
+                        if employee.employer_address
+                        else employee.address
+                    ),
+                    company=employee.employer_name,
+                    object=employee.employer_contract_object,
+                    project=current_lending.project,
+                    contract_date=employee.employer_contract_date.strftime(
+                        DEFAULT_DATE_FORMAT
+                    ),
+                    location=current_lending.location,
+                    bu=current_lending.bu,
+                )
+            )
+        else:
+            contract_path = create_revoke_lending_contract(
+                NewLendingContextSchema(
+                    number=code,
+                    glpi_number=(
+                        current_lending.glpi_number
+                        if current_lending.glpi_number
+                        else ""
+                    ),
+                    full_name=employee.full_name,
+                    taxpayer_identification=employee.taxpayer_identification,
+                    national_identification=employee.national_identification,
+                    address=employee.address,
+                    nationality=employee.nationality.description,
+                    role=employee.role.name,
+                    marital_status=employee.marital_status.description,
+                    cc=current_lending.cost_center.code,
+                    manager=current_lending.manager,
+                    business_executive=current_lending.business_executive,
+                    workload=workload.name,
+                    detail=detail,
+                    date=date.today().strftime(DEFAULT_DATE_FORMAT),
+                    witnesses=[
+                        WitnessContextSchema(
+                            full_name=witness1.employee.full_name,
+                            taxpayer_identification=witness1.employee.taxpayer_identification,
+                        ),
+                        WitnessContextSchema(
+                            full_name=witness2.employee.full_name,
+                            taxpayer_identification=witness2.employee.taxpayer_identification,
+                        ),
+                    ],
+                    cnpj=employee.employer_number,
+                    company_address=employee.employer_address,
+                    company=employee.employer_name,
+                    project=current_lending.project,
+                    location=current_lending.location,
+                    bu=current_lending.bu,
+                )
+            )
+
+        new_doc = DocumentModel(path=contract_path, file_name=f"{code} - distrato.pdf")
+
+        new_doc.doc_type = doc.doc_type
+
+        doc.deleted = True
+        db_session.add(doc)
+        db_session.commit()
+
+        db_session.add(new_doc)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Reriação de {doc.doc_type}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("New Document. %s", str(new_doc))
+
+        current_lending.document = new_doc
+
+        db_session.add(current_lending)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "lending",
+            "Nova vinculação de Distrato ao Comodato",
+            current_lending.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Recreate Document add to Lending. %s", str(current_lending))
+
+        return self.serialize_document(new_doc)
+
     async def upload_contract(
         self,
         contract: UploadFile,
