@@ -553,11 +553,12 @@ class LendingService:
         lending = self.__get_lending_or_404(lending_id, db_session)
         lending.deleted = True
 
-        lending.document.deleted = True
+        if lending.document:
+            lending.document.deleted = True
+            db_session.add(lending.document)
 
         lending.asset.status = db_session.query(AssetStatusModel).get(1)
         db_session.add(lending.asset)
-        db_session.add(lending.document)
         db_session.add(lending)
         db_session.commit()
         db_session.flush()

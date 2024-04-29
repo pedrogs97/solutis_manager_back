@@ -25,7 +25,11 @@ from src.people.filters import (
     EmployeeRoleFilter,
     EmployeeSelectFilter,
 )
-from src.people.schemas import NewEmployeeSchema, UpdateEmployeeSchema
+from src.people.schemas import (
+    EmployeeToLegalPersonSchema,
+    NewEmployeeSchema,
+    UpdateEmployeeSchema,
+)
 from src.people.service import EmpleoyeeGeneralSerivce, EmployeeService
 
 people_router = APIRouter(prefix="/people", tags=["People"])
@@ -73,6 +77,30 @@ def patch_update_employee_route(
         )
     serializer = employee_service.update_employee(
         employee_id, data, db_session, authenticated_user
+    )
+    db_session.close()
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
+    )
+
+
+@people_router.patch("/employees/{employee_id}/to-legal-person/")
+def patch_update_employee_pj_route(
+    employee_id: int,
+    data: EmployeeToLegalPersonSchema,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "people", "model": "employee", "action": "edit"})
+    ),
+):
+    """Update employee PJ route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer = employee_service.transform_employee_into_legal_person(
+        data, employee_id, db_session, authenticated_user
     )
     db_session.close()
     return JSONResponse(

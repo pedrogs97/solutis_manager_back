@@ -401,11 +401,12 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
             employee_db = (
                 db_session.query(EmployeeModel)
                 .filter(
+                    EmployeeModel.legal_person.is_(False),
                     or_(
                         EmployeeModel.code == totvs_employee.code,
                         EmployeeModel.taxpayer_identification
                         == totvs_employee.taxpayer_identification,
-                    )
+                    ),
                 )
                 .first()
             )

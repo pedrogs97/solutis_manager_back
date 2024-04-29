@@ -43,6 +43,7 @@ from src.people.schemas import (
     EmployeeRoleSerializerSchema,
     EmployeeSerializerSchema,
     EmployeeShortSerializerSchema,
+    EmployeeToLegalPersonSchema,
     NewEmployeeSchema,
     UpdateEmployeeSchema,
 )
@@ -229,12 +230,13 @@ class EmployeeService:
         if data.taxpayer_identification and (
             db_session.query(EmployeeModel)
             .filter(
-                EmployeeModel.taxpayer_identification == data.taxpayer_identification
+                EmployeeModel.taxpayer_identification == data.taxpayer_identification,
+                EmployeeModel.legal_person.is_(True),
             )
             .first()
         ):
             errors.append(
-                {"field": "taxpayer_identification", "error": "Colaborador já existe"}
+                {"field": "taxpayerIdentification", "error": "Colaborador já existe"}
             )
 
         if len(errors) > 0:
@@ -506,6 +508,37 @@ class EmployeeService:
             )
 
         return paginated
+
+    def transform_employee_into_legal_person(
+        self,
+        data_legal_person: EmployeeToLegalPersonSchema,
+        employee_id: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> EmployeeSerializerSchema:
+        """Transform employee into legal person"""
+        employee = self.__get_employee_or_404(employee_id, db_session)
+
+        for key, value in data_legal_person.model_dump(by_alias=False).items():
+            if value:
+                setattr(employee, key, value)
+
+        employee.legal_person = True
+        employee.status = "Ativo"
+        db_session.add(employee)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "people",
+            "employee",
+            "Transformação de Colaborador em Pessoa Jurídica",
+            employee.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Employee transformed into legal person. %s", str(employee))
+        return self.serialize_employee(employee)
 
 
 class EmpleoyeeGeneralSerivce:

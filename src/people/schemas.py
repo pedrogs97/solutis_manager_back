@@ -345,3 +345,35 @@ class EmployeeTotvsSchema(BaseSchema):
     cell_phone: str
     email: str
     gender: str
+
+
+class EmployeeToLegalPersonSchema(BaseSchema):
+    """Employee to legal person schema"""
+
+    manager: Optional[str] = None
+    employer_number: Optional[str] = Field(
+        alias="employerNumber",
+        serialization_alias="employer_number",
+        default=None,
+    )
+    employer_address: Optional[str] = Field(
+        alias="employerAddress",
+        serialization_alias="employer_address",
+        default=None,
+    )
+    employer_contract_object: Optional[str] = Field(
+        alias="employerContractObject",
+        default=None,
+    )
+    employer_contract_date: Optional[date] = Field(
+        alias="employerContractDate",
+        default=None,
+    )
+    employer_name: Optional[str] = Field(
+        alias="employerName",
+        default=None,
+    )
+    employer_end_contract_date: Optional[date] = Field(
+        alias="employerEndContractDate",
+        default=None,
+    )
