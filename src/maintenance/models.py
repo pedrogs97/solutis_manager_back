@@ -247,6 +247,16 @@ class UpgradeModel(Base):
     supplier = Column("supplier", String(length=100), nullable=True)
     invoice_number = Column("invoice_number", String(length=100), nullable=True)
     observations = Column("observations", String(length=255), nullable=True)
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        "updated_at",
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+        server_onupdate=func.now(),
+    )
 
     def __str__(self) -> str:
         """Returns model as string"""
