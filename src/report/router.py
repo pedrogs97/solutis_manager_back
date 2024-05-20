@@ -78,6 +78,14 @@ def get_report_by_employee_route(
         report_filters,
         db_session,
     )
+
+    if not file:
+        db_session.close()
+        return StreamingResponse(
+            content={"message": "Sem informação"},
+            status_code=status.HTTP_204_NO_CONTENT,
+        )
+
     db_session.close()
     headers = {
         "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
@@ -137,6 +145,14 @@ def get_report_by_asset_route(
         report_filters,
         db_session,
     )
+
+    if not file:
+        db_session.close()
+        return StreamingResponse(
+            content={"message": "Sem informação"},
+            status_code=status.HTTP_204_NO_CONTENT,
+        )
+
     db_session.close()
     headers = {
         "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
@@ -196,6 +212,14 @@ def get_report_by_pattern_route(
         report_filters,
         db_session,
     )
+
+    if not file:
+        db_session.close()
+        return StreamingResponse(
+            content={"message": "Sem informação"},
+            status_code=status.HTTP_204_NO_CONTENT,
+        )
+
     db_session.close()
     headers = {
         "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
@@ -222,6 +246,14 @@ def get_report_by_maintenance_route(
         )
     report_service = ReportService()
     file = report_service.report_by_maintenance(db_session)
+
+    if not file:
+        db_session.close()
+        return StreamingResponse(
+            content={"message": "Sem informação"},
+            status_code=status.HTTP_204_NO_CONTENT,
+        )
+
     db_session.close()
     headers = {
         "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',

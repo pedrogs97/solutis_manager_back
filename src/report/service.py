@@ -257,6 +257,9 @@ class ReportService:
             db_session.query(LendingModel), db_session.query(LogModel)
         ).all()
 
+        if not report_data:
+            return None
+
         self.worksheet.hide_gridlines(2)
 
         self.worksheet.write(
@@ -315,6 +318,9 @@ class ReportService:
         report_data: List[LendingModel] = report_filters.filter(
             db_session.query(LendingModel), db_session.query(LogModel)
         ).all()
+
+        if not report_data:
+            return None
 
         self.worksheet.hide_gridlines(2)
 
@@ -378,6 +384,9 @@ class ReportService:
             db_session.query(LendingModel), db_session.query(LogModel)
         ).all()
 
+        if not report_data:
+            return None
+
         self.worksheet.hide_gridlines(2)
 
         self.worksheet.write(
@@ -415,6 +424,9 @@ class ReportService:
             .union(db_session.query(UpgradeHistoricModel))
             .all()
         )
+
+        if not report_data:
+            return None
 
         self.worksheet.hide_gridlines(2)
 
