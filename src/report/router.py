@@ -82,7 +82,7 @@ def get_report_by_employee_route(
     if not file:
         db_session.close()
         return JSONResponse(
-            content={"message": "Sem informação"},
+            content=None,
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
@@ -150,7 +150,7 @@ def get_report_by_asset_route(
     if not file:
         db_session.close()
         return JSONResponse(
-            content={"message": "Sem informação"},
+            content=None,
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
@@ -218,7 +218,7 @@ def get_report_by_pattern_route(
     if not file:
         db_session.close()
         return JSONResponse(
-            content={"message": "Sem informação"},
+            content=None,
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
@@ -253,7 +253,7 @@ def get_report_by_maintenance_route(
     if not file:
         db_session.close()
         return JSONResponse(
-            content={"message": "Sem informação"},
+            content=None,
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
