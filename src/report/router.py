@@ -70,7 +70,7 @@ def get_report_by_employee_route(
     """Login user route"""
     if not authenticated_user:
         db_session.close()
-        return StreamingResponse(
+        return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     report_service = ReportService()
@@ -81,13 +81,14 @@ def get_report_by_employee_route(
 
     if not file:
         db_session.close()
-        return StreamingResponse(
+        return JSONResponse(
             content={"message": "Sem informação"},
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
     db_session.close()
     headers = {
+        "Access-Control-Expose-Headers": "Content-Disposition",
         "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
     }
     return StreamingResponse(
@@ -137,10 +138,10 @@ def get_report_by_asset_route(
     """Login user route"""
     if not authenticated_user:
         db_session.close()
-        return StreamingResponse(
+        return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    report_service = ReportService()
+    report_service = ReportService("CONSULTA POR EQUIPAMENTO")
     file = report_service.report_by_asset(
         report_filters,
         db_session,
@@ -148,13 +149,14 @@ def get_report_by_asset_route(
 
     if not file:
         db_session.close()
-        return StreamingResponse(
+        return JSONResponse(
             content={"message": "Sem informação"},
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
     db_session.close()
     headers = {
+        "Access-Control-Expose-Headers": "Content-Disposition",
         "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
     }
     return StreamingResponse(
@@ -204,10 +206,10 @@ def get_report_by_pattern_route(
     """Login user route"""
     if not authenticated_user:
         db_session.close()
-        return StreamingResponse(
+        return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    report_service = ReportService()
+    report_service = ReportService("CONSULTA POR PADRÃO DE EQUIPAMENTO")
     file = report_service.report_by_asset_pattern(
         report_filters,
         db_session,
@@ -215,13 +217,14 @@ def get_report_by_pattern_route(
 
     if not file:
         db_session.close()
-        return StreamingResponse(
+        return JSONResponse(
             content={"message": "Sem informação"},
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
     db_session.close()
     headers = {
+        "Access-Control-Expose-Headers": "Content-Disposition",
         "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
     }
     return StreamingResponse(
@@ -241,21 +244,22 @@ def get_report_by_maintenance_route(
     """Login user route"""
     if not authenticated_user:
         db_session.close()
-        return StreamingResponse(
+        return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    report_service = ReportService()
+    report_service = ReportService("CONSULTA POR MANUTENÇÃO")
     file = report_service.report_by_maintenance(db_session)
 
     if not file:
         db_session.close()
-        return StreamingResponse(
+        return JSONResponse(
             content={"message": "Sem informação"},
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
     db_session.close()
     headers = {
+        "Access-Control-Expose-Headers": "Content-Disposition",
         "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
     }
     return StreamingResponse(

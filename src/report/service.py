@@ -127,8 +127,9 @@ class ReportService:
             "assurance_date": (
                 asset.assurance_date if asset.assurance_date else self.NOT_PROVIDED
             ),
-            "value": "%.2f".format(asset.value),
+            "value": f"{asset.value:.2f}",
             "depreciation": asset.depreciation,
+            "attachments": "-",
             "status": asset.status.name if asset.status else self.NOT_PROVIDED,
         }
 
