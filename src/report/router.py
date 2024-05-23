@@ -209,7 +209,7 @@ def get_report_by_pattern_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    report_service = ReportService("CONSULTA POR PADRÃO DE EQUIPAMENTO")
+    report_service = ReportService("CONSULTA PADRÃO DE EQUIPAMENTO")
     file = report_service.report_by_asset_pattern(
         report_filters,
         db_session,

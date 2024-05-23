@@ -35,7 +35,9 @@ class ReportService:
         ("C5", "COLABORADOR"),
         ("D5", "CARGO"),
         ("E5", "PROJETO"),
+        ("E5", "BU"),
         ("F5", "CENTRO DE CUSTO"),
+        ("F5", "CENTRO DE CUSTO (código)"),
         ("G5", "GESTOR"),
         ("H5", "EXECUTIVO"),
         ("I5", "LOCAL DE TRABALHO"),
@@ -67,6 +69,7 @@ class ReportService:
         ("F5", "COLABORADOR"),
         ("G5", "PADRÃO EQUIPAMENTO"),
         ("H5", "CENTRO DE CUSTO"),
+        ("H5", "CENTRO DE CUSTO (código)"),
         ("I5", "DESCRIÇÃO DO EQUIPAMENTO"),
         ("J5", "PATRIMÔNIO"),
         ("K5", "TIPO DE CONTRATO"),
@@ -102,7 +105,13 @@ class ReportService:
             "employee": lending.employee.full_name,
             "role": lending.employee.role.name,
             "project": lending.project,
-            "cost_center": lending.cost_center.name,
+            "bu": lending.bu,
+            "cost_center": (
+                lending.cost_center.name if lending.cost_center else self.NOT_PROVIDED
+            ),
+            "cost_center_code": (
+                lending.cost_center.code if lending.cost_center else self.NOT_PROVIDED
+            ),
             "manager": lending.manager,
             "executive": lending.business_executive,
             "workload": lending.workload.name,
@@ -139,9 +148,16 @@ class ReportService:
             "manager": lending.manager,
             "business_executive": lending.business_executive,
             "bu": lending.bu,
-            "colaborador": lending.employee.full_name,
+            "colaborador": (
+                lending.employee.full_name if lending.employee else self.NOT_PROVIDED
+            ),
             "pattern": asset.pattern if asset.pattern else self.NOT_PROVIDED,
-            "cost_center": lending.cost_center.name,
+            "cost_center": (
+                lending.cost_center.name if lending.cost_center else self.NOT_PROVIDED
+            ),
+            "cost_center_code": (
+                lending.cost_center.code if lending.cost_center else self.NOT_PROVIDED
+            ),
             "description": asset.description,
             "register_number": asset.register_number,
             "type": asset.type.name if asset.type else self.NOT_PROVIDED,
@@ -392,7 +408,7 @@ class ReportService:
 
         self.worksheet.write(
             "C3",
-            "CONSULTA POR PADRÃO DE EQUIPAMENTO",
+            "CONSULTA PADRÃO DE EQUIPAMENTO",
             self.__format_cell_title(self.workbook.add_format()),
         )
 
