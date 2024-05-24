@@ -1,17 +1,20 @@
 """Report filters"""
 
+import logging
 from typing import List, Optional, Union
 
 from fastapi_filter.contrib.sqlalchemy import Filter
 from sqlalchemy import Select
 from sqlalchemy.orm import Query
-from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import and_, or_
 
 from src.asset.models import AssetModel
 from src.datasync.models import CostCenterTOTVSModel
 from src.lending.models import LendingModel, LendingStatusModel, WorkloadModel
 from src.log.models import LogModel
 from src.people.models import EmployeeModel
+
+logger = logging.getLogger(__name__)
 
 
 class LendingReportFilter(Filter):
@@ -50,44 +53,55 @@ class LendingReportFilter(Filter):
             .join(EmployeeModel)
             .join(WorkloadModel)
             .filter(
-                LendingModel.deleted.is_(False),
-                or_(
-                    LendingModel.id.in_([lending.id for lending in previous_lending]),
+                and_(
+                    or_(
+                        LendingModel.id.in_(
+                            [lending.id for lending in previous_lending]
+                        ),
+                        LendingModel.created_at.between(self.start_date, self.end_date),
+                    ),
+                    LendingModel.deleted.is_(False),
                 ),
             )
         )
 
         if self.employees_ids:
             employees_ids_list = (
-                self.employees_ids.split(",")
-                if self.employees_ids.find(",")
-                else [self.employees_ids]
+                [int(str_id) for str_id in self.employees_ids.split(",")]
+                if "," in str(self.employees_ids)
+                else [int(self.employees_ids)]
             )
             query = query.filter(EmployeeModel.id.in_(employees_ids_list))
 
         if self.bus:
-            bus_list = self.bus.split(",") if self.bus.find(",") else [self.bus]
+            bus_list = (
+                [int(str_id) for str_id in self.bus.split(",")]
+                if "," in str(self.bus)
+                else [int(self.bus)]
+            )
             query = query.filter(LendingModel.bu.in_(bus_list))
 
         if self.roles_ids:
             roles_ids_list = (
-                self.roles_ids.split(",")
-                if self.roles_ids.find(",")
-                else [self.roles_ids]
+                [int(str_id) for str_id in self.roles_ids.split(",")]
+                if "," in str(self.roles_ids)
+                else [int(self.roles_ids)]
             )
             query = query.filter(EmployeeModel.role.in_(roles_ids_list))
 
         if self.projects:
             projects_list = (
-                self.projects.split(",") if self.projects.find(",") else [self.projects]
+                [int(str_id) for str_id in self.projects.split(",")]
+                if "," in str(self.projects)
+                else [int(self.projects)]
             )
             query = query.filter(LendingModel.project.in_(projects_list))
 
         if self.business_executive:
             business_executive_list = (
-                self.business_executive.split(",")
-                if self.business_executive.find(",")
-                else [self.business_executive]
+                [int(str_id) for str_id in self.business_executive.split(",")]
+                if "," in str(self.business_executive)
+                else [int(self.business_executive)]
             )
             query = query.filter(
                 LendingModel.business_executive.in_(business_executive_list)
@@ -95,31 +109,33 @@ class LendingReportFilter(Filter):
 
         if self.workloads_ids:
             workloads_ids_list = (
-                self.workloads_ids.split(",")
-                if self.workloads_ids.find(",")
-                else [self.workloads_ids]
+                [int(str_id) for str_id in self.workloads_ids.split(",")]
+                if "," in str(self.workloads_ids)
+                else [int(self.workloads_ids)]
             )
             query = query.filter(WorkloadModel.id.in_(workloads_ids_list))
 
         if self.register_number:
             register_number_list = (
-                self.register_number.split(",")
-                if self.register_number.find(",")
-                else [self.register_number]
+                [int(str_id) for str_id in self.register_number.split(",")]
+                if "," in str(self.register_number)
+                else [int(self.register_number)]
             )
             query = query.filter(AssetModel.register_number.in_(register_number_list))
 
         if self.patterns:
             patterns_list = (
-                self.patterns.split(",") if self.patterns.find(",") else [self.patterns]
+                [int(str_id) for str_id in self.patterns.split(",")]
+                if "," in str(self.patterns)
+                else [int(self.patterns)]
             )
             query = query.filter(AssetModel.pattern.in_(patterns_list))
 
         if self.status_ids:
             asset_status_ids_list = (
-                self.status_ids.split(",")
-                if self.status_ids.find(",")
-                else [self.status_ids]
+                [int(str_id) for str_id in self.status_ids.split(",")]
+                if "," in str(self.status_ids)
+                else [int(self.status_ids)]
             )
             query = query.filter(LendingStatusModel.id.in_(asset_status_ids_list))
 
@@ -154,9 +170,12 @@ class AssetReportFilter(Filter):
         ).all()
 
         query = query_lending.join(AssetModel).filter(
-            LendingModel.deleted.is_(False),
-            or_(
-                LendingModel.id.in_([lending.id for lending in previous_lending]),
+            and_(
+                or_(
+                    LendingModel.id.in_([lending.id for lending in previous_lending]),
+                    LendingModel.created_at.between(self.start_date, self.end_date),
+                ),
+                LendingModel.deleted.is_(False),
             ),
         )
 
@@ -239,10 +258,15 @@ class AssetPatternFilter(Filter):
             .join(CostCenterTOTVSModel)
             .join(LendingStatusModel)
             .filter(
-                LendingModel.deleted.is_(False),
-                LendingStatusModel.id == 2,  # active status
-                or_(
-                    LendingModel.id.in_([lending.id for lending in previous_lending]),
+                and_(
+                    or_(
+                        LendingModel.id.in_(
+                            [lending.id for lending in previous_lending]
+                        ),
+                        LendingModel.created_at.between(self.start_date, self.end_date),
+                    ),
+                    LendingModel.deleted.is_(False),
+                    LendingStatusModel.id == 2,  # active status
                 ),
             )
         )
