@@ -181,39 +181,41 @@ class AssetReportFilter(Filter):
 
         if self.register_numbers:
             register_numbers_list = (
-                self.register_numbers.split(",")
-                if self.register_numbers.find(",")
-                else [self.register_numbers]
+                [int(str_id) for str_id in self.register_numbers.split(",")]
+                if "," in str(self.register_numbers)
+                else [int(self.register_numbers)]
             )
             query = query.filter(AssetModel.register_number.in_(register_numbers_list))
 
         if self.serial_numbers:
             serial_numbers_list = (
-                self.serial_numbers.split(",")
-                if self.serial_numbers.find(",")
-                else [self.serial_numbers]
+                [int(str_id) for str_id in self.serial_numbers.split(",")]
+                if "," in str(self.serial_numbers)
+                else [int(self.serial_numbers)]
             )
             query = query.filter(AssetModel.serial_number.in_(serial_numbers_list))
 
         if self.patterns:
             patterns_list = (
-                self.patterns.split(",") if self.patterns.find(",") else [self.patterns]
+                [int(str_id) for str_id in self.patterns.split(",")]
+                if "," in str(self.patterns)
+                else [int(self.patterns)]
             )
             query = query.filter(AssetModel.pattern.in_(patterns_list))
 
         if self.locations:
             locations_list = (
-                self.locations.split(",")
-                if self.locations.find(",")
-                else [self.locations]
+                [int(str_id) for str_id in self.locations.split(",")]
+                if "," in str(self.locations)
+                else [int(self.locations)]
             )
             query = query.filter(LendingModel.location.in_(locations_list))
 
         if self.status_ids:
             asset_status_ids_list = (
-                self.status_ids.split(",")
-                if self.status_ids.find(",")
-                else [self.status_ids]
+                [int(str_id) for str_id in self.status_ids.split(",")]
+                if "," in str(self.status_ids)
+                else [int(self.status_ids)]
             )
             query = query.filter(AssetModel.status_id.in_(asset_status_ids_list))
 
@@ -273,45 +275,51 @@ class AssetPatternFilter(Filter):
 
         if self.managers:
             managers_list = (
-                self.managers.split(",") if self.managers.find(",") else [self.managers]
+                [int(str_id) for str_id in self.managers.split(",")]
+                if "," in str(self.managers)
+                else [int(self.managers)]
             )
             query = query.filter(LendingModel.manager.in_(managers_list))
 
         if self.business_executives:
             business_executives_list = (
-                self.business_executives.split(",")
-                if self.business_executives.find(",")
-                else [self.business_executives]
+                [int(str_id) for str_id in self.business_executives.split(",")]
+                if "," in str(self.business_executives)
+                else [int(self.business_executives)]
             )
             query = query.filter(
                 LendingModel.business_executive.in_(business_executives_list)
             )
 
         if self.bus:
-            bus_list = self.bus.split(",") if self.bus.find(",") else [self.bus]
+            bus_list = (
+                [int(str_id) for str_id in self.bus.split(",")]
+                if "," in str(self.bus)
+                else [int(self.bus)]
+            )
             query = query.filter(LendingModel.bu.in_(bus_list))
 
         if self.employees_ids:
             employees_ids_list = (
-                self.employees_ids.split(",")
-                if self.employees_ids.find(",")
-                else [self.employees_ids]
+                [int(str_id) for str_id in self.employees_ids.split(",")]
+                if "," in str(self.employees_ids)
+                else [int(self.employees_ids)]
             )
             query = query.filter(EmployeeModel.id.in_(employees_ids_list))
 
         if self.cost_center_ids:
             cost_center_ids_list = (
-                self.cost_center_ids.split(",")
-                if self.cost_center_ids.find(",")
-                else [self.cost_center_ids]
+                [int(str_id) for str_id in self.cost_center_ids.split(",")]
+                if "," in str(self.cost_center_ids)
+                else [int(self.cost_center_ids)]
             )
             query = query.filter(CostCenterTOTVSModel.id.in_(cost_center_ids_list))
 
         if self.asset_type_ids:
             asset_type_ids_list = (
-                self.asset_type_ids.split(",")
-                if self.asset_type_ids.find(",")
-                else [self.asset_type_ids]
+                [int(str_id) for str_id in self.asset_type_ids.split(",")]
+                if "," in str(self.asset_type_ids)
+                else [int(self.asset_type_ids)]
             )
             query = query.filter(AssetModel.type_id.in_(asset_type_ids_list))
 
