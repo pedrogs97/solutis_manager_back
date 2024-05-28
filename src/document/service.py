@@ -558,7 +558,9 @@ class DocumentService:
                         if employee.employer_address
                         else employee.address
                     ),
-                    object=employee.employer_contract_object,
+                    object=employee.employer_contract_object
+                    if employee.employer_contract_object
+                    else "",
                     company=employee.employer_name,
                     project=current_lending.project,
                     location=current_lending.location,

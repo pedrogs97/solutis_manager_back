@@ -474,14 +474,19 @@ class EmployeeService:
         ).order_by(desc(EmployeeModel.id))
 
         if ids != "":
-            list_ids = (
-                [int(str_id) for str_id in ids.split(",")] if "," in ids else [int(ids)]
-            )
-            employee_list = (
-                db_session.query(EmployeeModel)
-                .filter(EmployeeModel.id.in_(list_ids))
-                .union(employee_list)
-            )
+            try:
+                list_ids = (
+                    [int(str_id) for str_id in ids.split(",")]
+                    if "," in ids
+                    else [int(ids)]
+                )
+                employee_list = (
+                    db_session.query(EmployeeModel)
+                    .filter(EmployeeModel.id.in_(list_ids))
+                    .union(employee_list)
+                )
+            except ValueError:
+                logger.warning("Invalid ids. %s", ids)
 
         if fields == "":
             params = Params(page=page, size=size)

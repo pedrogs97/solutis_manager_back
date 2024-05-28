@@ -64,81 +64,84 @@ class LendingReportFilter(Filter):
                 ),
             )
         )
+        try:
+            if self.employees_ids:
+                employees_ids_list = (
+                    [int(str_id) for str_id in self.employees_ids.split(",")]
+                    if "," in str(self.employees_ids)
+                    else [int(self.employees_ids)]
+                )
+                query = query.filter(EmployeeModel.id.in_(employees_ids_list))
 
-        if self.employees_ids:
-            employees_ids_list = (
-                [int(str_id) for str_id in self.employees_ids.split(",")]
-                if "," in str(self.employees_ids)
-                else [int(self.employees_ids)]
-            )
-            query = query.filter(EmployeeModel.id.in_(employees_ids_list))
+            if self.bus:
+                bus_list = (
+                    [int(str_id) for str_id in self.bus.split(",")]
+                    if "," in str(self.bus)
+                    else [self.bus]
+                )
+                query = query.filter(LendingModel.bu.in_(bus_list))
 
-        if self.bus:
-            bus_list = (
-                [int(str_id) for str_id in self.bus.split(",")]
-                if "," in str(self.bus)
-                else [self.bus]
-            )
-            query = query.filter(LendingModel.bu.in_(bus_list))
+            if self.roles_ids:
+                roles_ids_list = (
+                    [int(str_id) for str_id in self.roles_ids.split(",")]
+                    if "," in str(self.roles_ids)
+                    else [int(self.roles_ids)]
+                )
+                query = query.filter(EmployeeModel.role.in_(roles_ids_list))
 
-        if self.roles_ids:
-            roles_ids_list = (
-                [int(str_id) for str_id in self.roles_ids.split(",")]
-                if "," in str(self.roles_ids)
-                else [int(self.roles_ids)]
-            )
-            query = query.filter(EmployeeModel.role.in_(roles_ids_list))
+            if self.projects:
+                projects_list = (
+                    [int(str_id) for str_id in self.projects.split(",")]
+                    if "," in str(self.projects)
+                    else [self.projects]
+                )
+                query = query.filter(LendingModel.project.in_(projects_list))
 
-        if self.projects:
-            projects_list = (
-                [int(str_id) for str_id in self.projects.split(",")]
-                if "," in str(self.projects)
-                else [self.projects]
-            )
-            query = query.filter(LendingModel.project.in_(projects_list))
+            if self.business_executive:
+                business_executive_list = (
+                    [int(str_id) for str_id in self.business_executive.split(",")]
+                    if "," in str(self.business_executive)
+                    else [self.business_executive]
+                )
+                query = query.filter(
+                    LendingModel.business_executive.in_(business_executive_list)
+                )
 
-        if self.business_executive:
-            business_executive_list = (
-                [int(str_id) for str_id in self.business_executive.split(",")]
-                if "," in str(self.business_executive)
-                else [self.business_executive]
-            )
-            query = query.filter(
-                LendingModel.business_executive.in_(business_executive_list)
-            )
+            if self.workloads_ids:
+                workloads_ids_list = (
+                    [int(str_id) for str_id in self.workloads_ids.split(",")]
+                    if "," in str(self.workloads_ids)
+                    else [int(self.workloads_ids)]
+                )
+                query = query.filter(WorkloadModel.id.in_(workloads_ids_list))
 
-        if self.workloads_ids:
-            workloads_ids_list = (
-                [int(str_id) for str_id in self.workloads_ids.split(",")]
-                if "," in str(self.workloads_ids)
-                else [int(self.workloads_ids)]
-            )
-            query = query.filter(WorkloadModel.id.in_(workloads_ids_list))
+            if self.register_number:
+                register_number_list = (
+                    [int(str_id) for str_id in self.register_number.split(",")]
+                    if "," in str(self.register_number)
+                    else [self.register_number]
+                )
+                query = query.filter(
+                    AssetModel.register_number.in_(register_number_list)
+                )
 
-        if self.register_number:
-            register_number_list = (
-                [int(str_id) for str_id in self.register_number.split(",")]
-                if "," in str(self.register_number)
-                else [self.register_number]
-            )
-            query = query.filter(AssetModel.register_number.in_(register_number_list))
+            if self.patterns:
+                patterns_list = (
+                    [int(str_id) for str_id in self.patterns.split(",")]
+                    if "," in str(self.patterns)
+                    else [self.patterns]
+                )
+                query = query.filter(AssetModel.pattern.in_(patterns_list))
 
-        if self.patterns:
-            patterns_list = (
-                [int(str_id) for str_id in self.patterns.split(",")]
-                if "," in str(self.patterns)
-                else [self.patterns]
-            )
-            query = query.filter(AssetModel.pattern.in_(patterns_list))
-
-        if self.status_ids:
-            asset_status_ids_list = (
-                [int(str_id) for str_id in self.status_ids.split(",")]
-                if "," in str(self.status_ids)
-                else [int(self.status_ids)]
-            )
-            query = query.filter(LendingStatusModel.id.in_(asset_status_ids_list))
-
+            if self.status_ids:
+                asset_status_ids_list = (
+                    [int(str_id) for str_id in self.status_ids.split(",")]
+                    if "," in str(self.status_ids)
+                    else [int(self.status_ids)]
+                )
+                query = query.filter(LendingStatusModel.id.in_(asset_status_ids_list))
+        except ValueError as e:
+            logger.warning("Error filtering query: %s", e)
         return query
 
 
@@ -178,52 +181,56 @@ class AssetReportFilter(Filter):
                 LendingModel.deleted.is_(False),
             ),
         )
+        try:
+            if self.register_numbers:
+                register_numbers_list = (
+                    [int(str_id) for str_id in self.register_numbers.split(",")]
+                    if "," in str(self.register_numbers)
+                    else [self.register_numbers]
+                )
+                query = query.filter(
+                    AssetModel.register_number.in_(register_numbers_list)
+                )
 
-        if self.register_numbers:
-            register_numbers_list = (
-                [int(str_id) for str_id in self.register_numbers.split(",")]
-                if "," in str(self.register_numbers)
-                else [self.register_numbers]
-            )
-            query = query.filter(AssetModel.register_number.in_(register_numbers_list))
+            if self.serial_numbers:
+                serial_numbers_list = (
+                    [int(str_id) for str_id in self.serial_numbers.split(",")]
+                    if "," in str(self.serial_numbers)
+                    else [self.serial_numbers]
+                )
+                query = query.filter(AssetModel.serial_number.in_(serial_numbers_list))
 
-        if self.serial_numbers:
-            serial_numbers_list = (
-                [int(str_id) for str_id in self.serial_numbers.split(",")]
-                if "," in str(self.serial_numbers)
-                else [self.serial_numbers]
-            )
-            query = query.filter(AssetModel.serial_number.in_(serial_numbers_list))
+            if self.patterns:
+                patterns_list = (
+                    [int(str_id) for str_id in self.patterns.split(",")]
+                    if "," in str(self.patterns)
+                    else [self.patterns]
+                )
+                query = query.filter(AssetModel.pattern.in_(patterns_list))
 
-        if self.patterns:
-            patterns_list = (
-                [int(str_id) for str_id in self.patterns.split(",")]
-                if "," in str(self.patterns)
-                else [self.patterns]
-            )
-            query = query.filter(AssetModel.pattern.in_(patterns_list))
+            if self.locations:
+                locations_list = (
+                    [int(str_id) for str_id in self.locations.split(",")]
+                    if "," in str(self.locations)
+                    else [self.locations]
+                )
+                query = query.filter(LendingModel.location.in_(locations_list))
 
-        if self.locations:
-            locations_list = (
-                [int(str_id) for str_id in self.locations.split(",")]
-                if "," in str(self.locations)
-                else [self.locations]
-            )
-            query = query.filter(LendingModel.location.in_(locations_list))
+            if self.status_ids:
+                asset_status_ids_list = (
+                    [int(str_id) for str_id in self.status_ids.split(",")]
+                    if "," in str(self.status_ids)
+                    else [int(self.status_ids)]
+                )
+                query = query.filter(AssetModel.status_id.in_(asset_status_ids_list))
 
-        if self.status_ids:
-            asset_status_ids_list = (
-                [int(str_id) for str_id in self.status_ids.split(",")]
-                if "," in str(self.status_ids)
-                else [int(self.status_ids)]
-            )
-            query = query.filter(AssetModel.status_id.in_(asset_status_ids_list))
-
-        if self.assurance is not None:
-            if self.assurance:
-                query = query.filter(AssetModel.assurance_date.is_not(None))
-            else:
-                query = query.filter(AssetModel.assurance_date.is_(None))
+            if self.assurance is not None:
+                if self.assurance:
+                    query = query.filter(AssetModel.assurance_date.is_not(None))
+                else:
+                    query = query.filter(AssetModel.assurance_date.is_(None))
+        except ValueError as e:
+            logger.warning("Error filtering query: %s", e)
 
         return query
 
@@ -273,54 +280,57 @@ class AssetPatternFilter(Filter):
             )
         )
 
-        if self.managers:
-            managers_list = (
-                [int(str_id) for str_id in self.managers.split(",")]
-                if "," in str(self.managers)
-                else [self.managers]
-            )
-            query = query.filter(LendingModel.manager.in_(managers_list))
+        try:
+            if self.managers:
+                managers_list = (
+                    [int(str_id) for str_id in self.managers.split(",")]
+                    if "," in str(self.managers)
+                    else [self.managers]
+                )
+                query = query.filter(LendingModel.manager.in_(managers_list))
 
-        if self.business_executives:
-            business_executives_list = (
-                [int(str_id) for str_id in self.business_executives.split(",")]
-                if "," in str(self.business_executives)
-                else [self.business_executives]
-            )
-            query = query.filter(
-                LendingModel.business_executive.in_(business_executives_list)
-            )
+            if self.business_executives:
+                business_executives_list = (
+                    [int(str_id) for str_id in self.business_executives.split(",")]
+                    if "," in str(self.business_executives)
+                    else [self.business_executives]
+                )
+                query = query.filter(
+                    LendingModel.business_executive.in_(business_executives_list)
+                )
 
-        if self.bus:
-            bus_list = (
-                [int(str_id) for str_id in self.bus.split(",")]
-                if "," in str(self.bus)
-                else [self.bus]
-            )
-            query = query.filter(LendingModel.bu.in_(bus_list))
+            if self.bus:
+                bus_list = (
+                    [int(str_id) for str_id in self.bus.split(",")]
+                    if "," in str(self.bus)
+                    else [self.bus]
+                )
+                query = query.filter(LendingModel.bu.in_(bus_list))
 
-        if self.employees_ids:
-            employees_ids_list = (
-                [int(str_id) for str_id in self.employees_ids.split(",")]
-                if "," in str(self.employees_ids)
-                else [int(self.employees_ids)]
-            )
-            query = query.filter(EmployeeModel.id.in_(employees_ids_list))
+            if self.employees_ids:
+                employees_ids_list = (
+                    [int(str_id) for str_id in self.employees_ids.split(",")]
+                    if "," in str(self.employees_ids)
+                    else [int(self.employees_ids)]
+                )
+                query = query.filter(EmployeeModel.id.in_(employees_ids_list))
 
-        if self.cost_center_ids:
-            cost_center_ids_list = (
-                [int(str_id) for str_id in self.cost_center_ids.split(",")]
-                if "," in str(self.cost_center_ids)
-                else [int(self.cost_center_ids)]
-            )
-            query = query.filter(CostCenterTOTVSModel.id.in_(cost_center_ids_list))
+            if self.cost_center_ids:
+                cost_center_ids_list = (
+                    [int(str_id) for str_id in self.cost_center_ids.split(",")]
+                    if "," in str(self.cost_center_ids)
+                    else [int(self.cost_center_ids)]
+                )
+                query = query.filter(CostCenterTOTVSModel.id.in_(cost_center_ids_list))
 
-        if self.asset_types:
-            asset_type_ids_list = (
-                [int(str_id) for str_id in self.asset_types.split(",")]
-                if "," in str(self.asset_types)
-                else [int(self.asset_types)]
-            )
-            query = query.filter(AssetModel.type_id.in_(asset_type_ids_list))
+            if self.asset_types:
+                asset_type_ids_list = (
+                    [int(str_id) for str_id in self.asset_types.split(",")]
+                    if "," in str(self.asset_types)
+                    else [int(self.asset_types)]
+                )
+                query = query.filter(AssetModel.type_id.in_(asset_type_ids_list))
+        except ValueError as e:
+            logger.warning("Error filtering query: %s", e)
 
         return query
