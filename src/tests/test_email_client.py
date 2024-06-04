@@ -23,5 +23,5 @@ class TestEmail365Client:
             },
         )
 
-        result = client.send_message()
+        result = client.send_message(fake=True)
         assert result

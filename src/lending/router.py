@@ -3,7 +3,7 @@
 from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
@@ -54,12 +54,11 @@ def post_create_lending_route(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    serializer = lending_service.create_lending(data, db_session, authenticated_user)
+    new_doc = lending_service.create_lending(data, db_session, authenticated_user)
     db_session.close()
-    return JSONResponse(
-        content=serializer.model_dump(by_alias=True),
-        status_code=status.HTTP_201_CREATED,
-    )
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(new_doc.path, filename=new_doc.file_name, headers=headers)
 
 
 @lending_router.get("/")

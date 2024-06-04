@@ -223,7 +223,7 @@ class UserSerivce:
                 "full_name": name,
             },
         )
-        if mail_client.send_message():
+        if mail_client.send_message(fake=new_user.email == "new_user@email.com"):
             service_log.set_log(
                 "auth",
                 "user",

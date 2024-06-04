@@ -16,6 +16,8 @@ from src.asset.schemas import AssetShortSerializerSchema
 from src.auth.models import UserModel
 from src.config import DEFAULT_DATE_FORMAT
 from src.datasync.models import CostCenterTOTVSModel
+from src.document.schemas import NewLendingDocSchema
+from src.document.service import DocumentService
 from src.lending.filters import LendingFilter, WorkloadFilter
 from src.lending.models import (
     LendingModel,
@@ -332,54 +334,70 @@ class LendingService:
         authenticated_user: UserModel,
     ):
         """Creates new lending"""
+        try:
+            (
+                employee,
+                asset,
+                workload,
+                cost_center,
+                witnesses,
+            ) = self.__validate_nested(new_lending, db_session)
 
-        (
-            employee,
-            asset,
-            workload,
-            cost_center,
-            witnesses,
-        ) = self.__validate_nested(new_lending, db_session)
+            lending_pending = (
+                db_session.query(LendingStatusModel)
+                .filter(LendingStatusModel.name == "Arquivo pendente")
+                .first()
+            )
 
-        lending_pending = (
-            db_session.query(LendingStatusModel)
-            .filter(LendingStatusModel.name == "Arquivo pendente")
-            .first()
-        )
+            new_lending_db = LendingModel(
+                manager=new_lending.manager,
+                observations=new_lending.observations,
+                glpi_number=new_lending.glpi_number,
+                business_executive=new_lending.business_executive,
+                project=new_lending.project,
+                location=new_lending.location,
+                bu=new_lending.bu,
+                ms_office=new_lending.ms_office,
+            )
 
-        new_lending_db = LendingModel(
-            manager=new_lending.manager,
-            observations=new_lending.observations,
-            glpi_number=new_lending.glpi_number,
-            business_executive=new_lending.business_executive,
-            project=new_lending.project,
-            location=new_lending.location,
-            bu=new_lending.bu,
-            ms_office=new_lending.ms_office,
-        )
+            new_lending_db.employee = employee
+            new_lending_db.asset = asset
+            new_lending_db.workload = workload
+            new_lending_db.cost_center = cost_center
+            new_lending_db.status = lending_pending
 
-        new_lending_db.employee = employee
-        new_lending_db.asset = asset
-        new_lending_db.workload = workload
-        new_lending_db.cost_center = cost_center
-        new_lending_db.status = lending_pending
+            new_lending_db.witnesses = witnesses
+            db_session.add(new_lending_db)
+            db_session.commit()
+            db_session.flush()
 
-        new_lending_db.witnesses = witnesses
-        db_session.add(new_lending_db)
-        db_session.commit()
-        db_session.flush()
+            service_log.set_log(
+                "lending",
+                "lending",
+                "Criação de Comodato",
+                new_lending_db.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("New Lending. %s", str(new_lending_db))
 
-        service_log.set_log(
-            "lending",
-            "lending",
-            "Criação de Comodato",
-            new_lending_db.id,
-            authenticated_user,
-            db_session,
-        )
-        logger.info("New Lending. %s", str(new_lending_db))
-
-        return self.serialize_lending(new_lending_db)
+            return DocumentService().create_contract(
+                NewLendingDocSchema(
+                    lending_id=new_lending_db.id,
+                    legal_person=employee.legal_person,
+                ),
+                "Contrato de Comodato",
+                db_session,
+                authenticated_user,
+            )
+        except TypeError as e:
+            raise HTTPException(
+                detail={
+                    "field": "employeeId",
+                    "error": "Erro ao criar comodato. Contate o administrador do sistema.",
+                },
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            ) from e
 
     def get_lending(
         self, lending_id: int, db_session: Session

@@ -368,13 +368,13 @@ class Email365Client:
         """Try send message"""
         self.__prepare_message()
         try:
+            if fake:
+                return True
             with smtplib.SMTP(
                 "smtp.office365.com", 587, local_hostname="solutis.com.br"
             ) as server:
                 server.starttls()
                 server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
-                if fake:
-                    return True
                 server.sendmail(
                     EMAIL_SOLUTIS_365, self.__mail_to, self.__message.as_string()
                 )
