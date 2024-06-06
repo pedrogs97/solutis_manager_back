@@ -10,6 +10,7 @@ from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from pydantic import ValidationError
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -558,9 +559,11 @@ class DocumentService:
                         if employee.employer_address
                         else employee.address
                     ),
-                    object=employee.employer_contract_object
-                    if employee.employer_contract_object
-                    else "",
+                    object=(
+                        employee.employer_contract_object
+                        if employee.employer_contract_object
+                        else ""
+                    ),
                     company=employee.employer_name,
                     project=current_lending.project,
                     location=current_lending.location,
@@ -661,158 +664,167 @@ class DocumentService:
         authenticated_user: UserModel,
     ) -> DocumentSerializerSchema:
         """Recreate new contract, not signed"""
-        doc = self.__get_document_or_404(recreate_lending_doc.document_id, db_session)
-
-        current_lending = (
-            db_session.query(LendingModel)
-            .filter(LendingModel.id == recreate_lending_doc.lending_id)
-            .first()
-        )
-
-        workload = current_lending.workload
-
-        employee = current_lending.employee
-
-        witness1 = current_lending.witnesses[0]
-
-        witness2 = current_lending.witnesses[1]
-
-        detail = self.__get_contract_detail(
-            current_lending.asset,
-            current_lending.cost_center.code,
-            current_lending.ms_office,
-        )
-
-        code = current_lending.number
-
-        if employee.legal_person:
-            contract_path = create_lending_contract_pj(
-                NewLendingPjContextSchema(
-                    number=code,
-                    glpi_number=(
-                        current_lending.glpi_number
-                        if current_lending.glpi_number
-                        else ""
-                    ),
-                    full_name=employee.full_name,
-                    taxpayer_identification=employee.taxpayer_identification,
-                    national_identification=employee.national_identification,
-                    address=employee.address,
-                    nationality=employee.nationality.description,
-                    role=employee.role.name,
-                    marital_status=employee.marital_status.description,
-                    cc=current_lending.cost_center.code,
-                    manager=current_lending.manager,
-                    business_executive=current_lending.business_executive,
-                    workload=workload.name,
-                    detail=detail,
-                    date=date.today().strftime(DEFAULT_DATE_FORMAT),
-                    witnesses=[
-                        WitnessContextSchema(
-                            full_name=witness1.employee.full_name,
-                            taxpayer_identification=witness1.employee.taxpayer_identification,
-                        ),
-                        WitnessContextSchema(
-                            full_name=witness2.employee.full_name,
-                            taxpayer_identification=witness2.employee.taxpayer_identification,
-                        ),
-                    ],
-                    cnpj=employee.employer_number,
-                    company_address=(
-                        employee.employer_address
-                        if employee.employer_address
-                        else employee.address
-                    ),
-                    object=employee.employer_contract_object,
-                    company=employee.employer_name,
-                    project=current_lending.project,
-                    location=current_lending.location,
-                    contract_date=employee.employer_contract_date.strftime(
-                        DEFAULT_DATE_FORMAT
-                    ),
-                    bu=current_lending.bu,
-                )
-            )
-        else:
-            contract_path = create_lending_contract(
-                NewLendingContextSchema(
-                    number=code,
-                    glpi_number=(
-                        current_lending.glpi_number
-                        if current_lending.glpi_number
-                        else ""
-                    ),
-                    full_name=employee.full_name,
-                    taxpayer_identification=employee.taxpayer_identification,
-                    national_identification=employee.national_identification,
-                    address=employee.address,
-                    nationality=employee.nationality.description,
-                    role=employee.role.name,
-                    marital_status=employee.marital_status.description,
-                    cc=current_lending.cost_center.code,
-                    manager=current_lending.manager,
-                    business_executive=current_lending.business_executive,
-                    workload=workload.name,
-                    detail=detail,
-                    date=date.today().strftime(DEFAULT_DATE_FORMAT),
-                    witnesses=[
-                        WitnessContextSchema(
-                            full_name=witness1.employee.full_name,
-                            taxpayer_identification=witness1.employee.taxpayer_identification,
-                        ),
-                        WitnessContextSchema(
-                            full_name=witness2.employee.full_name,
-                            taxpayer_identification=witness2.employee.taxpayer_identification,
-                        ),
-                    ],
-                    cnpj=employee.employer_number,
-                    company_address=employee.employer_address,
-                    company=employee.employer_name,
-                    project=current_lending.project,
-                    location=current_lending.location,
-                    bu=current_lending.bu,
-                )
+        try:
+            doc = self.__get_document_or_404(
+                recreate_lending_doc.document_id, db_session
             )
 
-        new_doc = DocumentModel(path=contract_path, file_name=f"{code}.pdf")
+            current_lending = (
+                db_session.query(LendingModel)
+                .filter(LendingModel.id == recreate_lending_doc.lending_id)
+                .first()
+            )
 
-        new_doc.doc_type = doc.doc_type
+            workload = current_lending.workload
 
-        doc.deleted = True
-        db_session.add(doc)
-        db_session.commit()
+            employee = current_lending.employee
 
-        db_session.add(new_doc)
-        db_session.commit()
-        db_session.flush()
+            witness1 = current_lending.witnesses[0]
 
-        service_log.set_log(
-            "lending",
-            "document",
-            f"Reriação de {doc.doc_type}",
-            new_doc.id,
-            authenticated_user,
-            db_session,
-        )
-        logger.info("New Document. %s", str(new_doc))
+            witness2 = current_lending.witnesses[1]
 
-        current_lending.document = new_doc
+            detail = self.__get_contract_detail(
+                current_lending.asset,
+                current_lending.cost_center.code,
+                current_lending.ms_office,
+            )
 
-        db_session.add(current_lending)
-        db_session.commit()
-        db_session.flush()
+            code = current_lending.number
 
-        service_log.set_log(
-            "lending",
-            "lending",
-            "Nova vinculação de Contrato ao Comodato",
-            current_lending.id,
-            authenticated_user,
-            db_session,
-        )
-        logger.info("Recreate Document add to Lending. %s", str(current_lending))
+            if employee.legal_person:
+                contract_path = create_lending_contract_pj(
+                    NewLendingPjContextSchema(
+                        number=code,
+                        glpi_number=(
+                            current_lending.glpi_number
+                            if current_lending.glpi_number
+                            else ""
+                        ),
+                        full_name=employee.full_name,
+                        taxpayer_identification=employee.taxpayer_identification,
+                        national_identification=employee.national_identification,
+                        address=employee.address,
+                        nationality=employee.nationality.description,
+                        role=employee.role.name,
+                        marital_status=employee.marital_status.description,
+                        cc=current_lending.cost_center.code,
+                        manager=current_lending.manager,
+                        business_executive=current_lending.business_executive,
+                        workload=workload.name,
+                        detail=detail,
+                        date=date.today().strftime(DEFAULT_DATE_FORMAT),
+                        witnesses=[
+                            WitnessContextSchema(
+                                full_name=witness1.employee.full_name,
+                                taxpayer_identification=witness1.employee.taxpayer_identification,
+                            ),
+                            WitnessContextSchema(
+                                full_name=witness2.employee.full_name,
+                                taxpayer_identification=witness2.employee.taxpayer_identification,
+                            ),
+                        ],
+                        cnpj=employee.employer_number,
+                        company_address=(
+                            employee.employer_address
+                            if employee.employer_address
+                            else employee.address
+                        ),
+                        object=employee.employer_contract_object,
+                        company=employee.employer_name,
+                        project=current_lending.project,
+                        location=current_lending.location,
+                        contract_date=employee.employer_contract_date.strftime(
+                            DEFAULT_DATE_FORMAT
+                        ),
+                        bu=current_lending.bu,
+                    )
+                )
+            else:
+                contract_path = create_lending_contract(
+                    NewLendingContextSchema(
+                        number=code,
+                        glpi_number=(
+                            current_lending.glpi_number
+                            if current_lending.glpi_number
+                            else ""
+                        ),
+                        full_name=employee.full_name,
+                        taxpayer_identification=employee.taxpayer_identification,
+                        national_identification=employee.national_identification,
+                        address=employee.address,
+                        nationality=employee.nationality.description,
+                        role=employee.role.name,
+                        marital_status=employee.marital_status.description,
+                        cc=current_lending.cost_center.code,
+                        manager=current_lending.manager,
+                        business_executive=current_lending.business_executive,
+                        workload=workload.name,
+                        detail=detail,
+                        date=date.today().strftime(DEFAULT_DATE_FORMAT),
+                        witnesses=[
+                            WitnessContextSchema(
+                                full_name=witness1.employee.full_name,
+                                taxpayer_identification=witness1.employee.taxpayer_identification,
+                            ),
+                            WitnessContextSchema(
+                                full_name=witness2.employee.full_name,
+                                taxpayer_identification=witness2.employee.taxpayer_identification,
+                            ),
+                        ],
+                        cnpj=employee.employer_number,
+                        company_address=employee.employer_address,
+                        company=employee.employer_name,
+                        project=current_lending.project,
+                        location=current_lending.location,
+                        bu=current_lending.bu,
+                    )
+                )
 
-        return self.serialize_document(new_doc)
+            new_doc = DocumentModel(path=contract_path, file_name=f"{code}.pdf")
+
+            new_doc.doc_type = doc.doc_type
+
+            doc.deleted = True
+            db_session.add(doc)
+            db_session.commit()
+
+            db_session.add(new_doc)
+            db_session.commit()
+            db_session.flush()
+
+            service_log.set_log(
+                "lending",
+                "document",
+                f"Reriação de {doc.doc_type}",
+                new_doc.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("New Document. %s", str(new_doc))
+
+            current_lending.document = new_doc
+
+            db_session.add(current_lending)
+            db_session.commit()
+            db_session.flush()
+
+            service_log.set_log(
+                "lending",
+                "lending",
+                "Nova vinculação de Contrato ao Comodato",
+                current_lending.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("Recreate Document add to Lending. %s", str(current_lending))
+
+            return self.serialize_document(new_doc)
+        except ValidationError as error:
+            db_session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error.errors(),
+            ) from error
 
     def create_revoke_contract(
         self,
@@ -1658,61 +1670,68 @@ class DocumentService:
         self, lendind_id: int, db_session: Session, authenticated_user: UserModel
     ):
         """Get a verification document"""
-        lending = self.__get_lending_or_404(lendind_id, db_session)
-        lending_verification_answers = (
-            db_session.query(VerificationAnswerModel)
-            .join(LendingModel)
-            .filter(LendingModel.id == lending.id)
-            .all()
-        )
-        verifications_context = []
-        for answer in lending_verification_answers:
-            verification = answer.verification
-            options = []
-            for option in verification.options:
-                options.append(
+        try:
+            lending = self.__get_lending_or_404(lendind_id, db_session)
+            lending_verification_answers = (
+                db_session.query(VerificationAnswerModel)
+                .join(LendingModel)
+                .filter(LendingModel.id == lending.id)
+                .all()
+            )
+            verifications_context = []
+            for answer in lending_verification_answers:
+                verification = answer.verification
+                options = []
+                for option in verification.options:
+                    options.append(
+                        {
+                            "option": option.name,
+                            "checked": option.name == answer.answer,
+                            "id": option.id,
+                        }
+                    )
+
+                verifications_context.append(
                     {
-                        "option": option.name,
-                        "checked": option.name == answer.answer,
-                        "id": option.id,
+                        "question": verification.question,
+                        "options": options,
                     }
                 )
-
-            verifications_context.append(
-                {
-                    "question": verification.question,
-                    "options": options,
-                }
+            context = {
+                "verifications": verifications_context,
+                "number": lending.number,
+            }
+            verification_document_path = create_verification_document(
+                VerificationContextSchema(**context)
             )
-        context = {
-            "verifications": verifications_context,
-            "number": lending.number,
-        }
-        verification_document_path = create_verification_document(
-            VerificationContextSchema(**context)
-        )
-        new_doc = DocumentModel(
-            path=verification_document_path,
-            file_name=f"{lending.number} - verificação.pdf",
-        )
-        doc_type = (
-            db_session.query(DocumentTypeModel)
-            .filter(DocumentTypeModel.name == "Verificação")
-            .first()
-        )
-        new_doc.doc_type = doc_type
+            new_doc = DocumentModel(
+                path=verification_document_path,
+                file_name=f"{lending.number} - verificação.pdf",
+            )
+            doc_type = (
+                db_session.query(DocumentTypeModel)
+                .filter(DocumentTypeModel.name == "Verificação")
+                .first()
+            )
+            new_doc.doc_type = doc_type
 
-        db_session.add(new_doc)
-        db_session.commit()
-        db_session.flush()
+            db_session.add(new_doc)
+            db_session.commit()
+            db_session.flush()
 
-        service_log.set_log(
-            "lending",
-            "document",
-            f"Criação de {doc_type}",
-            new_doc.id,
-            authenticated_user,
-            db_session,
-        )
-        logger.info("New Document. %s", str(new_doc))
-        return new_doc
+            service_log.set_log(
+                "lending",
+                "document",
+                f"Criação de {doc_type}",
+                new_doc.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("New Document. %s", str(new_doc))
+            return new_doc
+        except ValidationError as error:
+            logger.error("Error download verification document %s", error)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"field": "lendingId", "message": "Comodato sem número"},
+            ) from error

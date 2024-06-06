@@ -332,54 +332,69 @@ class LendingService:
         authenticated_user: UserModel,
     ):
         """Creates new lending"""
+        try:
+            (
+                employee,
+                asset,
+                workload,
+                cost_center,
+                witnesses,
+            ) = self.__validate_nested(new_lending, db_session)
 
-        (
-            employee,
-            asset,
-            workload,
-            cost_center,
-            witnesses,
-        ) = self.__validate_nested(new_lending, db_session)
+            lending_pending = (
+                db_session.query(LendingStatusModel)
+                .filter(LendingStatusModel.name == "Arquivo pendente")
+                .first()
+            )
 
-        lending_pending = (
-            db_session.query(LendingStatusModel)
-            .filter(LendingStatusModel.name == "Arquivo pendente")
-            .first()
-        )
+            new_lending_db = LendingModel(
+                manager=new_lending.manager,
+                observations=new_lending.observations,
+                glpi_number=new_lending.glpi_number,
+                business_executive=new_lending.business_executive,
+                project=new_lending.project,
+                location=new_lending.location,
+                bu=new_lending.bu,
+                ms_office=new_lending.ms_office,
+            )
 
-        new_lending_db = LendingModel(
-            manager=new_lending.manager,
-            observations=new_lending.observations,
-            glpi_number=new_lending.glpi_number,
-            business_executive=new_lending.business_executive,
-            project=new_lending.project,
-            location=new_lending.location,
-            bu=new_lending.bu,
-            ms_office=new_lending.ms_office,
-        )
+            asset.status = db_session.query(AssetStatusModel).get(2)
+            db_session.add(asset)
+            db_session.commit()
+            db_session.flush()
 
-        new_lending_db.employee = employee
-        new_lending_db.asset = asset
-        new_lending_db.workload = workload
-        new_lending_db.cost_center = cost_center
-        new_lending_db.status = lending_pending
+            new_lending_db.employee = employee
+            new_lending_db.asset = asset
+            new_lending_db.workload = workload
+            new_lending_db.cost_center = cost_center
+            new_lending_db.status = lending_pending
 
-        new_lending_db.witnesses = witnesses
-        db_session.add(new_lending_db)
-        db_session.commit()
-        db_session.flush()
+            new_lending_db.witnesses = witnesses
+            db_session.add(new_lending_db)
+            db_session.commit()
+            db_session.flush()
 
-        service_log.set_log(
-            "lending",
-            "lending",
-            "Criação de Comodato",
-            new_lending_db.id,
-            authenticated_user,
-            db_session,
-        )
-        logger.info("New Lending. %s", str(new_lending_db))
+            service_log.set_log(
+                "lending",
+                "lending",
+                "Criação de Comodato",
+                new_lending_db.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("New Lending. %s", str(new_lending_db))
 
-        return self.serialize_lending(new_lending_db)
+            return self.serialize_lending(new_lending_db)
+        except TypeError as error:
+            db_session.rollback()
+            logger.error("Error creating lending. %s", error)
+            raise HTTPException(
+                detail={
+                    "field": "employeeId",
+                    "error": "Erro ao criar contrato de comodato",
+                },
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            ) from error
 
     def get_lending(
         self, lending_id: int, db_session: Session
@@ -550,27 +565,38 @@ class LendingService:
         self, lending_id: int, authenticated_user: UserModel, db_session: Session
     ) -> None:
         """Remove a lending"""
-        lending = self.__get_lending_or_404(lending_id, db_session)
-        lending.deleted = True
+        try:
+            lending = self.__get_lending_or_404(lending_id, db_session)
+            lending.deleted = True
 
-        if lending.document:
-            lending.document.deleted = True
-            db_session.add(lending.document)
+            if lending.document:
+                lending.document.deleted = True
+                db_session.add(lending.document)
 
-        lending.asset.status = db_session.query(AssetStatusModel).get(1)
-        db_session.add(lending.asset)
-        db_session.add(lending)
-        db_session.commit()
-        db_session.flush()
-        service_log.set_log(
-            "lending",
-            "lending",
-            "Exclusão de Comodato",
-            lending.id,
-            authenticated_user,
-            db_session,
-        )
-        logger.info("Delete lending. %s", str(lending))
+            lending.asset.status = db_session.query(AssetStatusModel).get(1)
+            db_session.add(lending.asset)
+            db_session.add(lending)
+            db_session.commit()
+            db_session.flush()
+            service_log.set_log(
+                "lending",
+                "lending",
+                "Exclusão de Comodato",
+                lending.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("Delete lending. %s", str(lending))
+        except TypeError as error:
+            db_session.rollback()
+            logger.error("Error deleting lending. %s", error)
+            raise HTTPException(
+                detail={
+                    "field": "lendingId",
+                    "error": "Contrato de Comodato não encontrado",
+                },
+                status_code=status.HTTP_404_NOT_FOUND,
+            ) from error
 
     def get_lending_status(self, db_session: Session) -> List[LendingStatusModel]:
         """Get lending status"""

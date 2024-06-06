@@ -123,7 +123,7 @@ class LendingModel(Base):
 
     def __str__(self) -> str:
         """Returns model as string"""
-        return self.number
+        return self.number if self.number else f"{self.id}"
 
 
 class WitnessModel(Base):
