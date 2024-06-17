@@ -334,3 +334,102 @@ class AssetPatternFilter(Filter):
             logger.warning("Error filtering query: %s", e)
 
         return query
+
+
+# class ReportFilter(Filter):
+#     """Report filter"""
+
+#     start_date: Optional[str] = None
+#     end_date: Optional[str] = None
+#     maintenace_type: Optional[str] = None
+#     patterns: Optional[str] = None
+#     assurance: Optional[bool] = None
+#     status: Optional[str] = None
+
+#     class Constants(Filter.Constants):
+#         """Filter constants"""
+
+#         model = LendingModel
+
+#     def filter(
+#         self, query_lending: Union[Query, Select], query_log: Union[Query, Select]
+#     ) -> Query:
+#         """Filter query"""
+#         previous_lending: List[LogModel] = query_log.filter(
+#             LogModel.model == "maintenance",
+#             LogModel.operation.startswith("Adição"),
+#             LogModel.logged_in.between(self.start_date, self.end_date),
+#         ).all()
+
+#         query = (
+#             query_lending.join(MaintenanceModel)
+#             .join(MaintenanceStatusModel)
+#             .join(LendingStatusModel)
+#             .filter(
+#                 and_(
+#                     or_(
+#                         LendingModel.id.in_(
+#                             [lending.id for lending in previous_lending]
+#                         ),
+#                         LendingModel.created_at.between(self.start_date, self.end_date),
+#                     ),
+#                     LendingModel.deleted.is_(False),
+#                     LendingStatusModel.id == 2,  # active status
+#                 ),
+#             )
+#         )
+
+#         try:
+#             if self.managers:
+#                 managers_list = (
+#                     [int(str_id) for str_id in self.managers.split(",")]
+#                     if "," in str(self.managers)
+#                     else [self.managers]
+#                 )
+#                 query = query.filter(LendingModel.manager.in_(managers_list))
+
+#             if self.business_executives:
+#                 business_executives_list = (
+#                     [int(str_id) for str_id in self.business_executives.split(",")]
+#                     if "," in str(self.business_executives)
+#                     else [self.business_executives]
+#                 )
+#                 query = query.filter(
+#                     LendingModel.business_executive.in_(business_executives_list)
+#                 )
+
+#             if self.bus:
+#                 bus_list = (
+#                     [int(str_id) for str_id in self.bus.split(",")]
+#                     if "," in str(self.bus)
+#                     else [self.bus]
+#                 )
+#                 query = query.filter(LendingModel.bu.in_(bus_list))
+
+#             if self.employees_ids:
+#                 employees_ids_list = (
+#                     [int(str_id) for str_id in self.employees_ids.split(",")]
+#                     if "," in str(self.employees_ids)
+#                     else [int(self.employees_ids)]
+#                 )
+#                 query = query.filter(EmployeeModel.id.in_(employees_ids_list))
+
+#             if self.cost_center_ids:
+#                 cost_center_ids_list = (
+#                     [int(str_id) for str_id in self.cost_center_ids.split(",")]
+#                     if "," in str(self.cost_center_ids)
+#                     else [int(self.cost_center_ids)]
+#                 )
+#                 query = query.filter(CostCenterTOTVSModel.id.in_(cost_center_ids_list))
+
+#             if self.asset_types:
+#                 asset_type_ids_list = (
+#                     [int(str_id) for str_id in self.asset_types.split(",")]
+#                     if "," in str(self.asset_types)
+#                     else [int(self.asset_types)]
+#                 )
+#                 query = query.filter(AssetModel.type_id.in_(asset_type_ids_list))
+#         except ValueError as e:
+#             logger.warning("Error filtering query: %s", e)
+
+#         return query

@@ -1,16 +1,23 @@
 """Report service"""
 
 import io
+import math
+import os
+import textwrap
 from typing import List
 
+from fastapi import HTTPException, status
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from reportlab.lib.pagesizes import inch, landscape, letter
+from reportlab.pdfgen import canvas
 from sqlalchemy.orm import Session
 from xlsxwriter import Workbook
 from xlsxwriter.format import Format
 from xlsxwriter.utility import xl_rowcol_to_cell
 
-from src.asset.models import AssetModel
+from src.asset.models import AssetModel, AssetStatusHistoricModel
+from src.config import DEFAULT_DATE_FORMAT, REPORT_UPLOAD_DIR
 from src.lending.models import LendingModel
 from src.log.models import LogModel
 from src.maintenance.models import (
@@ -491,3 +498,200 @@ class ReportService:
             ],
         )
         return paginated
+
+    def __draw_wrapped_text(self, c: canvas.Canvas, text: str, y, max_width=80) -> int:
+        wrapped_text = textwrap.wrap(text, width=max_width)
+        line_height = 15
+        line_offset = -15
+        for i, line in enumerate(wrapped_text):
+            c.drawString(0, y - i * line_height, line)
+            line_offset = y - (i + 1) * line_height
+        return line_offset
+
+    def __draw_circle(self, c: canvas.Canvas, text: str, offset_image: int):
+        c.setFillColorRGB(0.25, 0.91, 0.24)
+        c.circle(inch, -1 * inch, inch, stroke=1, fill=1)
+        c.setFillColor("black")
+        wrapped_text = textwrap.wrap(text, width=20)
+        line_height = 15
+        for i, line in enumerate(wrapped_text):
+            text_width = c.stringWidth(line, "Helvetica", 12)
+            c.drawString(
+                (2 * inch - text_width) / 2,
+                -1 * inch - (line_height * i),
+                line,
+            )
+        return offset_image + 1 * inch
+
+    def __draw_shapes(self, c: canvas.Canvas, text: str, shape: str, x_offset: int):
+        c.setFont("Helvetica", 12)
+        c.saveState()
+        c.translate(x_offset, -3 * inch)
+        text_width = c.stringWidth(text, "Helvetica", 12)
+        offset_image = 0
+        if shape == "circle":
+            offset_image = self.__draw_circle(c, text, offset_image)
+        elif shape == "rectangle":
+            c.setFillColorRGB(0.96, 0.63, 0.99)
+            c.rect(0, -1.5 * inch, 2 * inch, inch, stroke=1, fill=1)
+            c.setFillColor("black")
+            c.drawString((2 * inch - text_width) / 2, -1 * inch - 0.1 * inch, text)
+        elif shape == "diamond":
+            # Desenhar e preencher um losango sem usar rotate
+            diamond_points = [
+                (1 * inch, 0),
+                (2 * inch, -1 * inch),
+                (1 * inch, -2 * inch),
+                (0, -1 * inch),
+            ]
+            p = c.beginPath()
+            p.moveTo(diamond_points[0][0], diamond_points[0][1])
+            p.lineTo(diamond_points[1][0], diamond_points[1][1])
+            p.lineTo(diamond_points[2][0], diamond_points[2][1])
+            p.lineTo(diamond_points[3][0], diamond_points[3][1])
+            p.close()
+            c.setFillColorRGB(0.99, 0.91, 0.63)
+            c.drawPath(p, stroke=1, fill=1)
+            c.setFillColor("black")
+            c.drawString((2 * inch - text_width) / 2, -1 * inch - 0.1 * inch, text)
+        elif shape == "hexagon":
+            # Desenhar e preencher um hexágono sem usar translate
+            center_x = 1 * inch
+            center_y = -1 * inch
+            radius = 1 * inch
+            hexagon_points = [
+                (
+                    center_x + radius * math.cos(math.radians(angle)) * 1.5,
+                    center_y + radius * math.sin(math.radians(angle)) / 1.5,
+                )
+                for angle in range(0, 360, 60)
+            ]
+            p = c.beginPath()
+            p.moveTo(hexagon_points[0][0], hexagon_points[0][1])
+            for point in hexagon_points[1:]:
+                p.lineTo(point[0], point[1])
+            p.close()
+            c.setFillColorRGB(0.69, 0.56, 0.44)
+            c.drawPath(p, stroke=1, fill=1)
+            c.setFillColor("black")
+            c.drawString((2 * inch - text_width) / 2, -1 * inch - 0.1 * inch, text)
+
+        # Desenhar uma seta formada por uma linha e um triângulo alinhados
+        start_x = 1.2 * inch + offset_image
+        start_y = -1 * inch
+        length = 1.5 * inch  # Comprimento total da seta
+        width = 0.15 * inch  # Largura da haste da seta
+
+        # Desenhar a haste da seta (linha)
+        line_length = length * 0.2
+        c.setLineWidth(2)
+        c.line(start_x, start_y, start_x + line_length, start_y)
+
+        # Desenhar a ponta da seta (triângulo preenchido)
+        triangle_base = width
+        triangle_height = length * 0.2
+        arrow_tip = [
+            (start_x + line_length, start_y - triangle_base),
+            (start_x + line_length + triangle_height, start_y),
+            (start_x + line_length, start_y + triangle_base),
+        ]
+
+        # Usar path para criar e preencher o triângulo
+        c.setFillColorRGB(0, 0, 0)
+        c.setStrokeColorRGB(0, 0, 0)
+        p = c.beginPath()
+        p.moveTo(arrow_tip[0][0], arrow_tip[0][1])
+        p.lineTo(arrow_tip[1][0], arrow_tip[1][1])
+        p.lineTo(arrow_tip[2][0], arrow_tip[2][1])
+        p.close()
+        c.drawPath(p, stroke=1, fill=1)
+        c.restoreState()
+
+    def report_asset_timeline(self, asset_id: int, db_session: Session):
+        """Report asset timeline"""
+        asset = db_session.query(AssetModel).filter(AssetModel.id == asset_id).first()
+        historic = []
+        if not asset:
+            db_session.close()
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"field": "assetId", "error": "Equipamento não encontrado"},
+            )
+
+        filename = f"Fluxo Equipamento - {asset.register_number}.pdf"
+
+        if not os.path.exists(REPORT_UPLOAD_DIR):
+            os.mkdir(REPORT_UPLOAD_DIR)
+
+        file_path = os.path.join(REPORT_UPLOAD_DIR, filename)
+        c = canvas.Canvas(file_path, pagesize=landscape(letter))
+        _, height = landscape(letter)
+        c.translate(inch, height - inch)
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(0, 0, "CONSULTA POR EQUIPAMENTO")
+        c.setFont("Helvetica", 12)
+        line_offset = self.__draw_wrapped_text(
+            c, f"Descrição do equipamento: {asset.description}", -50
+        )
+        c.drawString(0, line_offset, f"Patrimônio: {asset.register_number}")
+        serial_number = (
+            asset.serial_number if asset.serial_number else self.NOT_PROVIDED
+        )
+        line_offset += -15
+        c.drawString(0, line_offset, f"Número de série: {serial_number}")
+
+        line_offset += -100
+        acquisition_date = (
+            asset.acquisition_date.strftime(DEFAULT_DATE_FORMAT)
+            if asset.acquisition_date
+            else self.NOT_PROVIDED
+        )
+        historic.append(
+            {
+                "date": acquisition_date,
+                "text": f"Aquisição em: {acquisition_date}",
+                "type": "circle",
+            }
+        )
+        historic_asset_status = (
+            db_session.query(AssetStatusHistoricModel)
+            .filter(AssetStatusHistoricModel.asset_id == asset_id)
+            .order_by(AssetStatusHistoricModel.created_at)
+            .all()
+        )
+
+        for historic_status in historic_asset_status:
+            if historic_status.status_id == 1:
+                historic.append(
+                    {
+                        "date": historic_status.created_at.strftime(
+                            DEFAULT_DATE_FORMAT
+                        ),
+                        "text": "Disponível",
+                        "type": "rectangle",
+                    }
+                )
+            elif historic_status.status_id == 2:
+                historic_lending = (
+                    db_session.query(LendingModel)
+                    .filter(
+                        LendingModel.asset_id == asset_id,
+                        LendingModel.created_at == historic_status.created_at,
+                    )
+                    .first()
+                )
+                historic.append(
+                    {
+                        "date": historic_status.created_at.strftime(
+                            DEFAULT_DATE_FORMAT
+                        ),
+                        "text": f"Comodato\n{historic_lending.employee.full_name}",
+                        "type": "rectangle",
+                    }
+                )
+
+        self.__draw_shapes(c, f"Aquisição em: {acquisition_date}", "circle", 0)
+
+        c.showPage()
+        c.save()
+        return (file_path, filename)

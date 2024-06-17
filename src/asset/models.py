@@ -14,6 +14,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, relationship
 
+from src.config import DEFAULT_DATE_FORMAT
 from src.database import Base
 from src.datasync.models import AssetTypeTOTVSModel
 from src.invoice.models import InvoiceModel
@@ -72,6 +73,28 @@ class AssetStatusModel(Base):
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.name}"
+
+
+class AssetStatusHistoricModel(Base):
+    """Asset status history model"""
+
+    __tablename__ = "asset_status_history"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+
+    asset: Mapped["AssetModel"] = relationship()
+    asset_id = Column("asset_id", ForeignKey("asset.id"), nullable=False)
+
+    status: Mapped[AssetStatusModel] = relationship()
+    status_id = Column("status_id", ForeignKey(AssetStatusModel.id), nullable=False)
+
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.asset}: {self.status} - {self.created_at.strftime(DEFAULT_DATE_FORMAT)}"
 
 
 class AssetModel(Base):

@@ -11,7 +11,12 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from src.asset.filters import AssetFilter, AssetStatusFilter, AssetTypeFilter
-from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
+from src.asset.models import (
+    AssetModel,
+    AssetStatusHistoricModel,
+    AssetStatusModel,
+    AssetTypeModel,
+)
 from src.asset.schemas import (
     AssetSerializerSchema,
     AssetStatusSerializerSchema,
@@ -55,7 +60,6 @@ class AssetService:
         """Validates clothing size, type and status values"""
         errors = []
         asset_type = None
-        clothing_size = None
         asset_status = None
         if data.type_id:
             asset_type = (
@@ -94,7 +98,6 @@ class AssetService:
 
         return (
             asset_type,
-            clothing_size,
             asset_status,
         )
 
@@ -235,7 +238,6 @@ class AssetService:
 
         (
             asset_type,
-            clothing_size,
             asset_status,
         ) = self.__validate_nested(data, db_session)
 
@@ -266,12 +268,12 @@ class AssetService:
         )
 
         new_asset.type = asset_type
-        new_asset.clothing_size = clothing_size
-        new_asset.status = asset_status
 
         db_session.add(new_asset)
         db_session.commit()
         db_session.flush()
+
+        self.update_asset_status(new_asset, asset_status, db_session)
 
         service_log.set_log(
             "lending",
@@ -321,7 +323,7 @@ class AssetService:
         if asset_type:
             asset.type = asset_type
         if asset_status:
-            asset.status = asset_status
+            self.update_asset_status(asset, asset_status, db_session)
 
         db_session.add(asset)
         db_session.commit()
@@ -518,3 +520,26 @@ class AssetService:
         ]
 
         return historic_serialize
+
+    def update_asset_status(
+        self,
+        asset: AssetModel,
+        asset_status: AssetStatusModel,
+        db_session: Session,
+    ) -> None:
+        """Update asset status"""
+
+        asset.status = asset_status
+
+        db_session.add(asset)
+        db_session.commit()
+        db_session.flush()
+
+        historic = AssetStatusHistoricModel(
+            asset_id=asset.id,
+            status_id=asset_status.id,
+        )
+
+        db_session.add(historic)
+        db_session.commit()
+        db_session.flush()

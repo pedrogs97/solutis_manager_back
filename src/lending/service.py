@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
 from src.asset.schemas import AssetShortSerializerSchema
+from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.config import DEFAULT_DATE_FORMAT
 from src.datasync.models import CostCenterTOTVSModel
@@ -358,7 +359,10 @@ class LendingService:
                 ms_office=new_lending.ms_office,
             )
 
-            asset.status = db_session.query(AssetStatusModel).get(2)
+            AssetService().update_asset_status(
+                asset, db_session.query(AssetStatusModel).get(2), db_session
+            )
+
             db_session.add(asset)
             db_session.commit()
             db_session.flush()
@@ -573,7 +577,10 @@ class LendingService:
                 lending.document.deleted = True
                 db_session.add(lending.document)
 
-            lending.asset.status = db_session.query(AssetStatusModel).get(1)
+            AssetService().update_asset_status(
+                lending.asset, db_session.query(AssetStatusModel).get(2), db_session
+            )
+
             db_session.add(lending.asset)
             db_session.add(lending)
             db_session.commit()

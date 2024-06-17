@@ -3,7 +3,7 @@
 from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
@@ -66,7 +66,7 @@ def get_report_by_employee_route(
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "report", "model": "report", "action": "view"})
     ),
-) -> StreamingResponse:
+):
     """Login user route"""
     if not authenticated_user:
         db_session.close()
@@ -134,7 +134,7 @@ def get_report_by_asset_route(
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "report", "model": "report", "action": "view"})
     ),
-) -> StreamingResponse:
+):
     """Login user route"""
     if not authenticated_user:
         db_session.close()
@@ -202,7 +202,7 @@ def get_report_by_pattern_route(
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "report", "model": "report", "action": "view"})
     ),
-) -> StreamingResponse:
+):
     """Login user route"""
     if not authenticated_user:
         db_session.close()
@@ -240,7 +240,7 @@ def get_report_by_maintenance_route(
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "report", "model": "report", "action": "view"})
     ),
-) -> StreamingResponse:
+):
     """Login user route"""
     if not authenticated_user:
         db_session.close()
@@ -390,4 +390,36 @@ def get_pattern(
             for unique_tuple in unique_patterns
         ],
         status_code=status.HTTP_200_OK,
+    )
+
+
+@report_router.get("/asset-pdf/{asset_id}/")
+def get_asset_pdf(
+    asset_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "report", "model": "report", "action": "view"})
+    ),
+):
+    """Asset PDF route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    report_service = ReportService("CONSULTA POR EQUIPAMENTO")
+    file_path, filename = report_service.report_asset_timeline(asset_id, db_session)
+
+    db_session.close()
+    headers = {
+        "Access-Control-Expose-Headers": "Content-Disposition",
+        "Content-Disposition": f'attachment; filename="{filename}"',
+    }
+
+    return FileResponse(
+        file_path,
+        filename=filename,
+        headers=headers,
+        media_type="application/pdf; charset=utf-8",
     )

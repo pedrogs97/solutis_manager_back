@@ -15,6 +15,7 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from src.asset.models import AssetModel, AssetStatusModel
+from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
 from src.document.filters import DocumentFilter
@@ -632,7 +633,10 @@ class DocumentService:
         )
         logger.info("New Document. %s", str(new_doc))
 
-        asset.status = db_session.query(AssetStatusModel).get(2)
+        AssetService().update_asset_status(
+            asset, db_session.query(AssetStatusModel).get(2), db_session
+        )
+
         db_session.add(asset)
         db_session.commit()
         db_session.flush()
@@ -984,7 +988,10 @@ class DocumentService:
         )
         logger.info("New Document. %s", str(new_doc))
 
-        current_lending.asset.status = db_session.query(AssetStatusModel).get(1)
+        AssetService().update_asset_status(
+            asset, db_session.query(AssetStatusModel).get(1), db_session
+        )
+
         current_lending.document_revoke = new_doc
         current_lending.number = new_code
         current_lending.status = lending_pending
