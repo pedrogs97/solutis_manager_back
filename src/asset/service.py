@@ -316,7 +316,6 @@ class AssetService:
 
         (
             asset_type,
-            _,
             asset_status,
         ) = self.__validate_nested(data, db_session)
 
