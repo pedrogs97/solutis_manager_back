@@ -314,6 +314,9 @@ class AssetService:
             if data.line_number:
                 asset.line_number = data.line_number
 
+            if data.operator:
+                asset.operator = data.operator
+
         (
             asset_type,
             asset_status,
@@ -525,14 +528,15 @@ class AssetService:
         asset: AssetModel,
         asset_status: AssetStatusModel,
         db_session: Session,
+        only_history: bool = False,
     ) -> None:
         """Update asset status"""
+        if not only_history:
+            asset.status = asset_status
 
-        asset.status = asset_status
-
-        db_session.add(asset)
-        db_session.commit()
-        db_session.flush()
+            db_session.add(asset)
+            db_session.commit()
+            db_session.flush()
 
         historic = AssetStatusHistoricModel(
             asset_id=asset.id,

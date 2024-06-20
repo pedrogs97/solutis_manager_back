@@ -633,10 +633,6 @@ class DocumentService:
         )
         logger.info("New Document. %s", str(new_doc))
 
-        AssetService().update_asset_status(
-            asset, db_session.query(AssetStatusModel).get(2), db_session
-        )
-
         db_session.add(asset)
         db_session.commit()
         db_session.flush()

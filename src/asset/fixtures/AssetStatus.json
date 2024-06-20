@@ -38,5 +38,15 @@
         "table": "asset_status",
         "id": 8,
         "name": "Descarte"
+    },
+    {
+        "table": "asset_status",
+        "id": 9,
+        "name": "Manutenção"
+    },
+    {
+        "table": "asset_status",
+        "id": 10,
+        "name": "Melhoria"
     }
 ]

@@ -11,6 +11,7 @@ from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from reportlab.lib.pagesizes import inch, landscape, letter
 from reportlab.pdfgen import canvas
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from xlsxwriter import Workbook
 from xlsxwriter.format import Format
@@ -521,91 +522,139 @@ class ReportService:
                 -1 * inch - (line_height * i),
                 line,
             )
-        return offset_image + 1 * inch
+        return offset_image + inch
 
-    def __draw_shapes(self, c: canvas.Canvas, text: str, shape: str, x_offset: int):
+    def __draw_rectangle(self, c: canvas.Canvas, text: str, offset_image: int):
+        c.setFillColorRGB(0.96, 0.63, 0.99)
+        c.rect(0, -1.5 * inch, 2 * inch, inch, stroke=1, fill=1)
+        c.setFillColor("black")
+        wrapped_text = textwrap.wrap(text, width=20)
+        line_height = 15
+        for i, line in enumerate(wrapped_text):
+            text_width = c.stringWidth(line, "Helvetica", 12)
+            c.drawString(
+                (2 * inch - text_width) / 2,
+                -0.8 * inch - (line_height * i),
+                line,
+            )
+        return offset_image / 2.8
+
+    def __draw_diamond(self, c: canvas.Canvas, text: str, offset_image: int):
+        start_x = offset_image * 0.95
+        diamond_points = [
+            (start_x + inch, 0),
+            (start_x + 2 * inch, -1 * inch),
+            (start_x + inch, -2 * inch),
+            (start_x, -1 * inch),
+        ]
+        p = c.beginPath()
+        p.moveTo(diamond_points[0][0], diamond_points[0][1])
+        p.lineTo(diamond_points[1][0], diamond_points[1][1])
+        p.lineTo(diamond_points[2][0], diamond_points[2][1])
+        p.lineTo(diamond_points[3][0], diamond_points[3][1])
+        p.close()
+        c.setFillColorRGB(0.99, 0.91, 0.63)
+        c.drawPath(p, stroke=1, fill=1)
+        c.setFillColor("black")
+        wrapped_text = textwrap.wrap(text, width=20)
+        line_height = 15
+        for i, line in enumerate(wrapped_text):
+            text_width = c.stringWidth(line, "Helvetica", 12)
+            c.drawString(
+                (2 * (start_x + inch) - text_width) / 2,
+                -1 * inch - (line_height * i),
+                line,
+            )
+        return start_x + inch * 1.35
+
+    def __draw_hexagon(self, c: canvas.Canvas, text: str, offset_image: int):
+        center_x = offset_image * 0.8 + 1.5 * inch
+        center_y = -1 * inch
+        radius = 1 * inch
+        hexagon_points = [
+            (
+                center_x + radius * math.cos(math.radians(angle)) * 1.5,
+                center_y + radius * math.sin(math.radians(angle)) / 1.5,
+            )
+            for angle in range(0, 360, 60)
+        ]
+        p = c.beginPath()
+        p.moveTo(hexagon_points[0][0], hexagon_points[0][1])
+        for point in hexagon_points[1:]:
+            p.lineTo(point[0], point[1])
+        p.close()
+        c.setFillColorRGB(0.69, 0.56, 0.44)
+        # c.drawPath(p, stroke=1, fill=1)
+        c.setFillColor("black")
+        wrapped_text = textwrap.wrap(text, width=10)
+        line_height = 15
+        for i, line in enumerate(wrapped_text):
+            text_width = c.stringWidth(line, "Helvetica", 12)
+            c.drawString(
+                (3 * (inch + offset_image) - text_width) / 2,
+                -0.95 * inch - (line_height * i),
+                line,
+            )
+
+        return offset_image + 4 * inch
+
+    def __draw_shapes(
+        self, c: canvas.Canvas, text: str, shape: str, x_offset: int, is_last: bool
+    ) -> float:
         c.setFont("Helvetica", 12)
         c.saveState()
         c.translate(x_offset, -3 * inch)
-        text_width = c.stringWidth(text, "Helvetica", 12)
-        offset_image = 0
+        offset_image = x_offset
+        print("offset_image before", offset_image)
         if shape == "circle":
             offset_image = self.__draw_circle(c, text, offset_image)
         elif shape == "rectangle":
-            c.setFillColorRGB(0.96, 0.63, 0.99)
-            c.rect(0, -1.5 * inch, 2 * inch, inch, stroke=1, fill=1)
-            c.setFillColor("black")
-            c.drawString((2 * inch - text_width) / 2, -1 * inch - 0.1 * inch, text)
+            offset_image = self.__draw_rectangle(c, text, offset_image)
         elif shape == "diamond":
-            # Desenhar e preencher um losango sem usar rotate
-            diamond_points = [
-                (1 * inch, 0),
-                (2 * inch, -1 * inch),
-                (1 * inch, -2 * inch),
-                (0, -1 * inch),
-            ]
-            p = c.beginPath()
-            p.moveTo(diamond_points[0][0], diamond_points[0][1])
-            p.lineTo(diamond_points[1][0], diamond_points[1][1])
-            p.lineTo(diamond_points[2][0], diamond_points[2][1])
-            p.lineTo(diamond_points[3][0], diamond_points[3][1])
-            p.close()
-            c.setFillColorRGB(0.99, 0.91, 0.63)
-            c.drawPath(p, stroke=1, fill=1)
-            c.setFillColor("black")
-            c.drawString((2 * inch - text_width) / 2, -1 * inch - 0.1 * inch, text)
+            offset_image = self.__draw_diamond(c, text, offset_image)
         elif shape == "hexagon":
-            # Desenhar e preencher um hexágono sem usar translate
-            center_x = 1 * inch
-            center_y = -1 * inch
-            radius = 1 * inch
-            hexagon_points = [
-                (
-                    center_x + radius * math.cos(math.radians(angle)) * 1.5,
-                    center_y + radius * math.sin(math.radians(angle)) / 1.5,
-                )
-                for angle in range(0, 360, 60)
+            offset_image = self.__draw_hexagon(c, text, offset_image)
+
+        if not is_last:
+            start_x = inch * 0.1 + offset_image if shape == "circle" else offset_image
+
+            # Desenhar uma seta formada por uma linha e um triângulo alinhados
+            c.translate(start_x, 0)
+            print("offset_image after", offset_image)
+            print("start_x", start_x)
+            start_y = -1 * inch
+            length = 1.5 * inch  # Comprimento total da seta
+            width = 0.15 * inch  # Largura da haste da seta
+
+            # Desenhar a haste da seta (linha)
+            line_length = length * 0.2
+            c.setLineWidth(2)
+            c.line(start_x, start_y, start_x + line_length, start_y)
+
+            # Desenhar a ponta da seta (triângulo preenchido)
+            triangle_base = width
+            triangle_height = length * 0.2
+            arrow_tip = [
+                (start_x + line_length, start_y - triangle_base),
+                (start_x + line_length + triangle_height, start_y),
+                (start_x + line_length, start_y + triangle_base),
             ]
-            p = c.beginPath()
-            p.moveTo(hexagon_points[0][0], hexagon_points[0][1])
-            for point in hexagon_points[1:]:
-                p.lineTo(point[0], point[1])
-            p.close()
-            c.setFillColorRGB(0.69, 0.56, 0.44)
-            c.drawPath(p, stroke=1, fill=1)
+
+            # Usar path para criar e preencher o triângulo
             c.setFillColor("black")
-            c.drawString((2 * inch - text_width) / 2, -1 * inch - 0.1 * inch, text)
-
-        # Desenhar uma seta formada por uma linha e um triângulo alinhados
-        start_x = 1.2 * inch + offset_image
-        start_y = -1 * inch
-        length = 1.5 * inch  # Comprimento total da seta
-        width = 0.15 * inch  # Largura da haste da seta
-
-        # Desenhar a haste da seta (linha)
-        line_length = length * 0.2
-        c.setLineWidth(2)
-        c.line(start_x, start_y, start_x + line_length, start_y)
-
-        # Desenhar a ponta da seta (triângulo preenchido)
-        triangle_base = width
-        triangle_height = length * 0.2
-        arrow_tip = [
-            (start_x + line_length, start_y - triangle_base),
-            (start_x + line_length + triangle_height, start_y),
-            (start_x + line_length, start_y + triangle_base),
-        ]
-
-        # Usar path para criar e preencher o triângulo
-        c.setFillColorRGB(0, 0, 0)
-        c.setStrokeColorRGB(0, 0, 0)
-        p = c.beginPath()
-        p.moveTo(arrow_tip[0][0], arrow_tip[0][1])
-        p.lineTo(arrow_tip[1][0], arrow_tip[1][1])
-        p.lineTo(arrow_tip[2][0], arrow_tip[2][1])
-        p.close()
-        c.drawPath(p, stroke=1, fill=1)
+            c.setStrokeColor("black")
+            p = c.beginPath()
+            p.moveTo(arrow_tip[0][0], arrow_tip[0][1])
+            p.lineTo(arrow_tip[1][0], arrow_tip[1][1])
+            p.lineTo(arrow_tip[2][0], arrow_tip[2][1])
+            p.close()
+            c.drawPath(p, stroke=1, fill=1)
+            c.restoreState()
+            if shape == "diamond":
+                return offset_image * 0.8 + line_length + triangle_height + inch * 0.35
+            return offset_image + start_x + line_length + triangle_height + inch * 0.35
         c.restoreState()
+        return offset_image + inch * 3
 
     def report_asset_timeline(self, asset_id: int, db_session: Session):
         """Report asset timeline"""
@@ -625,7 +674,7 @@ class ReportService:
 
         file_path = os.path.join(REPORT_UPLOAD_DIR, filename)
         c = canvas.Canvas(file_path, pagesize=landscape(letter))
-        _, height = landscape(letter)
+        page_width, height = landscape(letter)
         c.translate(inch, height - inch)
         c.setFont("Helvetica-Bold", 14)
         c.drawString(0, 0, "CONSULTA POR EQUIPAMENTO")
@@ -649,7 +698,7 @@ class ReportService:
         historic.append(
             {
                 "date": acquisition_date,
-                "text": f"Aquisição em: {acquisition_date}",
+                "text": "Aquisição em:",
                 "type": "circle",
             }
         )
@@ -661,13 +710,13 @@ class ReportService:
         )
 
         for historic_status in historic_asset_status:
-            if historic_status.status_id == 1:
+            if historic_status.status_id in [1, 3, 4]:
                 historic.append(
                     {
                         "date": historic_status.created_at.strftime(
                             DEFAULT_DATE_FORMAT
                         ),
-                        "text": "Disponível",
+                        "text": historic_status.status.name,
                         "type": "rectangle",
                     }
                 )
@@ -676,21 +725,63 @@ class ReportService:
                     db_session.query(LendingModel)
                     .filter(
                         LendingModel.asset_id == asset_id,
-                        LendingModel.created_at == historic_status.created_at,
                     )
+                    .order_by(desc(LendingModel.created_at))
                     .first()
                 )
+                first_name = historic_lending.employee.full_name.split(" ")[0]
+                last_name = historic_lending.employee.full_name.split(" ")[-1]
                 historic.append(
                     {
                         "date": historic_status.created_at.strftime(
                             DEFAULT_DATE_FORMAT
                         ),
-                        "text": f"Comodato\n{historic_lending.employee.full_name}",
+                        "text": f"Comodato \t {first_name} {last_name}",
                         "type": "rectangle",
                     }
                 )
+            elif historic_status.status_id == 9:
+                historic.append(
+                    {
+                        "date": historic_status.created_at.strftime(
+                            DEFAULT_DATE_FORMAT
+                        ),
+                        "text": historic_status.status.name,
+                        "type": "diamond",
+                    }
+                )
+            elif historic_status.status_id == 10:
+                historic.append(
+                    {
+                        "date": historic_status.created_at.strftime(
+                            DEFAULT_DATE_FORMAT
+                        ),
+                        "text": historic_status.status.name,
+                        "type": "hexagon",
+                    }
+                )
+            elif historic_asset_status in [6, 8]:
+                historic.append(
+                    {
+                        "date": historic_status.created_at.strftime(
+                            DEFAULT_DATE_FORMAT
+                        ),
+                        "text": historic_status.status.name,
+                        "type": "circle",
+                    }
+                )
 
-        self.__draw_shapes(c, f"Aquisição em: {acquisition_date}", "circle", 0)
+        offset = 0
+        last_index = len(historic) - 1
+        for index, h in enumerate(historic):
+            text = h["text"]
+            date = h["date"]
+            offset = self.__draw_shapes(
+                c, f"{text} {date}", h["type"], offset, index == last_index
+            )
+            if offset >= page_width - 4 * inch:
+                page_width = page_width + 4 * inch
+                c.setPageSize((page_width, landscape(letter)[1]))
 
         c.showPage()
         c.save()

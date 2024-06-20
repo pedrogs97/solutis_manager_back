@@ -12,8 +12,9 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from src.asset.models import AssetModel
+from src.asset.models import AssetModel, AssetStatusModel
 from src.asset.schemas import AssetShortSerializerSchema
+from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.backends import Email365Client, get_db_session
 from src.config import ATTACHMENTS_UPLOAD_DIR, DEFAULT_DATE_FORMAT
@@ -322,7 +323,9 @@ class MaintenanceService:
         new_maintenance.action = action_type
         new_maintenance.asset = asset
         new_maintenance.employee = employee
-
+        AssetService().update_asset_status(
+            asset, db_session.query(AssetStatusModel).get(9), db_session, True
+        )
         db_session.add(new_maintenance)
         db_session.commit()
         db_session.flush()
@@ -718,7 +721,9 @@ class UpgradeService:
         new_upgrade.status = pending_status
         new_upgrade.asset = asset
         new_upgrade.employee = employee
-
+        AssetService().update_asset_status(
+            asset, db_session.query(AssetStatusModel).get(10), db_session, True
+        )
         db_session.add(new_upgrade)
         db_session.commit()
         db_session.flush()
