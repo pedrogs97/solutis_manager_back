@@ -1,8 +1,8 @@
 """Asset router"""
 
-from typing import Union
+from typing import Annotated, Union
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
@@ -256,3 +256,37 @@ def get_list_asset_status_route(
     )
     db_session.close()
     return JSONResponse(content=assets_status, status_code=status.HTTP_200_OK)
+
+
+@asset_router.post("/bulk-create/")
+async def post_create_bulk_upload_file(
+    file: Annotated[
+        UploadFile,
+        File(description="Arquivo CSV ou XSLX com os ativos a serem criados"),
+    ],
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "asset", "model": "asset", "action": "add"})
+    ),
+):
+    """Bulk create assets from a csv file"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    if not file.filename.endswith((".csv", ".xlsx")):
+        db_session.close()
+        return JSONResponse(
+            content="Arquivo inválido. Por favor, envie um arquivo CSV ou XLSX.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    response_data = await asset_service.upload_file_to_bulk_create(db_session, file)
+    db_session.close()
+    if response_data.get("error"):
+        return JSONResponse(
+            content=response_data, status_code=status.HTTP_400_BAD_REQUEST
+        )
+    return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)

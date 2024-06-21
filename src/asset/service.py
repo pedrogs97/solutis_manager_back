@@ -1,12 +1,14 @@
 """Asset service"""
 
 import logging
+from io import BytesIO
 from typing import List, Union
 
-from fastapi import status
+from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from openpyxl import load_workbook
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -27,6 +29,7 @@ from src.asset.schemas import (
 )
 from src.auth.models import UserModel
 from src.config import DEFAULT_DATE_FORMAT
+from src.invoice.models import InvoiceModel
 from src.lending.models import LendingModel
 from src.lending.schemas import (
     CostCenterSerializerSchema,
@@ -41,6 +44,56 @@ service_log = LogService()
 
 class AssetService:
     """Asset services"""
+
+    COL_NAMES = [
+        "Patrimônio",
+        "Descrição",
+        "Fornecedor",
+        "Garantia",
+        "Observações",
+        "Padrão",
+        "Sistema Operacional",
+        "N° Serial",
+        "IMEI",
+        "Data de Aquisição",
+        "Valor",
+        "Pacote Office",
+        "Linha Telefônica",
+        "Operadora",
+        "Modelo",
+        "Acessórios",
+        "Configuração",
+        "Quantidade",
+        "Unidade",
+        "Nota Fiscal",
+        "Tipo de Ativo",
+        "Status do Ativo",
+    ]
+
+    MAP_COL_NAMES = {
+        "Patrimônio": "register_number",
+        "Descrição": "description",
+        "Fornecedor": "supplier",
+        "Garantia": "assurance_date",
+        "Observações": "observations",
+        "Padrão": "pattern",
+        "Sistema Operacional": "operational_system",
+        "N° Serial": "serial_number",
+        "IMEI": "imei",
+        "Data de Aquisição": "acquisition_date",
+        "Valor": "value",
+        "Pacote Office": "ms_office",
+        "Linha Telefônica": "line_number",
+        "Operadora": "operator",
+        "Modelo": "model",
+        "Acessórios": "accessories",
+        "Configuração": "configuration",
+        "Quantidade": "quantity",
+        "Unidade": "unit",
+        "Nota Fiscal": "invoice_id",
+        "Tipo de Ativo": "type_id",
+        "Status do Ativo": "status_id",
+    }
 
     def __get_asset_or_404(self, asset_id: int, db_session: Session) -> AssetModel:
         """Get asset or 404"""
@@ -297,25 +350,18 @@ class AssetService:
         """Uptades an asset"""
         asset = self.__get_asset_or_404(asset_id, db_session)
 
+        dict_data = data.model_dump()
         if asset.by_agile:
-            dict_data = data.model_dump()
-
             for key, value in dict_data.items():
-                if value and key not in ["type_id", "status_id"]:
+                if value is not None and key not in ["type_id", "status_id"]:
                     setattr(asset, key, value)
 
         else:
-            if data.observations:
-                asset.observations = data.observations
-
-            if data.model:
-                asset.model = data.model
-
-            if data.line_number:
-                asset.line_number = data.line_number
-
-            if data.operator:
-                asset.operator = data.operator
+            fields_to_update = ["observations", "model", "line_number", "operator"]
+            for field in fields_to_update:
+                value = getattr(dict_data, field)
+                if hasattr(dict_data, field) and value is not None:
+                    setattr(asset, field, value)
 
         (
             asset_type,
@@ -546,3 +592,87 @@ class AssetService:
         db_session.add(historic)
         db_session.commit()
         db_session.flush()
+
+    def __extract_data_from_row(
+        self, row, header: List, record: dict, db_session: Session
+    ) -> Union[dict, None]:
+        for i, h in enumerate(header):
+            value = row[i]
+            key = self.MAP_COL_NAMES[h]
+            if key == "imei" and db_session.query(
+                db_session.query(AssetModel).filter(AssetModel.imei == value).exists()
+            ):
+                return {"error": f"IMEI já cadastrado: {value}"}
+            if key == "register_number":
+                if value and db_session.query(
+                    db_session.query(AssetModel)
+                    .filter(AssetModel.register_number == value)
+                    .exists()
+                ):
+                    return {"error": f"N° de Patrimônio já cadastrado: {value}"}
+                value = self.__generate_registration_number(db_session)
+            if key == "invoice_id":
+                invoice = (
+                    db_session.query(InvoiceModel)
+                    .filter(InvoiceModel.number == value)
+                    .first()
+                )
+                if invoice:
+                    record.update({"invoice_id": invoice.id})
+                else:
+                    new_invoice = InvoiceModel(number=value)
+                    db_session.add(new_invoice)
+                    db_session.commit()
+                    db_session.flush()
+
+                    record.update({"invoice_id": new_invoice.id})
+            elif key == "type_id":
+                asset_type = (
+                    db_session.query(AssetTypeModel)
+                    .filter(AssetTypeModel.name.ilike(value))
+                    .first()
+                )
+                if not asset_type:
+                    return {"error": f"Tipo de Ativo não existe: {value}"}
+                record.update({key: asset_type.id})
+            elif key == "status_id":
+                asset_status = (
+                    db_session.query(AssetStatusModel)
+                    .filter(AssetStatusModel.name.ilike(value))
+                    .first()
+                )
+                if not asset_status:
+                    return {"error": f"Situação de Ativo não existe: {value}"}
+                record.update({key: asset_status.id})
+            else:
+                record.update({key: value})
+        return None
+
+    async def upload_file_to_bulk_create(
+        self, db_session: Session, file: UploadFile
+    ) -> dict:
+        """Upload file to bulk create"""
+        file_bytes = await file.read()
+        workbook = load_workbook(filename=BytesIO(file_bytes), data_only=True)
+        sheet = workbook.active
+
+        # Ler o cabeçalho e verificar se as colunas esperadas estão presentes
+        header = [cell.value for cell in sheet[1]]
+        if any(h not in self.COL_NAMES for h in header):
+            missing_columns = [h for h in self.COL_NAMES if h not in header]
+            return {"error": f"Colunas não existentes: {', '.join(missing_columns)}"}
+
+        # Ler os dados
+        new_assets = []
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            record = {}
+            error = self.__extract_data_from_row(row, header, record, db_session)
+            if error:
+                return error
+            new_asset = AssetModel(**record, by_agile=True)
+            new_assets.append(new_asset)
+
+        db_session.bulk_save_objects(new_assets)
+        db_session.commit()
+
+        return {"message": "Arquivo enviado com sucesso."}
