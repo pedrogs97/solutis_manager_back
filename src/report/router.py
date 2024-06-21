@@ -22,6 +22,7 @@ from src.report.filters import (
     AssetPatternFilter,
     AssetReportFilter,
     LendingReportFilter,
+    MaintenanceReportFilter,
 )
 from src.report.service import ReportService
 
@@ -237,6 +238,7 @@ def get_report_by_pattern_route(
 @report_router.get("/by-maintenance/")
 def get_report_by_maintenance_route(
     db_session: Session = Depends(get_db_session),
+    report_filters: MaintenanceReportFilter = FilterDepends(MaintenanceReportFilter),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker({"module": "report", "model": "report", "action": "view"})
     ),
@@ -248,7 +250,7 @@ def get_report_by_maintenance_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     report_service = ReportService("CONSULTA POR MANUTENÇÃO")
-    file = report_service.report_by_maintenance(db_session)
+    file = report_service.report_by_maintenance(report_filters, db_session)
 
     if not file:
         db_session.close()

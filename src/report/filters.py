@@ -12,6 +12,12 @@ from src.asset.models import AssetModel
 from src.datasync.models import CostCenterTOTVSModel
 from src.lending.models import LendingModel, LendingStatusModel, WorkloadModel
 from src.log.models import LogModel
+from src.maintenance.models import (
+    MaintenanceHistoricModel,
+    MaintenanceModel,
+    MaintenanceStatusModel,
+    UpgradeHistoricModel,
+)
 from src.people.models import EmployeeModel
 
 logger = logging.getLogger(__name__)
@@ -336,100 +342,120 @@ class AssetPatternFilter(Filter):
         return query
 
 
-# class ReportFilter(Filter):
-#     """Report filter"""
+class MaintenanceReportFilter(Filter):
+    """Maintenance Report filter"""
 
-#     start_date: Optional[str] = None
-#     end_date: Optional[str] = None
-#     maintenace_type: Optional[str] = None
-#     patterns: Optional[str] = None
-#     assurance: Optional[bool] = None
-#     status: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    maintenace_type: Optional[str] = None
+    patterns: Optional[str] = None
+    assurance: Optional[bool] = None
+    status: Optional[str] = None
 
-#     class Constants(Filter.Constants):
-#         """Filter constants"""
+    class Constants(Filter.Constants):
+        """Filter constants"""
 
-#         model = LendingModel
+        model = LendingModel
 
-#     def filter(
-#         self, query_lending: Union[Query, Select], query_log: Union[Query, Select]
-#     ) -> Query:
-#         """Filter query"""
-#         previous_lending: List[LogModel] = query_log.filter(
-#             LogModel.model == "maintenance",
-#             LogModel.operation.startswith("Adição"),
-#             LogModel.logged_in.between(self.start_date, self.end_date),
-#         ).all()
+    def filter_maintenance(
+        self, query_historic: Union[Query, Select], query_log: Union[Query, Select]
+    ) -> Query:
+        """Filter query"""
+        previous_maintenance: List[LogModel] = query_log.filter(
+            and_(
+                or_(LogModel.model == "maintenance", LogModel.model == "upgrade"),
+                LogModel.operation.startswith("Adição"),
+                LogModel.logged_in.between(self.start_date, self.end_date),
+            )
+        ).all()
 
-#         query = (
-#             query_lending.join(MaintenanceModel)
-#             .join(MaintenanceStatusModel)
-#             .join(LendingStatusModel)
-#             .filter(
-#                 and_(
-#                     or_(
-#                         LendingModel.id.in_(
-#                             [lending.id for lending in previous_lending]
-#                         ),
-#                         LendingModel.created_at.between(self.start_date, self.end_date),
-#                     ),
-#                     LendingModel.deleted.is_(False),
-#                     LendingStatusModel.id == 2,  # active status
-#                 ),
-#             )
-#         )
+        query = (
+            query_historic.join(MaintenanceStatusModel)
+            .join(MaintenanceModel)
+            .outerjoin(AssetModel)
+            .filter(
+                or_(
+                    MaintenanceHistoricModel.maintenance_id.in_(
+                        [maintenance.id for maintenance in previous_maintenance]
+                    ),
+                    MaintenanceHistoricModel.date.between(
+                        self.start_date, self.end_date
+                    ),
+                ),
+            )
+        )
 
-#         try:
-#             if self.managers:
-#                 managers_list = (
-#                     [int(str_id) for str_id in self.managers.split(",")]
-#                     if "," in str(self.managers)
-#                     else [self.managers]
-#                 )
-#                 query = query.filter(LendingModel.manager.in_(managers_list))
+        try:
+            if self.patterns:
+                patterns_list = (
+                    [int(str_id) for str_id in self.patterns.split(",")]
+                    if "," in str(self.patterns)
+                    else [self.patterns]
+                )
+                query = query.filter(AssetModel.pattern.in_(patterns_list))
 
-#             if self.business_executives:
-#                 business_executives_list = (
-#                     [int(str_id) for str_id in self.business_executives.split(",")]
-#                     if "," in str(self.business_executives)
-#                     else [self.business_executives]
-#                 )
-#                 query = query.filter(
-#                     LendingModel.business_executive.in_(business_executives_list)
-#                 )
+            if self.assurance is not None:
+                query = query.filter(AssetModel.assurance_date.is_not(None))
 
-#             if self.bus:
-#                 bus_list = (
-#                     [int(str_id) for str_id in self.bus.split(",")]
-#                     if "," in str(self.bus)
-#                     else [self.bus]
-#                 )
-#                 query = query.filter(LendingModel.bu.in_(bus_list))
+            if self.status:
+                status_list = (
+                    [int(str_id) for str_id in self.status.split(",")]
+                    if "," in str(self.status)
+                    else [int(self.status)]
+                )
+                query = query.filter(AssetModel.status_id.in_(status_list))
 
-#             if self.employees_ids:
-#                 employees_ids_list = (
-#                     [int(str_id) for str_id in self.employees_ids.split(",")]
-#                     if "," in str(self.employees_ids)
-#                     else [int(self.employees_ids)]
-#                 )
-#                 query = query.filter(EmployeeModel.id.in_(employees_ids_list))
+        except ValueError as e:
+            logger.warning("Error filtering query: %s", e)
 
-#             if self.cost_center_ids:
-#                 cost_center_ids_list = (
-#                     [int(str_id) for str_id in self.cost_center_ids.split(",")]
-#                     if "," in str(self.cost_center_ids)
-#                     else [int(self.cost_center_ids)]
-#                 )
-#                 query = query.filter(CostCenterTOTVSModel.id.in_(cost_center_ids_list))
+        return query
 
-#             if self.asset_types:
-#                 asset_type_ids_list = (
-#                     [int(str_id) for str_id in self.asset_types.split(",")]
-#                     if "," in str(self.asset_types)
-#                     else [int(self.asset_types)]
-#                 )
-#                 query = query.filter(AssetModel.type_id.in_(asset_type_ids_list))
-#         except ValueError as e:
-#             logger.warning("Error filtering query: %s", e)
+    def filter_upgrade(
+        self, query_historic: Union[Query, Select], query_log: Union[Query, Select]
+    ) -> Query:
+        """Filter query"""
+        previous_upgrade: List[LogModel] = query_log.filter(
+            and_(
+                or_(LogModel.model == "upgrade", LogModel.model == "upgrade"),
+                LogModel.operation.startswith("Adição"),
+                LogModel.logged_in.between(self.start_date, self.end_date),
+            )
+        ).all()
 
-#         return query
+        query = (
+            query_historic.join(MaintenanceStatusModel)
+            .join(AssetModel)
+            .filter(
+                or_(
+                    UpgradeHistoricModel.id.in_(
+                        [upgrade.id for upgrade in previous_upgrade]
+                    ),
+                    UpgradeHistoricModel.date.between(self.start_date, self.end_date),
+                ),
+            )
+        )
+
+        try:
+            if self.patterns:
+                patterns_list = (
+                    [int(str_id) for str_id in self.patterns.split(",")]
+                    if "," in str(self.patterns)
+                    else [self.patterns]
+                )
+                query = query.filter(AssetModel.pattern.in_(patterns_list))
+
+            if self.assurance is not None:
+                query = query.filter(AssetModel.assurance_date.is_not(None))
+
+            if self.status:
+                status_list = (
+                    [int(str_id) for str_id in self.status.split(",")]
+                    if "," in str(self.status)
+                    else [int(self.status)]
+                )
+                query = query.filter(AssetModel.status_id.in_(status_list))
+
+        except ValueError as e:
+            logger.warning("Error filtering query: %s", e)
+
+        return query

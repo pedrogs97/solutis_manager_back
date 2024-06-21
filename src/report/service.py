@@ -31,6 +31,7 @@ from src.report.filters import (
     AssetPatternFilter,
     AssetReportFilter,
     LendingReportFilter,
+    MaintenanceReportFilter,
 )
 
 
@@ -179,6 +180,7 @@ class ReportService:
             else self.NOT_PROVIDED
         )
         imei = maintenance.asset.imei if maintenance.asset.imei else self.NOT_PROVIDED
+        value = str(maintenance.asset.value).replace(".", ",")
         return {
             "opening_date": maintenance.open_date,
             "closing_date": maintenance.close_date,
@@ -194,7 +196,7 @@ class ReportService:
             "patrimony": maintenance.asset.register_number,
             "pattern": maintenance.asset.pattern,
             "assurance_date": maintenance.asset.assurance_date,
-            "value": str(maintenance.asset.value).replace(".", ","),  # format value
+            "value": f"R$ {value}",  # format value
             "status": maintenance.status.name,
         }
 
@@ -206,6 +208,7 @@ class ReportService:
             else self.NOT_PROVIDED
         )
         imei = upgrade.asset.imei if upgrade.asset.imei else self.NOT_PROVIDED
+        value = str(upgrade.asset.value).replace(".", ",")
         return {
             "opening_date": upgrade.open_date,
             "closing_date": upgrade.close_date,
@@ -217,7 +220,7 @@ class ReportService:
             "patrimony": upgrade.asset.register_number,
             "pattern": upgrade.asset.pattern,
             "assurance_date": upgrade.asset.assurance_date,
-            "value": upgrade.asset.value,
+            "value": f"R$ {value}",  # format value
             "status": upgrade.status.name,
         }
 
@@ -442,15 +445,29 @@ class ReportService:
         self.output_file.seek(0)
         return self.output_file
 
-    def report_by_maintenance(self, db_session: Session):
+    def report_by_maintenance(
+        self, report_filters: MaintenanceReportFilter, db_session: Session
+    ):
         """Report by maintenance"""
-        report_data = (
-            db_session.query(MaintenanceHistoricModel)
-            .union(db_session.query(UpgradeHistoricModel))
-            .all()
-        )
+        report_data_maintenance = report_filters.filter_maintenance(
+            db_session.query(MaintenanceHistoricModel), db_session.query(LogModel)
+        ).all()
+        report_data_upgrade = report_filters.filter_maintenance(
+            db_session.query(UpgradeHistoricModel), db_session.query(LogModel)
+        ).all()
 
-        if not report_data:
+        if not report_data_maintenance and not report_data_upgrade:
+            return None
+
+        if report_filters.maintenace_type is None:
+            report_data = sorted(
+                report_data_maintenance + report_data_upgrade, key=lambda x: x.date
+            )
+        elif report_filters.maintenace_type == "maintenance":
+            report_data = sorted(report_data_maintenance, key=lambda x: x.date)
+        elif report_filters.maintenace_type == "upgrade":
+            report_data = sorted(report_data_upgrade, key=lambda x: x.date)
+        else:
             return None
 
         self.worksheet.hide_gridlines(2)
@@ -469,9 +486,12 @@ class ReportService:
         cell_data_format = self.__format_cell(self.workbook.add_format())
 
         for i_row, item in enumerate(report_data):
-            for i_col, value in enumerate(
+            values = (
                 self.maintenance_to_report(item.maintenance).values()
-            ):
+                if hasattr(item, "maintenance")
+                else self.upgrade_to_report(item.upgrade).values()
+            )
+            for i_col, value in enumerate(values):
                 self.worksheet.write(
                     xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),
                     value,
@@ -484,18 +504,45 @@ class ReportService:
         return self.output_file
 
     def report_list_by_maintenance(
-        self, db_session: Session, page: int = 1, size: int = 50
+        self,
+        report_filters: MaintenanceReportFilter,
+        db_session: Session,
+        page: int = 1,
+        size: int = 50,
     ):
         """Report list by maintenance"""
-        report_data = db_session.query(MaintenanceHistoricModel).union(
-            db_session.query(UpgradeHistoricModel)
-        )
+        report_data_maintenance = report_filters.filter_maintenance(
+            db_session.query(MaintenanceHistoricModel), db_session.query(LogModel)
+        ).all()
+        report_data_upgrade = report_filters.filter_maintenance(
+            db_session.query(UpgradeHistoricModel), db_session.query(LogModel)
+        ).all()
+
+        if not report_data_maintenance and not report_data_upgrade:
+            return None
+
+        if report_filters.maintenace_type is None:
+            report_data = sorted(
+                report_data_maintenance + report_data_upgrade, key=lambda x: x.date
+            )
+        elif report_filters.maintenace_type == "maintenance":
+            report_data = sorted(report_data_maintenance, key=lambda x: x.date)
+        elif report_filters.maintenace_type == "upgrade":
+            report_data = sorted(report_data_upgrade, key=lambda x: x.date)
+        else:
+            return None
+
         params = Params(page=page, size=size)
         paginated = paginate(
             report_data,
             params=params,
             transformer=lambda report_list: [
-                self.maintenance_to_report(data.maintenance) for data in report_list
+                (
+                    self.maintenance_to_report(data.maintenance).values()
+                    if hasattr(data, "maintenance")
+                    else self.upgrade_to_report(data.upgrade).values()
+                )
+                for data in report_list
             ],
         )
         return paginated
