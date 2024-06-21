@@ -587,7 +587,7 @@ class ReportService:
         return offset_image / 2.8
 
     def __draw_diamond(self, c: canvas.Canvas, text: str, offset_image: int):
-        start_x = offset_image * 0.95
+        start_x = offset_image
         diamond_points = [
             (start_x + inch, 0),
             (start_x + 2 * inch, -1 * inch),
@@ -612,10 +612,10 @@ class ReportService:
                 -1 * inch - (line_height * i),
                 line,
             )
-        return start_x + inch * 1.35
+        return start_x + inch * 1.3
 
     def __draw_hexagon(self, c: canvas.Canvas, text: str, offset_image: int):
-        center_x = offset_image * 0.8 + 1.5 * inch
+        center_x = offset_image + 2 * inch
         center_y = -1 * inch
         radius = 1 * inch
         hexagon_points = [
@@ -631,19 +631,19 @@ class ReportService:
             p.lineTo(point[0], point[1])
         p.close()
         c.setFillColorRGB(0.69, 0.56, 0.44)
-        # c.drawPath(p, stroke=1, fill=1)
+        c.drawPath(p, stroke=1, fill=1)
         c.setFillColor("black")
         wrapped_text = textwrap.wrap(text, width=10)
         line_height = 15
         for i, line in enumerate(wrapped_text):
             text_width = c.stringWidth(line, "Helvetica", 12)
             c.drawString(
-                (3 * (inch + offset_image) - text_width) / 2,
+                (3 * (inch + offset_image * 0.72) - text_width) / 2,
                 -0.95 * inch - (line_height * i),
                 line,
             )
 
-        return offset_image + 4 * inch
+        return offset_image + 6 * inch
 
     def __draw_shapes(
         self, c: canvas.Canvas, text: str, shape: str, x_offset: int, is_last: bool
@@ -652,7 +652,6 @@ class ReportService:
         c.saveState()
         c.translate(x_offset, -3 * inch)
         offset_image = x_offset
-        print("offset_image before", offset_image)
         if shape == "circle":
             offset_image = self.__draw_circle(c, text, offset_image)
         elif shape == "rectangle":
@@ -663,12 +662,15 @@ class ReportService:
             offset_image = self.__draw_hexagon(c, text, offset_image)
 
         if not is_last:
-            start_x = inch * 0.1 + offset_image if shape == "circle" else offset_image
+            if shape == "circle":
+                start_x = inch * 0.1 + offset_image
+            elif shape == "diamond":
+                start_x = offset_image * 0.61
+            else:
+                start_x = offset_image
 
             # Desenhar uma seta formada por uma linha e um triângulo alinhados
             c.translate(start_x, 0)
-            print("offset_image after", offset_image)
-            print("start_x", start_x)
             start_y = -1 * inch
             length = 1.5 * inch  # Comprimento total da seta
             width = 0.15 * inch  # Largura da haste da seta
@@ -698,7 +700,7 @@ class ReportService:
             c.drawPath(p, stroke=1, fill=1)
             c.restoreState()
             if shape == "diamond":
-                return offset_image * 0.8 + line_length + triangle_height + inch * 0.35
+                return offset_image * 0.92 + line_length + triangle_height + inch * 0.1
             return offset_image + start_x + line_length + triangle_height + inch * 0.35
         c.restoreState()
         return offset_image + inch * 3
@@ -827,7 +829,7 @@ class ReportService:
                 c, f"{text} {date}", h["type"], offset, index == last_index
             )
             if offset >= page_width - 4 * inch:
-                page_width = page_width + 4 * inch
+                page_width = page_width + 6.5 * inch
                 c.setPageSize((page_width, landscape(letter)[1]))
 
         c.showPage()
