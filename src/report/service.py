@@ -459,13 +459,13 @@ class ReportService:
         if not report_data_maintenance and not report_data_upgrade:
             return None
 
-        if report_filters.maintenace_type is None:
+        if report_filters.maintenance_type is None:
             report_data = sorted(
                 report_data_maintenance + report_data_upgrade, key=lambda x: x.date
             )
-        elif report_filters.maintenace_type == "maintenance":
+        elif report_filters.maintenance_type == "maintenance":
             report_data = sorted(report_data_maintenance, key=lambda x: x.date)
-        elif report_filters.maintenace_type == "upgrade":
+        elif report_filters.maintenance_type == "upgrade":
             report_data = sorted(report_data_upgrade, key=lambda x: x.date)
         else:
             return None
@@ -521,13 +521,13 @@ class ReportService:
         if not report_data_maintenance and not report_data_upgrade:
             return None
 
-        if report_filters.maintenace_type is None:
+        if report_filters.maintenance_type is None:
             report_data = sorted(
                 report_data_maintenance + report_data_upgrade, key=lambda x: x.date
             )
-        elif report_filters.maintenace_type == "maintenance":
+        elif report_filters.maintenance_type == "maintenance":
             report_data = sorted(report_data_maintenance, key=lambda x: x.date)
-        elif report_filters.maintenace_type == "upgrade":
+        elif report_filters.maintenance_type == "upgrade":
             report_data = sorted(report_data_upgrade, key=lambda x: x.date)
         else:
             return None

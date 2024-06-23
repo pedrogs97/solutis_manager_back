@@ -347,10 +347,10 @@ class MaintenanceReportFilter(Filter):
 
     start_date: Optional[str] = None
     end_date: Optional[str] = None
-    maintenace_type: Optional[str] = None
+    maintenance_type: Optional[str] = None
     patterns: Optional[str] = None
     assurance: Optional[bool] = None
-    status: Optional[str] = None
+    status_ids: Optional[str] = None
 
     class Constants(Filter.Constants):
         """Filter constants"""
@@ -397,11 +397,11 @@ class MaintenanceReportFilter(Filter):
             if self.assurance is not None:
                 query = query.filter(AssetModel.assurance_date.is_not(None))
 
-            if self.status:
+            if self.status_ids:
                 status_list = (
-                    [int(str_id) for str_id in self.status.split(",")]
-                    if "," in str(self.status)
-                    else [int(self.status)]
+                    [int(str_id) for str_id in self.status_ids.split(",")]
+                    if "," in str(self.status_ids)
+                    else [int(self.status_ids)]
                 )
                 query = query.filter(AssetModel.status_id.in_(status_list))
 
