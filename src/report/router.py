@@ -274,6 +274,7 @@ def get_report_by_maintenance_route(
 @report_router.get("/list/by-maintenance/")
 def get_list_report_by_maintenance_route(
     db_session: Session = Depends(get_db_session),
+    report_filters: MaintenanceReportFilter = FilterDepends(MaintenanceReportFilter),
     page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
     size: int = Query(
         PAGINATION_NUMBER,
@@ -292,7 +293,9 @@ def get_list_report_by_maintenance_route(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
     report_service = ReportService()
-    report_list = report_service.report_list_by_maintenance(db_session, page, size)
+    report_list = report_service.report_list_by_maintenance(
+        report_filters, db_session, page, size
+    )
     db_session.close()
     return report_list
 
