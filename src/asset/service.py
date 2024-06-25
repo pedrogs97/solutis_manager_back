@@ -652,8 +652,6 @@ class AssetService:
                 if not asset_status:
                     return {"error": f"Situação de Ativo não existe: {value}"}
                 record.update({key: asset_status.id})
-            elif key == "value":
-                record.update({key: float(value.replace(".", "").replace(",", "."))})
             else:
                 record.update({key: value})
         return None
