@@ -13,6 +13,7 @@ from src.datasync.models import CostCenterTOTVSModel
 from src.lending.models import LendingModel, LendingStatusModel, WorkloadModel
 from src.log.models import LogModel
 from src.maintenance.models import (
+    MaintenanceActionModel,
     MaintenanceHistoricModel,
     MaintenanceModel,
     MaintenanceStatusModel,
@@ -348,6 +349,7 @@ class MaintenanceReportFilter(Filter):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     maintenance_type: Optional[str] = None
+    maintenance_action_ids: Optional[str] = None
     patterns: Optional[str] = None
     assurance: Optional[bool] = None
     status_ids: Optional[str] = None
@@ -372,6 +374,7 @@ class MaintenanceReportFilter(Filter):
         query = (
             query_historic.join(MaintenanceStatusModel)
             .join(MaintenanceModel)
+            .join(MaintenanceActionModel)
             .outerjoin(AssetModel)
             .filter(
                 or_(
@@ -404,6 +407,16 @@ class MaintenanceReportFilter(Filter):
                     else [int(self.status_ids)]
                 )
                 query = query.filter(AssetModel.status_id.in_(status_list))
+
+            if self.maintenance_action_ids:
+                maintenance_action_list = (
+                    [int(str_id) for str_id in self.maintenance_action_ids.split(",")]
+                    if "," in str(self.maintenance_action_ids)
+                    else [int(self.maintenance_action_ids)]
+                )
+                query = query.filter(
+                    MaintenanceActionModel.id.in_(maintenance_action_list)
+                )
 
         except ValueError as e:
             logger.warning("Error filtering query: %s", e)
