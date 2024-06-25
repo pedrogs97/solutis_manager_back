@@ -511,39 +511,41 @@ class ReportService:
         size: int = 50,
     ):
         """Report list by maintenance"""
-        report_data_maintenance = report_filters.filter_maintenance(
+        report_data_maintenance_query = report_filters.filter_maintenance(
             db_session.query(MaintenanceHistoricModel), db_session.query(LogModel)
-        ).all()
-        report_data_upgrade = report_filters.filter_maintenance(
+        )
+        report_data_upgrade_query = report_filters.filter_maintenance(
             db_session.query(UpgradeHistoricModel), db_session.query(LogModel)
-        ).all()
+        )
 
-        if not report_data_maintenance and not report_data_upgrade:
+        if not report_data_maintenance_query and not report_data_upgrade_query:
             return None
 
         if report_filters.maintenance_type is None:
-            report_data = sorted(
-                report_data_maintenance + report_data_upgrade, key=lambda x: x.date
-            )
+            report_data = report_data_maintenance_query.union(report_data_upgrade_query)
         elif report_filters.maintenance_type == "maintenance":
-            report_data = sorted(report_data_maintenance, key=lambda x: x.date)
+            report_data = report_data_maintenance_query
         elif report_filters.maintenance_type == "upgrade":
-            report_data = sorted(report_data_upgrade, key=lambda x: x.date)
+            report_data = report_data_upgrade_query
         else:
             return None
+
+        def transformer_report(data_list):
+            data_list = sorted(data_list, key=lambda x: x.date)
+            return [
+                (
+                    self.maintenance_to_report(data.maintenance)
+                    if hasattr(data, "maintenance")
+                    else self.upgrade_to_report(data.upgrade)
+                )
+                for data in data_list
+            ]
 
         params = Params(page=page, size=size)
         paginated = paginate(
             report_data,
             params=params,
-            transformer=lambda report_list: [
-                (
-                    self.maintenance_to_report(data.maintenance).values()
-                    if hasattr(data, "maintenance")
-                    else self.upgrade_to_report(data.upgrade).values()
-                )
-                for data in report_list
-            ],
+            transformer=transformer_report,
         )
         return paginated
 

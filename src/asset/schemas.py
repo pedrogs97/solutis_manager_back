@@ -168,7 +168,7 @@ class AssetSerializerSchema(BaseSchema):
         serialization_alias="acquisitionDate",
         default=None,
     )
-    value: float
+    value: Optional[float] = 0.0
     depreciation: Optional[float] = None
     # pacote office
     ms_office: Optional[bool] = Field(
