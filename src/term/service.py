@@ -351,14 +351,18 @@ class TermService:
     ) -> Page[TermSerializerSchema]:
         """Get terms list"""
 
-        term_list = term_filters.filter(
-            db_session.query(TermModel)
-            .join(TermItemTypeModel)
-            .outerjoin(EmployeeModel)
-            .outerjoin(WorkloadModel)
-            .outerjoin(CostCenterTOTVSModel)
-            .outerjoin(TermStatusModel)
-        ).order_by(desc(TermModel.id))
+        term_list = (
+            term_filters.filter(
+                db_session.query(TermModel)
+                .join(TermItemTypeModel)
+                .outerjoin(EmployeeModel)
+                .outerjoin(WorkloadModel)
+                .outerjoin(CostCenterTOTVSModel)
+                .outerjoin(TermStatusModel)
+            )
+            .filter(TermModel.deleted.is_(False))
+            .order_by(desc(TermModel.id))
+        )
 
         params = Params(page=page, size=size)
         paginated = paginate(
