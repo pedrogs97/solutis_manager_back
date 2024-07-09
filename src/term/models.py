@@ -1,6 +1,16 @@
 """Term models"""
 
-from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
@@ -122,6 +132,7 @@ class TermModel(Base):
         server_default=func.now(),
         server_onupdate=func.now(),
     )
+    deleted = Column("deleted", Boolean, nullable=False, default=False)
 
     def __str__(self) -> str:
         """Returns model as string"""

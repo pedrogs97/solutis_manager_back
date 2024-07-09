@@ -359,9 +359,10 @@ class AssetService:
         else:
             fields_to_update = ["observations", "model", "line_number", "operator"]
             for field in fields_to_update:
-                value = getattr(dict_data, field)
-                if hasattr(dict_data, field) and value is not None:
-                    setattr(asset, field, value)
+                if field in dict_data:
+                    value = dict_data.get(field)
+                    if value is not None:
+                        setattr(asset, field, value)
 
         (
             asset_type,

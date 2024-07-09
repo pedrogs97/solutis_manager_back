@@ -307,6 +307,41 @@ class TermService:
 
         return self.serialize_term(term)
 
+    def delete_term(
+        self, term_id: int, authenticated_user: UserModel, db_session: Session
+    ) -> None:
+        """Remove a term"""
+        try:
+            term = self.__get_term_or_404(term_id, db_session)
+            term.deleted = True
+
+            if term.document:
+                term.document.deleted = True
+                db_session.add(term.document)
+
+            db_session.add(term)
+            db_session.commit()
+            db_session.flush()
+            service_log.set_log(
+                "term",
+                "term",
+                "Exclusão de Termo de Responsabilidade",
+                term.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("Delete term. %s", str(term))
+        except TypeError as error:
+            db_session.rollback()
+            logger.error("Error deleting term. %s", error)
+            raise HTTPException(
+                detail={
+                    "field": "termId",
+                    "error": "Termo de Responsabilidade não encontrado",
+                },
+                status_code=status.HTTP_404_NOT_FOUND,
+            ) from error
+
     def get_terms(
         self,
         db_session: Session,

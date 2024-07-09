@@ -155,3 +155,27 @@ def patch_term_route(
         content=serializer.model_dump(by_alias=True),
         status_code=status.HTTP_200_OK,
     )
+
+
+@term_router.delete("/{term_id}/")
+def delete_term_route(
+    term_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "term", "model": "term", "action": "delete"})
+    ),
+):
+    """
+    Delete a term by ID.
+    """
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    term_service.delete_term(term_id, authenticated_user, db_session)
+    db_session.close()
+    return JSONResponse(
+        content=None,
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
