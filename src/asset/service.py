@@ -154,8 +154,14 @@ class AssetService:
             asset_status,
         )
 
-    def __generate_registration_number(self, db_session: Session) -> str:
+    def __generate_registration_number(
+        self, db_session: Session, last_code: Union[str, None] = None
+    ) -> str:
         """Generate new registration number"""
+        if last_code:
+            new_last_code = str(int(last_code) + 1)
+            return new_last_code.zfill(16 - len(new_last_code))
+
         last_asset = db_session.query(AssetModel).all()[-1]
 
         new_register_number = str(last_asset.id)
@@ -595,17 +601,25 @@ class AssetService:
         db_session.flush()
 
     def __extract_data_from_row(
-        self, row, header: List, record: dict, db_session: Session
+        self,
+        row,
+        header: List,
+        record: dict,
+        db_session: Session,
+        last_new_code: Union[str, None],
     ) -> Union[dict, None]:
         for i, h in enumerate(header):
             value = row[i]
             key = self.MAP_COL_NAMES[h]
             if not value:
                 if key == "register_number":
-                    value = self.__generate_registration_number(db_session)
+                    value = self.__generate_registration_number(
+                        db_session, last_new_code
+                    )
                     record.update({"code": value})
-                else:
+                    record.update({"register_number": value})
                     continue
+                continue
 
             if isinstance(value, str):
                 value = value.strip()
@@ -680,11 +694,17 @@ class AssetService:
 
         # Ler os dados
         new_assets = []
+        last_new_code = None
         for row in sheet.iter_rows(min_row=2, values_only=True):
             record = {}
-            error = self.__extract_data_from_row(row, header, record, db_session)
+            error = self.__extract_data_from_row(
+                row, header, record, db_session, last_new_code
+            )
             if error:
                 return error
+            if len(record.keys()) < 3:
+                continue
+            last_new_code = record["register_number"]
             new_asset = AssetModel(**record, by_agile=True)
             new_assets.append(new_asset)
 
