@@ -601,7 +601,11 @@ class AssetService:
             value = row[i]
             key = self.MAP_COL_NAMES[h]
             if not value:
-                continue
+                if key == "register_number":
+                    value = self.__generate_registration_number(db_session)
+                    record.update({"code": value})
+                else:
+                    continue
 
             if isinstance(value, str):
                 value = value.strip()
@@ -615,17 +619,14 @@ class AssetService:
                 ).scalar()
             ):
                 return {"error": f"IMEI já cadastrado: {value}"}
-            if key == "register_number":
-                if (
-                    value
-                    and db_session.query(
-                        db_session.query(AssetModel)
-                        .filter(AssetModel.register_number == value)
-                        .exists()
-                    ).scalar()
-                ):
+            if key == "register_number" and value:
+                if db_session.query(
+                    db_session.query(AssetModel)
+                    .filter(AssetModel.register_number == value)
+                    .exists()
+                ).scalar():
                     return {"error": f"N° de Patrimônio já cadastrado: {value}"}
-                value = self.__generate_registration_number(db_session)
+                record.update({"code": value})
             if key == "invoice_id":
                 invoice = (
                     db_session.query(InvoiceModel)
