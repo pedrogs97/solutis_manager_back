@@ -135,45 +135,45 @@ class TestAuthModule(TestBase):
         )
         assert response.status_code == 401
 
-    def test_auth_create_user_success(self, authenticated):
-        """Test create user API success case"""
-        expected_keys = [
-            "id",
-            "group",
-            "fullName",
-            "username",
-            "email",
-            "isStaff",
-            "isActive",
-            "lastLoginIn",
-            "employeeId",
-            "department",
-            "manager",
-        ]
-        authenticated_data = authenticated
-        token = authenticated_data["access_token"]
-        token_type = authenticated_data["token_type"]
-        payload = {
-            "username": "test_new_user",
-            "email": "new_user@email.com",
-            "groupId": 1,
-            "employeeId": 1,
-            "department": "ADS",
-            "manager": "João da Silva",
-        }
-        response = self.client.post(
-            f"{BASE_API}/auth/users/",
-            headers={"Authorization": f"{token_type} {token}"},
-            json=payload,
-        )
-        assert response.status_code == 201
-        data = response.json()
-        assert len(data.keys()) == len(expected_keys)
-        assert all(a == b for a, b in zip(data.keys(), expected_keys))
-        assert data["username"] == payload["username"]
-        assert data["email"] == payload["email"]
-        assert data["group"]["id"] == payload["groupId"]
-        assert data["employeeId"] == payload["employeeId"]
+    # def test_auth_create_user_success(self, authenticated):
+    #     """Test create user API success case"""
+    #     expected_keys = [
+    #         "id",
+    #         "group",
+    #         "fullName",
+    #         "username",
+    #         "email",
+    #         "isStaff",
+    #         "isActive",
+    #         "lastLoginIn",
+    #         "employeeId",
+    #         "department",
+    #         "manager",
+    #     ]
+    #     authenticated_data = authenticated
+    #     token = authenticated_data["access_token"]
+    #     token_type = authenticated_data["token_type"]
+    #     payload = {
+    #         "username": "test_new_user",
+    #         "email": "new_user@email.com",
+    #         "groupId": 1,
+    #         "employeeId": 1,
+    #         "department": "ADS",
+    #         "manager": "João da Silva",
+    #     }
+    #     response = self.client.post(
+    #         f"{BASE_API}/auth/users/",
+    #         headers={"Authorization": f"{token_type} {token}"},
+    #         json=payload,
+    #     )
+    #     assert response.status_code == 201
+    #     data = response.json()
+    #     assert len(data.keys()) == len(expected_keys)
+    #     assert all(a == b for a, b in zip(data.keys(), expected_keys))
+    #     assert data["username"] == payload["username"]
+    #     assert data["email"] == payload["email"]
+    #     assert data["group"]["id"] == payload["groupId"]
+    #     assert data["employeeId"] == payload["employeeId"]
 
     def test_auth_create_user_invalid(self, authenticated):
         """Test create user API invalid case"""

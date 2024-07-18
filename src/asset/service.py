@@ -600,6 +600,12 @@ class AssetService:
         for i, h in enumerate(header):
             value = row[i]
             key = self.MAP_COL_NAMES[h]
+            if not value:
+                continue
+
+            if isinstance(value, str):
+                value = value.strip()
+
             if (
                 key == "imei"
                 and db_session.query(
@@ -638,7 +644,7 @@ class AssetService:
             elif key == "type_id":
                 asset_type = (
                     db_session.query(AssetTypeModel)
-                    .filter(AssetTypeModel.name.ilike(value))
+                    .filter(AssetTypeModel.name.ilike(value.strip()))
                     .first()
                 )
                 if not asset_type:
