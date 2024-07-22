@@ -83,7 +83,7 @@ class NewTermSchema(BaseSchema):
     business_executive: str = Field(alias="businessExecutive", default=None)
     location: str
     description: Optional[str] = None
-    size: Optional[SizesEnum] = None
+    size: Optional[str] = None
     quantity: Optional[int] = None
     value: Optional[float] = None
     line_number: Optional[str] = Field(alias="lineNumber", default=None)

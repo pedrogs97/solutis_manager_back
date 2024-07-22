@@ -677,7 +677,14 @@ class DocumentService:
 
             workload = current_lending.workload
 
-            employee = current_lending.employee
+            if recreate_lending_doc.employee_id:
+                employee = (
+                    db_session.query(EmployeeModel)
+                    .filter(EmployeeModel.id == recreate_lending_doc.employee_id)
+                    .first()
+                )
+            else:
+                employee = current_lending.employee
 
             witness1 = current_lending.witnesses[0]
 

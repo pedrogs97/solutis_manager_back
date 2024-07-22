@@ -38,6 +38,7 @@ class RecrateLendingDocSchema(BaseSchema):
 
     lending_id: int = Field(alias="lendingId")
     document_id: int = Field(alias="documentId")
+    employee_id: int = Field(alias="employeeId")
     type: str = "revoke"
 
 
