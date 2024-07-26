@@ -76,6 +76,7 @@ class LendingSerializerSchema(BaseSchema):
     location: str
     bu: Optional[LendingBUEnum] = None
     deleted: bool = False
+    created_at: str = Field(serialization_alias="createdAt")
 
 
 class LendingAssetHistorySerializerSchema(BaseSchema):

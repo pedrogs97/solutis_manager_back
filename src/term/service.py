@@ -130,6 +130,7 @@ class TermService:
             location=term.location,
             number=term.number,
             item=TermItemSerializerSchema(**term.term_item.__dict__),
+            created_at=term.created_at.strftime(DEFAULT_DATE_FORMAT),
         )
 
     def serialize_workload(self, workload: WorkloadModel) -> WorkloadSerializerSchema:

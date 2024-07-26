@@ -170,6 +170,7 @@ class LendingService:
             bu=lending.bu,
             deleted=lending.deleted,
             ms_office=lending.ms_office,
+            created_at=lending.created_at.strftime(DEFAULT_DATE_FORMAT),
         )
 
     def serialize_workload(self, workload: WorkloadModel) -> WorkloadSerializerSchema:

@@ -62,6 +62,7 @@ class TermSerializerSchema(BaseSchema):
     )
     location: str
     item: TermItemSerializerSchema
+    created_at: str = Field(serialization_alias="createdAt")
 
 
 class UpdateTermSchema(BaseSchema):

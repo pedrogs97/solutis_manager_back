@@ -50,6 +50,8 @@ class LendingFilter(Filter):
     glpi_number__ilike: Optional[str] = None
     signed_date__gte: Optional[date] = None
     signed_date__lte: Optional[date] = None
+    created_at__gte: Optional[date] = None
+    created_at__lte: Optional[date] = None
     employee: Optional[EmployeeFullNameFilter] = FilterDepends(
         with_prefix("employee", EmployeeFullNameFilter)
     )
