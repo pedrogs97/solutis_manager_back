@@ -130,7 +130,7 @@ class ReportService:
             "status": lending.status.name,
         }
 
-    def asset_to_report(self, asset: AssetModel, location: str) -> dict:
+    def asset_to_report(self, asset: AssetModel, location: str, status) -> dict:
         """Convert asset to report"""
         return {
             "description": asset.description,
@@ -148,7 +148,7 @@ class ReportService:
             "value": f"{asset.value:.2f}",
             "depreciation": asset.depreciation,
             "attachments": "-",
-            "status": asset.status.name if asset.status else self.NOT_PROVIDED,
+            "status": status,
         }
 
     def asset_pattern_to_report(self, asset: AssetModel, lending: LendingModel) -> dict:
@@ -332,7 +332,8 @@ class ReportService:
             report_list,
             params=params,
             transformer=lambda report_list: [
-                self.asset_to_report(data.asset, data.location) for data in report_list
+                self.asset_to_report(data.asset, data.location, data.status.name)
+                for data in report_list
             ],
         )
         return paginated
@@ -367,7 +368,9 @@ class ReportService:
 
         for i_row, item in enumerate(report_data):
             for i_col, value in enumerate(
-                self.asset_to_report(item.asset, item.location).values()
+                self.asset_to_report(
+                    item.asset, item.location, item.status.name
+                ).values()
             ):
                 self.worksheet.write(
                     xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),

@@ -224,12 +224,12 @@ class AssetReportFilter(Filter):
                 query = query.filter(LendingModel.location.in_(locations_list))
 
             if self.status_ids:
-                asset_status_ids_list = (
+                status_ids_list = (
                     [int(str_id) for str_id in self.status_ids.split(",")]
                     if "," in str(self.status_ids)
                     else [int(self.status_ids)]
                 )
-                query = query.filter(AssetModel.status_id.in_(asset_status_ids_list))
+                query = query.filter(LendingModel.status_id.in_(status_ids_list))
 
             if self.assurance is not None:
                 if self.assurance:
