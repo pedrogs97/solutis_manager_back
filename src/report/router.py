@@ -25,6 +25,7 @@ from src.report.filters import (
     MaintenanceReportFilter,
 )
 from src.report.service import ReportService
+from src.report.service import get_dashboard as get_dashboard_service
 
 report_router = APIRouter(prefix="/report", tags=["Report"])
 
@@ -427,4 +428,27 @@ def get_asset_pdf(
         filename=filename,
         headers=headers,
         media_type="application/pdf; charset=utf-8",
+    )
+
+
+@report_router.get("/dashboard/")
+def get_dashboard(
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "report", "model": "report", "action": "view"})
+    ),
+):
+    """Dashboard route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    dashboard = get_dashboard_service(db_session)
+
+    db_session.close()
+    return JSONResponse(
+        content=dashboard,
+        status_code=status.HTTP_200_OK,
     )

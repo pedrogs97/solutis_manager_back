@@ -13,6 +13,7 @@ from reportlab.lib.pagesizes import inch, landscape, letter
 from reportlab.pdfgen import canvas
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import or_
 from xlsxwriter import Workbook
 from xlsxwriter.format import Format
 from xlsxwriter.utility import xl_rowcol_to_cell
@@ -843,3 +844,57 @@ class ReportService:
         c.showPage()
         c.save()
         return (file_path, filename)
+
+
+def get_dashboard(db_session: Session) -> dict:
+    """Dashboard"""
+    total_assets = db_session.query(AssetModel).count()
+    total_assets_inactive = (
+        db_session.query(AssetModel)
+        .filter(or_(AssetModel.status_id == 6, AssetModel.status_id == 8))
+        .count()
+    )
+    total_lendings = db_session.query(LendingModel).count()
+    total_lendings_pending = (
+        db_session.query(LendingModel).filter(LendingModel.status_id == 1).count()
+    )
+    total_lendings_active = (
+        db_session.query(LendingModel).filter(LendingModel.status_id == 2).count()
+    )
+    total_lendings_revoke_pending = (
+        db_session.query(LendingModel).filter(LendingModel.status_id == 3).count()
+    )
+    total_lendings_revoke = (
+        db_session.query(LendingModel).filter(LendingModel.status_id == 4).count()
+    )
+    total_maintenances = (
+        db_session.query(MaintenanceModel)
+        .filter(or_(MaintenanceModel.status_id == 1, MaintenanceModel.status_id == 2))
+        .count()
+    )
+    total_maintenances_pending = (
+        db_session.query(MaintenanceModel)
+        .filter(MaintenanceModel.status_id == 2)
+        .count()
+    )
+    total_upgrade = (
+        db_session.query(UpgradeModel)
+        .filter(or_(UpgradeModel.status_id == 1, UpgradeModel.status_id == 2))
+        .count()
+    )
+    total_upgrade_pending = (
+        db_session.query(UpgradeModel).filter(UpgradeModel.status_id == 2).count()
+    )
+    return {
+        "totalAssets": total_assets,
+        "totalLendings": total_lendings,
+        "totalMaintenances": total_maintenances,
+        "totalMaintenancesPending": total_maintenances_pending,
+        "totalUpgrade": total_upgrade,
+        "totalUpgradePending": total_upgrade_pending,
+        "totalAssetsInactive": total_assets_inactive,
+        "totalLendingsPending": total_lendings_pending,
+        "totalLendingsActive": total_lendings_active,
+        "totalLendingsRevokePending": total_lendings_revoke_pending,
+        "totalLendingsRevoke": total_lendings_revoke,
+    }
