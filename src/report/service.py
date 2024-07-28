@@ -44,16 +44,16 @@ class ReportService:
         ("C5", "COLABORADOR"),
         ("D5", "CARGO"),
         ("E5", "PROJETO"),
-        ("E5", "BU"),
-        ("F5", "CENTRO DE CUSTO"),
-        ("F5", "CENTRO DE CUSTO (código)"),
-        ("G5", "GESTOR"),
-        ("H5", "EXECUTIVO"),
-        ("I5", "LOCAL DE TRABALHO"),
-        ("J5", "DESCRIÇÃO DO EQUIPAMENTO"),
-        ("K5", "PATRIMÔNIO"),
-        ("L5", "PADRÃO EQUIPAMENTO"),
-        ("M5", "STATUS"),
+        ("F5", "BU"),
+        ("G5", "CENTRO DE CUSTO"),
+        ("H5", "CENTRO DE CUSTO (código)"),
+        ("I5", "GESTOR"),
+        ("J5", "EXECUTIVO"),
+        ("K5", "LOCAL DE TRABALHO"),
+        ("L5", "DESCRIÇÃO DO EQUIPAMENTO"),
+        ("M5", "PATRIMÔNIO"),
+        ("N5", "PADRÃO EQUIPAMENTO"),
+        ("O5", "STATUS"),
     ]
 
     ASSET_COLS = [
@@ -130,7 +130,9 @@ class ReportService:
             "status": lending.status.name,
         }
 
-    def asset_to_report(self, asset: AssetModel, location: str, status) -> dict:
+    def asset_to_report(
+        self, asset: AssetModel, location: str, status_lending: str
+    ) -> dict:
         """Convert asset to report"""
         return {
             "description": asset.description,
@@ -148,7 +150,7 @@ class ReportService:
             "value": f"{asset.value:.2f}",
             "depreciation": asset.depreciation,
             "attachments": "-",
-            "status": status,
+            "status": status_lending,
         }
 
     def asset_pattern_to_report(self, asset: AssetModel, lending: LendingModel) -> dict:
@@ -304,7 +306,8 @@ class ReportService:
         cell_data_format = self.__format_cell(self.workbook.add_format())
 
         for i_row, item in enumerate(report_data):
-            for i_col, value in enumerate(self.lending_to_report(item).values()):
+            to_report = self.lending_to_report(item)
+            for i_col, value in enumerate(to_report.values()):
                 self.worksheet.write(
                     xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),
                     value,

@@ -56,7 +56,6 @@ class LendingReportFilter(Filter):
 
         query = (
             query_lending.join(AssetModel)
-            .join(LendingStatusModel)
             .join(EmployeeModel)
             .join(WorkloadModel)
             .filter(
