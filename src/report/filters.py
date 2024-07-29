@@ -145,7 +145,7 @@ class LendingReportFilter(Filter):
                     if "," in str(self.status_ids)
                     else [int(self.status_ids)]
                 )
-                query = query.filter(LendingStatusModel.id.in_(asset_status_ids_list))
+                query = query.filter(LendingModel.status_id.in_(asset_status_ids_list))
         except ValueError as e:
             logger.warning("Error filtering query: %s", e)
         return query
