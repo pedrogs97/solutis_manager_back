@@ -26,7 +26,7 @@ class TermItemSerializerSchema(BaseSchema):
 
     id: int
     description: Optional[str]
-    size: Optional[str]
+    size: Optional[SizesEnum]
     quantity: Optional[int]
     value: Optional[float]
     line_number: Optional[str] = Field(serialization_alias="lineNumber")
