@@ -3,8 +3,10 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
+from src.asset.models import AssetModel
+from src.backends import get_db_session
 from src.schemas import BaseSchema
 
 
@@ -276,6 +278,34 @@ class NewAssetSchema(BaseSchema):
     quantity: Optional[int] = None
     # unidade da quantidade
     unit: Optional[str] = None
+
+    @field_validator("imei")
+    @classmethod
+    def validate_imei(cls, value: str) -> str:
+        """Validate imei"""
+        db_session = get_db_session()
+        if db_session.query(
+            db_session.query(AssetModel).filter(AssetModel.imei == value).exists()
+        ).scalar():
+            db_session.close()
+            raise ValueError("IMEI já existe")
+        db_session.close()
+        return value
+
+    @field_validator("register_number")
+    @classmethod
+    def validate_register_number(cls, value: str) -> str:
+        """Validate register number"""
+        db_session = get_db_session()
+        if db_session.query(
+            db_session.query(AssetModel)
+            .filter(AssetModel.register_number == value)
+            .exists()
+        ).scalar():
+            db_session.close()
+            raise ValueError("Patrimônio já existe")
+        db_session.close()
+        return value
 
 
 class UpdateAssetSchema(BaseSchema):
