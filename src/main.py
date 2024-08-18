@@ -63,6 +63,7 @@ exception_handlers = {
     404: default_response_exception,
     401: default_response_exception,
     400: default_response_exception,
+    422: default_response_exception,
 }
 
 

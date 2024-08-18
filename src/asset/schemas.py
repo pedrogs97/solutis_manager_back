@@ -3,6 +3,7 @@
 from datetime import date, datetime
 from typing import Optional
 
+from fastapi.exceptions import HTTPException
 from pydantic import Field, field_validator
 
 from src.asset.models import AssetModel
@@ -288,7 +289,9 @@ class NewAssetSchema(BaseSchema):
             db_session.query(AssetModel).filter(AssetModel.imei == value).exists()
         ).scalar():
             db_session.close()
-            raise ValueError("IMEI já existe")
+            raise HTTPException(
+                status_code=400, detail={"field": "imei", "error": "IMEI já existe"}
+            )
         db_session.close()
         return value
 
@@ -303,7 +306,10 @@ class NewAssetSchema(BaseSchema):
             .exists()
         ).scalar():
             db_session.close()
-            raise ValueError("Patrimônio já existe")
+            raise HTTPException(
+                status_code=400,
+                detail={"field": "register_number", "error": "Patrimônio já existe"},
+            )
         db_session.close()
         return value
 
