@@ -854,10 +854,7 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        new_code = self.__generate_code(
-            db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
-            asset,
-        )
+        code = current_lending.number
 
         workload = current_lending.workload
 
@@ -878,7 +875,7 @@ class DocumentService:
         if employee.legal_person:
             contract_path = create_revoke_lending_contract_pj(
                 NewLendingPjContextSchema(
-                    number=new_code,
+                    number=code,
                     glpi_number=(
                         current_lending.glpi_number
                         if current_lending.glpi_number
@@ -926,7 +923,7 @@ class DocumentService:
         else:
             contract_path = create_revoke_lending_contract(
                 NewLendingContextSchema(
-                    number=new_code,
+                    number=code,
                     glpi_number=(
                         current_lending.glpi_number
                         if current_lending.glpi_number
@@ -964,9 +961,7 @@ class DocumentService:
                 )
             )
 
-        new_doc = DocumentModel(
-            path=contract_path, file_name=f"{new_code} - distrato.pdf"
-        )
+        new_doc = DocumentModel(path=contract_path, file_name=f"{code} - distrato.pdf")
 
         new_doc.doc_type = doc_type
 
@@ -989,7 +984,6 @@ class DocumentService:
         )
 
         current_lending.document_revoke = new_doc
-        current_lending.number = new_code
         current_lending.status = lending_pending
         current_lending.witnesses.append(witness1)
         current_lending.witnesses.append(witness2)
@@ -1372,11 +1366,7 @@ class DocumentService:
 
         item = current_term.term_item
 
-        new_code = self.__generate_code(
-            db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
-            None,
-            "term",
-        )
+        code = current_term.number
 
         employee = current_term.employee
 
@@ -1384,7 +1374,7 @@ class DocumentService:
 
         contract_path = create_term(
             NewTermContextSchema(
-                number=new_code,
+                number=code,
                 full_name=employee.full_name,
                 taxpayer_identification=employee.taxpayer_identification,
                 national_identification=employee.national_identification,
@@ -1404,9 +1394,7 @@ class DocumentService:
             "distrato_termo.html",
         )
 
-        new_doc = DocumentModel(
-            path=contract_path, file_name=f"{new_code} - distrato.pdf"
-        )
+        new_doc = DocumentModel(path=contract_path, file_name=f"{code} - distrato.pdf")
 
         new_doc.doc_type = doc_type
 
@@ -1425,7 +1413,6 @@ class DocumentService:
         logger.info("New Document. %s", str(new_doc))
 
         current_term.document_revoke = new_doc
-        current_term.number = new_code
         current_term.status = term_pending
 
         db_session.add(current_term)
