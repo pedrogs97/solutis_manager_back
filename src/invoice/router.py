@@ -3,7 +3,7 @@
 from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
@@ -167,3 +167,35 @@ def delete_invoice_route(
         content=serializer.model_dump(by_alias=True),
         status_code=status.HTTP_200_OK,
     )
+
+
+@invoice_router.get("/download/{invoice_id}/", response_class=FileResponse)
+def get_download_document(
+    invoice_id: int,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "invoice", "action": "view"})
+    ),
+):
+    """Download a invoice document"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    invoice = invoice_service.get_invoice(
+        invoice_id,
+        db_session,
+    )
+
+    db_session.close()
+
+    if invoice.path or invoice.file_name:
+        return JSONResponse(
+            content="Arquivo não encontrado",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    headers = {"Access-Control-Expose-Headers": "Content-Disposition"}
+    return FileResponse(invoice.path, filename=invoice.file_name, headers=headers)
