@@ -19,6 +19,7 @@ class SizesEnum(str, Enum):
     G = "G"
     GG = "GG"
     XG = "XG"
+    XGG = "XGG"
 
 
 class TermItemSerializerSchema(BaseSchema):
