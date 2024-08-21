@@ -291,6 +291,29 @@ def get_list_asset_status_route(
     return JSONResponse(content=assets_status, status_code=status.HTTP_200_OK)
 
 
+@asset_router.get("/disposal-reasons/")
+def get_disposal_reasons_route(
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            [
+                {"module": "asset", "model": "asset_disposal_reason", "action": "view"},
+                {"module": "asset", "model": "asset_disposal_reason", "action": "edit"},
+            ]
+        )
+    ),
+):
+    """Get disposal reasons route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    disposal_reasons = asset_service.get_disposal_reasons(db_session)
+    db_session.close()
+    return JSONResponse(content=disposal_reasons, status_code=status.HTTP_200_OK)
+
+
 @asset_router.post("/bulk-create/")
 async def post_create_bulk_upload_file(
     file: Annotated[

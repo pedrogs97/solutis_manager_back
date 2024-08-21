@@ -171,6 +171,19 @@ class AssetModel(Base):
         return f"{self.code} - {self.description}"
 
 
+class AssetDisposalReasonModel(Base):
+    """Asset disposal reason model"""
+
+    __tablename__ = "asset_disposal_reason"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    name = Column("name", String(length=255), nullable=False)
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.name}"
+
+
 class AssetDisposalModel(Base):
     """Asset disposal model"""
 
@@ -180,13 +193,16 @@ class AssetDisposalModel(Base):
 
     asset: Mapped[AssetModel] = relationship(lazy="joined")
     asset_id = Column("asset_id", ForeignKey(AssetModel.id))
+    reason_id = Column(
+        "reason_id", ForeignKey(AssetDisposalReasonModel.id), nullable=False
+    )
+    reason: Mapped[AssetDisposalReasonModel] = relationship(lazy="joined")
 
     asset_disposal_attachments: Mapped[
         List["AssetDisposalAttachmentModel"]
     ] = relationship(viewonly=True)
 
     disposal_date = Column("write_off_date", DateTime, nullable=False)
-    reason = Column("reason", String(length=15), nullable=False)
     justification = Column("justification", String(length=255), nullable=True)
     observations = Column("observations", String(length=255), nullable=True)
 

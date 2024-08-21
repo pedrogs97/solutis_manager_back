@@ -7,13 +7,13 @@ from fastapi_filter import FilterDepends, with_prefix
 from fastapi_filter.contrib.sqlalchemy import Filter
 
 from src.asset.filters import AssetShortFilter, AssetTypeFilter
+from src.lending.enums import LendingBUEnum
 from src.lending.models import (
     LendingModel,
     LendingStatusModel,
     WitnessModel,
     WorkloadModel,
 )
-from src.lending.schemas import LendingBUEnum
 from src.people.filters import CostCenterFilter, EmployeeFullNameFilter
 
 

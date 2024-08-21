@@ -1,22 +1,13 @@
 """Lending schemas"""
 
-from enum import Enum
 from typing import List, Optional
 
 from pydantic import Field
 
 from src.asset.schemas import AssetShortSerializerSchema
+from src.lending.enums import LendingBUEnum
 from src.people.schemas import EmployeeSerializerSchema, EmployeeShortSerializerSchema
 from src.schemas import BaseSchema
-
-
-class LendingBUEnum(str, Enum):
-    """BU choices"""
-
-    ADS = "ADS"
-    CSA = "CSA"
-    BPS = "BPS"
-    CORP = "CORP"
 
 
 class CostCenterTotvsSchema(BaseSchema):

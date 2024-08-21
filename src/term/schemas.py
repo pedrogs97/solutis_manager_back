@@ -1,6 +1,5 @@
 """Term schemas"""
 
-from enum import Enum
 from typing import Optional
 
 from pydantic import Field
@@ -8,18 +7,7 @@ from pydantic import Field
 from src.lending.schemas import CostCenterSerializerSchema, WorkloadSerializerSchema
 from src.people.schemas import EmployeeSerializerSchema, EmployeeShortSerializerSchema
 from src.schemas import BaseSchema
-
-
-class SizesEnum(str, Enum):
-    """Sizes enum"""
-
-    PP = "PP"
-    P = "P"
-    M = "M"
-    G = "G"
-    GG = "GG"
-    XG = "XG"
-    XGG = "XGG"
+from src.term.enums import SizesEnum
 
 
 class TermItemSerializerSchema(BaseSchema):

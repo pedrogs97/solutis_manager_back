@@ -18,6 +18,7 @@ from src.asset.filters import AssetFilter, AssetStatusFilter, AssetTypeFilter
 from src.asset.models import (
     AssetDisposalAttachmentModel,
     AssetDisposalModel,
+    AssetDisposalReasonModel,
     AssetModel,
     AssetStatusHistoricModel,
     AssetStatusModel,
@@ -27,6 +28,7 @@ from src.asset.schemas import (
     AssetSerializerSchema,
     AssetStatusSerializerSchema,
     AssetTypeSerializerSchema,
+    DisposalAssetReasonSerializerSchema,
     DisposalAssetSchema,
     DisposalAssetSerializerSchema,
     InactivateAssetSchema,
@@ -198,6 +200,19 @@ class AssetService:
             message = "Muitas manutenções leves."
         return message
 
+    def serialize_asset_disposal(
+        self, asset_disposal: AssetDisposalModel
+    ) -> DisposalAssetSerializerSchema:
+        """Serialize asset disposal"""
+        return DisposalAssetSerializerSchema(
+            disposal_date=asset_disposal.disposal_date,
+            reason=DisposalAssetReasonSerializerSchema(
+                id=asset_disposal.reason.id, name=asset_disposal.reason.name
+            ),
+            justification=asset_disposal.justification,
+            observations=asset_disposal.observations,
+        )
+
     def serialize_asset(self, asset: AssetModel) -> AssetSerializerSchema:
         """Serialize asset"""
         last_maintenance = asset.maintenances[-1] if len(asset.maintenances) else None
@@ -250,14 +265,7 @@ class AssetService:
             ),
             alert=self.__get_asset_alert(asset),
             disposal=(
-                DisposalAssetSerializerSchema(
-                    disposal_date=last_disposal.disposal_date,
-                    reason=last_disposal.reason,
-                    justification=last_disposal.justification,
-                    observations=last_disposal.observations,
-                )
-                if last_disposal
-                else None
+                self.serialize_asset_disposal(last_disposal) if last_disposal else None
             ),
         )
 
@@ -734,7 +742,7 @@ class AssetService:
         self,
         asset_id: int,
         data: DisposalAssetSchema,
-        files: List[UploadFile],
+        files: Union[List[UploadFile], None],
         db_session: Session,
         authenticated_user: UserModel,
     ) -> AssetSerializerSchema:
@@ -762,26 +770,31 @@ class AssetService:
         db_session.commit()
         db_session.flush()
 
-        for file in files:
-            file_code = uuid.uuid4().hex
-            file_name = f"{file.filename}_{file_code}.{file.content_type.split('/')[1]}"
+        if files:
+            for file in files:
+                file_code = uuid.uuid4().hex
+                file_name = (
+                    f"{file.filename}_{file_code}.{file.content_type.split('/')[1]}"
+                )
 
-            upload_dir = (
-                os.path.join(BASE_DIR, "storage", "disposal")
-                if DEBUG
-                else CONTRACT_UPLOAD_DIR
-            )
+                upload_dir = (
+                    os.path.join(BASE_DIR, "storage", "disposal")
+                    if DEBUG
+                    else CONTRACT_UPLOAD_DIR
+                )
 
-            file_path = await upload_file(file_name, "lending", file.read(), upload_dir)
+                file_path = await upload_file(
+                    file_name, "lending", file.read(), upload_dir
+                )
 
-            disposal_attachment = AssetDisposalAttachmentModel(
-                disposal_id=disposal.id,
-                path=file_path,
-                file_name=file_name,
-            )
+                disposal_attachment = AssetDisposalAttachmentModel(
+                    disposal_id=disposal.id,
+                    path=file_path,
+                    file_name=file_name,
+                )
 
-            db_session.add(disposal_attachment)
-            db_session.commit()
+                db_session.add(disposal_attachment)
+                db_session.commit()
 
         db_session.add(asset)
         db_session.commit()
@@ -797,3 +810,13 @@ class AssetService:
         )
 
         return self.serialize_asset(asset)
+
+    def get_disposal_reasons(self, db_session: Session) -> List[dict]:
+        """Get disposal reasons"""
+        reasons = db_session.query(AssetDisposalReasonModel).all()
+        return [
+            DisposalAssetReasonSerializerSchema(
+                id=reason.id, name=reason.name
+            ).model_dump(by_alias=True)
+            for reason in reasons
+        ]

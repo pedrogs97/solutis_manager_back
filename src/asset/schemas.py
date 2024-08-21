@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi.exceptions import HTTPException
 from pydantic import Field, field_validator
 
+from src.asset.enums import DisposalReasonEnum
 from src.asset.models import AssetModel
 from src.backends import get_db_session
 from src.schemas import BaseSchema
@@ -126,10 +127,17 @@ class AssetShortSerializerSchema(BaseSchema):
     )
 
 
+class DisposalAssetReasonSerializerSchema(BaseSchema):
+    """Disposal asset reason serializer schema"""
+
+    id: int
+    name: DisposalReasonEnum
+
+
 class DisposalAssetSerializerSchema(BaseSchema):
     """Disposal asset serializer schema"""
 
-    reason: str
+    reason: DisposalAssetReasonSerializerSchema
     justification: Optional[str] = None
     observations: Optional[str] = None
     disposal_date: date = Field(serialization_alias="disposalDate")
@@ -382,7 +390,7 @@ class InactivateAssetSchema(BaseSchema):
 class DisposalAssetSchema(BaseSchema):
     """Disposal asset schema"""
 
-    reason: str
+    reason: DisposalAssetReasonSerializerSchema
     justification: Optional[str] = None
     observations: Optional[str] = None
     disposal_date: date = Field(alias="disposalDate")
