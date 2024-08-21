@@ -122,6 +122,7 @@ class AssetModel(Base):
 
     maintenances: Mapped[List["MaintenanceModel"]] = relationship(viewonly=True)
     upgrades: Mapped[List["UpgradeModel"]] = relationship(viewonly=True)
+    disposals: Mapped[List["AssetDisposalModel"]] = relationship(viewonly=True)
 
     code = Column("code", String(length=255), nullable=True, unique=True)
     # tombo - registro patrimonial
@@ -131,7 +132,6 @@ class AssetModel(Base):
     supplier = Column("supplier", String(length=100), nullable=True)
     assurance_date = Column("assurance_date", String(length=150), nullable=True)
     observations = Column("observations", String(length=999), nullable=True)
-    discard_reason = Column("discard_reason", String(length=255), nullable=True)
     # padrão
     pattern = Column("pattern", String(length=100), nullable=True)
     brand = Column("brand", String(length=150), nullable=True)
@@ -169,3 +169,47 @@ class AssetModel(Base):
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.code} - {self.description}"
+
+
+class AssetDisposalModel(Base):
+    """Asset disposal model"""
+
+    __tablename__ = "asset_disposal"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+
+    asset: Mapped[AssetModel] = relationship(lazy="joined")
+    asset_id = Column("asset_id", ForeignKey(AssetModel.id))
+
+    asset_disposal_attachments: Mapped[
+        List["AssetDisposalAttachmentModel"]
+    ] = relationship(viewonly=True)
+
+    disposal_date = Column("write_off_date", DateTime, nullable=False)
+    reason = Column("reason", String(length=15), nullable=False)
+    justification = Column("justification", String(length=255), nullable=True)
+    observations = Column("observations", String(length=255), nullable=True)
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.asset} - {self.reason} ({self.disposal_date.strftime(DEFAULT_DATE_FORMAT)})"
+
+
+class AssetDisposalAttachmentModel(Base):
+    """Asset disposal attachment model"""
+
+    __tablename__ = "asset_disposal_attachment"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+
+    disposal: Mapped[AssetDisposalModel] = relationship(
+        back_populates="asset_disposal_attachments"
+    )
+    disposal_id = Column("disposal_id", ForeignKey(AssetDisposalModel.id))
+
+    path = Column("path", String(length=255), nullable=True)
+    file_name = Column("file_name", String(length=255), nullable=True)
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.file_name} - {self.path}"

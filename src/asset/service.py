@@ -1,6 +1,8 @@
 """Asset service"""
 
 import logging
+import os
+import uuid
 from io import BytesIO
 from typing import List, Union
 
@@ -14,6 +16,8 @@ from sqlalchemy.orm import Session
 
 from src.asset.filters import AssetFilter, AssetStatusFilter, AssetTypeFilter
 from src.asset.models import (
+    AssetDisposalAttachmentModel,
+    AssetDisposalModel,
     AssetModel,
     AssetStatusHistoricModel,
     AssetStatusModel,
@@ -23,12 +27,14 @@ from src.asset.schemas import (
     AssetSerializerSchema,
     AssetStatusSerializerSchema,
     AssetTypeSerializerSchema,
+    DisposalAssetSchema,
+    DisposalAssetSerializerSchema,
     InactivateAssetSchema,
     NewAssetSchema,
     UpdateAssetSchema,
 )
 from src.auth.models import UserModel
-from src.config import DEFAULT_DATE_FORMAT
+from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
 from src.invoice.models import InvoiceModel
 from src.lending.models import LendingModel
 from src.lending.schemas import (
@@ -37,6 +43,7 @@ from src.lending.schemas import (
 )
 from src.log.services import LogService
 from src.people.schemas import EmployeeShortSerializerSchema
+from src.utils import upload_file
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -195,6 +202,7 @@ class AssetService:
         """Serialize asset"""
         last_maintenance = asset.maintenances[-1] if len(asset.maintenances) else None
         last_upgrade = asset.upgrades[-1] if len(asset.upgrades) else None
+        last_disposal = asset.disposals[-1] if len(asset.disposals) else None
 
         return AssetSerializerSchema(
             id=asset.id,
@@ -211,7 +219,6 @@ class AssetService:
             supplier=asset.supplier,
             assurance_date=asset.assurance_date,
             observations=asset.observations,
-            discard_reason=asset.discard_reason,
             pattern=asset.pattern,
             operational_system=asset.operational_system,
             serial_number=asset.serial_number,
@@ -242,6 +249,16 @@ class AssetService:
                 else "-"
             ),
             alert=self.__get_asset_alert(asset),
+            disposal=(
+                DisposalAssetSerializerSchema(
+                    disposal_date=last_disposal.disposal_date,
+                    reason=last_disposal.reason,
+                    justification=last_disposal.justification,
+                    observations=last_disposal.observations,
+                )
+                if last_disposal
+                else None
+            ),
         )
 
     def serialize_asset_type(
@@ -712,3 +729,71 @@ class AssetService:
         db_session.commit()
 
         return {"message": "Arquivo enviado com sucesso."}
+
+    async def disposal_asset(
+        self,
+        asset_id: int,
+        data: DisposalAssetSchema,
+        files: List[UploadFile],
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> AssetSerializerSchema:
+        """Disposal asset"""
+        asset = self.__get_asset_or_404(asset_id, db_session)
+
+        if asset.status_id != 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"field": "assetId", "error": "Ativo não pode ser baixado"},
+            )
+
+        asset.active = False
+        asset.status_id = 8
+
+        disposal = AssetDisposalModel(
+            asset_id=asset.id,
+            disposal_date=data.disposal_date,
+            reason=data.reason,
+            justification=data.justification,
+            observations=data.observations,
+        )
+
+        db_session.add(disposal)
+        db_session.commit()
+        db_session.flush()
+
+        for file in files:
+            file_code = uuid.uuid4().hex
+            file_name = f"{file.filename}_{file_code}.{file.content_type.split('/')[1]}"
+
+            upload_dir = (
+                os.path.join(BASE_DIR, "storage", "disposal")
+                if DEBUG
+                else CONTRACT_UPLOAD_DIR
+            )
+
+            file_path = await upload_file(file_name, "lending", file.read(), upload_dir)
+
+            disposal_attachment = AssetDisposalAttachmentModel(
+                disposal_id=disposal.id,
+                path=file_path,
+                file_name=file_name,
+            )
+
+            db_session.add(disposal_attachment)
+            db_session.commit()
+
+        db_session.add(asset)
+        db_session.commit()
+        db_session.flush()
+
+        service_log.set_log(
+            "lending",
+            "asset",
+            "Baixa de Ativo",
+            asset.id,
+            authenticated_user,
+            db_session,
+        )
+
+        return self.serialize_asset(asset)

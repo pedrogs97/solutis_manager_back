@@ -126,6 +126,15 @@ class AssetShortSerializerSchema(BaseSchema):
     )
 
 
+class DisposalAssetSerializerSchema(BaseSchema):
+    """Disposal asset serializer schema"""
+
+    reason: str
+    justification: Optional[str] = None
+    observations: Optional[str] = None
+    disposal_date: date = Field(serialization_alias="disposalDate")
+
+
 class AssetSerializerSchema(BaseSchema):
     """Asset serializer schema"""
 
@@ -152,10 +161,6 @@ class AssetSerializerSchema(BaseSchema):
         default=None,
     )
     observations: Optional[str] = None
-    discard_reason: Optional[str] = Field(
-        serialization_alias="discardReason",
-        default=None,
-    )
     # padrão
     pattern: Optional[str] = None
     operational_system: Optional[str] = Field(
@@ -200,6 +205,7 @@ class AssetSerializerSchema(BaseSchema):
     maintenance_status: str = Field(serialization_alias="maintenanceStatus")
     upgrade_status: str = Field(serialization_alias="upgradeStatus")
     alert: Optional[str] = ""
+    disposal: Optional[DisposalAssetSerializerSchema] = None
 
 
 class NewAssetSchema(BaseSchema):
@@ -233,11 +239,6 @@ class NewAssetSchema(BaseSchema):
         default=None,
     )
     observations: Optional[str] = None
-    discard_reason: Optional[str] = Field(
-        alias="discardReason",
-        serialization_alias="discard_reason",
-        default=None,
-    )
     # padrão
     pattern: Optional[str] = None
     operational_system: Optional[str] = Field(
@@ -334,10 +335,6 @@ class UpdateAssetSchema(BaseSchema):
         default=None,
     )
     observations: Optional[str] = None
-    discard_reason: Optional[str] = Field(
-        alias="discardReason",
-        default=None,
-    )
     # padrão
     pattern: Optional[str] = None
     operational_system: Optional[str] = Field(
@@ -380,3 +377,12 @@ class InactivateAssetSchema(BaseSchema):
     """Inactivate asset schema"""
 
     active: bool
+
+
+class DisposalAssetSchema(BaseSchema):
+    """Disposal asset schema"""
+
+    reason: str
+    justification: Optional[str] = None
+    observations: Optional[str] = None
+    disposal_date: date = Field(alias="disposalDate")

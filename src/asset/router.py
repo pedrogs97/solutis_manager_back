@@ -1,6 +1,6 @@
 """Asset router"""
 
-from typing import Annotated, Union
+from typing import Annotated, List, Union
 
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -13,7 +13,12 @@ from src.asset.filters import (
     AssetStatusFilter,
     AssetTypeFilter,
 )
-from src.asset.schemas import InactivateAssetSchema, NewAssetSchema, UpdateAssetSchema
+from src.asset.schemas import (
+    DisposalAssetSchema,
+    InactivateAssetSchema,
+    NewAssetSchema,
+    UpdateAssetSchema,
+)
 from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.backends import PermissionChecker, get_db_session
@@ -93,6 +98,34 @@ def patch_inactivate_asset_route(
         )
     serializer = asset_service.inactivate_asset(
         asset_id, data, db_session, authenticated_user
+    )
+    db_session.close()
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True), status_code=status.HTTP_200_OK
+    )
+
+
+@asset_router.patch("/disposal/{asset_id}/")
+async def patch_disposal_asset_route(
+    asset_id: int,
+    data: DisposalAssetSchema,
+    files: Annotated[
+        Union[List[UploadFile], None],
+        File(description="Anexos da baixa do ativo"),
+    ],
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "asset", "model": "asset", "action": "edit"})
+    ),
+):
+    """Update asset route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    serializer = await asset_service.disposal_asset(
+        asset_id, data, files, db_session, authenticated_user
     )
     db_session.close()
     return JSONResponse(
