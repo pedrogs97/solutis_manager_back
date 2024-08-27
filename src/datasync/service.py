@@ -548,6 +548,7 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
             asset_description_splited = totvs_asset.description.split(" ")
             if len(asset_description_splited) > 1:
                 asset_simple_description = asset_description_splited[0]
+                asset_simple_description_second = asset_description_splited[1]
                 asset_description = (
                     asset_simple_description + " " + asset_description_splited[1]
                 )
@@ -566,6 +567,7 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
                         or_(
                             AssetTypeModel.name.like(asset_simple_description),
                             AssetTypeModel.name.like(asset_description),
+                            AssetTypeModel.name.like(asset_simple_description_second),
                         )
                     )
                     .first()
