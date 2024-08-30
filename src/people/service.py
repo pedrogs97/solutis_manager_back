@@ -82,6 +82,7 @@ class EmployeeService:
     ) -> tuple:
         """Validates role, nationality, marital status and gender values"""
         errors = []
+        role = None
         if data.role:
             role = (
                 db_session.query(EmployeeRoleTOTVSModel)
@@ -196,6 +197,7 @@ class EmployeeService:
             ),
             registration=employee.registration,
             legal_person=employee.legal_person,
+            job_position=employee.job_position,
             employer_address=employee.employer_address,
             employer_name=employee.employer_name,
             employer_number=employee.employer_number,
@@ -269,6 +271,7 @@ class EmployeeService:
             birthday=data.birthday,
             manager=data.manager,
             legal_person=True,
+            job_position=data.job_position.upper(),
             employer_number=data.employer_number,
             employer_address=data.employer_address,
             employer_contract_object=data.employer_contract_object,
@@ -360,6 +363,8 @@ class EmployeeService:
             employee.employer_contract_date = data.employer_contract_date
         if data.employer_end_contract_date:
             employee.employer_end_contract_date = data.employer_end_contract_date
+        if data.job_position:
+            employee.job_position = data.job_position
 
         db_session.add(employee)
         db_session.commit()

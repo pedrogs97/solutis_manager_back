@@ -75,7 +75,11 @@ class EmployeeEducationalLevelSerializerSchema(BaseSchema):
 class NewEmployeeSchema(BaseSchema):
     """New employee schema"""
 
-    role: int
+    role: Optional[int] = None
+    job_position: str = Field(
+        alias="jobPosition",
+        serialization_alias="job_position",
+    )
     nationality_id: int = Field(
         alias="nationalityId",
         serialization_alias="nationality_id",
@@ -149,6 +153,11 @@ class UpdateEmployeeSchema(BaseSchema):
     """Update employee schema"""
 
     role: Optional[int] = None
+    job_position: Optional[str] = Field(
+        alias="jobPosition",
+        serialization_alias="job_position",
+        default=None,
+    )
     nationality_id: Optional[int] = Field(
         alias="nationalityId",
         serialization_alias="nationality_id",
@@ -234,6 +243,7 @@ class EmployeeSerializerSchema(BaseSchema):
     educational_level: Optional[EmployeeEducationalLevelSerializerSchema] = Field(
         serialization_alias="educationalLevel", default=None
     )
+    job_position: Optional[str] = Field(serialization_alias="jobPosition", default=None)
     code: Optional[str] = None
     status: str
     full_name: str = Field(serialization_alias="fullName")

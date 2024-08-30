@@ -58,6 +58,8 @@ class EmployeeModel(Base):
         nullable=True,
     )
 
+    job_position = Column("job_position", String(200), nullable=True)
+
     code = Column("code", String(length=10), nullable=True, unique=True)
     status = Column("status", String(length=100), default="Ativo")
     full_name = Column("full_name", String(length=120), nullable=False)
