@@ -536,7 +536,7 @@ class DocumentService:
                     national_identification=employee.national_identification,
                     address=employee.address,
                     nationality=employee.nationality.description,
-                    role=employee.role.name,
+                    role=employee.role.name if employee.role else employee.job_position,
                     marital_status=employee.marital_status.description,
                     cc=current_lending.cost_center.code,
                     manager=current_lending.manager,
@@ -705,7 +705,11 @@ class DocumentService:
                         national_identification=employee.national_identification,
                         address=employee.address,
                         nationality=employee.nationality.description,
-                        role=employee.role.name,
+                        role=(
+                            employee.role.name
+                            if employee.role
+                            else employee.job_position
+                        ),
                         marital_status=employee.marital_status.description,
                         cc=current_lending.cost_center.code,
                         manager=current_lending.manager,
@@ -886,7 +890,7 @@ class DocumentService:
                     national_identification=employee.national_identification,
                     address=employee.address,
                     nationality=employee.nationality.description,
-                    role=employee.role.name,
+                    role=employee.role.name if employee.role else employee.job_position,
                     marital_status=employee.marital_status.description,
                     cc=current_lending.cost_center.code,
                     manager=current_lending.manager,
@@ -1049,7 +1053,7 @@ class DocumentService:
                     national_identification=employee.national_identification,
                     address=employee.address,
                     nationality=employee.nationality.description,
-                    role=employee.role.name,
+                    role=employee.role.name if employee.role else employee.job_position,
                     marital_status=employee.marital_status.description,
                     cc=current_lending.cost_center.code,
                     manager=current_lending.manager,
