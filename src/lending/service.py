@@ -579,7 +579,7 @@ class LendingService:
                 db_session.add(lending.document)
 
             AssetService().update_asset_status(
-                lending.asset, db_session.query(AssetStatusModel).get(2), db_session
+                lending.asset, db_session.query(AssetStatusModel).get(1), db_session
             )
 
             db_session.add(lending.asset)
