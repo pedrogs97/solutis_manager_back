@@ -332,7 +332,6 @@ class AssetService:
             supplier=data.supplier,
             assurance_date=data.assurance_date,
             observations=data.observations,
-            discard_reason=data.discard_reason,
             pattern=data.pattern,
             operational_system=data.operational_system,
             serial_number=data.serial_number,

@@ -542,6 +542,7 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
                     "type",
                     "cost_center",
                     "invoice_number",
+                    "discard_reason",
                 }
             )
 
