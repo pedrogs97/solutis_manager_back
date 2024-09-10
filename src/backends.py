@@ -241,7 +241,7 @@ class PermissionChecker:
     def has_permissions(self, user: UserModel) -> bool:
         """Check if user has permission"""
 
-        if user.group.name == "Administrador" and user.is_staff:
+        if user.group.name == "MASTER" or user.is_staff:
             return True
 
         if isinstance(self.required_permissions, list):
