@@ -582,7 +582,6 @@ class LendingService:
                 lending.asset, db_session.query(AssetStatusModel).get(1), db_session
             )
 
-            db_session.add(lending.asset)
             db_session.add(lending)
             db_session.commit()
             db_session.flush()
