@@ -67,6 +67,7 @@ class InvoiceService:
                 asset_type=asset.type.name if asset.type else None,
                 description=asset.description,
                 register_number=asset.register_number,
+                value=asset.value,
             )
             for asset in invoice.assets
         ]

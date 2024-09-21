@@ -191,7 +191,7 @@ def get_download_document(
 
     db_session.close()
 
-    if invoice.path or invoice.file_name:
+    if not invoice.path or not invoice.file_name:
         return JSONResponse(
             content="Arquivo não encontrado",
             status_code=status.HTTP_404_NOT_FOUND,

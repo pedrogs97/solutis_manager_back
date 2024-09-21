@@ -125,6 +125,7 @@ class AssetShortSerializerSchema(BaseSchema):
         serialization_alias="assetType",
         default=None,
     )
+    value: Optional[float] = None
 
 
 class DisposalAssetReasonSerializerSchema(BaseSchema):
