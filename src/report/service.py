@@ -79,10 +79,10 @@ class ReportService:
         ("F5", "COLABORADOR"),
         ("G5", "PADRÃO EQUIPAMENTO"),
         ("H5", "CENTRO DE CUSTO"),
-        ("H5", "CENTRO DE CUSTO (código)"),
-        ("I5", "DESCRIÇÃO DO EQUIPAMENTO"),
-        ("J5", "PATRIMÔNIO"),
-        ("K5", "TIPO DE CONTRATO"),
+        ("I5", "CENTRO DE CUSTO (código)"),
+        ("J5", "DESCRIÇÃO DO EQUIPAMENTO"),
+        ("K5", "PATRIMÔNIO"),
+        ("L5", "TIPO DE CONTRATO"),
     ]
 
     MAINTENANCE_COLS = [
@@ -432,7 +432,7 @@ class ReportService:
 
         cell_col_header_format = self.__format_cell_col(self.workbook.add_format())
 
-        for col in self.ASSET_COLS:
+        for col in self.ASSET_PATTERN_COLS:
             self.worksheet.write(col[0], col[1], cell_col_header_format)
 
         cell_data_format = self.__format_cell(self.workbook.add_format())

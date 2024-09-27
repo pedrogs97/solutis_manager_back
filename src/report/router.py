@@ -3,7 +3,7 @@
 from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
@@ -83,8 +83,7 @@ def get_report_by_employee_route(
 
     if not file:
         db_session.close()
-        return JSONResponse(
-            content=None,
+        return Response(
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
@@ -151,8 +150,7 @@ def get_report_by_asset_route(
 
     if not file:
         db_session.close()
-        return JSONResponse(
-            content=None,
+        return Response(
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
@@ -219,8 +217,7 @@ def get_report_by_pattern_route(
 
     if not file:
         db_session.close()
-        return JSONResponse(
-            content=None,
+        return Response(
             status_code=status.HTTP_204_NO_CONTENT,
         )
 
@@ -255,8 +252,7 @@ def get_report_by_maintenance_route(
 
     if not file:
         db_session.close()
-        return JSONResponse(
-            content=None,
+        return Response(
             status_code=status.HTTP_204_NO_CONTENT,
         )
 

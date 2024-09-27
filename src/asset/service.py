@@ -755,7 +755,11 @@ class AssetService:
             )
 
         asset.active = False
-        asset.status_id = 8
+        disposal_staus = (
+            db_session.query(AssetStatusModel).filter(AssetStatusModel.id == 8).first()
+        )
+        self.update_asset_status(asset, disposal_staus, db_session, only_history=True)
+        asset.status = disposal_staus
 
         disposal = AssetDisposalModel(
             asset_id=asset.id,
