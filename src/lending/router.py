@@ -155,7 +155,6 @@ def delete_lending_route(
     lending_service.delete_lending(lending_id, authenticated_user, db_session)
     db_session.close()
     return JSONResponse(
-        content=None,
         status_code=status.HTTP_204_NO_CONTENT,
     )
 

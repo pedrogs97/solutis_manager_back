@@ -12,7 +12,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from reportlab.lib.pagesizes import inch, landscape, letter
 from reportlab.pdfgen import canvas
 from sqlalchemy import desc
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql.expression import or_
 from xlsxwriter import Workbook
 from xlsxwriter.format import Format
@@ -20,6 +20,7 @@ from xlsxwriter.utility import xl_rowcol_to_cell
 
 from src.asset.models import AssetModel, AssetStatusHistoricModel
 from src.config import DEFAULT_DATE_FORMAT, REPORT_UPLOAD_DIR
+from src.datasync.models import CostCenterTOTVSModel
 from src.lending.models import LendingModel
 from src.log.models import LogModel
 from src.maintenance.models import (
@@ -31,17 +32,21 @@ from src.maintenance.models import (
 from src.report.filters import (
     AssetPatternFilter,
     AssetReportFilter,
+    AssetStockReportFilter,
     LendingReportFilter,
     MaintenanceReportFilter,
 )
+
+DEFAULT_INIT_COL = ("B5", "N°")
 
 
 class ReportService:
     """Report service"""
 
-    OFFSET_ROW = 7
+    OFFSET_ROW = 5
     OFFSET_COL = 2
     LENDING_COLS = [
+        DEFAULT_INIT_COL,
         ("C5", "COLABORADOR"),
         ("D5", "CARGO"),
         ("E5", "PROJETO"),
@@ -58,6 +63,7 @@ class ReportService:
     ]
 
     ASSET_COLS = [
+        DEFAULT_INIT_COL,
         ("C5", "DESCRIÇÃO DO EQUIPAMENTO"),
         ("D5", "PATRIMÔNIO"),
         ("E5", "NÚMERO DE SÉRIE / IMEI"),
@@ -73,19 +79,21 @@ class ReportService:
     ]
 
     ASSET_PATTERN_COLS = [
-        ("C5", "GESTOR"),
-        ("D5", "EXECUTIVO"),
-        ("E5", "BU"),
-        ("F5", "COLABORADOR"),
-        ("G5", "PADRÃO EQUIPAMENTO"),
-        ("H5", "CENTRO DE CUSTO"),
-        ("I5", "CENTRO DE CUSTO (código)"),
-        ("J5", "DESCRIÇÃO DO EQUIPAMENTO"),
-        ("K5", "PATRIMÔNIO"),
+        DEFAULT_INIT_COL,
+        ("C5", "COLABORADOR"),
+        ("D5", "BU"),
+        ("E5", "CENTRO DE CUSTO"),
+        ("F5", "CENTRO DE CUSTO (código)"),
+        ("G5", "GESTOR"),
+        ("H5", "EXECUTIVO"),
+        ("I5", "DESCRIÇÃO DO EQUIPAMENTO"),
+        ("J5", "PATRIMÔNIO"),
+        ("K5", "PADRÃO EQUIPAMENTO"),
         ("L5", "TIPO DE CONTRATO"),
     ]
 
     MAINTENANCE_COLS = [
+        DEFAULT_INIT_COL,
         ("C5", "DATA DA ABERTURA DO CHAMADO"),
         ("D5", "DATA DE ENCERRAMENTO DO CHAMADO"),
         ("E5", "NÚMERO DO CHAMADO"),
@@ -100,9 +108,21 @@ class ReportService:
         ("N5", "STATUS"),
     ]
 
+    ASSET_STOCK_COLS = [
+        DEFAULT_INIT_COL,
+        ("C5", "DESCRIÇÃO DO EQUIPAMENTO"),
+        ("D5", "CENTRO DE CUSTO"),
+        ("E5", "CENTRO DE CUSTO (código)"),
+        ("F5", "STATUS"),
+        ("G5", "PATRIMÔNIO"),
+        ("H5", "PADRÃO EQUIPAMENTO"),
+    ]
+
     REPORT_FILE_NAME = "report.xlsx"
 
     NOT_PROVIDED = "Não informado"
+
+    NOT_LINKED = "Não vinculado"
 
     def __init__(self, by="CONSULTA POR COLABORADOR") -> None:
         self.output_file = io.BytesIO()
@@ -113,7 +133,11 @@ class ReportService:
         """Convert lending to report"""
         return {
             "employee": lending.employee.full_name,
-            "role": lending.employee.role.name,
+            "role": (
+                lending.employee.role.name
+                if lending.employee.role
+                else lending.employee.job_position
+            ),
             "project": lending.project,
             "bu": lending.bu,
             "cost_center": (
@@ -154,24 +178,37 @@ class ReportService:
             "status": status_lending,
         }
 
+    def asset_stock_to_report(
+        self, asset: AssetModel, center_cost_name: str, center_cost_code: str
+    ) -> dict:
+        """Convert asset to report"""
+        return {
+            "description": asset.description,
+            "cost_center": center_cost_name,
+            "cost_center_code": center_cost_code,
+            "status": asset.status.name if asset.status else "Sem status",
+            "register_number": asset.register_number,
+            "pattern": asset.pattern,
+        }
+
     def asset_pattern_to_report(self, asset: AssetModel, lending: LendingModel) -> dict:
         """Convert asset pattern to report"""
         return {
-            "manager": lending.manager,
-            "business_executive": lending.business_executive,
-            "bu": lending.bu,
             "colaborador": (
                 lending.employee.full_name if lending.employee else self.NOT_PROVIDED
             ),
-            "pattern": asset.pattern if asset.pattern else self.NOT_PROVIDED,
+            "bu": lending.bu,
             "cost_center": (
                 lending.cost_center.name if lending.cost_center else self.NOT_PROVIDED
             ),
             "cost_center_code": (
                 lending.cost_center.code if lending.cost_center else self.NOT_PROVIDED
             ),
+            "manager": lending.manager,
+            "business_executive": lending.business_executive,
             "description": asset.description,
             "register_number": asset.register_number,
+            "pattern": asset.pattern if asset.pattern else self.NOT_PROVIDED,
             "type": asset.type.name if asset.type else self.NOT_PROVIDED,
         }
 
@@ -184,6 +221,7 @@ class ReportService:
         )
         imei = maintenance.asset.imei if maintenance.asset.imei else self.NOT_PROVIDED
         value = str(maintenance.asset.value).replace(".", ",")
+        assurance_date = maintenance.asset.assurance_date.split(" ")[0]
         return {
             "opening_date": maintenance.open_date,
             "closing_date": maintenance.close_date,
@@ -198,7 +236,7 @@ class ReportService:
             "serial_number": f"{serial_number} / {imei}",
             "patrimony": maintenance.asset.register_number,
             "pattern": maintenance.asset.pattern,
-            "assurance_date": maintenance.asset.assurance_date,
+            "assurance_date": assurance_date,
             "value": f"R$ {value}",  # format value
             "status": maintenance.status.name,
         }
@@ -212,6 +250,7 @@ class ReportService:
         )
         imei = upgrade.asset.imei if upgrade.asset.imei else self.NOT_PROVIDED
         value = str(upgrade.asset.value).replace(".", ",")
+        assurance_date = upgrade.asset.assurance_date.split(" ")[0]
         return {
             "opening_date": upgrade.open_date,
             "closing_date": upgrade.close_date,
@@ -222,7 +261,7 @@ class ReportService:
             "serial_number": f"{serial_number} / {imei}",
             "patrimony": upgrade.asset.register_number,
             "pattern": upgrade.asset.pattern,
-            "assurance_date": upgrade.asset.assurance_date,
+            "assurance_date": assurance_date,
             "value": f"R$ {value}",  # format value
             "status": upgrade.status.name,
         }
@@ -233,6 +272,13 @@ class ReportService:
         cell_format.set_num_format("d/mm/yyyy")
         cell_format.set_font("Aptos Narrow")
         cell_format.set_font_size(11)
+        return cell_format
+
+    def __format_center_cell(self, cell_format: Format) -> Format:
+        cell_format.set_align("center")
+        cell_format.set_border(1)
+        cell_format.set_font_size(11)
+        cell_format.set_font("Calibri")
         return cell_format
 
     def __format_cell_title(self, cell_format: Format) -> Format:
@@ -310,6 +356,11 @@ class ReportService:
             to_report = self.lending_to_report(item)
             for i_col, value in enumerate(to_report.values()):
                 self.worksheet.write(
+                    xl_rowcol_to_cell(i_row + self.OFFSET_ROW, self.OFFSET_COL - 1),
+                    i_row + 1,
+                    self.__format_center_cell(self.workbook.add_format()),
+                )
+                self.worksheet.write(
                     xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),
                     value,
                     cell_data_format,
@@ -377,6 +428,11 @@ class ReportService:
                 ).values()
             ):
                 self.worksheet.write(
+                    xl_rowcol_to_cell(i_row + self.OFFSET_ROW, self.OFFSET_COL - 1),
+                    i_row + 1,
+                    self.__format_center_cell(self.workbook.add_format()),
+                )
+                self.worksheet.write(
                     xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),
                     value,
                     cell_data_format,
@@ -442,6 +498,11 @@ class ReportService:
                 self.asset_pattern_to_report(item.asset, item).values()
             ):
                 self.worksheet.write(
+                    xl_rowcol_to_cell(i_row + self.OFFSET_ROW, self.OFFSET_COL - 1),
+                    i_row + 1,
+                    self.__format_center_cell(self.workbook.add_format()),
+                )
+                self.worksheet.write(
                     xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),
                     value,
                     cell_data_format,
@@ -500,6 +561,11 @@ class ReportService:
             )
             for i_col, value in enumerate(values):
                 self.worksheet.write(
+                    xl_rowcol_to_cell(i_row + self.OFFSET_ROW, self.OFFSET_COL - 1),
+                    i_row + 1,
+                    self.__format_center_cell(self.workbook.add_format()),
+                )
+                self.worksheet.write(
                     xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),
                     value,
                     cell_data_format,
@@ -555,6 +621,106 @@ class ReportService:
             transformer=transformer_report,
         )
         return paginated
+
+    def report_list_by_asset_stock(
+        self,
+        report_filters: AssetStockReportFilter,
+        db_session: Session,
+        page: int = 1,
+        size: int = 50,
+    ):
+        """Report list by asset"""
+        cost_center_alias = aliased(CostCenterTOTVSModel)
+        report_list = report_filters.filter(
+            db_session.query(
+                AssetModel,
+                cost_center_alias.name.label("cost_center_name"),
+                cost_center_alias.code.label("cost_center_code"),
+            )
+            .outerjoin(LendingModel, AssetModel.id == LendingModel.asset_id)
+            .outerjoin(
+                cost_center_alias, LendingModel.cost_center_id == cost_center_alias.id
+            ),
+            db_session.query(LogModel),
+        )
+
+        params = Params(page=page, size=size)
+        paginated = paginate(
+            report_list,
+            params=params,
+            transformer=lambda report_list: [
+                self.asset_stock_to_report(
+                    data[0],
+                    data[1] or self.NOT_LINKED,
+                    data[2] or self.NOT_LINKED,
+                )
+                for data in report_list
+            ],
+        )
+        return paginated
+
+    def report_by_asset_stock(
+        self,
+        report_filters: AssetStockReportFilter,
+        db_session: Session,
+    ):
+        """Report by asset"""
+        cost_center_alias = aliased(CostCenterTOTVSModel)
+        report_data: List[AssetModel] = report_filters.filter(
+            db_session.query(
+                AssetModel,
+                cost_center_alias.name.label("cost_center_name"),
+                cost_center_alias.code.label("cost_center_code"),
+            )
+            .outerjoin(LendingModel, AssetModel.id == LendingModel.asset_id)
+            .outerjoin(
+                cost_center_alias, LendingModel.cost_center_id == cost_center_alias.id
+            ),
+            db_session.query(LogModel),
+        ).all()
+
+        if not report_data:
+            return None
+
+        self.worksheet.hide_gridlines(2)
+
+        self.worksheet.write(
+            "C3",
+            "RELATÓRIO DE ESTOQUE DE ATIVOS",
+            self.__format_cell_title(self.workbook.add_format()),
+        )
+
+        cell_col_header_format = self.__format_cell_col(self.workbook.add_format())
+
+        for col in self.ASSET_STOCK_COLS:
+            self.worksheet.write(
+                col[0] or self.NOT_LINKED,
+                col[1] or self.NOT_LINKED,
+                cell_col_header_format,
+            )
+
+        cell_data_format = self.__format_cell(self.workbook.add_format())
+
+        for i_row, item in enumerate(report_data):
+
+            for i_col, value in enumerate(
+                self.asset_stock_to_report(item[0], item[1], item[2]).values()
+            ):
+                self.worksheet.write(
+                    xl_rowcol_to_cell(i_row + self.OFFSET_ROW, self.OFFSET_COL - 1),
+                    i_row + 1,
+                    self.__format_center_cell(self.workbook.add_format()),
+                )
+                self.worksheet.write(
+                    xl_rowcol_to_cell(i_row + self.OFFSET_ROW, i_col + self.OFFSET_COL),
+                    value,
+                    cell_data_format,
+                )
+
+        self.worksheet.autofit()
+        self.workbook.close()
+        self.output_file.seek(0)
+        return self.output_file
 
     def __draw_wrapped_text(self, c: canvas.Canvas, text: str, y, max_width=80) -> int:
         wrapped_text = textwrap.wrap(text, width=max_width)

@@ -176,6 +176,5 @@ def delete_term_route(
     term_service.delete_term(term_id, authenticated_user, db_session)
     db_session.close()
     return JSONResponse(
-        content=None,
         status_code=status.HTTP_204_NO_CONTENT,
     )

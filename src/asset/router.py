@@ -19,6 +19,7 @@ from src.asset.schemas import (
     NewAssetSchema,
     UpdateAssetSchema,
 )
+from src.asset.scripts import fix_asset_status
 from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.backends import PermissionChecker, get_db_session
@@ -346,3 +347,12 @@ async def post_create_bulk_upload_file(
             content=response_data, status_code=status.HTTP_400_BAD_REQUEST
         )
     return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
+
+
+@asset_router.get("/run/fix-status/")
+async def get_run_fix_assets_status_route(
+    db_session: Session = Depends(get_db_session),
+):
+    """Run fix assets status route"""
+    fix_asset_status(db_session)
+    return JSONResponse(content="OK", status_code=status.HTTP_200_OK)

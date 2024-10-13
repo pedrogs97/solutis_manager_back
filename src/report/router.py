@@ -21,6 +21,7 @@ from src.lending.models import LendingModel
 from src.report.filters import (
     AssetPatternFilter,
     AssetReportFilter,
+    AssetStockReportFilter,
     LendingReportFilter,
     MaintenanceReportFilter,
 )
@@ -295,6 +296,73 @@ def get_list_report_by_maintenance_route(
     )
     db_session.close()
     return report_list
+
+
+@report_router.get("/list/by-asset-stock/")
+def get_list_report_by_asset_stock_route(
+    report_filters: AssetStockReportFilter = FilterDepends(AssetStockReportFilter),
+    page: int = Query(1, ge=1, description=PAGE_NUMBER_DESCRIPTION),
+    size: int = Query(
+        PAGINATION_NUMBER,
+        ge=1,
+        le=MAX_PAGINATION_NUMBER,
+        description=PAGE_SIZE_DESCRIPTION,
+    ),
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "report", "model": "report", "action": "view"})
+    ),
+) -> JSONResponse:
+    """Login user route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    report_service = ReportService()
+    report_list = report_service.report_list_by_asset_stock(
+        report_filters, db_session, page, size
+    )
+    db_session.close()
+    return report_list
+
+
+@report_router.get("/by-asset-stock/")
+def get_report_by_asset_stock_route(
+    db_session: Session = Depends(get_db_session),
+    report_filters: AssetStockReportFilter = FilterDepends(AssetStockReportFilter),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "report", "model": "report", "action": "view"})
+    ),
+):
+    """Login user route"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    report_service = ReportService("RELATÓRIO DE ESTOQUE DE ATIVOS")
+    file = report_service.report_by_asset_stock(
+        report_filters,
+        db_session,
+    )
+
+    if not file:
+        db_session.close()
+        return Response(
+            status_code=status.HTTP_204_NO_CONTENT,
+        )
+
+    db_session.close()
+    headers = {
+        "Access-Control-Expose-Headers": "Content-Disposition",
+        "Content-Disposition": f'attachment; filename="{report_service.REPORT_FILE_NAME}"',
+    }
+    return StreamingResponse(
+        content=file,
+        headers=headers,
+        media_type=REPORT_MEDIA_TYPE,
+    )
 
 
 @report_router.get("/projects-select/")
