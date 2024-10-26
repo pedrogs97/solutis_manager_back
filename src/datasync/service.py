@@ -236,6 +236,13 @@ def totvs_to_asset_type_schema(
         return None
 
 
+def get_pattern(description: str, pattern: str) -> str:
+    """Returns a pattern from description"""
+    if description and pattern and description.upper().startswith("MACBOOK"):
+        return "MACBOOK"
+    return pattern or ""
+
+
 def totvs_to_asset_schema(
     row,
 ) -> Union[AssetTotvsSchema, None]:
@@ -262,7 +269,7 @@ def totvs_to_asset_schema(
             invoice_number=row["NOTA"] if row["NOTA"] is not None else "",
             assurance_date=assurance_date,
             observations=row["OBSERVACOES"] if row["OBSERVACOES"] is not None else "",
-            pattern=row["PADRAOEQUIP"] if row["PADRAOEQUIP"] is not None else "",
+            pattern=get_pattern(row["DESCRICAO"], row["PADRAOEQUIP"]),
             operational_system=(
                 row["SISTEMAOPERACIONAL"]
                 if row["SISTEMAOPERACIONAL"] is not None

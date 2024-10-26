@@ -35,7 +35,7 @@ bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login/")
 
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_db_session():

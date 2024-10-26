@@ -367,7 +367,6 @@ class AssetPatternFilter(Filter):
                         LendingModel.created_at.between(self.start_date, self.end_date),
                     ),
                     LendingModel.deleted.is_(False),
-                    LendingStatusModel.id == 2,  # active status
                 ),
             )
         )
