@@ -34,6 +34,7 @@ from src.datasync.router import datasync_router
 from src.datasync.scheduler import SchedulerService
 from src.document.router import document_router
 from src.exceptions import default_response_exception
+from src.inventory.router import inventory_router
 from src.invoice.router import invoice_router
 from src.lending.router import lending_router
 from src.log.router import log_router
@@ -191,6 +192,7 @@ appAPI.include_router(verification_router, prefix=BASE_API)
 appAPI.include_router(document_router, prefix=BASE_API)
 appAPI.include_router(term_router, prefix=BASE_API)
 appAPI.include_router(report_router, prefix=BASE_API)
+appAPI.include_router(inventory_router, prefix=BASE_API)
 
 
 @appAPI.get("/health/", tags=["Service"])

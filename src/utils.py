@@ -2,8 +2,10 @@
 
 import base64
 import os
+from datetime import datetime
 from json import loads
 from os import listdir
+from typing import Tuple
 
 import aiofiles
 import jinja2
@@ -425,3 +427,12 @@ def create_verification_document(context: VerificationContextSchema) -> str:
 
     os.remove(template_path)
     return contract_path
+
+
+def get_start_and_end_datetime(
+    start_date: str, end_date: str
+) -> Tuple[datetime, datetime]:
+    """Get start and end datetime"""
+    start_datetime = datetime.strptime(f"{start_date} 23:59", "%Y-%m-%d %H:%M")
+    end_datetime = datetime.strptime(f"{end_date} 23:59", "%Y-%m-%d %H:%M")
+    return (start_datetime, end_datetime)

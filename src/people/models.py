@@ -1,5 +1,7 @@
 """People models"""
 
+from typing import List
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -57,6 +59,8 @@ class EmployeeModel(Base):
         ForeignKey(EmployeeEducationalLevelTOTVSModel.id),
         nullable=True,
     )
+    lendings: Mapped[List["LendingModel"]] = relationship(viewonly=True)
+    terms: Mapped[List["TermModel"]] = relationship(viewonly=True)
 
     job_position = Column("job_position", String(200), nullable=True)
 

@@ -20,6 +20,7 @@ from src.maintenance.models import (
     UpgradeHistoricModel,
 )
 from src.people.models import EmployeeModel
+from src.utils import get_start_and_end_datetime
 
 logger = logging.getLogger(__name__)
 
@@ -49,10 +50,13 @@ class LendingReportFilter(Filter):
         self, query_lending: Union[Query, Select], query_log: Union[Query, Select]
     ) -> Query:
         """Filter query"""
+        start_datetime, end_datetime = get_start_and_end_datetime(
+            self.start_date, self.end_date
+        )
         previous_lending: List[LogModel] = query_log.filter(
             LogModel.model == "Lending",
             LogModel.operation.startswith("Criação"),
-            LogModel.logged_in.between(self.start_date, self.end_date),
+            LogModel.logged_in.between(start_datetime, end_datetime),
         ).all()
 
         query = (
@@ -65,7 +69,7 @@ class LendingReportFilter(Filter):
                         LendingModel.id.in_(
                             [lending.id for lending in previous_lending]
                         ),
-                        LendingModel.created_at.between(self.start_date, self.end_date),
+                        LendingModel.created_at.between(start_datetime, end_datetime),
                     ),
                     LendingModel.deleted.is_(False),
                 ),
@@ -181,17 +185,20 @@ class AssetReportFilter(Filter):
         self, query_lending: Union[Query, Select], query_log: Union[Query, Select]
     ) -> Query:
         """Filter query"""
+        start_datetime, end_datetime = get_start_and_end_datetime(
+            self.start_date, self.end_date
+        )
         previous_lending: List[LogModel] = query_log.filter(
             LogModel.model == "Lending",
             LogModel.operation.startswith("Criação"),
-            LogModel.logged_in.between(self.start_date, self.end_date),
+            LogModel.logged_in.between(start_datetime, end_datetime),
         ).all()
 
         query = query_lending.join(AssetModel).filter(
             and_(
                 or_(
                     LendingModel.id.in_([lending.id for lending in previous_lending]),
-                    LendingModel.created_at.between(self.start_date, self.end_date),
+                    LendingModel.created_at.between(start_datetime, end_datetime),
                 ),
                 LendingModel.deleted.is_(False),
             ),
@@ -269,17 +276,20 @@ class AssetStockReportFilter(Filter):
         self, query_asset: Union[Query, Select], query_log: Union[Query, Select]
     ) -> Query:
         """Filter query"""
+        start_datetime, end_datetime = get_start_and_end_datetime(
+            self.start_date, self.end_date
+        )
         previous_lending: List[LogModel] = query_log.filter(
             LogModel.model == "Asset",
             LogModel.operation.startswith("Criação"),
-            LogModel.logged_in.between(self.start_date, self.end_date),
+            LogModel.logged_in.between(start_datetime, end_datetime),
         ).all()
 
         query = query_asset.filter(
             and_(
                 or_(
                     AssetModel.id.in_([lending.id for lending in previous_lending]),
-                    AssetModel.created_at.between(self.start_date, self.end_date),
+                    AssetModel.created_at.between(start_datetime, end_datetime),
                 ),
                 ~AssetModel.disposals.any(),
             ),
@@ -348,10 +358,13 @@ class AssetPatternFilter(Filter):
         self, query_lending: Union[Query, Select], query_log: Union[Query, Select]
     ) -> Query:
         """Filter query"""
+        start_datetime, end_datetime = get_start_and_end_datetime(
+            self.start_date, self.end_date
+        )
         previous_lending: List[LogModel] = query_log.filter(
             LogModel.model == "Lending",
             LogModel.operation.startswith("Criação"),
-            LogModel.logged_in.between(self.start_date, self.end_date),
+            LogModel.logged_in.between(start_datetime, end_datetime),
         ).all()
 
         query = (
@@ -364,7 +377,7 @@ class AssetPatternFilter(Filter):
                         LendingModel.id.in_(
                             [lending.id for lending in previous_lending]
                         ),
-                        LendingModel.created_at.between(self.start_date, self.end_date),
+                        LendingModel.created_at.between(start_datetime, end_datetime),
                     ),
                     LendingModel.deleted.is_(False),
                 ),
@@ -447,11 +460,14 @@ class MaintenanceReportFilter(Filter):
         self, query_historic: Union[Query, Select], query_log: Union[Query, Select]
     ) -> Query:
         """Filter query"""
+        start_datetime, end_datetime = get_start_and_end_datetime(
+            self.start_date, self.end_date
+        )
         previous_maintenance: List[LogModel] = query_log.filter(
             and_(
                 or_(LogModel.model == "maintenance", LogModel.model == "upgrade"),
                 LogModel.operation.startswith("Adição"),
-                LogModel.logged_in.between(self.start_date, self.end_date),
+                LogModel.logged_in.between(start_datetime, end_datetime),
             )
         ).all()
 
@@ -465,9 +481,7 @@ class MaintenanceReportFilter(Filter):
                     MaintenanceHistoricModel.maintenance_id.in_(
                         [maintenance.id for maintenance in previous_maintenance]
                     ),
-                    MaintenanceHistoricModel.date.between(
-                        self.start_date, self.end_date
-                    ),
+                    MaintenanceHistoricModel.date.between(start_datetime, end_datetime),
                 ),
             )
         )
@@ -511,11 +525,14 @@ class MaintenanceReportFilter(Filter):
         self, query_historic: Union[Query, Select], query_log: Union[Query, Select]
     ) -> Query:
         """Filter query"""
+        start_datetime, end_datetime = get_start_and_end_datetime(
+            self.start_date, self.end_date
+        )
         previous_upgrade: List[LogModel] = query_log.filter(
             and_(
                 or_(LogModel.model == "upgrade", LogModel.model == "upgrade"),
                 LogModel.operation.startswith("Adição"),
-                LogModel.logged_in.between(self.start_date, self.end_date),
+                LogModel.logged_in.between(start_datetime, end_datetime),
             )
         ).all()
 
@@ -527,7 +544,7 @@ class MaintenanceReportFilter(Filter):
                     UpgradeHistoricModel.id.in_(
                         [upgrade.id for upgrade in previous_upgrade]
                     ),
-                    UpgradeHistoricModel.date.between(self.start_date, self.end_date),
+                    UpgradeHistoricModel.date.between(start_datetime, end_datetime),
                 ),
             )
         )
