@@ -341,10 +341,9 @@ def create_revoke_lending_contract_pj(context: NewLendingPjContextSchema) -> str
 
 def create_term(context: NewTermContextSchema, template_file="termo.html") -> str:
     """Creates new lending term"""
-    template_env = jinja2.Environment(
+    template = jinja2.Environment(
         loader=jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
-    )
-    template = template_env.get_template(template_file)
+    ).get_template(template_file)
     signed_image = get_str_base64_image(SIGNED_DATE_IMAGE)
     date_image = get_str_base64_image(DATE_IMAGE)
     n_glpi_file = get_str_base64_image(GLPI_IMAGE)
