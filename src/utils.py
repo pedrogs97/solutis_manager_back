@@ -11,7 +11,7 @@ import aiofiles
 import jinja2
 import pdfkit
 
-from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR
+from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR, TMP_DIR, TERM_UPLOAD_DIR
 from src.document.schemas import (
     NewLendingContextSchema,
     NewLendingPjContextSchema,
@@ -111,6 +111,9 @@ def create_lending_contract(context: NewLendingContextSchema) -> str:
 
     if not os.path.exists(lending_path):
         os.mkdir(lending_path)
+
+    if not os.path.exists(TMP_DIR):
+        os.mkdir(TMP_DIR)
 
     template_path = os.path.join(lending_path, f"template_{context.number}.html")
     contract_path = os.path.join(lending_path, f"{context.number}.pdf")
@@ -243,7 +246,10 @@ def create_lending_contract_pj(context: NewLendingPjContextSchema) -> str:
     if not os.path.exists(lending_path):
         os.mkdir(lending_path)
 
-    template_path = os.path.join(lending_path, f"template_{context.number}.html")
+    if not os.path.exists(TMP_DIR):
+        os.mkdir(TMP_DIR)
+
+    template_path = os.path.join(TMP_DIR, f"template_{context.number}.html")
     contract_path = os.path.join(lending_path, f"{context.number}.pdf")
 
     with open(template_path, "w", encoding="utf-8") as html_file:
@@ -311,7 +317,10 @@ def create_revoke_lending_contract_pj(context: NewLendingPjContextSchema) -> str
     if not os.path.exists(lending_path):
         os.mkdir(lending_path)
 
-    template_path = os.path.join(lending_path, f"template_{context.number}.html")
+    if not os.path.exists(TMP_DIR):
+        os.mkdir(TMP_DIR)
+
+    template_path = os.path.join(TMP_DIR, f"template_{context.number}.html")
     contract_path = os.path.join(lending_path, f"{context.number}.pdf")
 
     with open(template_path, "w", encoding="utf-8") as html_file:
@@ -362,12 +371,17 @@ def create_term(context: NewTermContextSchema, template_file="termo.html") -> st
         location=context.location,
     )
 
-    lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
+    is_revoke = "distrato" in template_file
+
+    lending_path = os.path.join(TERM_UPLOAD_DIR, is_revoke and "revoke" or "term")
 
     if not os.path.exists(lending_path):
         os.mkdir(lending_path)
 
-    template_path = os.path.join(lending_path, f"template_{context.number}.html")
+    if not os.path.exists(TMP_DIR):
+        os.mkdir(TMP_DIR)
+
+    template_path = os.path.join(TMP_DIR, f"template_{context.number}.html")
     contract_path = os.path.join(lending_path, f"{context.number}.pdf")
 
     with open(template_path, "w", encoding="utf-8") as html_file:
@@ -406,8 +420,11 @@ def create_verification_document(context: VerificationContextSchema) -> str:
     if not os.path.exists(lending_path):
         os.mkdir(lending_path)
 
+    if not os.path.exists(TMP_DIR):
+        os.mkdir(TMP_DIR)
+
     template_path = os.path.join(
-        lending_path, f"template_{context.number}_verification.html"
+        TMP_DIR, f"template_{context.number}_verification.html"
     )
     contract_path = os.path.join(lending_path, f"{context.number} - verificação.pdf")
 
