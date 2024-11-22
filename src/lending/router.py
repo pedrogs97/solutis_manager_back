@@ -3,7 +3,7 @@
 from typing import Union
 
 from fastapi import APIRouter, Depends, Query, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
 
@@ -154,7 +154,7 @@ def delete_lending_route(
         )
     lending_service.delete_lending(lending_id, authenticated_user, db_session)
     db_session.close()
-    return JSONResponse(
+    return Response(
         status_code=status.HTTP_204_NO_CONTENT,
     )
 

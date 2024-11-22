@@ -77,7 +77,7 @@ CONTRACT_UPLOAD_TEST_DIR = os.path.join(BASE_DIR, "contracts")
 MEDIA_UPLOAD_DIR = os.path.join(STORAGE_DIR, "media")
 MEDIA_UPLOAD_TEST_DIR = os.path.join(BASE_DIR, "media")
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
-TMP_DIR = os.path.join(STORAGE_DIR, "tmp")
+TMP_DIR = "tmp"
 
 BASE_API = "/api/v1"
 

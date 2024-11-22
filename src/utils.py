@@ -11,7 +11,7 @@ import aiofiles
 import jinja2
 import pdfkit
 
-from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR, TMP_DIR, TERM_UPLOAD_DIR
+from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR, TERM_UPLOAD_DIR, TMP_DIR
 from src.document.schemas import (
     NewLendingContextSchema,
     NewLendingPjContextSchema,
@@ -371,6 +371,9 @@ def create_term(context: NewTermContextSchema, template_file="termo.html") -> st
     )
 
     is_revoke = "distrato" in template_file
+
+    if not os.path.exists(CONTRACT_UPLOAD_DIR):
+        os.mkdir(CONTRACT_UPLOAD_DIR)
 
     lending_path = os.path.join(TERM_UPLOAD_DIR, is_revoke and "revoke" or "term")
 
