@@ -48,18 +48,19 @@ class ReportService:
     LENDING_COLS = [
         DEFAULT_INIT_COL,
         ("C5", "COLABORADOR"),
-        ("D5", "CARGO"),
-        ("E5", "PROJETO"),
-        ("F5", "BU"),
-        ("G5", "CENTRO DE CUSTO"),
-        ("H5", "CENTRO DE CUSTO (código)"),
-        ("I5", "GESTOR"),
-        ("J5", "EXECUTIVO"),
-        ("K5", "LOCAL DE TRABALHO"),
-        ("L5", "DESCRIÇÃO DO EQUIPAMENTO"),
-        ("M5", "PATRIMÔNIO"),
-        ("N5", "PADRÃO EQUIPAMENTO"),
-        ("O5", "STATUS"),
+        ("D5", "CHAPA"),
+        ("E5", "CARGO"),
+        ("F5", "PROJETO"),
+        ("G5", "BU"),
+        ("H5", "CENTRO DE CUSTO"),
+        ("I5", "CENTRO DE CUSTO (código)"),
+        ("J5", "GESTOR"),
+        ("K5", "EXECUTIVO"),
+        ("L5", "LOCAL DE TRABALHO"),
+        ("M5", "DESCRIÇÃO DO EQUIPAMENTO"),
+        ("N5", "PATRIMÔNIO"),
+        ("O5", "PADRÃO EQUIPAMENTO"),
+        ("P5", "STATUS"),
     ]
 
     ASSET_COLS = [
@@ -133,6 +134,7 @@ class ReportService:
         """Convert lending to report"""
         return {
             "employee": lending.employee.full_name,
+            "code": lending.employee.code,
             "role": (
                 lending.employee.role.name
                 if lending.employee.role

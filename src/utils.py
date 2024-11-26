@@ -372,8 +372,8 @@ def create_term(context: NewTermContextSchema, template_file="termo.html") -> st
 
     is_revoke = "distrato" in template_file
 
-    if not os.path.exists(CONTRACT_UPLOAD_DIR):
-        os.mkdir(CONTRACT_UPLOAD_DIR)
+    if not os.path.exists(TERM_UPLOAD_DIR):
+        os.mkdir(TERM_UPLOAD_DIR)
 
     lending_path = os.path.join(TERM_UPLOAD_DIR, is_revoke and "revoke" or "term")
 

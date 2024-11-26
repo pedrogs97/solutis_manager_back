@@ -1,12 +1,24 @@
 """Inventory service"""
 
+import logging
+import traceback
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, with_loader_criteria
 
-from src.inventory.schemas import EmployeeInventorySerializer
+from src.inventory.models import (
+    InventoryExtraAssetModel,
+    InventoryExtraItemModel,
+    InventoryLendingModel,
+    InventoryModel,
+    InventoryTermModel,
+)
+from src.inventory.schemas import AnswerInventorySerializer, EmployeeInventorySerializer
 from src.lending.models import LendingModel
 from src.people.models import EmployeeModel
 from src.term.models import TermModel
+
+logger = logging.getLogger(__name__)
 
 
 class InventoryService:
@@ -77,3 +89,60 @@ class InventoryService:
             "lendings": lendings,
             "terms": terms,
         }
+
+    def create_invetory_answer(
+        self, data: AnswerInventorySerializer, employee_id: int
+    ) -> None:
+        """Create inventory answer"""
+        try:
+            inventory = InventoryModel(
+                employee_id=employee_id,
+                phone=data.phone,
+                accepted_term_at=data.accepted_term_at,
+            )
+            self.db_session.add(inventory)
+            self.db_session.commit()
+
+            for lending in data.lendings:
+                inventory_lending = InventoryLendingModel(
+                    inventory_id=inventory.id,
+                    lending_id=lending["id"],
+                    justification=lending["justification"],
+                    confirm=lending["confirm"],
+                )
+                self.db_session.add(inventory_lending)
+
+            for term in data.terms:
+                inventory_term = InventoryTermModel(
+                    inventory_id=inventory.id,
+                    term_id=term["id"],
+                    justification=term["justification"],
+                    confirm=term["confirm"],
+                )
+                self.db_session.add(inventory_term)
+
+            for extra_asset in data.extra_assets:
+                inventory_extra_asset = InventoryExtraAssetModel(
+                    inventory_id=inventory.id,
+                    register_number=extra_asset["registerNumber"],
+                    description=extra_asset["description"],
+                    serial_number=extra_asset["serialNumber"],
+                )
+                self.db_session.add(inventory_extra_asset)
+
+            for extra_item in data.extra_items:
+                inventory_extra_item = InventoryExtraItemModel(
+                    inventory_id=inventory.id,
+                    description=extra_item["description"],
+                )
+                self.db_session.add(inventory_extra_item)
+
+            self.db_session.commit()
+            logger.info("Inventory answer created successfully - %s", str(inventory))
+        except Exception as error:
+            self.db_session.rollback()
+            self.db_session.close()
+            exc_message = traceback.format_exc()
+            error_message = f"Error creating inventory answer: {exc_message}"
+            logger.error(error_message)
+            raise HTTPException(status_code=400, detail=str(error))
