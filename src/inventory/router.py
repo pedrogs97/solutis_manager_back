@@ -1,11 +1,11 @@
 """ Invetory router """
 
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 
 from src.backends import get_db_session
-from src.inventory.backends import verify_token
+from src.inventory.backends import generate_token, verify_token
 from src.inventory.schemas import AnswerInventorySerializer, EmployeeInventorySerializer
 from src.inventory.service import InventoryService
 
@@ -19,9 +19,10 @@ def get_employee_route(
 ):
     """Get employee route"""
     service = InventoryService(db_session)
-    inventory_by_employee = service.get_employee(data)
+    (inventory_by_employee, token_data) = service.get_employee(data)
+    content = {"token": generate_token(token_data), "employee": inventory_by_employee}
     db_session.close()
-    return JSONResponse(content=inventory_by_employee, status_code=status.HTTP_200_OK)
+    return JSONResponse(content=content, status_code=status.HTTP_200_OK)
 
 
 @inventory_router.post("/answer/")
@@ -34,4 +35,4 @@ def post_answer_route(
     service = InventoryService(db_session)
     service.create_invetory_answer(data, token.get("employee_id"))
     db_session.close()
-    return JSONResponse(status_code=status.HTTP_201_CREATED)
+    return Response(status_code=status.HTTP_201_CREATED)

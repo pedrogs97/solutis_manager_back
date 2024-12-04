@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from src.schemas import BaseSchema
 
@@ -21,17 +21,17 @@ class AnswerInventoryLendingSerializer(BaseSchema):
     confirm: bool
     lending_id: int = Field(alias="lendingId")
 
-    # @model_validator
-    # @classmethod
-    # def validate_justification_based_on_confirm(cls, values: dict):
-    #     """Validate justification based on confirm"""
-    #     justification = values.get("justification")
-    #     confirm = values.get("confirm")
+    @model_validator(mode="before")
+    @classmethod
+    def validate_justification_based_on_confirm(cls, values: dict):
+        """Validate justification based on confirm"""
+        justification = values.get("justification")
+        confirm = values.get("confirm")
 
-    #     if confirm and not justification:
-    #         raise ValueError("Justification must be provided if confirm is true")
+        if confirm and not justification:
+            raise ValueError("Justification must be provided if confirm is true")
 
-    #     return values
+        return values
 
 
 class AnswerInventoryTermSerializer(BaseSchema):
@@ -41,17 +41,17 @@ class AnswerInventoryTermSerializer(BaseSchema):
     confirm: bool
     term_id: int = Field(alias="termId")
 
-    # @model_validator
-    # @classmethod
-    # def validate_justification_based_on_confirm(cls, values: dict):
-    #     """Validate justification based on confirm"""
-    #     justification = values.get("justification")
-    #     confirm = values.get("confirm")
+    @model_validator(mode="before")
+    @classmethod
+    def validate_justification_based_on_confirm(cls, values: dict):
+        """Validate justification based on confirm"""
+        justification = values.get("justification")
+        confirm = values.get("confirm")
 
-    #     if confirm and not justification:
-    #         raise ValueError("Justification must be provided if confirm is true")
+        if confirm and not justification:
+            raise ValueError("Justification must be provided if confirm is true")
 
-    #     return values
+        return values
 
 
 class AnswerInventoryExtraAssetSerializer(BaseSchema):
@@ -72,8 +72,7 @@ class AnswerInventoryExtraItemSerializer(BaseSchema):
 class AnswerInventorySerializer(BaseSchema):
     """Answer inventory serializer"""
 
-    accepted_term_at: str = Field(default=False, alias="acceptedTermAt")
-    phone: Optional[str]
+    phone: str
     lendings: List[AnswerInventoryLendingSerializer] = []
     terms: List[AnswerInventoryTermSerializer] = []
     extra_assets: List[AnswerInventoryExtraAssetSerializer] = []
