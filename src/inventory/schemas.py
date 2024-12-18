@@ -17,7 +17,7 @@ class EmployeeInventorySerializer(BaseSchema):
 class AnswerInventoryLendingSerializer(BaseSchema):
     """Inventory lending serializer"""
 
-    justification: Optional[str]
+    justification: Optional[str] = None
     confirm: bool
     lending_id: int = Field(alias="lendingId")
 
@@ -26,10 +26,10 @@ class AnswerInventoryLendingSerializer(BaseSchema):
     def validate_justification_based_on_confirm(cls, values: dict):
         """Validate justification based on confirm"""
         justification = values.get("justification")
-        confirm = values.get("confirm")
+        confirm = values.get("confirm", False)
 
-        if confirm and not justification:
-            raise ValueError("Justification must be provided if confirm is true")
+        if not confirm and not justification:
+            raise ValueError("Preencha a justificativa")
 
         return values
 
@@ -37,7 +37,7 @@ class AnswerInventoryLendingSerializer(BaseSchema):
 class AnswerInventoryTermSerializer(BaseSchema):
     """Inventory term serializer"""
 
-    justification: Optional[str]
+    justification: Optional[str] = None
     confirm: bool
     term_id: int = Field(alias="termId")
 
@@ -46,10 +46,10 @@ class AnswerInventoryTermSerializer(BaseSchema):
     def validate_justification_based_on_confirm(cls, values: dict):
         """Validate justification based on confirm"""
         justification = values.get("justification")
-        confirm = values.get("confirm")
+        confirm = values.get("confirm", False)
 
-        if confirm and not justification:
-            raise ValueError("Justification must be provided if confirm is true")
+        if not confirm and not justification:
+            raise ValueError("Preencha a justificativa")
 
         return values
 
@@ -57,7 +57,6 @@ class AnswerInventoryTermSerializer(BaseSchema):
 class AnswerInventoryExtraAssetSerializer(BaseSchema):
     """Answer inventory extra asset serializer"""
 
-    id: int
     register_number: str = Field(alias="registerNumber")
     description: str
     serial_number: str = Field(alias="serialNumber")
@@ -75,5 +74,7 @@ class AnswerInventorySerializer(BaseSchema):
     phone: str
     lendings: List[AnswerInventoryLendingSerializer] = []
     terms: List[AnswerInventoryTermSerializer] = []
-    extra_assets: List[AnswerInventoryExtraAssetSerializer] = []
-    extra_items: List[AnswerInventoryExtraItemSerializer] = []
+    extra_assets: List[AnswerInventoryExtraAssetSerializer] = Field(
+        alias="extraAssets", default=[]
+    )
+    extra_items: Optional[str] = Field(alias="extraItems")

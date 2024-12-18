@@ -143,6 +143,12 @@ PERMISSIONS = {
         ],
         "label": "Relatórios",
     },
+    "inventory": {
+        "models": [
+            {"name": "inventory", "label": "Inventário"},
+        ],
+        "label": "Inventário",
+    },
 }
 
 NOT_ALLOWED = "Não permitido"

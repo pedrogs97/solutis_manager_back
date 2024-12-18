@@ -40,7 +40,11 @@ logger = logging.getLogger(__name__)
 
 def get_db_session():
     """Return session"""
-    return Session_db()
+    db = Session_db()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

@@ -3,11 +3,12 @@
 import json
 import logging
 from datetime import date, datetime
-from typing import List, Type, Union
+from typing import List, Optional, Type, Union
 
 from pydantic_core import ValidationError
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
 from src.backends import get_db_session
@@ -399,6 +400,53 @@ def insert(schema: BaseTotvsSchema, model_type: Type, identifier="code") -> None
         db_session.close()
 
 
+def check_employee_legal_person_exists(
+    db_session: Session, taxpayer_identification: str
+) -> Optional[EmployeeModel]:
+    """Check if employee exists"""
+    return (
+        db_session.query(EmployeeModel)
+        .filter(
+            EmployeeModel.legal_person.is_(True),
+            EmployeeModel.taxpayer_identification == taxpayer_identification,
+        )
+        .first()
+    )
+
+
+def update_employee_legal_person(
+    employee_legal_person: EmployeeModel, new_employee_dict: dict
+) -> EmployeeModel:
+    """Update employee legal person"""
+    old_legal_person = {
+        "cell_phone": employee_legal_person.cell_phone,
+        "email": employee_legal_person.email,
+        "manager": employee_legal_person.manager,
+        "registration": employee_legal_person.registration,
+        "employer_number": employee_legal_person.employer_number,
+        "employer_address": employee_legal_person.employer_address,
+        "employer_name": employee_legal_person.employer_name,
+        "employer_contract_object": employee_legal_person.employer_contract_object,
+        "employer_contract_date": employee_legal_person.employer_contract_date,
+        "employer_end_contract_date": employee_legal_person.employer_end_contract_date,
+        "updated_at": datetime.now().isoformat(),
+    }
+    json_old_legal_person = json.dumps(old_legal_person)
+
+    for key, value in new_employee_dict.items():
+        if key not in ("code", "taxpayer_identification"):
+            setattr(employee_legal_person, key, value)
+    employee_legal_person.legal_person = False
+    employee_legal_person.employer_number = None
+    employee_legal_person.employer_address = None
+    employee_legal_person.employer_name = None
+    employee_legal_person.employer_contract_object = None
+    employee_legal_person.employer_contract_date = None
+    employee_legal_person.employer_end_contract_date = None
+    employee_legal_person.employee_old_legal_person = json_old_legal_person
+    return employee_legal_person
+
+
 def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
     """Updates employees from totvs"""
     db_session = get_db_session()
@@ -416,6 +464,10 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
                     ),
                 )
                 .first()
+            )
+
+            employee_legal_person = check_employee_legal_person_exists(
+                db_session, totvs_employee.taxpayer_identification
             )
 
             role = (
@@ -499,9 +551,13 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
                     if key not in ("code", "taxpayer_identification"):
                         setattr(employee_db, key, value)
                 updates.append(employee_db)
+            elif employee_legal_person:
+                updates.append(
+                    update_employee_legal_person(employee_legal_person, dict_employee)
+                )
             else:
-                update_employee = EmployeeModel(**dict_employee)
-                updates.append(update_employee)
+                new_employee = EmployeeModel(**dict_employee)
+                updates.append(new_employee)
 
         db_session.add_all(updates)
         db_session.commit()

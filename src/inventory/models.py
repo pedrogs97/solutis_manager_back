@@ -1,5 +1,7 @@
 """Inventory models"""
 
+from typing import List
+
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, relationship
 
@@ -18,10 +20,16 @@ class InventoryModel(Base):
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     accepted_term_at = Column("accepted_term_at", DateTime, nullable=True)
-    phone = Column("phone", String(11), nullable=True)
+    phone = Column("phone", String(16), nullable=True)
     year = Column("year", Integer, nullable=False)
     created_at = Column("created_at", DateTime, default=func.now())
+    extra_items = Column("extra_items", String(500), nullable=True)
 
+    lendings_answers: Mapped[List["InventoryLendingModel"]] = relationship(
+        viewonly=True
+    )
+    terms_answers: Mapped[List["InventoryTermModel"]] = relationship(viewonly=True)
+    extra_assets: Mapped[List["InventoryExtraAssetModel"]] = relationship(viewonly=True)
     employee: Mapped[EmployeeModel] = relationship(viewonly=True)
     employee_id = Column("employee_id", ForeignKey(EmployeeModel.id), nullable=False)
 
@@ -93,22 +101,3 @@ class InventoryExtraAssetModel(Base):
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.register_number} - {str(self.inventory)}"
-
-
-class InventoryExtraItemModel(Base):
-    """
-    Inventory extra item model
-    """
-
-    __tablename__ = "inventory_extra_item"
-
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    description = Column("description", String(500), nullable=True)
-    created_at = Column("created_at", DateTime, default=func.now())
-
-    inventory: Mapped[InventoryModel] = relationship()
-    inventory_id = Column("inventory_id", ForeignKey(InventoryModel.id), nullable=False)
-
-    def __str__(self) -> str:
-        """Returns model as string"""
-        return f"{self.description} - {str(self.inventory)}"

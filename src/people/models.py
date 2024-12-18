@@ -3,6 +3,7 @@
 from typing import List
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     Date,
@@ -61,6 +62,7 @@ class EmployeeModel(Base):
     )
     lendings: Mapped[List["LendingModel"]] = relationship(viewonly=True)
     terms: Mapped[List["TermModel"]] = relationship(viewonly=True)
+    inventories: Mapped[List["InventoryModel"]] = relationship(viewonly=True)
 
     job_position = Column("job_position", String(200), nullable=True)
 
@@ -103,6 +105,7 @@ class EmployeeModel(Base):
         server_default=func.now(),
         server_onupdate=func.now(),
     )
+    employee_old_legal_person = Column("employee_old_legal_person", JSON, nullable=True)
 
     def __str__(self) -> str:
         return f"{self.code} - {self.full_name}"
