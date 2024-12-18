@@ -1544,6 +1544,22 @@ class DocumentService:
         db_session.commit()
         db_session.flush()
 
+        if lending.document_revoke:
+            old_doc = lending.document_revoke
+            old_doc.deleted = True
+            db_session.add(old_doc)
+            db_session.commit()
+            db_session.flush()
+            service_log.set_log(
+                "lending",
+                "document",
+                f"Exclusão de Distrato {old_doc.doc_type}",
+                old_doc.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("Deleted Document. %s", str(old_doc))
+
         lending.revoke_signed_date = date.today()
         lending.document_revoke = new_doc
         lending.status = lending_signed
