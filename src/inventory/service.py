@@ -304,6 +304,7 @@ class InventoryService:
                         "registration": employee.registration,
                         "phone": employee.cell_phone,
                         "email": employee.email,
+                        "manager": employee.manager,
                     },
                     "lendings": [
                         {
@@ -312,6 +313,10 @@ class InventoryService:
                             "registerNumber": lending.lending.asset.register_number,
                             "serialNumber": lending.lending.asset.serial_number,
                             "msOffice": lending.lending.asset.ms_office,
+                            "executive": lending.lending.business_executive,
+                            "location": lending.lending.location,
+                            "costCenter": f"{lending.lending.cost_center.name} / {lending.lending.cost_center.code}",
+                            "bu": lending.lending.bu,
                             "justification": lending.justification,
                             "confirm": lending.confirm,
                         }
