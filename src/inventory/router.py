@@ -56,6 +56,7 @@ def get_employee_answer_route(
         serialization_alias="employee_ids",
         default=None,
     ),
+    search: Optional[str] = Query(description="Search", default=None),
     year: Optional[int] = Query(ge=2023, description="Year", default=None),
     answered: Optional[bool] = Query(description="Answered", default=None),
     has_extra: Optional[bool] = Query(
@@ -90,6 +91,7 @@ def get_employee_answer_route(
         "year": year,
         "answered": answered,
         "has_extra": has_extra,
+        "search": search,
     }
     inventory_by_employee = service.get_answers(filters, page, size)
     db_session.close()

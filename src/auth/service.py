@@ -610,13 +610,11 @@ def create_super_user():
         )
 
         group_admin = (
-            db_session.query(GroupModel)
-            .filter(GroupModel.name == "Administrador")
-            .first()
+            db_session.query(GroupModel).filter(GroupModel.name == "MASTER").first()
         )
 
         if not group_admin:
-            group_admin = GroupModel(name="Administrador")
+            group_admin = GroupModel(name="MASTER")
             db_session.add(group_admin)
             db_session.commit()
             db_session.flush()

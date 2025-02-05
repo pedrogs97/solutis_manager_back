@@ -262,19 +262,29 @@ class InventoryService:
             if key == "employee_ids" and value:
                 employees_answer = employees_answer.filter(EmployeeModel.id.in_(value))
 
+            if key == "search" and value:
+                employees_answer = employees_answer.filter(
+                    or_(
+                        EmployeeModel.full_name.ilike(f"%{value}%"),
+                        EmployeeModel.registration.ilike(f"%{value}%"),
+                    )
+                )
+
             if key == "answered" and value is not None:
                 if value:
                     employees_answer = employees_answer.filter(
-                        InventoryModel.id.is_(None)
+                        InventoryModel.id.isnot(None),
+                        InventoryModel.year == year_filter,
                     )
                 else:
                     employees_answer = employees_answer.filter(
-                        InventoryModel.id.isnot(None)
+                        InventoryModel.id.is_(None)
                     )
             elif key == "has_extra" and value is not None:
                 if value:
                     employees_answer = employees_answer.filter(
                         InventoryModel.id.isnot(None),
+                        InventoryModel.year == year_filter,
                         or_(
                             InventoryModel.extra_items.isnot(None),
                             InventoryModel.extra_items != "",
@@ -284,6 +294,7 @@ class InventoryService:
                 else:
                     employees_answer = employees_answer.filter(
                         InventoryModel.id.isnot(None),
+                        InventoryModel.year == year_filter,
                         or_(
                             InventoryModel.extra_items.is_(None),
                             InventoryModel.extra_items == "",
