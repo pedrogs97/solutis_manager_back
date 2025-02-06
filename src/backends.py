@@ -1,6 +1,7 @@
 """Base backends"""
 
 import logging
+import os
 import smtplib
 import time
 from datetime import datetime, timedelta
@@ -352,6 +353,23 @@ class Email365Client:
             type=self.__extra["type"],
         )
 
+    def __prepare_notify_inventory(self) -> str:
+        """Build notify inventory email"""
+        if "full_name" not in self.__extra:
+            raise ValueError("full_name not found to notify inventory email")
+
+        template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
+        template_env = jinja2.Environment(loader=template_loader)
+        template_file = "notify_inventory_link_email.html"
+        template = template_env.get_template(template_file)
+
+        base_url = os.getenv("URL_FRONTEND", "http://localhost:3000")
+
+        return template.render(
+            full_name=self.__extra["full_name"],
+            inventory_link=f"{base_url}/inventory-access",
+        )
+
     def __prepare_message(self) -> None:
         """Build email"""
         output_text = ""
@@ -361,6 +379,8 @@ class Email365Client:
             output_text = self.__prepare_new_user_password()
         if self.__type == "notify_maintenance":
             output_text = self.__prepare_notify_maintenance()
+        if self.__type == "notify_inventory":
+            output_text = self.__prepare_notify_inventory()
 
         self.__message.attach(MIMEText(output_text, "html"))
 

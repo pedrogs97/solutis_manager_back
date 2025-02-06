@@ -1,6 +1,8 @@
 """Inventory service"""
 
+import asyncio
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import List, Tuple
 
@@ -11,6 +13,7 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session, with_loader_criteria
 from sqlalchemy.sql.expression import and_, or_
 
+from src.backends import Email365Client
 from src.inventory.models import (
     InventoryExtraAssetModel,
     InventoryLendingModel,
@@ -376,3 +379,104 @@ class InventoryService:
             ],
         )
         return paginated
+
+    def get_employees_to_notify(self) -> List[dict]:
+        """Get employees to notify"""
+        # current_year = datetime.now().year
+        # employees = (
+        #     self.db_session.query(EmployeeModel)
+        #     .outerjoin(InventoryModel)
+        #     .filter(
+        #         EmployeeModel.status == "Ativo",
+        #         InventoryModel.id.is_(None),
+        #         InventoryModel.year != current_year,
+        #     )
+        #     .all()
+        # )
+
+        # employees_to_notify = [
+        #     {
+        #         "email": employee.email,
+        #         "full_name": employee.full_name,
+        #     }
+        #     for employee in employees
+        # ]
+
+        employees_to_notify = [
+            {
+                "email": "pedro.parametrize@gmail.com",
+                "full_name": "Pedro Santana (Teste)",
+            }
+            # {
+            #     "email": "brenner.pereira@solutis.com.br",
+            #     "full_name": "Brenner Pereira (Teste)",
+            # },
+            # {
+            #     "email": "carla.anunciacao@solutis.com.br",
+            #     "full_name": "Carla Anunciação (Teste)",
+            # },
+            # {
+            #     "email": "kecia.sousa@solutis.com.br",
+            #     "full_name": "Kécia Sousa (Teste)",
+            # },
+            # {
+            #     "email": "rodrigo.cavalcante@solutis.com.br",
+            #     "full_name": "Rodrigo Cavalcante (Teste)",
+            # },
+            # {
+            #     "email": "tailon.souza@solutis.com.br",
+            #     "full_name": "Tailon Souza (Teste)",
+            # },
+            # {
+            #     "email": "tais.santos@solutis.com.br",
+            #     "full_name": "Tais Santos (Teste)",
+            # },
+            # {
+            #     "email": "thomas.lichtenberger@solutis.com.br",
+            #     "full_name": "Thomas Lichtenberger (Teste)",
+            # },
+            # {
+            #     "email": "beatriz.cunha@solutis.com.br",
+            #     "full_name": "Beatriz Cunha (Teste)",
+            # },
+            # {
+            #     "email": "geovana.frutuoso@solutis.com.br",
+            #     "full_name": "Geovana Frutuoso (Teste)",
+            # },
+            # {
+            #     "email": "eliana.simoes@solutis.com.br",
+            #     "full_name": "Eliana Simões (Teste)",
+            # },
+            # {
+            #     "email": "claudia.cavalcante@solutis.com.br",
+            #     "full_name": "Claudia Cavalcante (Teste)",
+            # },
+            # {
+            #     "email": "magna.jesus@solutis.com.br",
+            #     "full_name": "Magna Jesus (Teste)",
+            # },
+            # {
+            #     "email": "emilie.bastos@solutis.com.br",
+            #     "full_name": "Emilie Bastos (Teste)",
+            # },
+        ]
+
+        return employees_to_notify
+
+    async def send_inventory_email(self, email: str, full_name: str):
+        """Send inventory email"""
+        email_client = Email365Client(
+            email,
+            "Formulário de Inventário",
+            "notify_inventory",
+            {
+                "full_name": full_name,
+            },
+        )
+        loop = asyncio.get_event_loop()
+        with ThreadPoolExecutor() as pool:
+            result = await loop.run_in_executor(pool, email_client.send_message)
+        if not result:
+            logger.warning("Error sending email - %s", email)
+        elif result:
+            logger.info("Email sent successfully - %s", email)

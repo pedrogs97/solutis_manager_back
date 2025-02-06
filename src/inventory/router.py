@@ -1,5 +1,7 @@
 """ Invetory router """
 
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Optional, Union
 
 from fastapi import APIRouter, Depends, Query, status
@@ -96,3 +98,29 @@ def get_employee_answer_route(
     inventory_by_employee = service.get_answers(filters, page, size)
     db_session.close()
     return inventory_by_employee
+
+
+@inventory_router.post("/send-notify/")
+async def send_inventory_email(
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker(
+            {"module": "inventory", "model": "inventory", "action": "view"}
+        )
+    ),
+):
+    """Send inventory email"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    service = InventoryService(db_session)
+    employees = service.get_employees_to_notify()
+    tasks = [
+        service.send_inventory_email(emplyoee["email"], emplyoee["full_name"])
+        for emplyoee in employees
+    ]
+    await asyncio.gather(*tasks)
+    db_session.close()
