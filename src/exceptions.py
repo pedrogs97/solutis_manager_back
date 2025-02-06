@@ -53,7 +53,13 @@ async def default_response_exception(
         extra["file"] = file_name
         extra["line"] = line_number
         extra["function"] = function_name
-        message_error = f"Status {error_status_code}: {error_detail} - view: {request.url} - file: {file_name} - line: {line_number} - function: {function_name}"
+        message_error = (
+            f"Status {error_status_code}: {error_detail} - "
+            f"view: {request.url} - "
+            f"file: {file_name} - "
+            f"line: {line_number} - "
+            f"function: {function_name}"
+        )
         logger.error(
             msg=message_error,
             extra=extra,
