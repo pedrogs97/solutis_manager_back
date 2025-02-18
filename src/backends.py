@@ -419,9 +419,9 @@ class EmailQueue:
             email_client, fake = email_task
             success, mail_to = email_client.send_message(fake=fake)
             if success:
-                logger.info(f"E-mail enviado com sucesso para: {mail_to}")
+                logger.info("Success sending email to %s", mail_to)
             else:
-                logger.warning(f"Falha ao enviar e-mail para: {mail_to}")
+                logger.warning("Error sending email to %s", mail_to)
 
             self.queue.task_done()
 
