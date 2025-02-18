@@ -223,7 +223,8 @@ class UserSerivce:
                 "full_name": name,
             },
         )
-        if mail_client.send_message():
+        success, _ = mail_client.send_message()
+        if success:
             service_log.set_log(
                 "auth",
                 "user",
@@ -583,7 +584,8 @@ class UserSerivce:
                 "full_name": name,
             },
         )
-        if mail_client.send_message():
+        success, _ = mail_client.send_message()
+        if success:
             user.password = self.get_password_hash(new_pass)
             db_session.add(user)
             db_session.commit()

@@ -405,59 +405,59 @@ class InventoryService:
             {
                 "email": "pedro.parametrize@gmail.com",
                 "full_name": "Pedro Santana (Teste)",
-            }
-            # {
-            #     "email": "brenner.pereira@solutis.com.br",
-            #     "full_name": "Brenner Pereira (Teste)",
-            # },
-            # {
-            #     "email": "carla.anunciacao@solutis.com.br",
-            #     "full_name": "Carla Anunciação (Teste)",
-            # },
-            # {
-            #     "email": "kecia.sousa@solutis.com.br",
-            #     "full_name": "Kécia Sousa (Teste)",
-            # },
-            # {
-            #     "email": "rodrigo.cavalcante@solutis.com.br",
-            #     "full_name": "Rodrigo Cavalcante (Teste)",
-            # },
-            # {
-            #     "email": "tailon.souza@solutis.com.br",
-            #     "full_name": "Tailon Souza (Teste)",
-            # },
-            # {
-            #     "email": "tais.santos@solutis.com.br",
-            #     "full_name": "Tais Santos (Teste)",
-            # },
-            # {
-            #     "email": "thomas.lichtenberger@solutis.com.br",
-            #     "full_name": "Thomas Lichtenberger (Teste)",
-            # },
-            # {
-            #     "email": "beatriz.cunha@solutis.com.br",
-            #     "full_name": "Beatriz Cunha (Teste)",
-            # },
-            # {
-            #     "email": "geovana.frutuoso@solutis.com.br",
-            #     "full_name": "Geovana Frutuoso (Teste)",
-            # },
-            # {
-            #     "email": "eliana.simoes@solutis.com.br",
-            #     "full_name": "Eliana Simões (Teste)",
-            # },
-            # {
-            #     "email": "claudia.cavalcante@solutis.com.br",
-            #     "full_name": "Claudia Cavalcante (Teste)",
-            # },
-            # {
-            #     "email": "magna.jesus@solutis.com.br",
-            #     "full_name": "Magna Jesus (Teste)",
-            # },
-            # {
-            #     "email": "emilie.bastos@solutis.com.br",
-            #     "full_name": "Emilie Bastos (Teste)",
-            # },
+            },
+            {
+                "email": "brenner.pereira@solutis.com.br",
+                "full_name": "Brenner Pereira (Teste)",
+            },
+            {
+                "email": "carla.anunciacao@solutis.com.br",
+                "full_name": "Carla Anunciação (Teste)",
+            },
+            {
+                "email": "kecia.sousa@solutis.com.br",
+                "full_name": "Kécia Sousa (Teste)",
+            },
+            {
+                "email": "rodrigo.cavalcante@solutis.com.br",
+                "full_name": "Rodrigo Cavalcante (Teste)",
+            },
+            {
+                "email": "tailon.souza@solutis.com.br",
+                "full_name": "Tailon Souza (Teste)",
+            },
+            {
+                "email": "tais.santos@solutis.com.br",
+                "full_name": "Tais Santos (Teste)",
+            },
+            {
+                "email": "thomas.lichtenberger@solutis.com.br",
+                "full_name": "Thomas Lichtenberger (Teste)",
+            },
+            {
+                "email": "beatriz.cunha@solutis.com.br",
+                "full_name": "Beatriz Cunha (Teste)",
+            },
+            {
+                "email": "geovana.frutuoso@solutis.com.br",
+                "full_name": "Geovana Frutuoso (Teste)",
+            },
+            {
+                "email": "eliana.simoes@solutis.com.br",
+                "full_name": "Eliana Simões (Teste)",
+            },
+            {
+                "email": "claudia.cavalcante@solutis.com.br",
+                "full_name": "Claudia Cavalcante (Teste)",
+            },
+            {
+                "email": "magna.jesus@solutis.com.br",
+                "full_name": "Magna Jesus (Teste)",
+            },
+            {
+                "email": "emilie.bastos@solutis.com.br",
+                "full_name": "Emilie Bastos (Teste)",
+            },
         ]
 
         return employees_to_notify

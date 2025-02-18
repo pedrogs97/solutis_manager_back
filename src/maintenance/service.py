@@ -565,7 +565,9 @@ class MaintenanceService:
                         "type": "Manutenção",
                     },
                 )
-                email_client.send_message()
+                success, mail_to = email_client.send_message()
+                if not success:
+                    logger.error("Error sending email to %s", mail_to)
         db_session.close()
 
 
@@ -912,5 +914,7 @@ class UpgradeService:
                         "type": "Melhoria",
                     },
                 )
-                email_client.send_message()
+                success, mail_to = email_client.send_message()
+                if not success:
+                    logger.error("Error sending email to %s", mail_to)
         db_session.close()

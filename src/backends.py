@@ -381,7 +381,7 @@ class Email365Client:
 
         self.__message.attach(MIMEText(output_text, "html"))
 
-    def send_message(self, fake: bool = False) -> bool:
+    def send_message(self, fake: bool = False) -> Tuple[bool, str]:
         """Try send message"""
         self.__prepare_message()
         try:
@@ -391,15 +391,15 @@ class Email365Client:
                 server.starttls()
                 server.login(EMAIL_SOLUTIS_365, EMAIL_PASSWORD_SOLUTIS_365)
                 if fake:
-                    return True
+                    return True, self.__mail_to
                 server.sendmail(
                     EMAIL_SOLUTIS_365, self.__mail_to, self.__message.as_string()
                 )
-            return True
+            return True, self.__mail_to
         except smtplib.SMTPAuthenticationError:
-            return False
+            return False, self.__mail_to
         except smtplib.SMTPRecipientsRefused:
-            return False
+            return False, self.__mail_to
 
 
 class EmailQueue:
@@ -417,11 +417,11 @@ class EmailQueue:
                 break
 
             email_client, fake = email_task
-            success = email_client.send_message(fake=fake)
+            success, mail_to = email_client.send_message(fake=fake)
             if success:
-                print(f"E-mail enviado com sucesso para: {email_client.__mail_to}")
+                logger.info(f"E-mail enviado com sucesso para: {mail_to}")
             else:
-                print(f"Falha ao enviar e-mail para: {email_client.__mail_to}")
+                logger.warning(f"Falha ao enviar e-mail para: {mail_to}")
 
             self.queue.task_done()
 
