@@ -1,19 +1,18 @@
 """Inventory service"""
 
-import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import List, Tuple
 
-from fastapi import HTTPException, status
+from fastapi import BackgroundTasks, HTTPException, status
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, with_loader_criteria
 from sqlalchemy.sql.expression import and_, or_
 
-from src.backends import Email365Client
+from src.backends import Email365Client, EmailQueue
 from src.inventory.models import (
     InventoryExtraAssetModel,
     InventoryLendingModel,
@@ -463,20 +462,23 @@ class InventoryService:
 
         return employees_to_notify
 
-    async def send_inventory_email(self, email: str, full_name: str):
+    async def process_email_queue(self, email_queue: EmailQueue):
+        await email_queue.run()
+
+    async def send_inventory_email(self):
         """Send inventory email"""
-        email_client = Email365Client(
-            email,
-            "Formulário de Inventário",
-            "notify_inventory",
-            {
-                "full_name": full_name,
-            },
-        )
-        loop = asyncio.get_event_loop()
-        with ThreadPoolExecutor() as pool:
-            result = await loop.run_in_executor(pool, email_client.send_message)
-        if not result:
-            logger.warning("Error sending email - %s", email)
-        elif result:
-            logger.info("Email sent successfully - %s", email)
+        try:
+            email_queue = EmailQueue(max_workers=5)
+            employees_to_notify = self.get_employees_to_notify()
+            for employee in employees_to_notify:
+                email_client = Email365Client(
+                    mail_to=employee["email"],
+                    mail_subject="Formulário de Inventário",
+                    type_message="notify_inventory",
+                    extra={"full_name": employee["full_name"]},
+                )
+                await email_queue.add_email_task(email_client, fake=False)
+
+            BackgroundTasks.add_task(self.process_email_queue, email_queue)
+        except Exception as error:
+            logger.error("Error sending email: %s", error)

@@ -1,13 +1,13 @@
 """Base backends"""
 
+import asyncio
 import logging
-import os
 import smtplib
 import time
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Annotated, List, Union
+from typing import Annotated, Dict, List, Tuple, Union
 
 import jinja2
 import jwt
@@ -23,6 +23,7 @@ from src.auth.schemas import PermissionSchema
 from src.config import (
     ACCESS_TOKEN_EXPIRE_HOURS,
     ALGORITHM,
+    APP_URL,
     EMAIL_PASSWORD_SOLUTIS_365,
     EMAIL_SOLUTIS_365,
     REFRESH_TOKEN_EXPIRE_DAYS,
@@ -280,12 +281,10 @@ class PermissionChecker:
 
 # pylint: disable=too-few-public-methods
 class Email365Client:
-    """Office 365 email client"""
-
-    # https://realpython.com/python-send-email/
+    """Office 365 email client com suporte a filas"""
 
     def __init__(
-        self, mail_to: str, mail_subject: str, type_message: str, extra: dict
+        self, mail_to: str, mail_subject: str, type_message: str, extra: Dict
     ) -> None:
         self.__extra = extra
         self.__type = type_message
@@ -363,11 +362,9 @@ class Email365Client:
         template_file = "notify_inventory_link_email.html"
         template = template_env.get_template(template_file)
 
-        base_url = os.getenv("URL_FRONTEND", "http://localhost:3000")
-
         return template.render(
             full_name=self.__extra["full_name"],
-            inventory_link=f"{base_url}/inventory-access",
+            inventory_link=f"{APP_URL}/inventory-access",
         )
 
     def __prepare_message(self) -> None:
@@ -375,16 +372,16 @@ class Email365Client:
         output_text = ""
         if self.__type == "new_password":
             output_text = self.__prepare_new_password()
-        if self.__type == "new_user":
+        elif self.__type == "new_user":
             output_text = self.__prepare_new_user_password()
-        if self.__type == "notify_maintenance":
+        elif self.__type == "notify_maintenance":
             output_text = self.__prepare_notify_maintenance()
-        if self.__type == "notify_inventory":
+        elif self.__type == "notify_inventory":
             output_text = self.__prepare_notify_inventory()
 
         self.__message.attach(MIMEText(output_text, "html"))
 
-    def send_message(self, fake=False) -> bool:
+    def send_message(self, fake: bool = False) -> bool:
         """Try send message"""
         self.__prepare_message()
         try:
@@ -403,3 +400,40 @@ class Email365Client:
             return False
         except smtplib.SMTPRecipientsRefused:
             return False
+
+
+class EmailQueue:
+    """Fila de envio de e-mails"""
+
+    def __init__(self, max_workers: int = 5):
+        self.queue = asyncio.Queue()
+        self.max_workers = max_workers
+
+    async def worker(self):
+        """Worker que processa a fila de e-mails"""
+        while True:
+            email_task: Tuple[Email365Client, bool] = await self.queue.get()
+            if email_task is None:
+                break
+
+            email_client, fake = email_task
+            success = email_client.send_message(fake=fake)
+            if success:
+                print(f"E-mail enviado com sucesso para: {email_client.__mail_to}")
+            else:
+                print(f"Falha ao enviar e-mail para: {email_client.__mail_to}")
+
+            self.queue.task_done()
+
+    async def add_email_task(self, email_client: Email365Client, fake: bool = False):
+        """Adiciona uma tarefa de envio de e-mail à fila"""
+        await self.queue.put((email_client, fake))
+
+    async def run(self):
+        """Inicia os workers e processa a fila"""
+        workers = [asyncio.create_task(self.worker()) for _ in range(self.max_workers)]
+        await self.queue.join()
+
+        for _ in range(self.max_workers):
+            await self.queue.put(None)
+        await asyncio.gather(*workers)

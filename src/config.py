@@ -183,3 +183,5 @@ ORIGINS = [
 
 EMAIL_SOLUTIS_365 = "agile@solutis.com.br"
 EMAIL_PASSWORD_SOLUTIS_365 = os.getenv("EMAIL_PASSWORD_SOLUTIS_365")
+APP_URL = os.getenv("URL_FRONTEND", "http://localhost:3000")
+print(APP_URL)
