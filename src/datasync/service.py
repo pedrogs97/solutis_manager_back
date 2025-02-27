@@ -426,8 +426,8 @@ def update_employee_legal_person(
         "employer_address": employee_legal_person.employer_address,
         "employer_name": employee_legal_person.employer_name,
         "employer_contract_object": employee_legal_person.employer_contract_object,
-        "employer_contract_date": employee_legal_person.employer_contract_date,
-        "employer_end_contract_date": employee_legal_person.employer_end_contract_date,
+        "employer_contract_date": employee_legal_person.employer_contract_date.isoformat() if employee_legal_person.employer_contract_date else None,
+        "employer_end_contract_date": employee_legal_person.employer_end_contract_date.isoformat() if employee_legal_person.employer_end_contract_date else None,
         "updated_at": datetime.now().isoformat(),
     }
     json_old_legal_person = json.dumps(old_legal_person)
