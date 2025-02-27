@@ -101,7 +101,7 @@ def get_employee_answer_route(
 
 
 @inventory_router.post("/send-notify/")
-def send_inventory_email(
+async def send_inventory_email(
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
         PermissionChecker(
@@ -117,6 +117,6 @@ def send_inventory_email(
         )
 
     service = InventoryService(db_session)
-    service.send_inventory_email()
+    asyncio.create_task(service.send_inventory_email())
     db_session.close()
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    return JSONResponse(content={'message': 'ok'}, status_code=status.HTTP_200_OK)

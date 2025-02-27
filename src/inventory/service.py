@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import List, Tuple
 
-from fastapi import BackgroundTasks, HTTPException, status
+from fastapi import HTTPException, status
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import desc
@@ -52,12 +52,20 @@ class InventoryService:
                 )
             )
             .filter(
-                EmployeeModel.registration == data.registration,
-                EmployeeModel.birthday == data.birthday,
+                EmployeeModel.birthday == datetime.strptime(data.birthday.strip(), '%Y-%m-%d').date(),
+                or_(
+                    EmployeeModel.taxpayer_identification.ilike(f"%{data.registration.strip()}%"),
+                    EmployeeModel.registration.ilike(f"%{data.registration.strip()}%"),
+                ),
             )
             .first()
         )
         if not employee:
+            logger.info(
+                "Employee not found - %s - %s",
+                data.registration,
+                data.birthday,
+            )
             self.db_session.close()
             raise HTTPException(status_code=404, detail="Employee not found")
 
@@ -407,6 +415,10 @@ class InventoryService:
                 "full_name": "Pedro Santana (Teste)",
             },
             {
+                "email": "pedrogustavosantana97@gmail.com",
+                "full_name": "Pedro Santana (Teste)",
+            },
+            {
                 "email": "brenner.pereira@solutis.com.br",
                 "full_name": "Brenner Pereira (Teste)",
             },
@@ -479,6 +491,6 @@ class InventoryService:
                 )
                 await email_queue.add_email_task(email_client, fake=False)
 
-            BackgroundTasks.add_task(self.process_email_queue, email_queue)
+            await self.process_email_queue(email_queue)
         except Exception as error:
             logger.error("Error sending email: %s", error)

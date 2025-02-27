@@ -1,5 +1,6 @@
 """Main Service"""
 
+import tracemalloc
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -45,6 +46,7 @@ from src.report.router import report_router
 from src.term.router import term_router
 from src.verification.router import verification_router
 
+tracemalloc.start()
 if not os.path.exists(f"{BASE_DIR}/logs/"):
     os.makedirs(f"{BASE_DIR}/logs/")
 
