@@ -48,7 +48,7 @@ PASSWORD_SUPER_USER = os.getenv("PASSWORD_SUPER_USER")
 TIMEZONE = os.getenv("TIMEZONE", "America/Bahia")
 
 DEBUG = os.getenv("DEBUG")
-SCHEDULER_ACTIVE = os.getenv("SCHEDULER_ACTIVE", False)
+SCHEDULER_ACTIVE = os.getenv("SCHEDULER_ACTIVE")
 
 # Logging config.
 

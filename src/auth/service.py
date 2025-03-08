@@ -94,8 +94,6 @@ class UserSerivce:
 
             new_password = user_service.make_new_random_password()
 
-            print(new_password)
-
             # Output: 8aBcD3e
         """
         # choose from all lowercase letter
@@ -311,7 +309,6 @@ class UserSerivce:
         Example Usage:
             user = UserModel(...)
             serializer = UserService().serialize_user(user)
-            print(serializer)
         """
         full_name: str = user.employee.full_name if user.employee else ""
         taxpayer_identification: str = (
