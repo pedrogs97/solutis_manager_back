@@ -48,7 +48,7 @@ PASSWORD_SUPER_USER = os.getenv("PASSWORD_SUPER_USER")
 TIMEZONE = os.getenv("TIMEZONE", "America/Bahia")
 
 DEBUG = os.getenv("DEBUG")
-SCHEDULER_ACTIVE = os.getenv("SCHEDULER_ACTIVE")
+SCHEDULER_ACTIVE = os.getenv("SCHEDULER_ACTIVE", False)
 
 # Logging config.
 
@@ -184,4 +184,3 @@ ORIGINS = [
 EMAIL_SOLUTIS_365 = "agile@solutis.com.br"
 EMAIL_PASSWORD_SOLUTIS_365 = os.getenv("EMAIL_PASSWORD_SOLUTIS_365")
 APP_URL = os.getenv("URL_FRONTEND", "https://agile.solutis.net.br")
-print(APP_URL)

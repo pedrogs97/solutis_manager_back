@@ -28,7 +28,7 @@ class AnswerInventoryLendingSerializer(BaseSchema):
         justification = values.get("justification")
         confirm = values.get("confirm", False)
 
-        if not confirm and not justification:
+        if confirm == False and not justification:
             raise ValueError("Preencha a justificativa")
 
         return values
@@ -48,7 +48,7 @@ class AnswerInventoryTermSerializer(BaseSchema):
         justification = values.get("justification")
         confirm = values.get("confirm", False)
 
-        if not confirm and not justification:
+        if confirm == False and not justification:
             raise ValueError("Preencha a justificativa")
 
         return values

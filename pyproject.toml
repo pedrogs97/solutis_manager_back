@@ -51,3 +51,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
+poetry-plugin-shell = ">=1.0.1"

@@ -33,29 +33,41 @@ class InventoryService:
     def __init__(self, db_session: Session):
         self.db_session = db_session
 
+    def __clean_registration(self, registration: str) -> str:
+        """Clean registration"""
+        cleaned_registration = registration.strip().replace(".", "").replace("-", "")
+
+        if len(cleaned_registration) == 11:
+            return cleaned_registration
+
+        return cleaned_registration.zfill(9)  # 000002476
+
     def get_employee(self, data: EmployeeInventorySerializer) -> Tuple:
         """Get employee"""
+        cpf_or_registration = self.__clean_registration(data.registration)
+
         employee = (
             self.db_session.query(EmployeeModel)
             .options(
                 with_loader_criteria(
                     LendingModel,
-                    LendingModel.deleted == False,
+                    and_(LendingModel.status_id == 2, LendingModel.deleted == False),
                     include_aliases=True,
                 )
             )
             .options(
                 with_loader_criteria(
                     TermModel,
-                    TermModel.deleted == False,
+                    and_(TermModel.status_id == 2, TermModel.deleted == False),
                     include_aliases=True,
                 )
             )
             .filter(
-                EmployeeModel.birthday == datetime.strptime(data.birthday.strip(), '%Y-%m-%d').date(),
+                EmployeeModel.birthday
+                == datetime.strptime(data.birthday.strip(), "%Y-%m-%d").date(),
                 or_(
-                    EmployeeModel.taxpayer_identification.ilike(f"%{data.registration.strip()}%"),
-                    EmployeeModel.registration.ilike(f"%{data.registration.strip()}%"),
+                    EmployeeModel.taxpayer_identification == cpf_or_registration,
+                    EmployeeModel.registration == cpf_or_registration,
                 ),
             )
             .first()
