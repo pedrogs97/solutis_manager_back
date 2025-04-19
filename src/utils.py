@@ -455,3 +455,8 @@ def get_start_and_end_datetime(
     start_datetime = datetime.strptime(f"{start_date} 23:59", "%Y-%m-%d %H:%M")
     end_datetime = datetime.strptime(f"{end_date} 23:59", "%Y-%m-%d %H:%M")
     return (start_datetime, end_datetime)
+
+
+def base64_str(data: bytes) -> str:
+    """Convert bytes to base64 string"""
+    return str(base64.b64encode(data)).replace("b'", "").replace("'", "")

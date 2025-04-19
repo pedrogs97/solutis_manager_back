@@ -34,6 +34,19 @@ class DocumentModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     doc_type: Mapped[DocumentTypeModel] = relationship()
     doc_type_id = Column("doc_type_id", ForeignKey("document_type.id"), nullable=True)
+    sign_doc_id = Column(
+        "sign_doc_id",
+        String(length=50),
+        nullable=True,
+        unique=True,
+        index=True,
+    )
+    sign_envelope_id = Column(
+        "sign_envelope_id",
+        String(length=50),
+        nullable=True,
+        index=True,
+    )
 
     # caminho do arquivo
     path = Column("path", String(length=255), nullable=True)

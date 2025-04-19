@@ -47,6 +47,7 @@ from src.utils import (
     upload_file,
 )
 from src.verification.models import VerificationAnswerModel
+from src.clicksign_api.service import ClickSignService
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -57,6 +58,7 @@ class DocumentService:
     """Document service"""
 
     NOT_PROVIDE = "Não informado"
+    clicksign_service = ClickSignService()
 
     def __get_document_or_404(
         self, document_id: int, db_session: Session
@@ -615,8 +617,35 @@ class DocumentService:
                 )
             )
 
-        new_doc = DocumentModel(path=contract_path, file_name=f"{new_code}.pdf")
-
+        filename = f"{new_code}.pdf"
+        envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+            filename,
+            contract_path,
+            employee.email,
+            employee.full_name,
+            employee.taxpayer_identification,
+            employee.birthday.isoformat(),
+            [
+                {
+                    "full_name": witness1.employee.full_name,
+                    "taxpayer_id": witness1.employee.taxpayer_identification,
+                    "birthday": witness1.employee.birthday.isoformat(),
+                    "email": witness1.employee.email,
+                },
+                {
+                    "full_name": witness2.employee.full_name,
+                    "taxpayer_id": witness2.employee.taxpayer_identification,
+                    "birthday": witness2.employee.birthday.isoformat(),
+                    "email": witness2.employee.email,
+                },
+            ],
+        )
+        new_doc = DocumentModel(
+            path=contract_path,
+            file_name=filename,
+            sign_doc_id=document_id,
+            sign_envelope_id=envelope_id,
+        )
         new_doc.doc_type = doc_type
 
         db_session.add(new_doc)
@@ -784,7 +813,37 @@ class DocumentService:
                     )
                 )
 
-            new_doc = DocumentModel(path=contract_path, file_name=f"{code}.pdf")
+            filename = f"{code}.pdf"
+            envelope_id, document_id = (
+                self.clicksign_service.send_recreated_document_to_sign(
+                    filename,
+                    contract_path,
+                    employee.email,
+                    employee.full_name,
+                    employee.taxpayer_identification,
+                    employee.birthday.isoformat(),
+                    [
+                        {
+                            "full_name": witness1.employee.full_name,
+                            "taxpayer_id": witness1.employee.taxpayer_identification,
+                            "birthday": witness1.employee.birthday.isoformat(),
+                            "email": witness1.employee.email,
+                        },
+                        {
+                            "full_name": witness2.employee.full_name,
+                            "taxpayer_id": witness2.employee.taxpayer_identification,
+                            "birthday": witness2.employee.birthday.isoformat(),
+                            "email": witness2.employee.email,
+                        },
+                    ],
+                )
+            )
+            new_doc = DocumentModel(
+                path=contract_path,
+                file_name=filename,
+                sign_doc_id=document_id,
+                sign_envelope_id=envelope_id,
+            )
 
             new_doc.doc_type = doc.doc_type
 
@@ -965,7 +1024,35 @@ class DocumentService:
                 )
             )
 
-        new_doc = DocumentModel(path=contract_path, file_name=f"{code} - distrato.pdf")
+        filename = f"{code} - distrato.pdf"
+        envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+            filename,
+            contract_path,
+            employee.email,
+            employee.full_name,
+            employee.taxpayer_identification,
+            employee.birthday.isoformat(),
+            [
+                {
+                    "full_name": witness1.employee.full_name,
+                    "taxpayer_id": witness1.employee.taxpayer_identification,
+                    "birthday": witness1.employee.birthday.isoformat(),
+                    "email": witness1.employee.email,
+                },
+                {
+                    "full_name": witness2.employee.full_name,
+                    "taxpayer_id": witness2.employee.taxpayer_identification,
+                    "birthday": witness2.employee.birthday.isoformat(),
+                    "email": witness2.employee.email,
+                },
+            ],
+        )
+        new_doc = DocumentModel(
+            path=contract_path,
+            file_name=filename,
+            sign_doc_id=document_id,
+            sign_envelope_id=envelope_id,
+        )
 
         new_doc.doc_type = doc_type
 
@@ -1128,7 +1215,37 @@ class DocumentService:
                 )
             )
 
-        new_doc = DocumentModel(path=contract_path, file_name=f"{code} - distrato.pdf")
+        filename = f"{code} - distrato.pdf"
+        envelope_id, document_id = (
+            self.clicksign_service.send_recreated_document_to_sign(
+                filename,
+                contract_path,
+                employee.email,
+                employee.full_name,
+                employee.taxpayer_identification,
+                employee.birthday.isoformat(),
+                [
+                    {
+                        "full_name": witness1.employee.full_name,
+                        "taxpayer_id": witness1.employee.taxpayer_identification,
+                        "birthday": witness1.employee.birthday.isoformat(),
+                        "email": witness1.employee.email,
+                    },
+                    {
+                        "full_name": witness2.employee.full_name,
+                        "taxpayer_id": witness2.employee.taxpayer_identification,
+                        "birthday": witness2.employee.birthday.isoformat(),
+                        "email": witness2.employee.email,
+                    },
+                ],
+            )
+        )
+        new_doc = DocumentModel(
+            path=contract_path,
+            file_name=filename,
+            sign_doc_id=document_id,
+            sign_envelope_id=envelope_id,
+        )
 
         new_doc.doc_type = doc.doc_type
 
@@ -1304,8 +1421,21 @@ class DocumentService:
             )
         )
 
-        new_doc = DocumentModel(path=contract_path, file_name=f"{new_code}.pdf")
-
+        filename = f"{new_code}.pdf"
+        envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+            filename,
+            contract_path,
+            employee.email,
+            employee.full_name,
+            employee.taxpayer_identification,
+            employee.birthday.isoformat(),
+        )
+        new_doc = DocumentModel(
+            path=contract_path,
+            file_name=filename,
+            sign_doc_id=document_id,
+            sign_envelope_id=envelope_id,
+        )
         new_doc.doc_type = doc_type
 
         db_session.add(new_doc)
@@ -1398,7 +1528,22 @@ class DocumentService:
             "distrato_termo.html",
         )
 
-        new_doc = DocumentModel(path=contract_path, file_name=f"{code} - distrato.pdf")
+        filename = f"{code} - distrato.pdf"
+        envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+            filename,
+            contract_path,
+            employee.email,
+            employee.full_name,
+            employee.taxpayer_identification,
+            employee.birthday.isoformat(),
+        )
+
+        new_doc = DocumentModel(
+            path=contract_path,
+            file_name=filename,
+            sign_doc_id=document_id,
+            sign_envelope_id=envelope_id,
+        )
 
         new_doc.doc_type = doc_type
 

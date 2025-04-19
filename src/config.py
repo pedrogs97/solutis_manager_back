@@ -184,3 +184,7 @@ ORIGINS = [
 EMAIL_SOLUTIS_365 = "agile@solutis.com.br"
 EMAIL_PASSWORD_SOLUTIS_365 = os.getenv("EMAIL_PASSWORD_SOLUTIS_365")
 APP_URL = os.getenv("URL_FRONTEND", "https://agile.solutis.net.br")
+CLICKSIGN_URL = os.getenv(
+    "CLICKSIGN_URL", "https://sandbox.clicksign.com/api/v3/envelopes"
+)
+CLICKSIGN_TOKEN = os.getenv("CLICKSIGN_TOKEN")
