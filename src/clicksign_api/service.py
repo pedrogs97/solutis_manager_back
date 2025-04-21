@@ -305,6 +305,48 @@ class ClickSignService:
                 f"Error add authorization: {error}",
             )
 
+    def __add_observers(self, envelop_id: str) -> None:
+        """
+        Add observers to the envelope
+        This will add the observers to the envelope
+
+        :Args:
+            envelope_id (str): The ID of the envelope
+
+        :Returns:
+            None
+        """
+        observers_to_add = [
+            "brenner.pereira@solutis.com.br",
+            "beatriz.cunha@solutis.com.br",
+            "thomas.lichtenberger@solutis.com.br",
+            "carla.anunciacao@solutis.com.br",
+            "tais.santos@solutis.com.br",
+            "tailon.souza@solutis.com.br",
+            "kecia.sousa@solutis.com.br",
+        ]
+
+        for observer in observers_to_add:
+            observers_obj = {
+                "data": {
+                    "type": "signature_watchers",
+                    "attributes": {
+                        "email": observer,
+                        "kind": "on_finished",
+                    },
+                }
+            }
+            payload = json.dumps(observers_obj)
+            url = f"{CLICKSIGN_URL}/{envelop_id}/signature_watchers"
+            response = requests.post(url, data=payload, headers=self.DEFAULT_HEADERS)
+            response_json = response.json()
+            if response.status_code != 201:
+                error = response_json.get("errors", self.DEFAULT_ERROR)
+                self.logger.log(
+                    logging.ERROR,
+                    f"Error add observers: {error}",
+                )
+
     def __activate_envelope(self, envelope_id: str) -> None:
         """
         Activate the envelope
@@ -432,6 +474,7 @@ class ClickSignService:
         self.__add_requirements(envelope_id, document_id, signer_id)
         self.__add_authorization(envelope_id, document_id, signer_id)
         self.__activate_envelope(envelope_id)
+        self.__add_observers(envelope_id)
         for id in signers_to_notify:
             self.__send_notification(envelope_id, id)
 
