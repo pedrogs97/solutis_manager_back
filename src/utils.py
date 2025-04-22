@@ -462,12 +462,10 @@ def base64_str(data: bytes) -> str:
     return str(base64.b64encode(data)).replace("b'", "").replace("'", "")
 
 
-def mask_taxpayer_id(taxpayer_id: str) -> str:
+def mask_taxpayer_id(taxpayer: str) -> str:
     """Mask taxpayer id"""
-    if len(taxpayer_id) == 11:
-        return (
-            f"{taxpayer_id[:3]}.{taxpayer_id[3:6]}.{taxpayer_id[6:9]}-{taxpayer_id[9:]}"
-        )
-    elif len(taxpayer_id) == 14:
-        return f"{taxpayer_id[:2]}.{taxpayer_id[2:5]}.{taxpayer_id[5:8]}/{taxpayer_id[8:12]}-{taxpayer_id[12:]}"
-    return taxpayer_id
+    if len(taxpayer) == 11:
+        return f"{taxpayer[:3]}.{taxpayer[3:6]}.{taxpayer[6:9]}-{taxpayer[9:]}"
+    if len(taxpayer) == 14:
+        return f"{taxpayer[:2]}.{taxpayer[2:5]}.{taxpayer[5:8]}/{taxpayer[8:12]}-{taxpayer[12:]}"
+    return taxpayer
