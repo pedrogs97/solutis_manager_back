@@ -53,7 +53,7 @@ class TestBase:
         None
         """
         if not self.engine_server:
-            self.engine_server = create_engine(get_database_server_url())
+            self.engine_server = create_engine(get_database_url())
         connection = self.engine_server.connect()
         try:
             connection.rollback()
