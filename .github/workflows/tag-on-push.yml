@@ -28,12 +28,16 @@ jobs:
       - name: Determine version bump
         id: determine_version
         run: |
-          echo "git tag --sort=-v:refname | head -n 1"
-          echo "current_version=$(git tag --sort=-v:refname | head -n 1 || echo 'v0.0.0')" >> $GITHUB_ENV
+          current_version=$(git tag --sort=-v:refname | head -n 1 || echo 'v0.0.0')
+          echo "current_version=$current_version" >> $GITHUB_ENV
+
           current_version=${current_version:-v0.0.0}
-          echo "$current_version"
+          echo "Current version: $current_version"
+
           prefix="v"
           version=${current_version#$prefix}
+          echo "Version without prefix: $version"
+
           major=$(echo "$version" | cut -d. -f1)
           minor=$(echo "$version" | cut -d. -f2)
           patch=$(echo "$version" | cut -d. -f3)
@@ -52,6 +56,7 @@ jobs:
           fi
 
           new_version="${prefix}${major}.${minor}.${patch}"
+          echo "New version: $new_version"
           echo "new_version=$new_version" >> $GITHUB_ENV
 
       - name: Create and push tag
