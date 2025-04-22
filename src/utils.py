@@ -460,3 +460,14 @@ def get_start_and_end_datetime(
 def base64_str(data: bytes) -> str:
     """Convert bytes to base64 string"""
     return str(base64.b64encode(data)).replace("b'", "").replace("'", "")
+
+
+def mask_taxpayer_id(taxpayer_id: str) -> str:
+    """Mask taxpayer id"""
+    if len(taxpayer_id) == 11:
+        return (
+            f"{taxpayer_id[:3]}.{taxpayer_id[3:6]}.{taxpayer_id[6:9]}-{taxpayer_id[9:]}"
+        )
+    elif len(taxpayer_id) == 14:
+        return f"{taxpayer_id[:2]}.{taxpayer_id[2:5]}.{taxpayer_id[5:8]}/{taxpayer_id[8:12]}-{taxpayer_id[12:]}"
+    return taxpayer_id

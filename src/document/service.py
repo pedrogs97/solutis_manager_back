@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from src.asset.models import AssetModel, AssetStatusModel
 from src.asset.service import AssetService
 from src.auth.models import UserModel
+from src.clicksign_api.service import ClickSignService
 from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
 from src.document.filters import DocumentFilter
 from src.document.models import DocumentModel, DocumentTypeModel
@@ -44,10 +45,10 @@ from src.utils import (
     create_revoke_lending_contract_pj,
     create_term,
     create_verification_document,
+    mask_taxpayer_id,
     upload_file,
 )
 from src.verification.models import VerificationAnswerModel
-from src.clicksign_api.service import ClickSignService
 
 logger = logging.getLogger(__name__)
 service_log = LogService()
@@ -623,7 +624,7 @@ class DocumentService:
             contract_path,
             employee.email,
             employee.full_name,
-            employee.taxpayer_identification,
+            mask_taxpayer_id(employee.taxpayer_identification),
             employee.birthday.isoformat(),
             [
                 {
@@ -814,29 +815,30 @@ class DocumentService:
                 )
 
             filename = f"{code}.pdf"
-            envelope_id, document_id = (
-                self.clicksign_service.send_recreated_document_to_sign(
-                    filename,
-                    contract_path,
-                    employee.email,
-                    employee.full_name,
-                    employee.taxpayer_identification,
-                    employee.birthday.isoformat(),
-                    [
-                        {
-                            "full_name": witness1.employee.full_name,
-                            "taxpayer_id": witness1.employee.taxpayer_identification,
-                            "birthday": witness1.employee.birthday.isoformat(),
-                            "email": witness1.employee.email,
-                        },
-                        {
-                            "full_name": witness2.employee.full_name,
-                            "taxpayer_id": witness2.employee.taxpayer_identification,
-                            "birthday": witness2.employee.birthday.isoformat(),
-                            "email": witness2.employee.email,
-                        },
-                    ],
-                )
+            (
+                envelope_id,
+                document_id,
+            ) = self.clicksign_service.send_recreated_document_to_sign(
+                filename,
+                contract_path,
+                employee.email,
+                employee.full_name,
+                employee.taxpayer_identification,
+                employee.birthday.isoformat(),
+                [
+                    {
+                        "full_name": witness1.employee.full_name,
+                        "taxpayer_id": witness1.employee.taxpayer_identification,
+                        "birthday": witness1.employee.birthday.isoformat(),
+                        "email": witness1.employee.email,
+                    },
+                    {
+                        "full_name": witness2.employee.full_name,
+                        "taxpayer_id": witness2.employee.taxpayer_identification,
+                        "birthday": witness2.employee.birthday.isoformat(),
+                        "email": witness2.employee.email,
+                    },
+                ],
             )
             new_doc = DocumentModel(
                 path=contract_path,
@@ -1030,7 +1032,7 @@ class DocumentService:
             contract_path,
             employee.email,
             employee.full_name,
-            employee.taxpayer_identification,
+            mask_taxpayer_id(employee.taxpayer_identification),
             employee.birthday.isoformat(),
             [
                 {
@@ -1216,29 +1218,30 @@ class DocumentService:
             )
 
         filename = f"{code} - distrato.pdf"
-        envelope_id, document_id = (
-            self.clicksign_service.send_recreated_document_to_sign(
-                filename,
-                contract_path,
-                employee.email,
-                employee.full_name,
-                employee.taxpayer_identification,
-                employee.birthday.isoformat(),
-                [
-                    {
-                        "full_name": witness1.employee.full_name,
-                        "taxpayer_id": witness1.employee.taxpayer_identification,
-                        "birthday": witness1.employee.birthday.isoformat(),
-                        "email": witness1.employee.email,
-                    },
-                    {
-                        "full_name": witness2.employee.full_name,
-                        "taxpayer_id": witness2.employee.taxpayer_identification,
-                        "birthday": witness2.employee.birthday.isoformat(),
-                        "email": witness2.employee.email,
-                    },
-                ],
-            )
+        (
+            envelope_id,
+            document_id,
+        ) = self.clicksign_service.send_recreated_document_to_sign(
+            filename,
+            contract_path,
+            employee.email,
+            employee.full_name,
+            employee.taxpayer_identification,
+            employee.birthday.isoformat(),
+            [
+                {
+                    "full_name": witness1.employee.full_name,
+                    "taxpayer_id": witness1.employee.taxpayer_identification,
+                    "birthday": witness1.employee.birthday.isoformat(),
+                    "email": witness1.employee.email,
+                },
+                {
+                    "full_name": witness2.employee.full_name,
+                    "taxpayer_id": witness2.employee.taxpayer_identification,
+                    "birthday": witness2.employee.birthday.isoformat(),
+                    "email": witness2.employee.email,
+                },
+            ],
         )
         new_doc = DocumentModel(
             path=contract_path,
@@ -1427,7 +1430,7 @@ class DocumentService:
             contract_path,
             employee.email,
             employee.full_name,
-            employee.taxpayer_identification,
+            mask_taxpayer_id(employee.taxpayer_identification),
             employee.birthday.isoformat(),
         )
         new_doc = DocumentModel(
@@ -1534,7 +1537,7 @@ class DocumentService:
             contract_path,
             employee.email,
             employee.full_name,
-            employee.taxpayer_identification,
+            mask_taxpayer_id(employee.taxpayer_identification),
             employee.birthday.isoformat(),
         )
 
