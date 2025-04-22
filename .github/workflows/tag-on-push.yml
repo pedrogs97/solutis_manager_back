@@ -28,8 +28,10 @@ jobs:
       - name: Determine version bump
         id: determine_version
         run: |
+          echo "git tag --sort=-v:refname | head -n 1"
           echo "current_version=$(git tag --sort=-v:refname | head -n 1 || echo 'v0.0.0')" >> $GITHUB_ENV
           current_version=${current_version:-v0.0.0}
+          echo "$current_version"
           prefix="v"
           version=${current_version#$prefix}
           major=$(echo "$version" | cut -d. -f1)
