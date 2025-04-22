@@ -25,9 +25,16 @@ jobs:
         id: get_message
         run: echo "message=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
 
-      - name: Determine version bump
+      - name: Debug Git State
+        run: |
+          git fetch --tags
+          git tag --list
+          git log -1
+
+      - name: Determine version bumps
         id: determine_version
         run: |
+          git fetch --tags
           echo "$(git tag --sort=-v:refname | head -n 1)"
           current_version=$(git tag --sort=-v:refname | head -n 1 || echo 'v0.0.0')
           echo "Current version: $current_version"
