@@ -1,9 +1,11 @@
-from typing import Optional, List, Tuple
-import requests
 import json
-from src.config import CLICKSIGN_URL, CLICKSIGN_TOKEN
-from src.utils import base64_str
 import logging
+from typing import List, Optional, Tuple
+
+import requests
+
+from src.config import CLICKSIGN_TOKEN, CLICKSIGN_URL
+from src.utils import base64_str, mask_taxpayer_id
 
 
 class ClickSignService:
@@ -159,7 +161,7 @@ class ClickSignService:
                     "name": name,
                     "email": email,
                     "birthday": birthday,
-                    "documentation": taxpayer_id,
+                    "documentation": mask_taxpayer_id(taxpayer_id),
                 },
             }
         }

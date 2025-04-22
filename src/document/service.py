@@ -819,26 +819,10 @@ class DocumentService:
                 envelope_id,
                 document_id,
             ) = self.clicksign_service.send_recreated_document_to_sign(
+                doc.sign_doc_id,
+                doc.sign_envelope_id,
                 filename,
                 contract_path,
-                employee.email,
-                employee.full_name,
-                employee.taxpayer_identification,
-                employee.birthday.isoformat(),
-                [
-                    {
-                        "full_name": witness1.employee.full_name,
-                        "taxpayer_id": witness1.employee.taxpayer_identification,
-                        "birthday": witness1.employee.birthday.isoformat(),
-                        "email": witness1.employee.email,
-                    },
-                    {
-                        "full_name": witness2.employee.full_name,
-                        "taxpayer_id": witness2.employee.taxpayer_identification,
-                        "birthday": witness2.employee.birthday.isoformat(),
-                        "email": witness2.employee.email,
-                    },
-                ],
             )
             new_doc = DocumentModel(
                 path=contract_path,
@@ -1222,26 +1206,10 @@ class DocumentService:
             envelope_id,
             document_id,
         ) = self.clicksign_service.send_recreated_document_to_sign(
+            doc.sign_doc_id,
+            doc.sign_envelope_id,
             filename,
             contract_path,
-            employee.email,
-            employee.full_name,
-            employee.taxpayer_identification,
-            employee.birthday.isoformat(),
-            [
-                {
-                    "full_name": witness1.employee.full_name,
-                    "taxpayer_id": witness1.employee.taxpayer_identification,
-                    "birthday": witness1.employee.birthday.isoformat(),
-                    "email": witness1.employee.email,
-                },
-                {
-                    "full_name": witness2.employee.full_name,
-                    "taxpayer_id": witness2.employee.taxpayer_identification,
-                    "birthday": witness2.employee.birthday.isoformat(),
-                    "email": witness2.employee.email,
-                },
-            ],
         )
         new_doc = DocumentModel(
             path=contract_path,
