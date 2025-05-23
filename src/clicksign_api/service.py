@@ -414,6 +414,7 @@ class ClickSignService:
         filename: str,
         file_path: str,
         signer_email: str,
+        principal_signer: str,
         full_name: str,
         taxpayer_id: str,
         birthday: str,
@@ -440,7 +441,15 @@ class ClickSignService:
         signer_id = self.__create_signer(
             envelope_id, signer_email, full_name, birthday, taxpayer_id
         )
+        # comodante
+        principal_signer_id = self.__create_signer(
+            envelope_id, principal_signer, full_name, birthday, taxpayer_id
+        )
+
         if not signer_id:
+            return None, None
+
+        if not principal_signer_id:
             return None, None
 
         signers_to_notify = [signer_id]
