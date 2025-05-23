@@ -134,7 +134,7 @@ class ReportService:
         """Convert lending to report"""
         return {
             "employee": lending.employee.full_name,
-            "code": lending.employee.code,
+            "code": lending.employee.registration.rsplit("0", 1)[-1],
             "role": (
                 lending.employee.role.name
                 if lending.employee.role
