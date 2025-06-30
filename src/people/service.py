@@ -318,16 +318,12 @@ class EmployeeService:
 
         self.__validate_nested(data, db_session)
 
-        keys = data.model_dump(by_alias=False).keys()
-        for key in keys:
-            if key not in data.model_fields_set:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Campo '{key}' não pode ser editado.",
-                )
-
-            if hasattr(employee, key) and getattr(data, key) is not None:
-                setattr(employee, key, getattr(data, key))
+        for key, value in data.model_dump().items():
+            if hasattr(employee, key) and value is not None:
+                if key == "role":
+                    setattr(employee, "role_id", getattr(data, key))
+                else:
+                    setattr(employee, key, getattr(data, key))
 
         db_session.add(employee)
         db_session.commit()
