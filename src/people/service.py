@@ -316,13 +316,7 @@ class EmployeeService:
                 detail="Este colaborador não pode ser editado.",
             )
 
-        (
-            role,
-            nationality,
-            marital_status,
-            gender,
-            educational_level,
-        ) = self.__validate_nested(data, db_session)
+        self.__validate_nested(data, db_session)
 
         keys = data.model_dump(by_alias=False).keys()
         for key in keys:
