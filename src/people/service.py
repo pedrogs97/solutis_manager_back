@@ -323,48 +323,17 @@ class EmployeeService:
             gender,
             educational_level,
         ) = self.__validate_nested(data, db_session)
-        if data.role:
-            employee.role = role
-        if data.nationality_id:
-            employee.nationality = nationality
-        if data.marital_status_id:
-            employee.marital_status = marital_status
-        if data.gender_id:
-            employee.gender = gender
-        if data.educational_level_id:
-            employee.educational_level = educational_level
-        if data.code:
-            employee.code = data.code
-        if data.full_name:
-            employee.full_name = data.full_name
-        if data.taxpayer_identification:
-            employee.taxpayer_identification = data.taxpayer_identification
-        if data.national_identification:
-            employee.national_identification = data.national_identification
-        if data.address:
-            employee.address = data.address
-        if data.cell_phone:
-            employee.cell_phone = data.cell_phone
-        if data.email:
-            employee.email = data.email
-        if data.birthday:
-            employee.birthday = data.birthday
-        if data.manager:
-            employee.manager = data.manager
-        if data.employer_number:
-            employee.employer_number = data.employer_number
-        if data.employer_address:
-            employee.employer_address = data.employer_address
-        if data.employer_name:
-            employee.employer_name = data.employer_name
-        if data.employer_contract_object:
-            employee.employer_contract_object = data.employer_contract_object
-        if data.employer_contract_date:
-            employee.employer_contract_date = data.employer_contract_date
-        if data.employer_end_contract_date:
-            employee.employer_end_contract_date = data.employer_end_contract_date
-        if data.job_position:
-            employee.job_position = data.job_position
+
+        keys = data.model_dump(by_alias=False).keys()
+        for key in keys:
+            if key not in data.model_fields_set:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Campo '{key}' não pode ser editado.",
+                )
+
+            if hasattr(employee, key) and getattr(data, key) is not None:
+                setattr(employee, key, getattr(data, key))
 
         db_session.add(employee)
         db_session.commit()
