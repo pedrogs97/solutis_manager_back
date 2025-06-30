@@ -132,12 +132,17 @@ class ReportService:
 
     def lending_to_report(self, lending: LendingModel) -> dict:
         """Convert lending to report"""
+        if lending.employee.registration.isdigit():
+            str_registration = str(int(lending.employee.registration))
+        else:
+            str_registration = lending.employee.registration
+
         return {
             "employee": lending.employee.full_name,
-            "code": str(int(lending.employee.registration)),
+            "code": str_registration,
             "role": (
                 lending.employee.role.name
-                if lending.employee.roles
+                if lending.employee.role
                 else lending.employee.job_position
             ),
             "project": lending.project,
