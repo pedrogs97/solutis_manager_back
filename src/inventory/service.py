@@ -144,7 +144,7 @@ class InventoryService:
             return False
 
         for lending in lendings:
-            if lending.deleted:
+            if lending.deleted and lending.id in answer_lendings_ids:
                 return False
 
         return True
@@ -163,7 +163,7 @@ class InventoryService:
             return False
 
         for term in terms:
-            if term.deleted:
+            if term.deleted and term.id in answer_terms_ids:
                 return False
 
         return True
