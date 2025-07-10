@@ -113,6 +113,10 @@ class TermModel(Base):
     term_item: Mapped[TermItemModel] = relationship(back_populates="term")
     term_item_id = Column("term_item_id", ForeignKey(TermItemModel.id), nullable=False)
 
+    signer_email = Column("signer_email", String(length=100), nullable=True)
+    principal_email_signer = Column(
+        "principal_email_signer", String(length=100), nullable=True
+    )
     # código gerado
     number = Column("number", String(length=30), nullable=True)
     manager = Column("manager", String(length=50))

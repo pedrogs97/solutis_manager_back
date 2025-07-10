@@ -24,28 +24,44 @@ COPY ./templates /solutis-agile/templates
 
 WORKDIR /solutis-agile
 
-RUN apt-get update -y && apt-get install curl -y \
-    && apt-get install -y locales \
-    && dpkg-reconfigure -f noninteractive locales \
-    && locale-gen pt_BR \
-    && update-locale \
-    && apt-get install wkhtmltopdf -y \
-    && apt-get install python3-dev python3.9-dev default-libmysqlclient-dev build-essential -y \
-    && curl -sSL https://install.python-poetry.org | python3 - \
+# Install system packages and configure locale
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update -y \
+    && apt-get install -y curl locales \
+    && sed -i '/^# pt_BR.UTF-8 UTF-8/s/^# //' /etc/locale.gen \
+    && locale-gen \
+    && update-locale LANG=pt_BR.UTF-8
+
+# Install WeasyPrint and dependencies
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y weasyprint \
+    && apt-get install -y python3-dev python3.9-dev default-libmysqlclient-dev build-essential \
+    && apt-get install -y python3-pip \
+    && apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 \
+    && apt-get install -y libjpeg-dev libopenjp2-7-dev libffi-dev
+
+# Install Poetry and Python dependencies
+RUN curl -sSL https://install.python-poetry.org | python3 - \
+    && poetry self add poetry-plugin-export \
     && poetry export -f requirements.txt --output requirements.txt --without-hashes \
     && pip install --upgrade pip \
     && pip install --no-cache-dir --upgrade -r requirements.txt \
+    && pip uninstall poetry -y \
+    && rm requirements.txt
+
+# Install Microsoft SQL Server tools
+RUN export DEBIAN_FRONTEND=noninteractive \
     && curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc \
     && curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/mssql-release.list \
     && apt-get update -y \
     && ACCEPT_EULA=Y apt-get install -y msodbcsql17 \
-    && apt-get install -y unixodbc \
-    && apt-get install -y unixodbc-dev \
-    && apt-get install -y libgssapi-krb5-2 \
-    && chmod -R 755 /var \
-    && apt-get auto-remove -y \
+    && apt-get install -y unixodbc unixodbc-dev libgssapi-krb5-2
+
+# Cleanup
+RUN chmod -R 755 /var \
     && apt-get remove curl -y \
-    && pip uninstall poetry \
-    && rm requirements.txt
+    && apt-get auto-remove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PATH="/opt/mssql-tools17/bin:$PATH"

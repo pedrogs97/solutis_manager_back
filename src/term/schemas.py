@@ -51,6 +51,8 @@ class TermSerializerSchema(BaseSchema):
     )
     location: str
     item: TermItemSerializerSchema
+    principal_signer: str = Field(serialization_alias="principalSigner")
+    employee_signer: str = Field(serialization_alias="employeeSigner")
     created_at: str = Field(serialization_alias="createdAt")
 
 
@@ -58,6 +60,8 @@ class UpdateTermSchema(BaseSchema):
     """Update term"""
 
     observations: Optional[str]
+    principal_signer: Optional[str] = Field(alias="principalSigner")
+    employee_signer: Optional[str] = Field(alias="employeeSigner")
 
 
 class NewTermSchema(BaseSchema):
@@ -78,6 +82,8 @@ class NewTermSchema(BaseSchema):
     value: Optional[float] = None
     line_number: Optional[str] = Field(alias="lineNumber", default=None)
     operator: Optional[str] = None
+    principal_signer: str = Field(alias="principalSigner")
+    employee_signer: str = Field(alias="employeeSigner")
 
 
 class TermEmployeeHistorySerializerSchema(BaseSchema):

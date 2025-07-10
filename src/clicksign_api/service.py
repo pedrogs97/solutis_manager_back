@@ -6,6 +6,8 @@ import requests
 
 from src.config import CLICKSIGN_TOKEN, CLICKSIGN_URL
 from src.utils import base64_str, mask_taxpayer_id
+from src.lending.service import LendingService
+from sqlalchemy.orm import Session
 
 
 class ClickSignService:
@@ -14,6 +16,27 @@ class ClickSignService:
         "Content-Type": "application/vnd.api+json",
     }
     DEFAULT_ERROR = "Unknown error"
+
+    MAPPING_PRINCIPAL_SIGNERS = {
+        "beatriz.cunha@solutis.com.br": {
+            "full_name": "BEATRIZ CUNHA DA SILVA",
+            "taxpayer_id": "823.294.515-04",
+            "birthday": "1983-10-17",
+            "email": "beatriz.cunha@solutis.com.br",
+        },
+        "thomas.lichtenberger@solutis.com.br": {
+            "full_name": "THOMAS MEDEIROS LICHTENBERGER",
+            "taxpayer_id": "379.709.978-99",
+            "birthday": "1989-04-04",
+            "email": "thomas.lichtenberger@solutis.com.br",
+        },
+        "carla.anunciacao@solutis.com.br": {
+            "full_name": "CARLA VIRGINIA MILHAS DA ANUNCIACAO",
+            "taxpayer_id": "957.628.335-34",
+            "birthday": "1976-11-04",
+            "email": "carla.anunciacao@solutis.com.br",
+        },
+    }
 
     logger = logging.getLogger(__name__)
 
@@ -111,16 +134,24 @@ class ClickSignService:
                 "attributes": {
                     "status": "canceled",
                 },
+                "id": document_id,
             }
         }
         payload = json.dumps(cancel_obj)
         url = f"{CLICKSIGN_URL}/{envelope_id}/documents/{document_id}"
 
         response = requests.patch(url, data=payload, headers=self.DEFAULT_HEADERS)
+        not_found = response.status_code == 404
+        if not_found:
+            return True
         response_json = response.json()
 
-        document_canceled = response.status_code != 200
-        if document_canceled:
+        if response.status_code == 422 and "errors" in response_json:
+            error = response_json.get("errors")[0]
+            if "code" in error:
+                return error.get("code") == "100"
+        document_canceled = response.status_code == 204
+        if not document_canceled:
             error = response_json.get("errors", self.DEFAULT_ERROR)
             self.logger.log(
                 logging.ERROR,
@@ -198,8 +229,7 @@ class ClickSignService:
 
         if response.status_code != 200:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.log(
-                logging.ERROR,
+            self.logger.error(
                 f"Error listing signers: {error}",
             )
             return None
@@ -207,9 +237,30 @@ class ClickSignService:
         return [
             {
                 "id": signer["id"],
+                "email": signer["attributes"]["email"],
             }
             for signer in response_json["data"]
         ]
+
+    def __delete_signer(self, envelope_id: str, signer_id: str) -> None:
+        """
+        Delete a signer from the envelope
+
+        This will delete the signer from the envelope
+
+        :Args:
+            envelope_id (str): The ID of the envelope
+            signer_id (str): The ID of the signer
+        """
+        url = f"{CLICKSIGN_URL}/{envelope_id}/signers/{signer_id}"
+        response = requests.delete(url, headers=self.DEFAULT_HEADERS)
+        response_json = response.json()
+
+        if response.status_code != 204:
+            error = response_json.get("errors", self.DEFAULT_ERROR)
+            self.logger.error(
+                f"Error deleting signer: {error}",
+            )
 
     def __add_requirements(self, envelope_id: str, doc_id: str, signer_id: str) -> None:
         """
@@ -426,6 +477,18 @@ class ClickSignService:
         This will create an envelope, add a document, add a signer,
         add requirements, add authorization, activate the envelope
         and send notification to the signer
+
+        :Args:
+            filename (str): The name of the file
+            file_path (str): The path to the file
+            signer_email (str): The email of the signer
+            principal_signer (str): The email of the principal signer
+            full_name (str): The full name of the signer
+            taxpayer_id (str): The taxpayer ID of the signer
+            birthday (str): The birthday of the signer
+            witnesses (List[dict]): A list of witnesses with their information
+        :Returns:
+            Tuple[Optional[str], Optional[str]]: A tuple containing the envelope ID and document ID
         """
         envelope_id = self.__create_envelop()
         if not envelope_id:
@@ -497,6 +560,10 @@ class ClickSignService:
         envelope_id: str,
         filename: str,
         file_path: str,
+        signer_email: str,
+        principal_signer: str,
+        lending_id: int,
+        db_session: Session,
     ) -> Optional[str]:
         """
         Send a recreated document to be signed
@@ -504,6 +571,17 @@ class ClickSignService:
         This will create an envelope, add a document, add a signer,
         add requirements, add authorization, activate the envelope
         and send notification to the signer
+
+        :Args:
+            document_id (str): The ID of the document to be recreated
+            envelope_id (str): The ID of the envelope
+            filename (str): The name of the file
+            file_path (str): The path to the file
+            signer_email (str): The email of the signer
+            principal_signer (str): The email of the principal signer
+
+        :Returns:
+            Optional[str]: The ID of the new document
         """
         if not self.__cancel_document(envelope_id, document_id):
             return None
@@ -515,14 +593,61 @@ class ClickSignService:
         all_signer_to_resend = self.__get_signers(envelope_id)
         if not all_signer_to_resend:
             return None
+
+        lending = LendingService().get_lending(lending_id, db_session)
+        if not lending:
+            self.logger.error(
+                f"Lending with ID {lending_id} not found. Cannot recreate document.",
+            )
+            return None
+
+        is_diff_signer = lending.employee_signer != signer_email
+        is_diff_principal_signer = lending.principal_signer != principal_signer
+
         for signer in all_signer_to_resend:
+            principal_signer_dict = self.MAPPING_PRINCIPAL_SIGNERS.get(
+                signer["email"], None
+            )
             signer_id = signer.get("id")
-            if not signer_id:
-                self.logger.log(
-                    logging.ERROR,
+            if not signer_id or not new_document_id:
+                self.logger.error(
                     "Missing signer information. Skipping signer.",
                 )
                 continue
+            if is_diff_signer and signer["email"] == lending.employee_signer:
+                lending = LendingService().get_lending(lending_id, db_session)
+                self.__delete_signer(envelope_id, signer_id)
+                signer_id = self.__create_signer(
+                    envelope_id,
+                    signer_email,
+                    lending.employee.full_name,
+                    lending.employee.birthday.isoformat(),
+                    lending.employee.taxpayer_identification,
+                )
+                if not signer_id:
+                    self.logger.error(
+                        "Failed to create principal signer. Skipping signer.",
+                    )
+                    continue
+            elif (
+                principal_signer_dict
+                and is_diff_principal_signer
+                and signer["email"] == principal_signer_dict.get("email")
+            ):
+                lending = LendingService().get_lending(lending_id, db_session)
+                self.__delete_signer(envelope_id, signer_id)
+                signer_id = self.__create_signer(
+                    envelope_id,
+                    principal_signer,
+                    principal_signer_dict.get("full_name", ""),
+                    principal_signer_dict.get("birthday", ""),
+                    principal_signer_dict.get("taxpayer_id", ""),
+                )
+                if not signer_id:
+                    self.logger.error(
+                        "Failed to create principal signer. Skipping signer.",
+                    )
+                    continue
             self.__add_authorization(envelope_id, new_document_id, signer_id)
             self.__add_requirements(envelope_id, new_document_id, signer_id)
             self.__send_notification(envelope_id, signer_id)

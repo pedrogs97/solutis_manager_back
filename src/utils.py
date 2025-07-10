@@ -9,9 +9,32 @@ from typing import Tuple
 
 import aiofiles
 import jinja2
-import pdfkit
 
 from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR, TERM_UPLOAD_DIR, TMP_DIR
+
+try:
+    from weasyprint import HTML
+
+    WEASYPRINT_AVAILABLE = True
+except (ImportError, OSError) as e:
+    WEASYPRINT_AVAILABLE = False
+    print(f"WeasyPrint não está disponível: {e}")
+    print("Por favor, instale as dependências do WeasyPrint para Windows.")
+
+
+def generate_pdf_from_html(html_file_path: str, pdf_output_path: str) -> None:
+    """Generate PDF from HTML file using WeasyPrint"""
+    if not WEASYPRINT_AVAILABLE:
+        raise RuntimeError(
+            "WeasyPrint não está disponível. "
+            "Instale as dependências necessárias para gerar PDFs."
+        )
+    # Import local para evitar erros quando WeasyPrint não está disponível
+    from weasyprint import HTML
+
+    HTML(filename=html_file_path).write_pdf(pdf_output_path)
+
+
 from src.document.schemas import (
     NewLendingContextSchema,
     NewLendingPjContextSchema,
@@ -121,14 +144,7 @@ def create_lending_contract(context: NewLendingContextSchema) -> str:
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
-
-    with open(template_path, encoding="utf-8") as template_file:
-        pdfkit.from_file(
-            template_file,
-            contract_path,
-            options=options,
-        )
+    generate_pdf_from_html(template_path, contract_path)
 
     os.remove(template_path)
     return contract_path
@@ -184,14 +200,7 @@ def create_revoke_lending_contract(context: NewLendingContextSchema) -> str:
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
-
-    with open(template_path, encoding="utf-8") as template_file:
-        pdfkit.from_file(
-            template_file,
-            contract_path,
-            options=options,
-        )
+    generate_pdf_from_html(template_path, contract_path)
 
     os.remove(template_path)
     return contract_path
@@ -255,14 +264,7 @@ def create_lending_contract_pj(context: NewLendingPjContextSchema) -> str:
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
-
-    with open(template_path, encoding="utf-8") as template_file:
-        pdfkit.from_file(
-            template_file,
-            contract_path,
-            options=options,
-        )
+    generate_pdf_from_html(template_path, contract_path)
 
     os.remove(template_path)
     return contract_path
@@ -326,14 +328,7 @@ def create_revoke_lending_contract_pj(context: NewLendingPjContextSchema) -> str
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {"page-size": "A4", "enable-local-file-access": None, "encoding": "utf-8"}
-
-    with open(template_path, encoding="utf-8") as template_file:
-        pdfkit.from_file(
-            template_file,
-            contract_path,
-            options=options,
-        )
+    generate_pdf_from_html(template_path, contract_path)
 
     os.remove(template_path)
     return contract_path
@@ -389,16 +384,7 @@ def create_term(context: NewTermContextSchema, template_file="termo.html") -> st
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    with open(template_path, encoding="utf-8") as file:
-        pdfkit.from_file(
-            file,
-            contract_path,
-            options={
-                "page-size": "A4",
-                "enable-local-file-access": None,
-                "encoding": "utf-8",
-            },
-        )
+    generate_pdf_from_html(template_path, contract_path)
 
     os.remove(template_path)
     return contract_path
@@ -433,16 +419,7 @@ def create_verification_document(context: VerificationContextSchema) -> str:
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    with open(template_path, encoding="utf-8") as file:
-        pdfkit.from_file(
-            file,
-            contract_path,
-            options={
-                "page-size": "A4",
-                "enable-local-file-access": None,
-                "encoding": "utf-8",
-            },
-        )
+    generate_pdf_from_html(template_path, contract_path)
 
     os.remove(template_path)
     return contract_path

@@ -97,6 +97,10 @@ class LendingModel(Base):
     )
 
     bu = Column("bu", String(length=5), nullable=True)
+    signer_email = Column("signer_email", String(length=100), nullable=True)
+    principal_email_signer = Column(
+        "principal_email_signer", String(length=100), nullable=True
+    )
 
     # código gerado
     number = Column("number", String(length=30), nullable=True)

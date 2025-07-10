@@ -31,8 +31,6 @@ class NewLendingDocSchema(BaseSchema):
 
     lending_id: int = Field(alias="lendingId")
     legal_person: bool = Field(alias="legalPerson", default=False)
-    principal_signer: str = Field(alias="principalSigner")
-    employee_signer: str = Field(alias="employeeSigner")
 
 
 class RecrateLendingDocSchema(BaseSchema):
@@ -41,6 +39,8 @@ class RecrateLendingDocSchema(BaseSchema):
     lending_id: int = Field(alias="lendingId")
     document_id: int = Field(alias="documentId")
     type: str = "revoke"
+    principal_signer: str = Field(alias="principalSigner")
+    employee_signer: str = Field(alias="employeeSigner")
 
 
 class NewRevokeContractDocSchema(BaseSchema):

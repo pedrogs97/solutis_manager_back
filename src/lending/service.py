@@ -171,6 +171,8 @@ class LendingService:
             deleted=lending.deleted,
             ms_office=lending.ms_office,
             created_at=lending.created_at.strftime(DEFAULT_DATE_FORMAT),
+            principal_signer=lending.principal_email_signer or "",
+            employee_signer=lending.signer_email or "",
         )
 
     def serialize_workload(self, workload: WorkloadModel) -> WorkloadSerializerSchema:
@@ -358,6 +360,8 @@ class LendingService:
                 location=new_lending.location,
                 bu=new_lending.bu,
                 ms_office=new_lending.ms_office,
+                principal_email_signer=new_lending.principal_signer,
+                signer_email=new_lending.employee_signer,
             )
 
             AssetService().update_asset_status(

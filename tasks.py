@@ -7,8 +7,30 @@ from datetime import date
 from os.path import dirname
 
 import jinja2
-import pdfkit
 from invoke import task
+
+try:
+    from weasyprint import HTML
+
+    WEASYPRINT_AVAILABLE = True
+except (ImportError, OSError) as e:
+    WEASYPRINT_AVAILABLE = False
+    print(f"WeasyPrint não está disponível: {e}")
+
+
+def generate_pdf_from_html(html_file_path: str, pdf_output_path: str) -> None:
+    """Generate PDF from HTML file using WeasyPrint"""
+    if not WEASYPRINT_AVAILABLE:
+        raise RuntimeError(
+            "WeasyPrint não está disponível. "
+            "Instale as dependências necessárias para gerar PDFs."
+        )
+    # Import local para evitar erros quando WeasyPrint não está disponível
+    from weasyprint import HTML
+
+    HTML(filename=html_file_path).write_pdf(pdf_output_path)
+
+
 from reportlab.lib.pagesizes import landscape, letter
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
@@ -163,19 +185,9 @@ def __contract():
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {
-        "page-size": "A4",
-        "enable-local-file-access": None,
-    }
-
-    with open(
-        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
-    ) as f:
-        pdfkit.from_file(
-            f,
-            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "contract_test.pdf"),
-            options=options,
-        )
+    generate_pdf_from_html(
+        html_path, os.path.join(CONTRACT_UPLOAD_TEST_DIR, "contract_test.pdf")
+    )
     os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
     logo_file.close()
     signed_file.close()
@@ -261,19 +273,9 @@ def __termination():
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {
-        "page-size": "A4",
-        "enable-local-file-access": None,
-    }
-
-    with open(
-        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
-    ) as f:
-        pdfkit.from_file(
-            f,
-            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "termination_test.pdf"),
-            options=options,
-        )
+    generate_pdf_from_html(
+        html_path, os.path.join(CONTRACT_UPLOAD_TEST_DIR, "termination_test.pdf")
+    )
     os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
     logo_file.close()
     signed_file.close()
@@ -359,19 +361,9 @@ def __termination_pj():
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {
-        "page-size": "A4",
-        "enable-local-file-access": None,
-    }
-
-    with open(
-        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
-    ) as f:
-        pdfkit.from_file(
-            f,
-            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "termination_pj_test.pdf"),
-            options=options,
-        )
+    generate_pdf_from_html(
+        html_path, os.path.join(CONTRACT_UPLOAD_TEST_DIR, "termination_pj_test.pdf")
+    )
     os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
     logo_file.close()
     signed_file.close()
@@ -462,20 +454,9 @@ def __contract_pj():
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {
-        "page-size": "A4",
-        "enable-local-file-access": None,
-    }
-
-    with open(
-        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_pj_test.html"),
-        encoding="utf-8",
-    ) as f:
-        pdfkit.from_file(
-            f,
-            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "contract_pj_test.pdf"),
-            options=options,
-        )
+    generate_pdf_from_html(
+        html_path, os.path.join(CONTRACT_UPLOAD_TEST_DIR, "contract_pj_test.pdf")
+    )
     os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_pj_test.html"))
     logo_file.close()
     signed_file.close()
@@ -544,19 +525,9 @@ def __term():
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {
-        "page-size": "A4",
-        "enable-local-file-access": None,
-    }
-
-    with open(
-        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
-    ) as f:
-        pdfkit.from_file(
-            f,
-            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "term_test.pdf"),
-            options=options,
-        )
+    generate_pdf_from_html(
+        html_path, os.path.join(CONTRACT_UPLOAD_TEST_DIR, "term_test.pdf")
+    )
     os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
     logo_file.close()
     signed_file.close()
@@ -625,19 +596,9 @@ def __termination_term():
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {
-        "page-size": "A4",
-        "enable-local-file-access": None,
-    }
-
-    with open(
-        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
-    ) as f:
-        pdfkit.from_file(
-            f,
-            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "termination_term_test.pdf"),
-            options=options,
-        )
+    generate_pdf_from_html(
+        html_path, os.path.join(CONTRACT_UPLOAD_TEST_DIR, "termination_term_test.pdf")
+    )
     os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
     logo_file.close()
     signed_file.close()
@@ -649,7 +610,7 @@ def __termination_term():
 @task
 def test(cmd):
     """
-    Convert html to pdf using pdfkit which is a wrapper of wkhtmltopdf
+    Convert html to pdf using weasyprint
     """
     cmd.run("echo conversion started")
     __term()
@@ -664,7 +625,7 @@ def test(cmd):
 @task
 def testverification(cmd):
     """
-    Convert html to pdf using pdfkit which is a wrapper of wkhtmltopdf
+    Convert html to pdf using weasyprint
     """
     cmd.run("echo conversion started")
     template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
@@ -998,19 +959,9 @@ def testverification(cmd):
     with open(html_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
 
-    options = {
-        "page-size": "A4",
-        "enable-local-file-access": None,
-    }
-
-    with open(
-        os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"), encoding="utf-8"
-    ) as f:
-        pdfkit.from_file(
-            f,
-            os.path.join(CONTRACT_UPLOAD_TEST_DIR, "verification_test.pdf"),
-            options=options,
-        )
+    generate_pdf_from_html(
+        html_path, os.path.join(CONTRACT_UPLOAD_TEST_DIR, "verification_test.pdf")
+    )
     os.remove(os.path.join(CONTRACT_UPLOAD_TEST_DIR, "template_test.html"))
     logo_file.close()
     cmd.run("echo conversion finished")
@@ -1019,7 +970,7 @@ def testverification(cmd):
 @task
 def testreport(cmd):
     """
-    Convert html to pdf using pdfkit which is a wrapper of wkhtmltopdf
+    Create document using docx
     """
     cmd.run("echo creation started")
     from docx import Document

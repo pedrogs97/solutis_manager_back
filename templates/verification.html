@@ -1,36 +1,100 @@
-<!--793.7 x 1122.5-->
-<!--top 75.6px-->
-<!--left 85px-->
-<!--bottom 56.7px-->
-<!--right 65.8px-->
 <!DOCTYPE html>
 <html lang="pt">
     <head>
         <meta charset="utf-8">
         <title>Verificação de Ativo</title>
+        <style>
+            @page {
+                size: A4;
+                margin-top: 1.5in;
+                @top-right {
+                    content: url("{{ ri_1 }}");
+                }
+                @bottom-right {
+                    content: "Página " counter(page) " de " counter(pages);
+                    font-family: Calibri, sans-serif;
+                    font-size: 11pt;
+                    color: #000000;
+                }
+            }
+            
+            body {
+                text-align: justify;
+                text-justify: inter-word;
+                font-family: Calibri, sans-serif;
+                height: 100%;
+                margin: 0; /* Remove default body margin */
+                padding: 0; /* Remove default body padding */
+            }
+            
+            .container {
+                display: block;
+                width: 100%;
+            }
+
+            .title {
+                display: flex;
+                justify-content: center;
+            }
+            
+            .paragraph-bold {
+                font-style: normal;
+                font-weight: bold;
+                font-size: 14pt;
+                color: #000000;
+            }
+            
+            .verification-item {
+                padding: 16px;
+            }
+            
+            .verification-table {
+                border-collapse: separate;
+                border: solid 1px #000000;
+                border-radius: 6px;
+                padding: 4px;
+            }
+            
+            .verification-question {
+                width: fit-content;
+            }
+            
+            .verification-options {
+                font-weight: 900;
+            }
+            
+            .verification-row {
+                margin-bottom: 10px;
+            }
+            
+            .verification-cell {
+                max-width: 24px;
+            }
+            
+            .verification-label {
+                margin-left: 5px;
+            }
+        </style>
     </head>
-    <body style="text-align: justify;text-justify: inter-word;padding-left: 0.89in;padding-bottom: 0.69in;padding-right: 0.69in;font-family:Calibri, sans-serif;height: 11.69in;">
-        <div style="display: block;height: 11.69in;width: 8.27in;">
-            <div style="display: flex;justify-content: flex-end;width: 100%;">
-                <img style="width:1.14in;height:1.30in" src="{{ logo }}" alt="logo"/>
-            </div>
-            <div style="display: flex; justify-content: center; margin-bottom: 30px;">
-                <p style="font-style:normal;font-weight:bold;font-size:14pt;color:#000000;">VERIFICAÇÃO DO ATIVO</p>
+    <body class="container">
+        <div class="container">
+            <div class="title">
+                <p class="paragraph-bold">VERIFICAÇÃO DO ATIVO</p>
             </div>
             {% for verification in verifications %}
-                <div style="padding: 16px;">
-                    <table style="border-collapse: separate;border: solid 1px #000000;border-radius: 6px;padding: 4px;"  aria-describedby="table-detail">
-                        <thead><th style="width: fit-content;">{{ verification.question }}</th></thead>
-                        <tbody style="font-weight: 900;">
+                <div class="verification-item">
+                    <table class="verification-table" aria-describedby="table-detail">
+                        <thead><th class="verification-question">{{ verification.question }}</th></thead>
+                        <tbody class="verification-options">
                             {% for option in verification.options %}
-                                <tr style="margin-bottom: 10px;">
-                                    <td style="max-width: 24px;">
+                                <tr class="verification-row">
+                                    <td class="verification-cell">
                                         {% if option.checked %}
-                                            <input type="checkbox" checkd="{{ option.checked }}" id="{{ option.id }}" checked />
+                                            <input type="checkbox" id="{{ option.id }}" checked />
                                         {% else %}
                                             <input type="checkbox" id="{{ option.id }}" />
                                         {% endif %}
-                                        <label for="{{ option.id }}" style="margin-left: 5px;">{{ option.option }}</label>
+                                        <label for="{{ option.id }}" class="verification-label">{{ option.option }}</label>
                                     </td>
                                 </tr>
                             {% endfor %}
