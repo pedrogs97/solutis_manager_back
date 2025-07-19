@@ -1,62 +1,251 @@
-<!--793.7 x 1122.5-->
-<!--top 75.6px-->
-<!--left 85px-->
-<!--bottom 56.7px-->
-<!--right 65.8px-->
 <!DOCTYPE html>
 <html lang="pt">
     <head>
         <meta charset="utf-8">
         <title>Contrato</title>
+        <style>
+            @page {
+                size: A4;
+                margin-top: 1.5in;
+                @top-right {
+                    content: url("{{ ri_1 }}");
+                }
+                @bottom-right {
+                    content: "Página " counter(page) " de " counter(pages);
+                    font-family: Calibri, sans-serif;
+                    font-size: 11pt;
+                    color: #000000;
+                }
+            }
+
+            body {
+                text-align: justify;
+                text-justify: inter-word;
+                font-family: Calibri, sans-serif;
+                height: 100%;
+                margin: 0; /* Remove default body margin */
+                padding: 0; /* Remove default body padding */
+            }
+
+            .container {
+                display: block;
+                width: 100%;
+            }
+
+            .contract-info-table {
+                border-collapse: separate;
+                border-spacing: 0 12px;
+            }
+
+            .contract-info-header {
+                background-color: #d9d9d9;
+                font-weight: 900;
+            }
+
+            .contract-info-cell {
+                padding: 4px;
+                color: #000000;
+            }
+
+            .title {
+                display: flex;
+                justify-content: center;
+            }
+
+            .paragraph-bold {
+                font-style: normal;
+                font-weight: bold;
+                font-size: 14pt;
+                color: #000000;
+            }
+
+            .paragraph-normal {
+                font-style: normal;
+                font-weight: normal;
+                font-size: 11pt;
+                color: #000000;
+            }
+
+            .centered-container {
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+            }
+
+            .comodante-table {
+                height: 2.4in;
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 12px 12px;
+                font-style: normal;
+                font-weight: normal;
+                font-size: 11pt;
+                color: #000000;
+                text-align: start;
+                text-justify: inter-word;
+            }
+
+            .comodante-header {
+                background-color: #d9d9d9;
+                font-size: 16px;
+                text-align: center;
+            }
+
+            .comodante-header-cell {
+                padding: 8px;
+                width: 308px;
+            }
+
+            .comodante-cell {
+                border: solid 2px #000000;
+                padding-left: 2px;
+                padding-right: 12px;
+                width: 3.25in;
+            }
+
+            .comodatario-cell {
+                border: solid 2px #000000;
+                padding-top: 20px;
+                padding-bottom: 15px;
+                padding-left: 2px;
+                padding-right: 12px;
+                width: 3.25in;
+            }
+
+            .detail-table {
+                height: 2.2in;
+                width: 5.13in;
+                border-collapse: separate;
+                border-spacing: 12px 12px;
+                font-style: normal;
+                font-weight: normal;
+                font-size: 11pt;
+                color: #000000;
+                text-align: start;
+                text-justify: inter-word;
+            }
+
+            .detail-table-header {
+                background-color: #d9d9d9;
+                font-size: 16px;
+                text-align: center;
+            }
+
+            .detail-list-cell {
+                border: solid 2px #000000;
+                padding-left: 2px;
+                padding-bottom: 3px;
+                padding-top: 2px;
+            }
+
+            .signature-section-main {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                width: 100%;
+                row-gap: 24px;
+            }
+
+            .signature-row {
+                display: flex;
+            }
+
+            .signature-content {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .signed-icon {
+                width: 0.5in;
+                height: 0.5in;
+            }
+
+            .signature-boxes {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .signature-box {
+                background-color: #d9d9d9;
+                text-align: center;
+                padding: 0.1in 0.3in;
+                width: 2.6in;
+            }
+
+            .date-section {
+                margin-top: 30px;
+                display: flex;
+                justify-content: center;
+            }
+
+            .date-row {
+                display: flex;
+                justify-content: start;
+            }
+
+            .date-content {
+                display: flex;
+                column-gap: 8px;
+            }
+
+            .date-icon {
+                width: 0.7in;
+                height: 0.7in;
+            }
+
+            .company-name {
+                font-weight: 800;
+            }
+        </style>
     </head>
-    <body style="text-align: justify;text-justify: inter-word;padding-left: 0.89in;padding-bottom: 0.69in;padding-right: 0.69in;font-family:Calibri, sans-serif;height: 11.69in;">
-        <div style="display: block;height: 11.69in;width: 8.27in;">
-            <div style="display: flex;justify-content: flex-end;width: 100%;">
-                <img style="width:1.14in;height:1.30in" src="{{ ri_1 }}" alt="logo"/>
-            </div>
-            <table style="border-collapse: separate;border-spacing: 0 12px;"  aria-describedby="table-detail">
+    <body class="container">
+        <div class="container">
+            <table class="contract-info-table" aria-describedby="table-detail">
                 <thead><th></th></thead>
-                <tbody style="background-color: #d9d9d9;font-weight: 900;">
-                    <tr style="margin-bottom: 10px;">
-                        <td style="padding: 4px;color:#000000">N° TERMO:</td>
-                        <td style="padding: 4px;color:#000000">{{ number }}</td>
+                <tbody class="contract-info-header">
+                    <tr>
+                        <td class="contract-info-cell">N° TERMO:</td>
+                        <td class="contract-info-cell">{{ number }}</td>
                         <td><img src="{{ n_termo }}" alt="n_termo" /></td>
                     </tr>
                 </tbody>
             </table>
-            <div style="display: flex; justify-content: center;">
-                <p style="font-style:normal;font-weight:bold;font-size:14pt;color:#000000;">TERMO DE DEVOLUÇÃO</p>
+            <div class="title">
+                <p class="paragraph-bold">TERMO DE DEVOLUÇÃO</p>
             </div>
-            <div style="display: flex; justify-content: center; flex-direction: column;">
-                <table style="height: 2.4in;width: 6.5in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table1">
-                    <thead style="background-color: #d9d9d9;font-size: 16px;text-align: center;">
+            <div class="centered-container">
+                <table class="comodante-table" aria-describedby="table1">
+                    <thead class="comodante-header">
                         <tr>
-                            <th style="padding: 8px;width: 308;">EMPRESA</th>
+                            <th class="comodante-header-cell">EMPRESA</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="border: solid 2px #000000;padding-left: 2px;padding-right: 12px;width: 3.25in;">
-                                <div style="font-weight: 800;">SOLUTIS TECNOLOGIAS LTDA</div>
+                            <td class="comodante-cell">
+                                <div class="company-name">SOLUTIS TECNOLOGIAS LTDA</div>
                                 <div>CNPJ: 12.023.465/0001-47</div>
                                 <div>Av. Tancredo Neves, n°1186, Edf. Catabas Center, 8° Andar, Sala 802, Caminhos da Árvores, Salvador, Bahia, CEP. 41.820-020</div>
-                                <div style="font-weight: 800;margin-top: 20px;">SOLUTIS TECNOLOGIAS LTDA</div>
+                                <div class="company-name" style="margin-top: 20px;">SOLUTIS TECNOLOGIAS LTDA</div>
                                 <div>CNPJ: 12.023.465/0004-90</div>
                                 <div>Avenida Paulista, n°2421, sl. 24, Bela Vista, São Paulo, Estado, CEP. 01.311-300</div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                <table style="height: 2.4in;width: 6.5in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table1">
-                    <thead style="background-color: #d9d9d9;font-size: 16px;text-align: center;">
+                <table class="comodante-table" aria-describedby="table1">
+                    <thead class="comodante-header">
                         <tr>
-                            <th style="padding: 8px;width: 308;">COLABORADOR (A)</th>
+                            <th class="comodante-header-cell">COLABORADOR (A)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="border: solid 2px #000000;padding-top: 20px;padding-bottom: 15px; padding-left: 2px;padding-right: 12px;width: 3.25in;">
-                                <div style="font-weight: 800;">{{ full_name }}</div>
+                            <td class="comodatario-cell">
+                                <div class="paragraph-bold">{{ full_name }}</div>
                                 <div>CPF: {{ taxpayer_identification }} / RG: {{ national_identification }}</div>
                                 <div>Endereço: {{ address }}</div>
                                 <div>Nacionalidade: {{ nationality }}</div>
@@ -68,78 +257,66 @@
                         </tr>
                     </tbody>
                 </table>
-                <table style="height: 2.2in;width: 5.13in;border-collapse: separate;border-spacing: 12px 12px;font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: start;text-justify: inter-word;" aria-describedby="table2">
-                    <thead style="background-color: #d9d9d9;font-size: 16px;text-align: center;">
+                <table class="detail-table" aria-describedby="table2">
+                    <thead class="detail-table-header">
                         <tr>
-                            <th style="padding: 8px;width: 308;">DETALHAMENTO</th>
-                        </tr>
-                    </thead>
+                            <th class="comodante-header-cell">DETALHAMENTO</th>
+                            </tr>
+                        </thead>
                     <tbody>
                         <tr>
-                            <td colspan="4" style="border: solid 2px #000000;padding-left: 2px;padding-bottom: 3px;padding-top: 2px;">
+                            <td colspan="4" class="detail-list-cell">
                                 {% for item in detail %}
-                                    <div>{{item.key}}: <span style="font-weight: 800;">{{ item.value }}</span></div>
+                                    <div>{{item.key}}: <span class="paragraph-bold">{{ item.value }}</span></div>
                                 {% endfor %}
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">
+            <p class="paragraph-normal">
                 Pelo presente Termo de Devolução o colaborador (a) da Solutis Tecnologias Ltda (“Solutis”), declara que, na data de assinaturas do presente Termo, restituiu os uniformes que foram cedidos gratuitamente para o exercício das atividades profissionais junto à Solutis e especificados no detalhamento deste termo.
             </p>
-            <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">
+            <p class="paragraph-normal">
                 3. Restituí-los à Solutis se verificadas quaisquer das seguintes hipóteses:
             </p>
-            <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;padding-left: 0.3in;">
+            <p class="paragraph-normal">
                 a. Encerramento do contrato entre Solutis e Colaborador(a);
             </p>
-            <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;padding-left: 0.3in;">
+            <p class="paragraph-normal">
                 b. Necessidade de substituição dos uniformes.
             </p>
-            <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000">
+            <p class="paragraph-normal">
                 4. Em caso de extravio ou da ocorrência de quaisquer danos ao uniforme decorrentes causados por dolo ou culpa do(a) Colaborador(a), a Solutis poderá cobrar do(a) Colaborador(a) o ressarcimento pelo valor correspondente.
             </p>
-            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;margin-top: 1.4in;">
-                <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: end;">Página 1 de 2</p>
-            </div>
-        </div>
-        <div style="page-break-before: always;"></div>
-        <div style="display: block;height: 11.69in;width: 8.27in;">
-            <div style="display: flex;justify-content: flex-end;width: 100%;">
-                <img style="width:1.14in;height:1.30in" src="{{ ri_1 }}" alt="logo"/>
-            </div>
-            <div style="display: flex;flex-direction: column;justify-content: flex-start;">
-                <div style="display: flex;margin-top: 0.3in;">
-                    <div style="display: flex;flex-direction: column;justify-content: center;">
+            <div class="signature-section-main" style="margin-top: 50px;">
+                <div class="signature-row">
+                    <div class="signature-content">
                         <span>Assinaturas:</span>
                     </div>
-                    <img style="width:0.5in;height:0.5in" src="{{ signed }}" alt="date1"/>
+                    <img class="signed-icon" src="{{ signed }}" alt="date1"/>
                 </div>
-                <div style="display: flex;flex-direction: row;margin-top: 0.3in;justify-content: space-between;width: 7.35in;">
-                    <div style="background-color: #d9d9d9;padding: 0.2in 0.3in;text-align: center;width: 2.6in;">
+                <div class="signature-boxes">
+                    <div class="signature-box">
                         <div>Comodante</div>
                         <div>Solutis Tecnologias LTDA</div>
                     </div>
-                    <div style="background-color: #d9d9d9;padding: 0.2in;text-align: center;width: 2.6in;">
+                    <div class="signature-box">
                         <div>Comodatário (a)</div>
                         <div>{{ full_name }}</div>
                     </div>
                 </div>
-            </div>
-            <div style="padding-left: 3in;margin-top: 0.6in;">
-                <div style="display: flex;justify-content: start;">
-                    <div style="display: flex;">
-                        <img style="width:0.7in;height:0.7in" src="{{ date_image }}" alt="date1"/>
-                        <div style="display: flex;flex-direction: column;justify-content: center;">
-                            <span>Local: {{ location }}</span>
-                            <span>Data: {{ date }}</span>
+                <div class="date-section">
+                    <div class="date-row">
+                        <div class="date-content">
+                            <img class="date-icon" src="{{ date_image }}" alt="date1"/>
+                            <div class="signature-content">
+                                <span>Local: {{ location }}</span>
+                                <span>Data: {{ date }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div style="display: flex;width: 100%;justify-content: flex-end;align-self: flex-end;margin-top: 9in;">
-                <p style="font-style:normal;font-weight:normal;font-size:11pt;color:#000000;text-align: end;">Página 2 de 2 </p>
             </div>
         </div>
     </div>

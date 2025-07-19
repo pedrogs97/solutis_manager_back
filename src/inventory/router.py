@@ -119,4 +119,4 @@ async def send_inventory_email(
     service = InventoryService(db_session)
     asyncio.create_task(service.send_inventory_email())
     db_session.close()
-    return JSONResponse(content={'message': 'ok'}, status_code=status.HTTP_200_OK)
+    return JSONResponse(content={"message": "ok"}, status_code=status.HTTP_200_OK)

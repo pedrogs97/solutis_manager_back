@@ -39,6 +39,8 @@ class RecrateLendingDocSchema(BaseSchema):
     lending_id: int = Field(alias="lendingId")
     document_id: int = Field(alias="documentId")
     type: str = "revoke"
+    principal_signer: str = Field(alias="principalSigner")
+    employee_signer: str = Field(alias="employeeSigner")
 
 
 class NewRevokeContractDocSchema(BaseSchema):
@@ -47,6 +49,8 @@ class NewRevokeContractDocSchema(BaseSchema):
     lending_id: int = Field(alias="lendingId")
     legal_person: bool = Field(alias="legalPerson", default=False)
     witnesses_id: Optional[List[int]] = Field(alias="witnessesId", default=[])
+    principal_signer: str = Field(alias="principalSigner")
+    employee_signer: str = Field(alias="employeeSigner")
 
 
 class WitnessContextSchema(BaseSchema):
@@ -117,12 +121,16 @@ class NewTermDocSchema(BaseSchema):
 
     term_id: int = Field(alias="termId")
     legal_person: bool = Field(alias="legalPerson", default=False)
+    principal_signer: str = Field(alias="principalSigner")
+    employee_signer: str = Field(alias="employeeSigner")
 
 
 class NewRevokeTermDocSchema(BaseSchema):
     """New term info schema"""
 
     term_id: int = Field(alias="termId")
+    principal_signer: str = Field(alias="principalSigner")
+    employee_signer: str = Field(alias="employeeSigner")
 
 
 class NewTermContextSchema(BaseSchema):
