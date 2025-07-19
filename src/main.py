@@ -1,8 +1,8 @@
 """Main Service"""
 
-import tracemalloc
 import logging
 import os
+import tracemalloc
 from contextlib import asynccontextmanager
 from logging.handlers import TimedRotatingFileHandler
 

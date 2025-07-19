@@ -3,11 +3,11 @@ import logging
 from typing import List, Optional, Tuple
 
 import requests
+from sqlalchemy.orm import Session
 
 from src.config import CLICKSIGN_TOKEN, CLICKSIGN_URL
-from src.utils import base64_str, mask_taxpayer_id
 from src.lending.service import LendingService
-from sqlalchemy.orm import Session
+from src.utils import base64_str, mask_taxpayer_id
 
 
 class ClickSignService:
