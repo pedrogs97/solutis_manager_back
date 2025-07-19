@@ -11,6 +11,12 @@ import aiofiles
 import jinja2
 
 from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR, TERM_UPLOAD_DIR, TMP_DIR
+from src.document.schemas import (
+    NewLendingContextSchema,
+    NewLendingPjContextSchema,
+    NewTermContextSchema,
+    VerificationContextSchema,
+)
 
 try:
     from weasyprint import HTML
@@ -20,6 +26,7 @@ except (ImportError, OSError) as e:
     WEASYPRINT_AVAILABLE = False
     print(f"WeasyPrint não está disponível: {e}")
     print("Por favor, instale as dependências do WeasyPrint para Windows.")
+    raise e
 
 
 def generate_pdf_from_html(html_file_path: str, pdf_output_path: str) -> None:
@@ -29,18 +36,8 @@ def generate_pdf_from_html(html_file_path: str, pdf_output_path: str) -> None:
             "WeasyPrint não está disponível. "
             "Instale as dependências necessárias para gerar PDFs."
         )
-    # Import local para evitar erros quando WeasyPrint não está disponível
-    from weasyprint import HTML
 
     HTML(filename=html_file_path).write_pdf(pdf_output_path)
-
-
-from src.document.schemas import (
-    NewLendingContextSchema,
-    NewLendingPjContextSchema,
-    NewTermContextSchema,
-    VerificationContextSchema,
-)
 
 
 def get_file_paths(directory: str):
