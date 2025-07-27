@@ -42,6 +42,7 @@ from src.log.router import log_router
 from src.maintenance.router import maintenance_router
 from src.maintenance.service import MaintenanceService, UpgradeService
 from src.people.router import people_router
+from src.proxy.router import proxy_router
 from src.report.router import report_router
 from src.term.router import term_router
 from src.verification.router import verification_router
@@ -195,6 +196,7 @@ appAPI.include_router(document_router, prefix=BASE_API)
 appAPI.include_router(term_router, prefix=BASE_API)
 appAPI.include_router(report_router, prefix=BASE_API)
 appAPI.include_router(inventory_router, prefix=BASE_API)
+appAPI.include_router(proxy_router, prefix=BASE_API)
 
 
 @appAPI.get("/health/", tags=["Service"])

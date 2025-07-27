@@ -149,6 +149,12 @@ PERMISSIONS = {
         ],
         "label": "Inventário",
     },
+    "procurement": {
+        "models": [
+            {"name": "supplier", "label": "Fornecedores"},
+        ],
+        "label": "Procurement",
+    },
 }
 
 NOT_ALLOWED = "Não permitido"
