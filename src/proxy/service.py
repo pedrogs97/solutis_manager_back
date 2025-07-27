@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import httpx
 from fastapi import HTTPException, Request, status
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 INSUFFICIENT_PERMISSIONS_MSG = "Insufficient permissions"
 DEFAULT_MEDIA_TYPE = "application/json"
 PROXY_ERROR_PREFIX = "Proxy error: "
+HTTP_ERROR_LOG_MSG = "HTTP error occurred: %s"
 
 
 class ProxyService:
@@ -44,14 +45,14 @@ class ProxyService:
     def _handle_request_errors(self, attempt: int, url: str, error: Exception):
         """Handle request errors with appropriate exceptions"""
         if isinstance(error, httpx.TimeoutException):
-            logger.warning(f"Timeout on attempt {attempt + 1} for {url}")
+            logger.warning("Timeout on attempt %d for %s", attempt + 1, url)
             if attempt == self.retry_attempts - 1:
                 raise HTTPException(
                     status_code=status.HTTP_504_GATEWAY_TIMEOUT,
                     detail="External service timeout",
                 )
         elif isinstance(error, httpx.ConnectError):
-            logger.error(f"Connection error on attempt {attempt + 1} for {url}")
+            logger.error("Connection error on attempt %d for %s", attempt + 1, url)
             if attempt == self.retry_attempts - 1:
                 raise HTTPException(
                     status_code=status.HTTP_502_BAD_GATEWAY,
@@ -59,7 +60,10 @@ class ProxyService:
                 )
         else:
             logger.error(
-                f"Unexpected error on attempt {attempt + 1} for {url}: {error}"
+                "Unexpected error on attempt %d for %s: %s",
+                attempt + 1,
+                url,
+                error,
             )
             if attempt == self.retry_attempts - 1:
                 raise HTTPException(
@@ -112,7 +116,10 @@ class ProxyService:
             for attempt in range(self.retry_attempts):
                 try:
                     logger.info(
-                        f"Proxying {method} request to {url} (attempt {attempt + 1})"
+                        "Proxying %s request to %s (attempt %d)",
+                        method,
+                        url,
+                        attempt + 1,
                     )
 
                     response = await self._make_single_request(
@@ -120,18 +127,17 @@ class ProxyService:
                     )
 
                     logger.info(
-                        f"External service responded with status {response.status_code}"
+                        "External service responded with status %d",
+                        response.status_code,
                     )
                     return response
 
                 except Exception as error:
                     self._handle_request_errors(attempt, url, error)
 
-                    # Wait before retry (exponential backoff)
                     if attempt < self.retry_attempts - 1:
                         await asyncio.sleep(2 ** attempt)
 
-        # This should never be reached due to the error handling above
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to complete request after all retry attempts",
@@ -240,7 +246,6 @@ class ProxyService:
         """Handle GET proxy request with validation"""
         self.validate_user_permissions(current_user)
 
-        # Extract headers and query parameters
         headers = dict(request.headers)
         params = dict(request.query_params)
 
@@ -250,13 +255,14 @@ class ProxyService:
             )
             return self.create_response(response)
 
-        except HTTPException:
+        except HTTPException as e:
+            logger.error(HTTP_ERROR_LOG_MSG, e.detail)
             raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"{PROXY_ERROR_PREFIX}{str(e)}",
-            )
+            ) from e
 
     async def proxy_post_request(
         self,
@@ -276,13 +282,14 @@ class ProxyService:
             )
             return self.create_response(response)
 
-        except HTTPException:
+        except HTTPException as e:
+            logger.error(HTTP_ERROR_LOG_MSG, e.detail)
             raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"{PROXY_ERROR_PREFIX}{str(e)}",
-            )
+            ) from e
 
     async def proxy_put_request(
         self,
@@ -302,13 +309,14 @@ class ProxyService:
             )
             return self.create_response(response)
 
-        except HTTPException:
+        except HTTPException as e:
+            logger.error(HTTP_ERROR_LOG_MSG, e.detail)
             raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"{PROXY_ERROR_PREFIX}{str(e)}",
-            )
+            ) from e
 
     async def proxy_patch_request(
         self,
@@ -328,13 +336,14 @@ class ProxyService:
             )
             return self.create_response(response)
 
-        except HTTPException:
+        except HTTPException as e:
+            logger.error(HTTP_ERROR_LOG_MSG, e.detail)
             raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"{PROXY_ERROR_PREFIX}{str(e)}",
-            )
+            ) from e
 
     async def proxy_delete_request(
         self,
@@ -346,7 +355,6 @@ class ProxyService:
         """Handle DELETE proxy request with validation"""
         self.validate_user_permissions(current_user)
 
-        # Extract headers and query parameters
         headers = dict(request.headers)
         params = dict(request.query_params)
 
@@ -356,13 +364,14 @@ class ProxyService:
             )
             return self.create_response(response)
 
-        except HTTPException:
+        except HTTPException as e:
+            logger.error(HTTP_ERROR_LOG_MSG, e.detail)
             raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"{PROXY_ERROR_PREFIX}{str(e)}",
-            )
+            ) from e
 
     async def proxy_health_check(
         self, service_name: str, current_user: UserModel
@@ -398,5 +407,4 @@ class ProxyService:
             }
 
 
-# Singleton instance
 proxy_service = ProxyService()

@@ -40,7 +40,6 @@ async def proxy_get(
     path: str,
     request: Request,
     current_user: UserModel = Depends(get_permission_checker("read")),
-    db_session: Session = Depends(get_db_session),
 ):
     """
     Proxy GET requests to external service with permission validation.
@@ -61,7 +60,6 @@ async def proxy_post(
     path: str,
     request: Request,
     current_user: UserModel = Depends(get_permission_checker("write")),
-    db_session: Session = Depends(get_db_session),
 ):
     """
     Proxy POST requests to external service with permission validation.
@@ -82,7 +80,6 @@ async def proxy_put(
     path: str,
     request: Request,
     current_user: UserModel = Depends(get_permission_checker("write")),
-    db_session: Session = Depends(get_db_session),
 ):
     """
     Proxy PUT requests to external service with permission validation.
@@ -103,7 +100,6 @@ async def proxy_patch(
     path: str,
     request: Request,
     current_user: UserModel = Depends(get_permission_checker("write")),
-    db_session: Session = Depends(get_db_session),
 ):
     """
     Proxy PATCH requests to external service with permission validation.
@@ -121,7 +117,6 @@ async def proxy_patch(
 async def proxy_health(
     service_name: str,
     current_user: UserModel = Depends(get_permission_checker("read")),
-    db_session: Session = Depends(get_db_session),
 ):
     """
     Check the health of the proxy service and external service connection.

@@ -1,12 +1,10 @@
 """Proxy service configuration and settings"""
 
 import os
-from typing import Dict, Optional
 
-# Service configurations from environment variables
 SERVICE_HOSTS = {
     "procurement": os.getenv("PROCUREMENT_SERVICE_HOST", "http://localhost:8001/api"),
-    "default": os.getenv("EXTERNAL_SERVICE_HOST", "http://localhost:8001"),  # fallback
+    "default": os.getenv("EXTERNAL_SERVICE_HOST", "http://localhost:8001"),
 }
 
 EXTERNAL_SERVICE_TIMEOUT = int(os.getenv("EXTERNAL_SERVICE_TIMEOUT", "30"))
@@ -23,7 +21,6 @@ PROXY_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-# Headers to forward to external service
 FORWARD_HEADERS = [
     "authorization",
     "content-type",
