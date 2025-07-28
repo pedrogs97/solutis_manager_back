@@ -29,6 +29,60 @@ def upgrade() -> None:
         "term",
         sa.Column("principal_email_signer", sa.String(length=100), nullable=True),
     )
+
+    # Preencher as colunas com dados existentes
+    connection = op.get_bind()
+
+    # Atualizar signer_email na tabela term com o email do employee vinculado
+    connection.execute(
+        sa.text(
+            """
+        UPDATE term
+        SET signer_email = (
+            SELECT employee.email
+            FROM employee
+            WHERE employee.id = term.employee_id
+        )
+        WHERE term.employee_id IS NOT NULL
+    """
+        )
+    )
+
+    # Atualizar principal_email_signer na tabela term
+    connection.execute(
+        sa.text(
+            """
+        UPDATE term
+        SET principal_email_signer = 'beatriz.cunha@solutis.com.br'
+    """
+        )
+    )
+
+    # Atualizar signer_email na tabela lending com o email do employee vinculado
+    connection.execute(
+        sa.text(
+            """
+        UPDATE lending
+        SET signer_email = (
+            SELECT employee.email
+            FROM employee
+            WHERE employee.id = lending.employee_id
+        )
+        WHERE lending.employee_id IS NOT NULL
+    """
+        )
+    )
+
+    # Atualizar principal_email_signer na tabela lending
+    connection.execute(
+        sa.text(
+            """
+        UPDATE lending
+        SET principal_email_signer = 'beatriz.cunha@solutis.com.br'
+    """
+        )
+    )
+
     # ### end Alembic commands ###
 
 

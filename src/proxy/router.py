@@ -1,19 +1,16 @@
 """Proxy router with permission validation"""
 
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy.orm import Session
 
 from src.auth.models import UserModel
 from src.auth.schemas import PermissionSchema
-from src.backends import PermissionChecker, get_db_session
+from src.backends import PermissionChecker
 from src.proxy.service import proxy_service
 
 proxy_router = APIRouter(tags=["proxy"])
 
 
-# Permission definitions for different proxy endpoints
 PROXY_PERMISSIONS = {
-    # Example permissions - adjust according to your needs
     "read": PermissionSchema(module="procurement", model="supplier", action="view"),
     "write": [
         PermissionSchema(module="procurement", model="supplier", action="add"),
