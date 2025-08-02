@@ -131,8 +131,8 @@ class TermService:
             number=term.number,
             item=TermItemSerializerSchema(**term.term_item.__dict__),
             created_at=term.created_at.strftime(DEFAULT_DATE_FORMAT),
-            principal_signer=term.principal_email_signer,
-            employee_signer=term.signer_email,
+            principal_signer=term.principal_email_signer or "",
+            employee_signer=term.signer_email or "",
         )
 
     def serialize_workload(self, workload: WorkloadModel) -> WorkloadSerializerSchema:
