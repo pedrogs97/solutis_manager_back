@@ -594,8 +594,8 @@ class AssetService:
                 status=h.status.name if h.status else None,
                 witnesses=[witness.id for witness in h.witnesses],
                 workload=h.workload.name if h.workload else "",
-                employee_signer=h.signer_email,
-                principal_signer=h.principal_email_signer,
+                employee_signer=h.signer_email or "",
+                principal_signer=h.principal_email_signer or "",
             ).model_dump(by_alias=True)
             for h in historic_asset
         ]
