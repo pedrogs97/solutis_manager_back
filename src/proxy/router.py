@@ -7,7 +7,7 @@ from src.auth.schemas import PermissionSchema
 from src.backends import PermissionChecker
 from src.proxy.service import proxy_service
 
-proxy_router = APIRouter(tags=["proxy"])
+proxy_router = APIRouter(prefix="/proxy", tags=["proxy"])
 
 
 PROXY_PERMISSIONS = {

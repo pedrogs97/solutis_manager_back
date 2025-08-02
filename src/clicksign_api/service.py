@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import date
 from typing import List, Optional, Tuple
 
 import requests
@@ -161,7 +162,13 @@ class ClickSignService:
         return document_canceled
 
     def __create_signer(
-        self, envelope_id: str, email: str, name: str, birthday: str, taxpayer_id: str
+        self,
+        envelope_id: str,
+        email: str,
+        name: str,
+        birthday: str,
+        taxpayer_id: str,
+        group: int = 1,
     ) -> Optional[str]:
         """
         Create a new signer
@@ -182,7 +189,7 @@ class ClickSignService:
                 "type": "signers",
                 "attributes": {
                     "has_documentation": True,
-                    "group": 1,
+                    "group": group,
                     "location_required_enabled": True,
                     "communicate_events": {
                         "signature_request": "email",
@@ -474,19 +481,22 @@ class ClickSignService:
         """
         Send a document to be signed
 
-        This will create an envelope, add a document, add a signer,
-        add requirements, add authorization, activate the envelope
-        and send notification to the signer
+        This will create an envelope, add a document, add signers in the correct order:
+        - Group 1: Employee (colaborador) - signs first
+        - Group 2: Company representative (empresa) - signs second
+        - Group 3: Witnesses (testemunhas) - sign last (up to 2 witnesses)
+
+        All signers receive "agree" qualification (parte interessada) and email authorization.
 
         :Args:
             filename (str): The name of the file
             file_path (str): The path to the file
-            signer_email (str): The email of the signer
-            principal_signer (str): The email of the principal signer
-            full_name (str): The full name of the signer
-            taxpayer_id (str): The taxpayer ID of the signer
-            birthday (str): The birthday of the signer
-            witnesses (List[dict]): A list of witnesses with their information
+            signer_email (str): The email of the employee signer
+            principal_signer (str): The email of the principal company signer
+            full_name (str): The full name of the employee signer
+            taxpayer_id (str): The taxpayer ID of the employee signer
+            birthday (str): The birthday of the employee signer
+            witnesses (List[dict]): A list of witnesses (max 2) with their information
         :Returns:
             Tuple[Optional[str], Optional[str]]: A tuple containing the envelope ID and document ID
         """
@@ -502,11 +512,23 @@ class ClickSignService:
             return None, None
 
         signer_id = self.__create_signer(
-            envelope_id, signer_email, full_name, birthday, taxpayer_id
+            envelope_id, signer_email, full_name, birthday, taxpayer_id, group=1
         )
-        # comodante
+
+        principal_signer_data = self.MAPPING_PRINCIPAL_SIGNERS.get(principal_signer)
+        if not principal_signer_data:
+            self.logger.error(
+                f"Principal signer data not found for email: {principal_signer}"
+            )
+            return None, None
+
         principal_signer_id = self.__create_signer(
-            envelope_id, principal_signer, full_name, birthday, taxpayer_id
+            envelope_id,
+            principal_signer_data["email"],
+            principal_signer_data["full_name"],
+            principal_signer_data["birthday"],
+            principal_signer_data["taxpayer_id"],
+            group=2,
         )
 
         if not signer_id:
@@ -515,7 +537,13 @@ class ClickSignService:
         if not principal_signer_id:
             return None, None
 
-        signers_to_notify = [signer_id]
+        signers_to_notify = [signer_id, principal_signer_id]
+
+        if len(witnesses) > 2:
+            self.logger.warning(
+                f"Maximum 2 witnesses allowed, but {len(witnesses)} provided. Using first 2."
+            )
+            witnesses = witnesses[:2]
 
         if len(witnesses) > 0:
             for witness in witnesses:
@@ -524,7 +552,7 @@ class ClickSignService:
                 witness_birthday = witness.get("birthday")
                 witness_taxpayer_id = witness.get("taxpayer_id")
 
-                if not any(
+                if not all(
                     [witness_email, witness_name, witness_birthday, witness_taxpayer_id]
                 ):
                     self.logger.log(
@@ -532,23 +560,30 @@ class ClickSignService:
                         "Missing witness information. Skipping witness.",
                     )
                     continue
+
                 witness_id = self.__create_signer(
                     envelope_id,
-                    witness_email,
-                    witness_name,
-                    witness_birthday,
-                    witness_taxpayer_id,
+                    str(witness_email),
+                    str(witness_name),
+                    str(witness_birthday),
+                    str(witness_taxpayer_id),
+                    group=3,
                 )
                 if not witness_id:
                     continue
-                self.__add_authorization(envelope_id, document_id, witness_id)
                 self.__add_requirements(envelope_id, document_id, witness_id)
+                self.__add_authorization(envelope_id, document_id, witness_id)
                 signers_to_notify.append(witness_id)
 
         self.__add_requirements(envelope_id, document_id, signer_id)
         self.__add_authorization(envelope_id, document_id, signer_id)
+
+        self.__add_requirements(envelope_id, document_id, principal_signer_id)
+        self.__add_authorization(envelope_id, document_id, principal_signer_id)
+
         self.__activate_envelope(envelope_id)
         self.__add_observers(envelope_id)
+
         for id in signers_to_notify:
             self.__send_notification(envelope_id, id)
 
@@ -617,11 +652,18 @@ class ClickSignService:
             if is_diff_signer and signer["email"] == lending.employee_signer:
                 lending = LendingService().get_lending(lending_id, db_session)
                 self.__delete_signer(envelope_id, signer_id)
+
+                birthday_obj = lending.employee.birthday
+                if isinstance(birthday_obj, date):
+                    birthday_str = birthday_obj.isoformat()
+                else:
+                    birthday_str = str(birthday_obj)
+
                 signer_id = self.__create_signer(
                     envelope_id,
                     signer_email,
                     lending.employee.full_name,
-                    lending.employee.birthday.isoformat(),
+                    birthday_str,
                     lending.employee.taxpayer_identification,
                 )
                 if not signer_id:
@@ -648,8 +690,8 @@ class ClickSignService:
                         "Failed to create principal signer. Skipping signer.",
                     )
                     continue
-            self.__add_authorization(envelope_id, new_document_id, signer_id)
             self.__add_requirements(envelope_id, new_document_id, signer_id)
+            self.__add_authorization(envelope_id, new_document_id, signer_id)
             self.__send_notification(envelope_id, signer_id)
 
         return new_document_id
