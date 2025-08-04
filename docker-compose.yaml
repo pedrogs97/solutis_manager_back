@@ -22,7 +22,7 @@ services:
 
 networks:
   agile-network:
-    driver: bridge
+    external: true
 
 volumes:
   storage:
