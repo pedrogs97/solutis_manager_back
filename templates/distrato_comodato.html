@@ -37,7 +37,7 @@
                 border-spacing: 0 12px;
             }
 
-            .contract-info-header {
+            .contract-info-row {
                 background-color: #d9d9d9;
                 font-weight: 900;
             }
@@ -218,13 +218,13 @@
         <div class="container">
             <table class="contract-info-table"  aria-describedby="table-detail">
                 <thead><th></th></thead>
-                <tbody class="contract-info-header">
-                    <tr>
+                <tbody>
+                    <tr class="contract-info-row">
                         <td class="contract-info-cell">N° CONTRATO:</td>
                         <td class="contract-info-cell">{{ number }}</td>
                         <td><img src="{{ n_termo }}" alt="n_termo" /></td>
                     </tr>
-                    <tr>
+                    <tr class="contract-info-row">
                         <td class="contract-info-cell">N° CHAMADO GLPI:</td>
                         <td class="contract-info-cell">{{ glpi_number }}</td>
                         <td><img src="{{ n_glpi }}" width="32" height="33" alt="n_glpi" /></td>

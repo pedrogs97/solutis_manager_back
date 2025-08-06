@@ -42,11 +42,10 @@
             }
 
             .contract-info-table {
-                border-collapse: separate;
                 border-spacing: 0 12px;
             }
 
-            .contract-info-header {
+            .contract-info-row {
                 background-color: #d9d9d9;
                 font-weight: 900;
             }
@@ -234,16 +233,16 @@
         <div class="container">
             <table class="contract-info-table" aria-describedby="table-detail">
                 <thead><th></th></thead>
-                <tbody class="contract-info-header">
-                    <tr>
+                <tbody>
+                    <tr class="contract-info-row">
                         <td class="contract-info-cell">N° CONTRATO:</td>
                         <td class="contract-info-cell">{{ number }}</td>
                         <td><img src="{{ n_termo }}" alt="n_termo" /></td>
                     </tr>
-                    <tr>
+                    <tr class="contract-info-row">
                         <td class="contract-info-cell">N° CHAMADO GLPI:</td>
                         <td class="contract-info-cell">{{ glpi_number }}</td>
-                        <td><img src="{{ n_glpi }}" width="32" height="33" alt="n_glpi" /></td>
+                        <td><img src="{{ n_glpi }}" alt="n_glpi" /></td>
                     </tr>
                 </tbody>
             </table>
@@ -301,6 +300,7 @@
                 <span class="paragraph-bold">CONSIDERANDO QUE </span> o (a) Comodatário (a) faz uso de equipamentos tecnológicos para o desempenho das suas atividades laborativas, bem como que o ônus do empreendimento econômico, a teor do art. 2º da CLT, deve ser suportado pela Empresa.
             </p>
             <p class="paragraph-normal">Resolvem, de comum acordo e na melhor forma de direito, celebrar o presente Termo de Comodato de Equipamento/ Material, com base nas cláusulas e condições que seguem:</p>
+            <br/>
             <p class="paragraph-bold">1. Objeto</p>
             <p class="paragraph-normal">
                 1.1. A Comodante, como legítima proprietária dos equipamentos abaixo elencados, doravante denominados “Equipamentos”, realiza a sua cessão, em caráter gratuito, ao (a) Comodatário (a), exclusivamente, para o exercício das atividades inerentes à função desenvolvida na Empresa, sendo vedado o uso para fins pessoais. Para os fins deste Termo de Comodato, consideram-se Equipamentos:
@@ -324,9 +324,8 @@
             <p class="paragraph-normal">
                 1.2. Neste ato, o (a) Comodatário (a) declara ter recebido os Equipamentos em perfeitas condições de uso e em regular funcionamento. Declara, ainda, que os Equipamentos destinam-se ao seu uso pessoal e intransferível.
             </p>
-            <p class="paragraph-normal">
-                <span class="paragraph-bold">2. Obrigações e Faculdades das Partes</span>
-            </p>
+            <br/>
+            <p class="paragraph-bold">2. Obrigações e Faculdades das Partes</p>
             <p class="paragraph-normal">2.1. Sem prejuízo das demais obrigações previstas no Contrato Principal e neste Termo de Comodato, obriga-se o (a) Comodatário (a) a:</p>
             <p class="paragraph-indented">2.1.1. Guardar e manter conservados os Equipamentos, não podendo usá-los senão de acordo com o presente Termo, armazenando-os em local adequado conforme a natureza dos bens cedidos. </p>
             <p class="paragraph-indented">2.1.2. Tomar todos os cuidados necessários contra quaisquer riscos previsíveis e evitáveis aos Equipamentos.</p>
@@ -343,6 +342,7 @@
             <p class="paragraph-indented">2.2.1. A Comodante poderá, a qualquer tempo, inspecionar os Equipamentos e exigir que ao (a) Comodatário (a) adote as providências necessárias à preservação e regular funcionamento dos referidos bens. Tal inspeção, no entanto, não caracteriza obrigação da Comodante.</p>
             <p class="paragraph-indented">2.2.2. A Comodante poderá, a seu exclusivo critério, sempre que desejar ou mediante solicitação do (a) Comodatário (a), proceder à manutenção dos Equipamentos, inclusive através de seu departamento de suporte técnico.</p>
             <p class="paragraph-indented">2.2.3. Quaisquer peças ou acessórios substituídos ou acrescentados aos Equipamentos pela  Comodante ou pelo (a) Comodatário (a), desde que com a autorização da Comodante, automaticamente serão incorporados aos Equipamentos correspondentes, não cabendo ao (à) Comodatário (a) qualquer direito de retenção ou indenização por tais reparos ou melhorias.</p>
+            <br/>
             <p class="paragraph-bold">3. Disposições Gerais</p>
             <p class="paragraph-normal">3.1. O prazo de vigência do presente Termo será igual ao prazo do Contrato Principal firmado entre as Partes. Em caso de rescisão, por qualquer motivo, do Contrato Principal, este termo será considerado automaticamente rescindido.</p>
             <p class="paragraph-normal"> 3.2. Quaisquer tolerâncias, concessões ou omissões de Parte a Parte, não importarão em alterações ou novações deste Contrato, nem constituirão precedentes invocáveis. Qualquer modificação ou aditamento ao presente Acordo deverá ser feito por escrito.</p>

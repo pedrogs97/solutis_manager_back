@@ -68,7 +68,8 @@
             }
 
             .verification-cell {
-                max-width: 24px;
+                display: flex;
+                align-items: center;
             }
 
             .verification-label {
@@ -90,7 +91,7 @@
                                 <tr class="verification-row">
                                     <td class="verification-cell">
                                         {% if option.checked %}
-                                            <input type="checkbox" id="{{ option.id }}" checked />
+                                            <input type="checkbox" id="{{ option.id }}" checked value={{ option.checked }} />
                                         {% else %}
                                             <input type="checkbox" id="{{ option.id }}" />
                                         {% endif %}
