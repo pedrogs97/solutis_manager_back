@@ -41,7 +41,7 @@ class ClickSignService:
 
     logger = logging.getLogger(__name__)
 
-    def __create_envelop(self) -> Optional[str]:
+    def __create_envelop(self, signer_email: str) -> Optional[str]:
         """
         Create a new envelope
 
@@ -52,7 +52,7 @@ class ClickSignService:
             "data": {
                 "type": "envelopes",
                 "attributes": {
-                    "name": "Meu Primeiro Envelope",
+                    "name": f"Envelope - {signer_email}",
                     "locale": "pt-BR",
                     "auto_close": True,
                     "remind_interval": 3,
@@ -211,9 +211,12 @@ class ClickSignService:
         response_json = response.json()
         if response.status_code != 201:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.log(
-                logging.ERROR,
+            self.logger.error(
                 f"Error creating signer: {error}",
+                extra={
+                    "taxpayer_id_masked": mask_taxpayer_id(taxpayer_id),
+                    "taxpayer_id": taxpayer_id,
+                },
             )
             return None
         return response_json["data"]["id"]
@@ -500,7 +503,7 @@ class ClickSignService:
         :Returns:
             Tuple[Optional[str], Optional[str]]: A tuple containing the envelope ID and document ID
         """
-        envelope_id = self.__create_envelop()
+        envelope_id = self.__create_envelop(signer_email)
         if not envelope_id:
             return None, None
 
