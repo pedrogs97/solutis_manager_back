@@ -168,7 +168,6 @@ class ClickSignService:
         name: str,
         birthday: str,
         taxpayer_id: str,
-        group: int = 1,
     ) -> Optional[str]:
         """
         Create a new signer
@@ -189,7 +188,6 @@ class ClickSignService:
                 "type": "signers",
                 "attributes": {
                     "has_documentation": True,
-                    "group": group,
                     "location_required_enabled": True,
                     "communicate_events": {
                         "signature_request": "email",
@@ -481,9 +479,6 @@ class ClickSignService:
         Send a document to be signed
 
         This will create an envelope, add a document, add signers in the correct order:
-        - Group 1: Employee (colaborador) - signs first
-        - Group 2: Company representative (empresa) - signs second
-        - Group 3: Witnesses (testemunhas) - sign last (up to 2 witnesses)
 
         All signers receive "agree" qualification (parte interessada) and email authorization.
 
@@ -511,7 +506,7 @@ class ClickSignService:
             return None, None
 
         signer_id = self.__create_signer(
-            envelope_id, signer_email, full_name, birthday, taxpayer_id, group=1
+            envelope_id, signer_email, full_name, birthday, taxpayer_id
         )
 
         principal_signer_data = self.MAPPING_PRINCIPAL_SIGNERS.get(principal_signer)
@@ -527,7 +522,6 @@ class ClickSignService:
             principal_signer_data["full_name"],
             principal_signer_data["birthday"],
             principal_signer_data["taxpayer_id"],
-            group=2,
         )
 
         if not signer_id:
@@ -566,7 +560,6 @@ class ClickSignService:
                     str(witness_name),
                     str(witness_birthday),
                     str(witness_taxpayer_id),
-                    group=3,
                 )
                 if not witness_id:
                     continue
