@@ -212,11 +212,7 @@ class ClickSignService:
         if response.status_code != 201:
             error = response_json.get("errors", self.DEFAULT_ERROR)
             self.logger.error(
-                f"Error creating signer: {error}",
-                extra={
-                    "taxpayer_id_masked": mask_taxpayer_id(taxpayer_id),
-                    "taxpayer_id": taxpayer_id,
-                },
+                f"Error creating signer: {error}'. {taxpayer_id} - {mask_taxpayer_id(taxpayer_id)}",
             )
             return None
         return response_json["data"]["id"]

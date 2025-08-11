@@ -438,6 +438,8 @@ def base64_str(data: bytes) -> str:
 
 def mask_taxpayer_id(taxpayer: str) -> str:
     """Mask taxpayer id"""
+    if "." in taxpayer:
+        return taxpayer
     if len(taxpayer) == 11:
         return f"{taxpayer[:3]}.{taxpayer[3:6]}.{taxpayer[6:9]}-{taxpayer[9:]}"
     if len(taxpayer) == 14:
