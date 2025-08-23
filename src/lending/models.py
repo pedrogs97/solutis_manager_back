@@ -145,3 +145,30 @@ class WitnessModel(Base):
     def __str__(self) -> str:
         """Returns model as string"""
         return f"{self.id}"
+
+
+class LendingAttachments(Base):
+    """Lending attachments model"""
+
+    __tablename__ = "lending_attachments"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    lending: Mapped[LendingModel] = relationship()
+    lending_id = Column("lending_id", ForeignKey(LendingModel.id), nullable=False)
+
+    file_name = Column("file_name", String(length=255), nullable=True)
+    path = Column("path", String(length=255), nullable=True)
+    created_at = Column(
+        "created_at", DateTime, nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        "updated_at",
+        DateTime,
+        nullable=False,
+        server_default=func.now(),
+        server_onupdate=func.now(),
+    )
+
+    def __str__(self) -> str:
+        """Returns model as string"""
+        return f"{self.file_name} - {self.lending.number}"

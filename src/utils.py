@@ -5,7 +5,8 @@ import os
 from datetime import datetime
 from json import loads
 from os import listdir
-from typing import Tuple
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 import aiofiles
 import jinja2
@@ -29,14 +30,16 @@ except (ImportError, OSError) as e:
     raise e
 
 
-def generate_pdf_from_html(html_file_path: str, pdf_output_path: str) -> None:
+def generate_pdf_from_html(
+    html_file_path: str,
+    pdf_output_path: str,
+) -> None:
     """Generate PDF from HTML file using WeasyPrint"""
     if not WEASYPRINT_AVAILABLE:
         raise RuntimeError(
             "WeasyPrint não está disponível. "
             "Instale as dependências necessárias para gerar PDFs."
         )
-
     HTML(filename=html_file_path).write_pdf(pdf_output_path)
 
 
@@ -52,6 +55,15 @@ def get_file_paths(directory: str):
 def read_file(file_path: str):
     """Return a dict from json file"""
     return loads(open(file_path, "r", encoding="utf-8").read())
+
+
+def read_file_as_bytes(file_path: str) -> bytes:
+    """Return the content of a file as bytes"""
+    path_obj = Path(file_path)
+    if not path_obj.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+    with open(path_obj, "rb") as file:
+        return file.read()
 
 
 async def upload_file(
@@ -79,6 +91,16 @@ def get_str_base64_image(file_name: str) -> str:
             str(base64.b64encode(image.read())).replace("b'", "").replace("'", "")
         )
     return str_base64
+
+
+def get_image_to_pdf(file_name: str) -> str:
+    """Get image base64 string"""
+    str_base64 = ""
+    with open(file_name, "rb") as image:
+        str_base64 = (
+            str(base64.b64encode(image.read())).replace("b'", "").replace("'", "")
+        )
+    return f"data:image/png;base64,{str_base64}"
 
 
 SIGNED_DATE_IMAGE = "src/static/images/signed.png"

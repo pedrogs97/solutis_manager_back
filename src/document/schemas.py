@@ -1,6 +1,6 @@
 """Lending schemas"""
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import Field
 
@@ -60,6 +60,13 @@ class WitnessContextSchema(BaseSchema):
     taxpayer_identification: str
 
 
+class VerificationContextSchema(BaseSchema):
+    """Verification context for template"""
+
+    number: str
+    verifications: List[dict]
+
+
 class NewLendingContextSchema(BaseSchema):
     """Context for contract template"""
 
@@ -82,6 +89,8 @@ class NewLendingContextSchema(BaseSchema):
     witnesses: List[WitnessContextSchema]
     location: str
     bu: str
+    verifications: Optional[List[Dict]] = None
+    attachments_files: Optional[List[Dict]] = None
 
 
 class NewLendingPjContextSchema(BaseSchema):
@@ -111,6 +120,8 @@ class NewLendingPjContextSchema(BaseSchema):
     witnesses: List[WitnessContextSchema]
     location: str
     bu: str
+    verifications: Optional[List[Dict]] = None
+    attachments_files: Optional[List[Dict]] = None
 
 
 # TERM
@@ -152,10 +163,3 @@ class NewTermContextSchema(BaseSchema):
     detail: List[dict]
     date: str
     location: str
-
-
-class VerificationContextSchema(BaseSchema):
-    """Verification context for template"""
-
-    number: str
-    verifications: List[dict]

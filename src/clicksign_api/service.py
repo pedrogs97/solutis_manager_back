@@ -7,7 +7,7 @@ import requests
 from sqlalchemy.orm import Session
 
 from src.config import CLICKSIGN_TOKEN, CLICKSIGN_URL
-from src.lending.service import LendingService
+from src.lending.services.lending import LendingService
 from src.utils import base64_str, mask_taxpayer_id
 
 
@@ -23,7 +23,7 @@ class ClickSignService:
             "full_name": "BEATRIZ CUNHA DA SILVA",
             "taxpayer_id": "823.294.515-04",
             "birthday": "1983-10-17",
-            "email": "beatriz.cunha@solutis.com.br",
+            "email": "pedrogustavosantana97@gmail.com",
         },
         "thomas.lichtenberger@solutis.com.br": {
             "full_name": "THOMAS MEDEIROS LICHTENBERGER",

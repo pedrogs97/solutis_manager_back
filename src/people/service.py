@@ -23,7 +23,7 @@ from src.datasync.models import (
 )
 from src.lending.models import LendingModel
 from src.lending.schemas import CostCenterSerializerSchema
-from src.lending.service import LendingService
+from src.lending.services.lending import LendingService
 from src.log.services import LogService
 from src.people.filters import (
     CostCenterFilter,

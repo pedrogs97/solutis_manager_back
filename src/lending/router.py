@@ -1,8 +1,8 @@
 """Lending router"""
 
-from typing import Union
+from typing import Annotated, Union
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
 from fastapi.responses import JSONResponse, Response
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
@@ -22,7 +22,8 @@ from src.lending.schemas import (
     NewLendingSchema,
     UpdateLendingSchema,
 )
-from src.lending.service import LendingService
+from src.lending.services.attachments import LendingAttachmentService
+from src.lending.services.lending import LendingService
 
 lending_router = APIRouter(prefix="/lendings", tags=["Lending"])
 
@@ -279,5 +280,29 @@ def get_lending_status_route(
     db_session.close()
     return JSONResponse(
         content=serializer,
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@lending_router.post("-attachments/")
+async def post_lending_attach(
+    lending_id: Annotated[int, Form(alias="lendingId")],
+    attachment: UploadFile,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "attachment", "action": "add"})
+    ),
+):
+    """Upload a new attachment for a lending record"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    attachment_service = LendingAttachmentService(db_session)
+    await attachment_service.upload_attachment(lending_id, attachment)
+    db_session.close()
+    return JSONResponse(
+        content={"message": "Attachment uploaded successfully"},
         status_code=status.HTTP_200_OK,
     )

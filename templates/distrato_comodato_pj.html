@@ -211,6 +211,38 @@
             .company-name {
                 font-weight: 800;
             }
+
+            .verification-item {
+                padding: 16px;
+            }
+
+            .verification-table {
+                border-collapse: separate;
+                border: solid 1px #000000;
+                border-radius: 6px;
+                padding: 4px;
+            }
+
+            .verification-question {
+                width: fit-content;
+            }
+
+            .verification-options {
+                font-weight: 900;
+            }
+
+            .verification-row {
+                margin-bottom: 10px;
+            }
+
+            .verification-cell {
+                display: flex;
+                align-items: center;
+            }
+
+            .verification-label {
+                margin-left: 5px;
+            }
         </style>
     </head>
     <body class="container">
@@ -345,6 +377,45 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            {% if verifications %}
+                <div class="page-break"></div>
+            {% endif %}
+            <div class="container">
+                <div class="title">
+                    <p class="paragraph-bold">VERIFICAÇÃO DO ATIVO</p>
+                </div>
+                {% for verification in verifications %}
+                    <div class="verification-item">
+                        <table class="verification-table" aria-describedby="table-detail">
+                            <thead><th class="verification-question">{{ verification.question }}</th></thead>
+                            <tbody class="verification-options">
+                                {% for option in verification.options %}
+                                    <tr class="verification-row">
+                                        <td class="verification-cell">
+                                            {% if option.checked %}
+                                                <input type="checkbox" id="{{ option.id }}" checked value={{ option.checked }} />
+                                            {% else %}
+                                                <input type="checkbox" id="{{ option.id }}" />
+                                            {% endif %}
+                                            <label for="{{ option.id }}" class="verification-label">{{ option.option }}</label>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if attachments %}
+                <div class="page-break"></div>
+            {% endif %}
+            <div class="container">
+                <div class="centered-container">
+                    {% for attachment in attachments %}
+                        <img src="{{ attachment.file }}" alt="Attachment" style="max-width: 100%; height: auto;"/>
+                    {% endfor %}
                 </div>
             </div>
         </div>
