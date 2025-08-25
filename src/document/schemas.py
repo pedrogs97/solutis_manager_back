@@ -132,8 +132,8 @@ class NewTermDocSchema(BaseSchema):
 
     term_id: int = Field(alias="termId")
     legal_person: bool = Field(alias="legalPerson", default=False)
-    principal_signer: str = Field(alias="principalSigner")
-    employee_signer: str = Field(alias="employeeSigner")
+    # principal_signer: str = Field(alias="principalSigner")
+    # employee_signer: str = Field(alias="employeeSigner")
 
 
 class NewRevokeTermDocSchema(BaseSchema):

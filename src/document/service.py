@@ -4,7 +4,7 @@ import locale
 import logging
 import os
 from datetime import date
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
@@ -121,7 +121,7 @@ class DocumentService:
     def __generate_code(
         self,
         last_doc: Union[DocumentModel, None],
-        asset: AssetModel,
+        asset: Optional[AssetModel] = None,
         type_code="lending",
     ) -> str:
         """Generate new code for document"""
@@ -1491,20 +1491,20 @@ class DocumentService:
         )
 
         filename = f"{new_code}.pdf"
-        envelope_id, document_id = self.clicksign_service.send_document_to_sign(
-            filename,
-            contract_path,
-            current_term.signer_email,
-            current_term.principal_email_signer,
-            employee.full_name,
-            employee.taxpayer_identification,
-            employee.birthday.isoformat(),
-        )
+        # envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+        #     filename,
+        #     contract_path,
+        #     current_term.signer_email,
+        #     current_term.principal_email_signer,
+        #     employee.full_name,
+        #     employee.taxpayer_identification,
+        #     employee.birthday.isoformat(),
+        # )
         new_doc = DocumentModel(
             path=contract_path,
             file_name=filename,
-            sign_doc_id=document_id,
-            sign_envelope_id=envelope_id,
+            sign_doc_id=None,
+            sign_envelope_id=None,
         )
         new_doc.doc_type = doc_type
 
