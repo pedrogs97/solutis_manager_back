@@ -234,8 +234,8 @@ class TermService:
             business_executive=new_term.business_executive,
             project=new_term.project,
             location=new_term.location,
-            signer_email=new_term.employee_signer,
-            principal_email_signer=new_term.principal_signer,
+            # signer_email=new_term.employee_signer,
+            # principal_email_signer=new_term.principal_signer,
         )
 
         new_term_db.type = term_type
@@ -296,8 +296,8 @@ class TermService:
         term = self.__get_term_or_404(term_id, db_session)
 
         term.observations = data.observations
-        term.principal_email_signer = data.principal_signer
-        term.signer_email = data.employee_signer
+        # term.principal_email_signer = data.principal_signer
+        # term.signer_email = data.employee_signer
         db_session.add(term)
         db_session.commit()
         db_session.flush()
