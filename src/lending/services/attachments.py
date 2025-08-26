@@ -27,7 +27,7 @@ class LendingAttachmentService:
             attachment (UploadFile): Attachment data to be added
         """
         current_lending = self.lending_service.get_lending(lending_id, self.db_session)
-        new_attachment = LendingAttachments(lending=current_lending)
+        new_attachment = LendingAttachments(lending_id=current_lending.id)
         self.db_session.add(new_attachment)
         self.db_session.commit()
         self.db_session.refresh(new_attachment)
