@@ -23,7 +23,7 @@ class ClickSignService:
             "full_name": "BEATRIZ CUNHA DA SILVA",
             "taxpayer_id": "823.294.515-04",
             "birthday": "1983-10-17",
-            "email": "pedrogustavosantana97@gmail.com",
+            "email": "beatriz.cunha@solutis.com.br",
         },
         "thomas.lichtenberger@solutis.com.br": {
             "full_name": "THOMAS MEDEIROS LICHTENBERGER",
