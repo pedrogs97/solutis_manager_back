@@ -219,7 +219,11 @@ class LendingService:
                     linked_lending = (
                         db_session.query(LendingModel)
                         .join(AssetModel)
-                        .filter(AssetModel.id == data.asset_id)
+                        .filter(
+                            AssetModel.id == data.asset_id,
+                            LendingModel.deleted.is_(False),
+                            LendingModel.status_id != 4,
+                        )
                         .first()
                     )
                     errors.append(
