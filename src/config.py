@@ -194,3 +194,9 @@ CLICKSIGN_URL = os.getenv(
     "CLICKSIGN_URL", "https://sandbox.clicksign.com/api/v3/envelopes"
 )
 CLICKSIGN_TOKEN = os.getenv("CLICKSIGN_TOKEN")
+
+DISABLE_CLICKSIGN = os.getenv("DISABLE_CLICKSIGN", "False").lower() in (
+    "true",
+    "1",
+    "t",
+)

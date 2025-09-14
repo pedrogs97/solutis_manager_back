@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple
 import requests
 from sqlalchemy.orm import Session
 
-from src.config import CLICKSIGN_TOKEN, CLICKSIGN_URL
+from src.config import CLICKSIGN_TOKEN, CLICKSIGN_URL, DISABLE_CLICKSIGN
 from src.lending.services.lending import LendingService
 from src.utils import base64_str, mask_taxpayer_id
 
@@ -494,6 +494,9 @@ class ClickSignService:
         :Returns:
             Tuple[Optional[str], Optional[str]]: A tuple containing the envelope ID and document ID
         """
+        if DISABLE_CLICKSIGN:
+            return None, None
+
         envelope_id = self.__create_envelop(signer_email)
         if not envelope_id:
             return None, None
