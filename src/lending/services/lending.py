@@ -52,9 +52,7 @@ locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 class LendingService:
     """Lending service"""
 
-    def __get_lending_or_404(
-        self, lending_id: int, db_session: Session
-    ) -> LendingModel:
+    def get_lending_or_404(self, lending_id: int, db_session: Session) -> LendingModel:
         """Get lending or 404"""
         lending = (
             db_session.query(LendingModel).filter(LendingModel.id == lending_id).first()
@@ -413,7 +411,7 @@ class LendingService:
         self, lending_id: int, db_session: Session
     ) -> LendingSerializerSchema:
         """Get a lending"""
-        lending = self.__get_lending_or_404(lending_id, db_session)
+        lending = self.get_lending_or_404(lending_id, db_session)
         return self.serialize_lending(lending)
 
     def update_lending(
@@ -424,7 +422,7 @@ class LendingService:
         authenticated_user: UserModel,
     ) -> LendingSerializerSchema:
         """Update a lending"""
-        lending = self.__get_lending_or_404(lending_id, db_session)
+        lending = self.get_lending_or_404(lending_id, db_session)
 
         lending.observations = data.observations
 
@@ -579,7 +577,7 @@ class LendingService:
     ) -> None:
         """Remove a lending"""
         try:
-            lending = self.__get_lending_or_404(lending_id, db_session)
+            lending = self.get_lending_or_404(lending_id, db_session)
             lending.deleted = True
 
             if lending.document:

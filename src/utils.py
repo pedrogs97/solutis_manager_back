@@ -96,11 +96,12 @@ def get_str_base64_image(file_name: str) -> str:
 def get_image_to_pdf(file_name: str) -> str:
     """Get image base64 string"""
     str_base64 = ""
+    file_extension = file_name.split(".")[-1]
     with open(file_name, "rb") as image:
         str_base64 = (
             str(base64.b64encode(image.read())).replace("b'", "").replace("'", "")
         )
-    return f"data:image/png;base64,{str_base64}"
+    return f"data:image/{file_extension};base64,{str_base64}"
 
 
 SIGNED_DATE_IMAGE = "src/static/images/signed.png"
@@ -147,6 +148,8 @@ def create_lending_contract(context: NewLendingContextSchema) -> str:
         ri_1=f"data:image/png;base64,{logo_file}",
         location=context.location,
         bu=context.bu,
+        verifications=context.verifications,
+        attachments=context.attachments_files,
     )
 
     lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")

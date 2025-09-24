@@ -429,43 +429,43 @@
             </div>
             {% if verifications %}
                 <div class="page-break"></div>
-            {% endif %}
-            <div class="container">
-                <div class="title">
-                    <p class="paragraph-bold">VERIFICAÇÃO DO ATIVO</p>
-                </div>
-                {% for verification in verifications %}
-                    <div class="verification-item">
-                        <table class="verification-table" aria-describedby="table-detail">
-                            <thead><th class="verification-question">{{ verification.question }}</th></thead>
-                            <tbody class="verification-options">
-                                {% for option in verification.options %}
-                                    <tr class="verification-row">
-                                        <td class="verification-cell">
-                                            {% if option.checked %}
-                                                <input type="checkbox" id="{{ option.id }}" checked value={{ option.checked }} />
-                                            {% else %}
-                                                <input type="checkbox" id="{{ option.id }}" />
-                                            {% endif %}
-                                            <label for="{{ option.id }}" class="verification-label">{{ option.option }}</label>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="container">
+                    <div class="title">
+                        <p class="paragraph-bold">VERIFICAÇÃO DO ATIVO</p>
                     </div>
-                {% endfor %}
-            </div>
-            {% if attachments %}
-                <div class="page-break"></div>
-            {% endif %}
-            <div class="container">
-                <div class="centered-container">
-                    {% for attachment in attachments %}
-                        <img src="{{ attachment.file }}" alt="Attachment" style="max-width: 100%; height: auto;"/>
+                    {% for verification in verifications %}
+                        <div class="verification-item">
+                            <table class="verification-table" aria-describedby="table-detail">
+                                <thead><th class="verification-question">{{ verification.question }}</th></thead>
+                                <tbody class="verification-options">
+                                    {% for option in verification.options %}
+                                        <tr class="verification-row">
+                                            <td class="verification-cell">
+                                                {% if option.checked %}
+                                                    <input type="checkbox" id="{{ option.id }}" checked value={{ option.checked }} />
+                                                {% else %}
+                                                    <input type="checkbox" id="{{ option.id }}" />
+                                                {% endif %}
+                                                <label for="{{ option.id }}" class="verification-label">{{ option.option }}</label>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     {% endfor %}
                 </div>
-            </div>
+            {% endif %}
+            {% if attachments %}
+                <div class="page-break"></div>
+                <div class="container">
+                    <div class="centered-container">
+                        {% for attachment in attachments %}
+                            <img src="{{ attachment.file }}" alt="Attachment" />
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
     </body>
