@@ -1380,6 +1380,14 @@ class DocumentService:
 
         code = lending.number
 
+        if not code:
+            code = self.__generate_code(
+                db_session.query(DocumentModel)
+                .order_by(DocumentModel.id.desc())
+                .first(),
+                lending.asset,
+            )
+
         file_name = f"{code}.pdf"
 
         UPLOAD_DIR = CONTRACT_UPLOAD_DIR
