@@ -6,7 +6,6 @@ import pymssql
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import NullPool
 
 from src.config import (
     SQLSERVE_HOST_DB,
@@ -17,7 +16,11 @@ from src.config import (
 )
 
 Engine = create_engine(
-    get_database_url(), poolclass=NullPool, pool_pre_ping=True, pool_recycle=60
+    get_database_url(),
+    pool_size=10,
+    max_overflow=20,
+    pool_pre_ping=True,
+    pool_recycle=3600,  # Recycle connections every hour
 )
 Session_db = sessionmaker(
     autocommit=False,
