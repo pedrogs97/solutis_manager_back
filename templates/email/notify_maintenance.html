@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="utf-8">
+        <title>Notificação de Manutenção</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+            }
+            .section {
+                margin-bottom: 18px;
+            }
+        </style>
+    </head>
+    <body>
+        <p class="section">Prezado(a) <b>{{ full_name }}</b>,</p>
+        <p class="section">Gostaríamos de informar que há uma {{ type }} de {{ asset_type }} pendente em seu nome.</p>
+        <p class="section">Segue abaixo link de acesso do ativo:</p>
+        <ul class="section">
+            <li><a href="https://agile.solutis.net.br/lendings/assets/edit/{{ id }}">https://agile.solutis.net.br/lendings/assets/edit/{{ id }}</a></li>
+        </ul>
+        <p class="section">Por favor, acesse o link acima para realizar a manutenção pendente o quanto antes.</p>
+        <p class="section">Se tiver alguma dúvida ou precisar de assistência, não hesite em nos contatar.</p>
+        <p class="section">Atenciosamente,</p>
+        <p class="section">Administrativo</p>
+        <p class="section">Solutis Tecnologias Ltda</p>
+    </body>
+</html>

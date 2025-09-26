@@ -303,7 +303,7 @@ class Email365Client:
 
         template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
         template_env = jinja2.Environment(loader=template_loader)
-        template_file = "reset_password.html"
+        template_file = "email/reset_password.html"
         template = template_env.get_template(template_file)
 
         return template.render(
@@ -321,7 +321,7 @@ class Email365Client:
 
         template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
         template_env = jinja2.Environment(loader=template_loader)
-        template_file = "new_user_password.html"
+        template_file = "email/new_user_password.html"
         template = template_env.get_template(template_file)
 
         return template.render(
@@ -343,13 +343,14 @@ class Email365Client:
 
         template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
         template_env = jinja2.Environment(loader=template_loader)
-        template_file = "notify_maintenance.html"
+        template_file = "email/notify_maintenance.html"
         template = template_env.get_template(template_file)
 
         return template.render(
             id=self.__extra["id"],
             full_name=self.__extra["full_name"],
             type=self.__extra["type"],
+            asset_type=self.__extra["asset_type"],
         )
 
     def __prepare_notify_inventory(self) -> str:
@@ -359,7 +360,7 @@ class Email365Client:
 
         template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
         template_env = jinja2.Environment(loader=template_loader)
-        template_file = "notify_inventory_link_email.html"
+        template_file = "email/notify_inventory_link_email.html"
         template = template_env.get_template(template_file)
 
         return template.render(

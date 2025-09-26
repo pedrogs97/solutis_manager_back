@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="utf-8">
+        <title>Inventário</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+            }
+            .spaced-paragraph {
+                margin-bottom: 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <p class="spaced-paragraph">Prezado(a) <b>{{ full_name }}</b>,</p>
+        <p class="spaced-paragraph">Gostaríamos de informar que o inventário anual foi liberado.</p>
+        <p class="spaced-paragraph">Acesse com o link abaixo.</p>
+        <p class="spaced-paragraph"><a href="{{ inventory_link }}">{{ inventory_link }}</a></p>
+        <p class="spaced-paragraph">Se tiver alguma dúvida ou precisar de assistência, não hesite em nos contatar.</p>
+        <p class="spaced-paragraph">Atenciosamente,</p>
+        <p class="spaced-paragraph">Administrativo</p>
+        <p class="spaced-paragraph">Solutis Tecnologias Ltda</p>
+    </body>
+</html>
