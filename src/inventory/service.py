@@ -427,20 +427,12 @@ class InventoryService:
                 "full_name": "Pedro Santana (Teste)",
             },
             {
-                "email": "pedrogustavosantana97@gmail.com",
-                "full_name": "Pedro Santana (Teste)",
-            },
-            {
                 "email": "brenner.pereira@solutis.com.br",
                 "full_name": "Brenner Pereira (Teste)",
             },
             {
                 "email": "carla.anunciacao@solutis.com.br",
                 "full_name": "Carla Anunciação (Teste)",
-            },
-            {
-                "email": "kecia.sousa@solutis.com.br",
-                "full_name": "Kécia Sousa (Teste)",
             },
             {
                 "email": "rodrigo.cavalcante@solutis.com.br",
