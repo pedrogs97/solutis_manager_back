@@ -1,0 +1,26 @@
+meta {
+  name: Upload
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{PROCUREMENT_BASE_URL}}/attachments/upload/
+  body: multipartForm
+  auth: inherit
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+body:multipart-form {
+  supplier: 1
+  attachment_type: 1
+  file: @file(/C:/Users/pedro/Downloads/Conclusao - pós.pdf)
+  description: ""
+}
+
+settings {
+  encodeUrl: true
+}

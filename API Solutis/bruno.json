@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "API Solutis",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

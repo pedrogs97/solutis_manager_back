@@ -1,0 +1,19 @@
+meta {
+  name: Retrive
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/procurement/suppliers/3/
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+}

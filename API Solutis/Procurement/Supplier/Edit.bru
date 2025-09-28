@@ -1,0 +1,31 @@
+meta {
+  name: Edit
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{PROCUREMENT_BASE_URL}}/suppliers/3/
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+body:json {
+  {
+      "tradeName": "Solutis Ltda edit",
+      "taxId": "12345678000333",
+      "contact": {
+          "id": 6,
+          "email": "joao.silva4@solutis.com.br",
+          "phone": "99999999999"
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

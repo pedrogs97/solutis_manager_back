@@ -1,0 +1,22 @@
+meta {
+  name: Upload
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{PROCUREMENT_BASE_URL}}/attachments/upload/
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  supplier: 1
+  attachment_type: 1
+  file: @file(/C:/Users/pedro/Downloads/Perfil.jpeg)
+  description: ""
+}
+
+settings {
+  encodeUrl: true
+}

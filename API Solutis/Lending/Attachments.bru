@@ -1,0 +1,24 @@
+meta {
+  name: Attachments
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/lendings-attachments/
+  body: multipartForm
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{TOKEN}}
+}
+
+body:multipart-form {
+  lendingId: 1201
+  attachment: @file(/C:/Users/pedro/OneDrive/Documentos/teste.jpeg)
+}
+
+settings {
+  encodeUrl: true
+}

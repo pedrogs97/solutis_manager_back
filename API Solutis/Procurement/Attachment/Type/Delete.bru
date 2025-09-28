@@ -1,0 +1,22 @@
+meta {
+  name: Delete
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{PROCUREMENT_BASE_URL}}/attachment-types/39/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Novo documento",
+      "riskLevel": 2
+  }
+}
+
+settings {
+  encodeUrl: true
+}

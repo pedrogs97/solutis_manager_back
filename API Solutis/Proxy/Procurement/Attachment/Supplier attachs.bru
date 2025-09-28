@@ -1,0 +1,19 @@
+meta {
+  name: Supplier attachs
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{PROCUREMENT_BASE_URL}}/attachments-list/1/
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+}

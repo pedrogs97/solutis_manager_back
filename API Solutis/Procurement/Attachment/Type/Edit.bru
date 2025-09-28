@@ -1,0 +1,22 @@
+meta {
+  name: Edit
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{PROCUREMENT_BASE_URL}}/attachment-types/39/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Novo documento",
+      "riskLevel": 2
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,97 @@
+meta {
+  name: Edit
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{BASE_URL}}/procurement/responsibility-matrix/1/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+body:json {
+  {
+    "supplier": 1,
+    "contract_request_requesting_area": "I",
+    "contract_request_administrative": "R",
+    "contract_request_legal": "-",
+    "contract_request_financial": "I",
+    "contract_request_integrity": "I",
+    "contract_request_board": "I",
+    "document_analysis_requesting_area": "I",
+    "document_analysis_administrative": "A/R",
+    "document_analysis_legal": "R",
+    "document_analysis_financial": "C",
+    "document_analysis_integrity": "C",
+    "document_analysis_board": "-",
+    "risk_consultation_requesting_area": "I",
+    "risk_consultation_administrative": "R",
+    "risk_consultation_legal": "C",
+    "risk_consultation_financial": "C",
+    "risk_consultation_integrity": "A",
+    "risk_consultation_board": "I",
+    "risk_assessment_requesting_area": "I",
+    "risk_assessment_administrative": "R",
+    "risk_assessment_legal": "C",
+    "risk_assessment_financial": "C",
+    "risk_assessment_integrity": "A",
+    "risk_assessment_board": "I",
+    "system_registration_requesting_area": "I",
+    "system_registration_administrative": "A/R",
+    "system_registration_legal": "-",
+    "system_registration_financial": "I",
+    "system_registration_integrity": "I",
+    "system_registration_board": "-",
+    "form_handling_requesting_area": "R",
+    "form_handling_administrative": "A",
+    "form_handling_legal": "I",
+    "form_handling_financial": "I",
+    "form_handling_integrity": "I",
+    "form_handling_board": "-",
+    "contract_draft_requesting_area": "C",
+    "contract_draft_administrative": "R",
+    "contract_draft_legal": "A",
+    "contract_draft_financial": "C",
+    "contract_draft_integrity": "C",
+    "contract_draft_board": "I",
+    "compliance_validation_requesting_area": "I",
+    "compliance_validation_administrative": "R",
+    "compliance_validation_legal": "R",
+    "compliance_validation_financial": "C",
+    "compliance_validation_integrity": "A",
+    "compliance_validation_board": "I",
+    "final_approval_requesting_area": "I",
+    "final_approval_administrative": "R",
+    "final_approval_legal": "C",
+    "final_approval_financial": "C",
+    "final_approval_integrity": "C",
+    "final_approval_board": "A",
+    "contract_signing_requesting_area": "I",
+    "contract_signing_administrative": "R",
+    "contract_signing_legal": "A",
+    "contract_signing_financial": "I",
+    "contract_signing_integrity": "I",
+    "contract_signing_board": "I",
+    "document_management_requesting_area": "I",
+    "document_management_administrative": "A/R",
+    "document_management_legal": "R",
+    "document_management_financial": "I",
+    "document_management_integrity": "I",
+    "document_management_board": "-",
+    "payment_release_requesting_area": "I",
+    "payment_release_administrative": "R",
+    "payment_release_legal": "C",
+    "payment_release_financial": "A",
+    "payment_release_integrity": "C",
+    "payment_release_board": "I"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

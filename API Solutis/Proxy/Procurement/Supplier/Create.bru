@@ -1,0 +1,86 @@
+meta {
+  name: Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/procurement/suppliers/
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+body:json {
+  {
+      "tradeName": "Solutis Ltda 4",
+      "legalName": "Solutis teste 4",
+      "taxId": "12345678000444",
+      "stateBusinessRegistration": "123456789",
+      "municipalBusinessRegistration": "98765432",
+      "address": {
+          "complement": "complemento teste",
+          "number": 123,
+          "postalCode": "41720030"
+      },
+      "contact": {
+          "email": "joao.silva5@solutis.com.br",
+          "phone": "11999999999"
+      },
+      "paymentDetails": {
+          "paymentFrequency": "Mensal",
+          "paymentDate": "2025-02-15",
+          "contractTotalValue": "120000.00",
+          "contractMonthlyValue": "10000.00",
+          "checkingAccount": "12345-6",
+          "pixKey": "12345678000195",
+          "paymentMethod": 1,
+          "pixKeyType": 1
+      },
+      "organizationalDetails": {
+          "costCenter": "CC-001",
+          "businessUnit": "TI",
+          "responsibleExecutive": "Maria Santos Silva",
+          "payerType": 1,
+          "businessSector": 1,
+          "taxpayerClassification": 1,
+          "publicEntity": 1
+      },
+      "fiscalDetails": {
+          "issTaxpayer": true,
+          "simplesNacionalParticipant": true,
+          "cooperativeMember": false,
+          "issWithholding": 1,
+          "issRegime": 1,
+          "withholdingTaxNature": 1
+      },
+      "companyInformation": {
+          "taxationRegime": 1,
+          "revenueCode": "5933",
+          "nit": "",
+          "companySize": 1,
+          "icmsTaxpayer": 1,
+          "incomeType": 1,
+          "taxationMethod": 1,
+          "customerType": 1
+      },
+      "contract": {
+          "objectContract": "teste contrato",
+          "executedActivities": "testes realizados",
+          "contractStartDate": "2025-02-15",
+          "contractEndDate": "2025-12-12"
+      },
+      "classification": 1,
+      "category": 1,
+      "riskLevel": 1,
+      "type": 1,
+      "situation": 2
+  }
+}
+
+settings {
+  encodeUrl: true
+}

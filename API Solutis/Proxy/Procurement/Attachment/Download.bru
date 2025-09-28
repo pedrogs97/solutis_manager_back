@@ -1,0 +1,19 @@
+meta {
+  name: Download
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{PROCUREMENT_BASE_URL}}/attachments/1/download
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+}

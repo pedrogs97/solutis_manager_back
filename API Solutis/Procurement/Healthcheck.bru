@@ -1,0 +1,15 @@
+meta {
+  name: Healthcheck
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{PROCUREMENT_BASE_URL}}/
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

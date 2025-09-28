@@ -1,0 +1,64 @@
+meta {
+  name: Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{PROCUREMENT_BASE_URL}}/suppliers/
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+body:json {
+  {
+      "tradeName": "",
+      "legalName": "Fornecedor Test Ltda",
+      "taxId": "162.552.767-59",
+      "stateBusinessRegistration": "",
+      "municipalBusinessRegistration": "",
+      "address": {
+          "complement": "",
+          "postalCode": "",
+          "street": "",
+          "neighborhood": "",
+          "city": "",
+          "state": ""
+      },
+      "contact": {
+          "email": "",
+          "phone": ""
+      },
+      "paymentDetails": {
+          "paymentFrequency": "",
+          "checkingAccount": "",
+          "pixKey": ""
+      },
+      "organizationalDetails": {
+          "costCenter": "",
+          "businessUnit": "",
+          "responsibleExecutive": ""
+      },
+      "fiscalDetails": {
+          "issTaxpayer": false,
+          "simplesNacionalParticipant": false,
+          "cooperativeMember": false
+      },
+      "contract": {
+          "objectContract": "",
+          "executedActivities": "",
+          "contractStartDate": null
+      },
+      "companyInformation": {
+          "nit": ""
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

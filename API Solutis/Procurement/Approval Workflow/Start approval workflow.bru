@@ -1,0 +1,19 @@
+meta {
+  name: Start approval workflow
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{PROCUREMENT_BASE_URL}}/approval/supplier/1/start/
+  body: none
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: false
+}

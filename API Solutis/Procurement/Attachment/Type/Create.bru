@@ -1,0 +1,22 @@
+meta {
+  name: Create
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{PROCUREMENT_BASE_URL}}/attachment-types/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Novo documento",
+      "riskLevel": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+}

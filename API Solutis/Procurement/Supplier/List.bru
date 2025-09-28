@@ -1,0 +1,23 @@
+meta {
+  name: List
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{PROCUREMENT_BASE_URL}}/suppliers-list/?page=1
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+}

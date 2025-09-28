@@ -1,0 +1,19 @@
+meta {
+  name: Get approval steps
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{PROCUREMENT_BASE_URL}}/approval/steps/
+  body: none
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: false
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Send test
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/clicksign/send/
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Approve step
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{PROCUREMENT_BASE_URL}}/approval/flows/1/approve/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "is_approved": true,
+    "observation": "Cadastro inicial aprovado. Dados estão completos e corretos.",
+    "approver_email": "admin@company.com"
+  }
+}
+
+settings {
+  encodeUrl: false
+}

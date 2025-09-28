@@ -1,0 +1,19 @@
+meta {
+  name: List
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BASE_URL}}/lendings/
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+}

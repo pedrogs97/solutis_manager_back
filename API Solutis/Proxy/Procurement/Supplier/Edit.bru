@@ -1,0 +1,25 @@
+meta {
+  name: Edit
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{BASE_URL}}/procurement/suppliers/1/
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+body:json {
+  {
+      "tradeName": "Solutis Ltda edit"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

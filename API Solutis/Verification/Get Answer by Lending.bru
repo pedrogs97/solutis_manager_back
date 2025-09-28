@@ -1,0 +1,19 @@
+meta {
+  name: Get Answer by Lending
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/verifications/answer/1201/
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Reprove step
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{PROCUREMENT_BASE_URL}}/approval/flows/1/approve/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "is_approved": false,
+    "observation": "Documentação incompleta. Favor providenciar certidão negativa atualizada.",
+    "approver_email": "revisor@company.com"
+  }
+}
+
+settings {
+  encodeUrl: false
+}

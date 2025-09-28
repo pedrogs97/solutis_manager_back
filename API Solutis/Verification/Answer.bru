@@ -1,0 +1,40 @@
+meta {
+  name: Answer
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/verifications/answer/
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{TOKEN}}
+}
+
+body:json {
+  {
+      "lendingId": "1201",
+      "typeId": 1,
+      "answered": [
+          {
+              "verificationId": 1,
+              "answer": "ok"
+          },
+          {
+              "verificationId": 2,
+              "answer": "ok"
+          },
+          {
+              "verificationId": 3,
+              "answer": "ok"
+          }
+      ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

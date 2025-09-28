@@ -1,0 +1,19 @@
+meta {
+  name: Asset Verification
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/verifications/1/
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+}

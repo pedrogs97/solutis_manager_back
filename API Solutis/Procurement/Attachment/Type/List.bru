@@ -1,0 +1,19 @@
+meta {
+  name: List
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{PROCUREMENT_BASE_URL}}/attachment-types/?risk_level=2
+  body: none
+  auth: inherit
+}
+
+params:query {
+  risk_level: 2
+}
+
+settings {
+  encodeUrl: true
+}
