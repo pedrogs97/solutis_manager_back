@@ -1,8 +1,9 @@
 """Scheduler Service"""
 
-import logging
 from time import time
 from typing import List
+
+from loguru import logger
 
 from src.database import ExternalDatabase
 from src.datasync.models import (
@@ -43,8 +44,6 @@ from src.datasync.service import (
     update_employee_totvs,
     verify_changes,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class SchedulerService:

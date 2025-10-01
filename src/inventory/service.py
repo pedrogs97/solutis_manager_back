@@ -1,6 +1,5 @@
 """Inventory service"""
 
-import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import List, Tuple
@@ -8,6 +7,7 @@ from typing import List, Tuple
 from fastapi import HTTPException, status
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, with_loader_criteria
 from sqlalchemy.sql.expression import and_, or_
@@ -23,8 +23,6 @@ from src.inventory.schemas import AnswerInventorySerializer, EmployeeInventorySe
 from src.lending.models import LendingModel
 from src.people.models import EmployeeModel
 from src.term.models import TermModel
-
-logger = logging.getLogger(__name__)
 
 
 class InventoryService:

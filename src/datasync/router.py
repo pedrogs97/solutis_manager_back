@@ -1,11 +1,11 @@
 """Datasync routes"""
 
 import json
-import logging
 from typing import Union
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, Response, status
 from fastapi.responses import JSONResponse
+from loguru import logger
 
 from src.auth.models import UserModel
 from src.backends import PermissionChecker
@@ -13,8 +13,6 @@ from src.config import NOT_ALLOWED
 from src.datasync.scheduler import SchedulerService
 
 datasync_router = APIRouter(prefix="/fetch-totvs", tags=["Fetch"])
-
-logger = logging.getLogger(__name__)
 
 
 @datasync_router.post("/")

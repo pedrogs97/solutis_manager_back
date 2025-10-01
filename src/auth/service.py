@@ -1,6 +1,5 @@
 """Auth service"""
 
-import logging
 import random
 import string
 from typing import List, Union
@@ -9,6 +8,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -35,8 +35,6 @@ from src.datasync.models import (
 )
 from src.log.services import LogService
 from src.people.models import EmployeeModel
-
-logger = logging.getLogger(__name__)
 
 service_log = LogService()
 
@@ -893,7 +891,7 @@ class GroupService:
             authenticated_user,
             db_session,
         )
-        logger.info("New group add. %s", str(new_group_db))
+        logger.info("New group add. {}", str(new_group_db))
 
         return self.serialize_group(new_group_db)
 

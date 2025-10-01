@@ -1,10 +1,10 @@
 """Methods to access database"""
 
 import json
-import logging
 from datetime import date, datetime
 from typing import List, Optional, Type, Union
 
+from loguru import logger
 from pydantic_core import ValidationError
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
@@ -35,8 +35,6 @@ from src.datasync.schemas import (
 )
 from src.invoice.models import InvoiceModel
 from src.people.models import EmployeeModel
-
-logger = logging.getLogger(__name__)
 
 
 def set_last_sync(count_new_values: int, elapsed_time: float, model: str) -> None:

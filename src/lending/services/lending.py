@@ -1,13 +1,13 @@
 """Lenging service"""
 
 import locale
-import logging
 from typing import List
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -44,7 +44,6 @@ from src.people.schemas import (
     EmployeeSerializerSchema,
 )
 
-logger = logging.getLogger(__name__)
 service_log = LogService()
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 

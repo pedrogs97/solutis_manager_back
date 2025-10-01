@@ -1,14 +1,11 @@
 """Asset scripts"""
 
-import logging
-
+from loguru import logger
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import and_, or_
 
 from src.asset.models import AssetModel, AssetStatusHistoricModel
 from src.lending.models import LendingModel
-
-logger = logging.getLogger(__name__)
 
 
 def fix_asset_status(db_session: Session):

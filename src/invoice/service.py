@@ -1,6 +1,5 @@
 """Invoice service"""
 
-import logging
 import os
 from datetime import date
 
@@ -8,6 +7,7 @@ from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -21,7 +21,6 @@ from src.invoice.schemas import InvoiceSerializerSchema, NewInvoiceSchema
 from src.log.services import LogService
 from src.utils import upload_file
 
-logger = logging.getLogger(__name__)
 service_log = LogService()
 
 

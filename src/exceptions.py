@@ -1,14 +1,12 @@
 """Base exceptions"""
 
-import logging
 import traceback
 
 from fastapi import status
 from fastapi.responses import JSONResponse
+from loguru import logger
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
-
-logger = logging.getLogger(__name__)
 
 
 def get_user_exception() -> HTTPException:
@@ -59,11 +57,9 @@ async def default_response_exception(
             f"file: {file_name} - "
             f"line: {line_number} - "
             f"function: {function_name}"
+            f" - extra: {extra}"
         )
-        logger.error(
-            msg=message_error,
-            extra=extra,
-        )
+        logger.error(message_error)
     else:
         logger.warning(
             "Status {}: {} - view: {}", error_status_code, error_detail, request.url

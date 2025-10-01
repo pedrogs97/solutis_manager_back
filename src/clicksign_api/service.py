@@ -1,11 +1,10 @@
 import json
-import logging
 from datetime import date
 from typing import List, Optional, Tuple
 
 import requests
-from sqlalchemy.orm import Session
 from loguru import logger
+from sqlalchemy.orm import Session
 
 from src.config import CLICKSIGN_TOKEN, CLICKSIGN_URL, DISABLE_CLICKSIGN
 from src.lending.services.lending import LendingService
