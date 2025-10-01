@@ -1,10 +1,8 @@
 """Main Service"""
 
-import logging
 import os
 import tracemalloc
 from contextlib import asynccontextmanager
-from logging.handlers import TimedRotatingFileHandler
 
 from apscheduler.jobstores.base import ConflictingIdError
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -13,6 +11,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from loguru import logger
 from sqlalchemy import exc, text
 from sqlalchemy.orm import Session
 
@@ -20,16 +19,7 @@ from src.asset.router import asset_router
 from src.auth.router import auth_router
 from src.auth.service import create_initial_data, create_permissions, create_super_user
 from src.backends import get_db_session
-from src.config import (
-    BASE_API,
-    BASE_DIR,
-    DATE_FORMAT,
-    DB_SERVER,
-    FORMAT,
-    LOG_FILENAME,
-    ORIGINS,
-    SCHEDULER_ACTIVE,
-)
+from src.config import BASE_API, BASE_DIR, DB_SERVER, ORIGINS, SCHEDULER_ACTIVE
 from src.database import ExternalDatabase, get_database_url
 from src.datasync.router import datasync_router
 from src.datasync.scheduler import SchedulerService
@@ -51,16 +41,17 @@ tracemalloc.start()
 if not os.path.exists(f"{BASE_DIR}/logs/"):
     os.makedirs(f"{BASE_DIR}/logs/")
 
-file_handler = TimedRotatingFileHandler(LOG_FILENAME, when="midnight")
-file_handler.suffix = "bkp"
-logging.basicConfig(
-    encoding="utf-8",
-    level=logging.DEBUG,
-    format=FORMAT,
-    datefmt=DATE_FORMAT,
-    handlers=[file_handler],
+# Configurar loguru
+logger.remove()  # Remove handler padrão
+logger.add(
+    f"{BASE_DIR}/logs/{{time:YYYY-MM-DD}}.log",
+    rotation="00:00",  # Rotaciona à meia-noite
+    retention="30 days",  # Mantém logs por 30 dias
+    level="INFO",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}",
+    backtrace=True,
+    diagnose=True,
 )
-logger = logging.getLogger(__name__)
 
 exception_handlers = {
     500: default_response_exception,
@@ -154,7 +145,7 @@ async def lifespan(app: FastAPI):
     # scheduler.schedule_job()
     yield
     # shutdown scheduler
-    logging.info("Start shutdown")
+    logger.info("Start shutdown")
     scheduler.remove_job("datasync")
     scheduler.shutdown()
     # close external database

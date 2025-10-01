@@ -1,10 +1,10 @@
 """Verification service"""
 
-import logging
 from typing import List
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
+from loguru import logger
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -27,7 +27,6 @@ from src.verification.schemas import (
     VerificationTypeSerializerSchema,
 )
 
-logger = logging.getLogger(__name__)
 service_log = LogService()
 
 

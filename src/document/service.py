@@ -1,7 +1,6 @@
 """Lenging service"""
 
 import locale
-import logging
 import os
 from datetime import date
 from typing import Dict, List, Optional, Union
@@ -10,6 +9,7 @@ from fastapi import UploadFile, status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from src.asset.models import AssetModel, AssetStatusModel
 from src.asset.service import AssetService
 from src.auth.models import UserModel
+from src.backends import get_db_session
 from src.clicksign_api.service import ClickSignService
 from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
 from src.document.filters import DocumentFilter
@@ -55,7 +56,6 @@ from src.utils import (
 )
 from src.verification.models import VerificationAnswerModel
 
-logger = logging.getLogger(__name__)
 service_log = LogService()
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
@@ -558,7 +558,7 @@ class DocumentService:
             verification_answers = self.__get_verification_answers(
                 lending_verification_answers
             )
-
+            db_session.close()
             if new_lending_doc.legal_person:
                 contract_path = create_lending_contract_pj(
                     NewLendingPjContextSchema(
@@ -697,7 +697,7 @@ class DocumentService:
                 sign_envelope_id=envelope_id,
             )
             new_doc.doc_type = doc_type
-
+            db_session = get_db_session()
             db_session.add(new_doc)
             db_session.commit()
             db_session.flush()

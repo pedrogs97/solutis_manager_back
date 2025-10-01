@@ -50,15 +50,7 @@ TIMEZONE = os.getenv("TIMEZONE", "America/Bahia")
 DEBUG = os.getenv("DEBUG")
 SCHEDULER_ACTIVE = os.getenv("SCHEDULER_ACTIVE")
 
-# Logging config.
-
-FORMAT = (
-    "[%(asctime)s][%(levelname)s] %(name)s "
-    "%(filename)s:%(funcName)s:%(lineno)d | %(message)s"
-)
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-date_str = datetime.now().strftime("%Y-%m-%d")
-LOG_FILENAME = f"{BASE_DIR}/logs/{date_str}.log"
 
 DEFAULT_DATE_FORMAT = "%d/%m/%Y"
 DEFAULT_DATE_TIME_FORMAT = "%d/%m/%Y %H:%M:%S"
@@ -67,7 +59,7 @@ SECRET_KEY = "KlgH6AzYDeZeGwD288to79I3vTHT8wp7"
 ALGORITHM = "HS256"
 
 ACCESS_TOKEN_EXPIRE_HOURS = 8
-REFRESH_TOKEN_EXPIRE_DAYS = 2
+REFRESH_TOKEN_EXPIRE_DAYS = 1
 STORAGE_DIR = "storage" if DEBUG else "/storage"
 CONTRACT_UPLOAD_DIR = os.path.join(STORAGE_DIR, "contracts")
 TERM_UPLOAD_DIR = os.path.join(STORAGE_DIR, "terms")

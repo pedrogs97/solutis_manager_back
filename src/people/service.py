@@ -1,6 +1,5 @@
 """People service"""
 
-import logging
 import random
 from typing import List, Union
 
@@ -8,6 +7,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -53,7 +53,6 @@ from src.term.schemas import (
     TermItemSerializerSchema,
 )
 
-logger = logging.getLogger(__name__)
 service_log = LogService()
 
 

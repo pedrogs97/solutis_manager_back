@@ -1,12 +1,12 @@
 """Proxy service for external API with permission validation"""
 
 import asyncio
-import logging
 from typing import Any, Dict, Optional
 
 import httpx
 from fastapi import HTTPException, Request, status
 from fastapi.responses import Response
+from loguru import logger
 
 from src.auth.models import UserModel
 from src.proxy.config import (
@@ -16,8 +16,6 @@ from src.proxy.config import (
     get_external_service_url,
     is_valid_service,
 )
-
-logger = logging.getLogger(__name__)
 
 # Constants
 INSUFFICIENT_PERMISSIONS_MSG = "Insufficient permissions"

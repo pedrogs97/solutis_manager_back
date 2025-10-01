@@ -1,7 +1,6 @@
 """Base backends"""
 
 import asyncio
-import logging
 import smtplib
 import time
 from datetime import datetime, timedelta
@@ -15,6 +14,7 @@ from fastapi import Depends, status
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import ExpiredSignatureError, PyJWTError
+from loguru import logger
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
@@ -36,8 +36,6 @@ from src.exceptions import get_user_exception, token_exception
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login/")
-
-logger = logging.getLogger(__name__)
 
 
 def get_db_session():

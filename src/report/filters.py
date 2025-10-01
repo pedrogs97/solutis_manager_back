@@ -1,9 +1,9 @@
 """Report filters"""
 
-import logging
 from typing import List, Optional, Union
 
 from fastapi_filter.contrib.sqlalchemy import Filter
+from loguru import logger
 from sqlalchemy import Select
 from sqlalchemy.orm import Query
 from sqlalchemy.sql.expression import and_, or_
@@ -21,8 +21,6 @@ from src.maintenance.models import (
 )
 from src.people.models import EmployeeModel
 from src.utils import get_start_and_end_datetime
-
-logger = logging.getLogger(__name__)
 
 
 class LendingReportFilter(Filter):
