@@ -113,7 +113,7 @@ class InvoiceService:
             db_session,
         )
 
-        logger.info("New Invoice. %s", str(new_invoice_db))
+        logger.info("New Invoice. {}", str(new_invoice_db))
 
         return self.serialize_invoice(new_invoice_db)
 
@@ -164,7 +164,7 @@ class InvoiceService:
             db_session,
         )
 
-        logger.info("Update Invoice. %s", str(invoice_db))
+        logger.info("Update Invoice. {}", str(invoice_db))
 
         return self.serialize_invoice(invoice_db)
 

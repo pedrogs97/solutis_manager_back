@@ -206,7 +206,7 @@ class VerificationService:
             authenticated_user,
             db_session,
         )
-        logger.info("New verification. %s", str(new_verification))
+        logger.info("New verification. {}", str(new_verification))
 
         return self.serialize_verification(new_verification)
 
@@ -276,7 +276,7 @@ class VerificationService:
             authenticated_user,
             db_session,
         )
-        logger.info("New answers verification. %s", str(len(new_answers)))
+        logger.info("New answers verification. {}", str(len(new_answers)))
 
         return [
             self.serialize_answer_verification(new_answer).model_dump(by_alias=True)

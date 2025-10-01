@@ -1,4 +1,4 @@
-""" Asset scripts """
+"""Asset scripts"""
 
 import logging
 
@@ -28,7 +28,7 @@ def fix_asset_status(db_session: Session):
             )
         )
     )
-    logger.info("Updating %s assets status...", all_assets_to_update.count())
+    logger.info("Updating {} assets status...", all_assets_to_update.count())
     print(f"Updating {all_assets_to_update.count()} assets status...")
     assets_to_update = []
     history_to_create = []
@@ -65,7 +65,7 @@ def fix_asset_historic(db_session: Session):
         )
     )
     print(f"Updating {all_assets_to_update.count()} assets historic...")
-    logger.info("Updating %s assets historic...", all_assets_to_update.count())
+    logger.info("Updating {} assets historic...", all_assets_to_update.count())
     history_to_create = []
     for asset, lending_status_id, created_at, updated_at in all_assets_to_update.all():
         print(asset.id)
@@ -95,7 +95,7 @@ def fix_asset_pattern_ios(db_session: Session):
     )
 
     print(f"Updating {all_assets_to_update.count()} assets pattern ios...")
-    logger.info("Updating %s assets pattern ios...", all_assets_to_update.count())
+    logger.info("Updating {} assets pattern ios...", all_assets_to_update.count())
     assets_to_update = []
     for asset in all_assets_to_update.all():
         asset.pattern = "MACBOOK"

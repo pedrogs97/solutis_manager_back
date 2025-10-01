@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 class SchedulerService:
     """Scheduler Service class"""
 
-    TIME_INFO = "Execution time: %s ms"
+    TIME_INFO = "Execution time: {} ms"
 
     SQL_PPESSOA = """SELECT
 	p.CODIGO, p.NOME, p.DTNASCIMENTO, c.DESCRICAO AS CIVIL, s.DESCRICAO AS SEXO,

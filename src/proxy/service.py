@@ -21,7 +21,7 @@ from src.proxy.config import (
 INSUFFICIENT_PERMISSIONS_MSG = "Insufficient permissions"
 DEFAULT_MEDIA_TYPE = "application/json"
 PROXY_ERROR_PREFIX = "Proxy error: "
-HTTP_ERROR_LOG_MSG = "HTTP error occurred: %s"
+HTTP_ERROR_LOG_MSG = "HTTP error occurred: {}"
 
 
 class ProxyService:
@@ -43,14 +43,14 @@ class ProxyService:
     def _handle_request_errors(self, attempt: int, url: str, error: Exception):
         """Handle request errors with appropriate exceptions"""
         if isinstance(error, httpx.TimeoutException):
-            logger.warning("Timeout on attempt %d for %s", attempt + 1, url)
+            logger.warning("Timeout on attempt %d for {}", attempt + 1, url)
             if attempt == self.retry_attempts - 1:
                 raise HTTPException(
                     status_code=status.HTTP_504_GATEWAY_TIMEOUT,
                     detail="External service timeout",
                 )
         elif isinstance(error, httpx.ConnectError):
-            logger.error("Connection error on attempt %d for %s", attempt + 1, url)
+            logger.error("Connection error on attempt %d for {}", attempt + 1, url)
             if attempt == self.retry_attempts - 1:
                 raise HTTPException(
                     status_code=status.HTTP_502_BAD_GATEWAY,
@@ -58,7 +58,7 @@ class ProxyService:
                 )
         else:
             logger.error(
-                "Unexpected error on attempt %d for %s: %s",
+                "Unexpected error on attempt %d for {}: {}",
                 attempt + 1,
                 url,
                 error,
@@ -114,7 +114,7 @@ class ProxyService:
             for attempt in range(self.retry_attempts):
                 try:
                     logger.info(
-                        "Proxying %s request to %s (attempt %d)",
+                        "Proxying {} request to {} (attempt %d)",
                         method,
                         url,
                         attempt + 1,

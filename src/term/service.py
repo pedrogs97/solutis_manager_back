@@ -275,7 +275,7 @@ class TermService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Term. %s", str(new_term_db))
+        logger.info("New Term. {}", str(new_term_db))
 
         return self.serialize_term(new_term_db)
 
@@ -309,7 +309,7 @@ class TermService:
             authenticated_user,
             db_session,
         )
-        logger.info("Update Term. %s", str(term))
+        logger.info("Update Term. {}", str(term))
 
         return self.serialize_term(term)
 
@@ -336,10 +336,10 @@ class TermService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("Delete term. %s", str(term))
+            logger.info("Delete term. {}", str(term))
         except TypeError as error:
             db_session.rollback()
-            logger.error("Error deleting term. %s", error)
+            logger.error("Error deleting term. {}", error)
             raise HTTPException(
                 detail={
                     "field": "termId",

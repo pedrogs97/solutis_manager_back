@@ -158,7 +158,7 @@ class LendingReportFilter(Filter):
                 )
                 query = query.filter(CostCenterTOTVSModel.id.in_(cost_center_ids_list))
         except ValueError as e:
-            logger.warning("Error filtering query: %s", e)
+            logger.warning("Error filtering query: {}", e)
         return query
 
 
@@ -250,7 +250,7 @@ class AssetReportFilter(Filter):
                 else:
                     query = query.filter(AssetModel.assurance_date.is_(None))
         except ValueError as e:
-            logger.warning("Error filtering query: %s", e)
+            logger.warning("Error filtering query: {}", e)
 
         return query
 
@@ -330,7 +330,7 @@ class AssetStockReportFilter(Filter):
                 query = query.filter(AssetModel.status_id.in_(status_ids_list))
 
         except ValueError as e:
-            logger.warning("Error filtering query: %s", e)
+            logger.warning("Error filtering query: {}", e)
 
         return query
 
@@ -433,7 +433,7 @@ class AssetPatternFilter(Filter):
                 )
                 query = query.filter(AssetModel.type_id.in_(asset_type_ids_list))
         except ValueError as e:
-            logger.warning("Error filtering query: %s", e)
+            logger.warning("Error filtering query: {}", e)
 
         return query
 
@@ -515,7 +515,7 @@ class MaintenanceReportFilter(Filter):
                 )
 
         except ValueError as e:
-            logger.warning("Error filtering query: %s", e)
+            logger.warning("Error filtering query: {}", e)
 
         return query
 
@@ -568,6 +568,6 @@ class MaintenanceReportFilter(Filter):
                 query = query.filter(AssetModel.status_id.in_(status_list))
 
         except ValueError as e:
-            logger.warning("Error filtering query: %s", e)
+            logger.warning("Error filtering query: {}", e)
 
         return query

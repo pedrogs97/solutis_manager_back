@@ -297,7 +297,7 @@ class EmployeeService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Employee. %s", str(new_emplyoee))
+        logger.info("New Employee. {}", str(new_emplyoee))
         return self.serialize_employee(new_emplyoee)
 
     def update_employee(
@@ -336,7 +336,7 @@ class EmployeeService:
             authenticated_user,
             db_session,
         )
-        logger.info("Updated Employee. %s", str(employee))
+        logger.info("Updated Employee. {}", str(employee))
         return self.serialize_employee(employee)
 
     def get_employee(
@@ -449,7 +449,7 @@ class EmployeeService:
                     .union(employee_list)
                 )
             except ValueError:
-                logger.warning("Invalid ids. %s", ids)
+                logger.warning("Invalid ids. {}", ids)
 
         if fields == "":
             params = Params(page=page, size=size)
@@ -505,7 +505,7 @@ class EmployeeService:
             authenticated_user,
             db_session,
         )
-        logger.info("Employee transformed into legal person. %s", str(employee))
+        logger.info("Employee transformed into legal person. {}", str(employee))
         return self.serialize_employee(employee)
 
 

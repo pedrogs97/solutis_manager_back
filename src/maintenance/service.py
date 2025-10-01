@@ -346,7 +346,7 @@ class MaintenanceService:
             authenticated_user,
             db_session,
         )
-        logger.info("New maintenance. %s", str(new_maintenance))
+        logger.info("New maintenance. {}", str(new_maintenance))
 
         return self.serialize_maintenance(new_maintenance)
 
@@ -438,7 +438,7 @@ class MaintenanceService:
             authenticated_user,
             db_session,
         )
-        logger.info("Update maintenance. %s", str(maintenance))
+        logger.info("Update maintenance. {}", str(maintenance))
 
         return self.serialize_maintenance(maintenance)
 
@@ -521,7 +521,7 @@ class MaintenanceService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("Upload Attachment. %s", str(attch_added))
+            logger.info("Upload Attachment. {}", str(attch_added))
             return_list.append(self.serialize_maintenance_attachment(attch_added))
 
         return return_list
@@ -567,7 +567,7 @@ class MaintenanceService:
                 )
                 success, mail_to = email_client.send_message()
                 if not success:
-                    logger.error("Error sending email to %s", mail_to)
+                    logger.error("Error sending email to {}", mail_to)
         db_session.close()
 
 
@@ -746,7 +746,7 @@ class UpgradeService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Upgrade. %s", str(new_upgrade))
+        logger.info("New Upgrade. {}", str(new_upgrade))
 
         return self.serialize_upgrade(new_upgrade)
 
@@ -830,7 +830,7 @@ class UpgradeService:
             authenticated_user,
             db_session,
         )
-        logger.info("Update Upgrade. %s", str(upgrade))
+        logger.info("Update Upgrade. {}", str(upgrade))
 
         return self.serialize_upgrade(upgrade)
 
@@ -872,7 +872,7 @@ class UpgradeService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("Upload Attachment. %s", str(attch_added))
+            logger.info("Upload Attachment. {}", str(attch_added))
             return_list.append(self.serialize_upgrade_attachment(attch_added))
 
         return return_list
@@ -916,5 +916,5 @@ class UpgradeService:
                 )
                 success, mail_to = email_client.send_message()
                 if not success:
-                    logger.error("Error sending email to %s", mail_to)
+                    logger.error("Error sending email to {}", mail_to)
         db_session.close()

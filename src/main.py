@@ -81,7 +81,7 @@ def check_upgrade():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifesapn app"""
-    logger.info("Service Version %s", app.version)
+    logger.info("Service Version {}", app.version)
     create_permissions()
     create_super_user()
     create_initial_data()
@@ -89,7 +89,7 @@ async def lifespan(app: FastAPI):
     scheduler = BackgroundScheduler(
         jobstores=jobstores,
     )
-    logger.info("Current jobs %s", scheduler.get_jobs())
+    logger.info("Current jobs {}", scheduler.get_jobs())
     try:
         trigger = "cron"
         hour = "15,21,3"
@@ -224,7 +224,7 @@ def sqlserver_check():
         return response
     # pylint: disable=broad-except
     except Exception as err:
-        logger.error("Internal error. %s", err.args[1])
+        logger.error("Internal error. {}", err.args[1])
         return f"{response}"
 
 

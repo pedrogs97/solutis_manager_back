@@ -66,6 +66,6 @@ async def default_response_exception(
         )
     else:
         logger.warning(
-            "Status %s: %s - view: %s", error_status_code, error_detail, request.url
+            "Status {}: {} - view: {}", error_status_code, error_detail, request.url
         )
     return JSONResponse(content=error_detail, status_code=error_status_code)

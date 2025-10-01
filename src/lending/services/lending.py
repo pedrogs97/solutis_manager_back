@@ -393,12 +393,12 @@ class LendingService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("New Lending. %s", str(new_lending_db))
+            logger.info("New Lending. {}", str(new_lending_db))
 
             return self.serialize_lending(new_lending_db)
         except TypeError as error:
             db_session.rollback()
-            logger.error("Error creating lending. %s", error)
+            logger.error("Error creating lending. {}", error)
             raise HTTPException(
                 detail={
                     "field": "employeeId",
@@ -442,7 +442,7 @@ class LendingService:
             authenticated_user,
             db_session,
         )
-        logger.info("Update Lending. %s", str(lending))
+        logger.info("Update Lending. {}", str(lending))
 
         return self.serialize_lending(lending)
 
@@ -542,7 +542,7 @@ class LendingService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Witness. %s", str(new_witness))
+        logger.info("New Witness. {}", str(new_witness))
 
         return self.serialize_witness(new_witness)
 
@@ -599,10 +599,10 @@ class LendingService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("Delete lending. %s", str(lending))
+            logger.info("Delete lending. {}", str(lending))
         except TypeError as error:
             db_session.rollback()
-            logger.error("Error deleting lending. %s", error)
+            logger.error("Error deleting lending. {}", error)
             raise HTTPException(
                 detail={
                     "field": "lendingId",

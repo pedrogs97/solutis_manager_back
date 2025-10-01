@@ -33,5 +33,5 @@ async def force_fetch_totvs(
 
     scheduler = SchedulerService(force=True)
     background_tasks.add_task(scheduler.force_fetch)
-    logger.info("recived from ip: %s", request.client.host)
+    logger.info("recived from ip: {}", request.client.host)
     return Response(content=json.dumps({"message": "Sent fetch data"}))

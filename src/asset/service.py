@@ -366,7 +366,7 @@ class AssetService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Asset. %s", str(new_asset))
+        logger.info("New Asset. {}", str(new_asset))
 
         return self.serialize_asset(new_asset)
 
@@ -416,7 +416,7 @@ class AssetService:
             authenticated_user,
             db_session,
         )
-        logger.info("Updated Asset. %s", str(asset))
+        logger.info("Updated Asset. {}", str(asset))
         return self.serialize_asset(asset)
 
     def inactivate_asset(
@@ -443,7 +443,7 @@ class AssetService:
             authenticated_user,
             db_session,
         )
-        logger.info("Inactivate Asset. %s", str(asset))
+        logger.info("Inactivate Asset. {}", str(asset))
         return self.serialize_asset(asset)
 
     def get_asset(self, asset_id: int, db_session: Session) -> AssetSerializerSchema:

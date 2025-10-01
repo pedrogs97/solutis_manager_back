@@ -74,7 +74,7 @@ class InventoryService:
         )
         if not employee:
             logger.info(
-                "Employee not found - %s - %s",
+                "Employee not found - {} - {}",
                 data.registration,
                 data.birthday,
             )
@@ -253,7 +253,7 @@ class InventoryService:
 
         self.db_session.commit()
         logger.info(
-            "Inventory answer created successfully - %s - Employee: %s",
+            "Inventory answer created successfully - {} - Employee: {}",
             str(inventory),
             employee_id,
         )
@@ -497,4 +497,4 @@ class InventoryService:
 
             await self.process_email_queue(email_queue)
         except Exception as error:
-            logger.error("Error sending email: %s", error)
+            logger.error("Error sending email: {}", error)

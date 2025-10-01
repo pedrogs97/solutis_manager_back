@@ -710,7 +710,7 @@ class DocumentService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("New Document. %s", str(new_doc))
+            logger.info("New Document. {}", str(new_doc))
 
             db_session.add(asset)
             db_session.commit()
@@ -732,12 +732,12 @@ class DocumentService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("New Document add to Lending. %s", str(current_lending))
+            logger.info("New Document add to Lending. {}", str(current_lending))
 
             return self.serialize_document(new_doc)
         except Exception as e:
             db_session.rollback()
-            logger.error("Error creating contract: %s", e)
+            logger.error("Error creating contract: {}", e)
             raise
 
     def recreate_contract(
@@ -936,7 +936,7 @@ class DocumentService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("New Document. %s", str(new_doc))
+            logger.info("New Document. {}", str(new_doc))
 
             current_lending.document = new_doc
             current_lending.signer_email = recreate_lending_doc.employee_signer
@@ -956,7 +956,7 @@ class DocumentService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("Recreate Document add to Lending. %s", str(current_lending))
+            logger.info("Recreate Document add to Lending. {}", str(current_lending))
 
             return self.serialize_document(new_doc)
         except ValidationError as error:
@@ -1146,7 +1146,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Document. %s", str(new_doc))
+        logger.info("New Document. {}", str(new_doc))
 
         AssetService().update_asset_status(
             asset, db_session.query(AssetStatusModel).get(1), db_session
@@ -1171,7 +1171,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Document add to Lending. %s", str(current_lending))
+        logger.info("New Document add to Lending. {}", str(current_lending))
 
         return self.serialize_document(new_doc)
 
@@ -1332,7 +1332,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Document. %s", str(new_doc))
+        logger.info("New Document. {}", str(new_doc))
 
         current_lending.document = new_doc
         current_lending.signer_email = recreate_lending_doc.employee_signer
@@ -1350,7 +1350,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("Recreate Document add to Lending. %s", str(current_lending))
+        logger.info("Recreate Document add to Lending. {}", str(current_lending))
 
         return self.serialize_document(new_doc)
 
@@ -1419,7 +1419,7 @@ class DocumentService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("Deleted Document. %s", str(old_doc))
+            logger.info("Deleted Document. {}", str(old_doc))
 
         lending.signed_date = date.today()
         lending.document = new_doc
@@ -1435,7 +1435,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("Upload Document signed. %s", str(new_doc))
+        logger.info("Upload Document signed. {}", str(new_doc))
 
         return self.serialize_document(new_doc)
 
@@ -1528,7 +1528,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Document. %s", str(new_doc))
+        logger.info("New Document. {}", str(new_doc))
 
         current_term.document = new_doc
         current_term.number = new_code
@@ -1546,7 +1546,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Document add to Term. %s", str(current_term))
+        logger.info("New Document add to Term. {}", str(current_term))
 
         return self.serialize_document(new_doc)
 
@@ -1638,7 +1638,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Document. %s", str(new_doc))
+        logger.info("New Document. {}", str(new_doc))
 
         current_term.document_revoke = new_doc
         current_term.status = term_pending
@@ -1657,7 +1657,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("New Document add to Term. %s", str(current_term))
+        logger.info("New Document add to Term. {}", str(current_term))
 
         return self.serialize_document(new_doc)
 
@@ -1718,7 +1718,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("Upload Document signed. %s", str(new_doc))
+        logger.info("Upload Document signed. {}", str(new_doc))
 
         return self.serialize_document(new_doc)
 
@@ -1786,7 +1786,7 @@ class DocumentService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("Deleted Document. %s", str(old_doc))
+            logger.info("Deleted Document. {}", str(old_doc))
 
         lending.revoke_signed_date = date.today()
         lending.document_revoke = new_doc
@@ -1802,7 +1802,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("Upload Document renvoke. %s", str(new_doc))
+        logger.info("Upload Document renvoke. {}", str(new_doc))
 
         return self.serialize_document(new_doc)
 
@@ -1863,7 +1863,7 @@ class DocumentService:
             authenticated_user,
             db_session,
         )
-        logger.info("Upload Document renvoke. %s", str(new_doc))
+        logger.info("Upload Document renvoke. {}", str(new_doc))
 
         return self.serialize_document(new_doc)
 
@@ -1990,11 +1990,11 @@ class DocumentService:
                 authenticated_user,
                 db_session,
             )
-            logger.info("New Document. %s", str(new_doc))
+            logger.info("New Document. {}", str(new_doc))
             return new_doc
         except ValidationError as error:
             db_session.rollback()
-            logger.error("Error download verification document %s", error)
+            logger.error("Error download verification document {}", error)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={"field": "lendingId", "message": "Comodato sem número"},

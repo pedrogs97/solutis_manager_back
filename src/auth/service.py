@@ -108,7 +108,7 @@ class UserSerivce:
                 result_str += "".join(random.choice(digits))
 
         if DEBUG:
-            logger.debug("New pass. %s", result_str)
+            logger.debug("New pass. {}", result_str)
 
         return result_str
 
@@ -204,7 +204,7 @@ class UserSerivce:
             authenticated_user,
             db_session,
         )
-        logger.info("New user add. %s", str(new_user_db))
+        logger.info("New user add. {}", str(new_user_db))
 
         name = (
             new_user_db.employee.full_name
@@ -473,12 +473,12 @@ class UserSerivce:
                     authenticated_user,
                     db_session,
                 )
-                logger.info("Updates user. %s", str(user))
+                logger.info("Updates user. {}", str(user))
         except HTTPException as http_exc:
             raise http_exc
         except Exception as exc:
             msg = f"{exc.args[0]}"
-            logger.warning("Could not update user. Error: %s", msg)
+            logger.warning("Could not update user. Error: {}", msg)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error": msg}
             ) from exc
@@ -525,7 +525,7 @@ class UserSerivce:
             authenticated_user,
             db_session,
         )
-        logger.info("Password updated. %s", str(authenticated_user))
+        logger.info("Password updated. {}", str(authenticated_user))
 
     def get_user(self, user_id: int, db_session: Session) -> UserSerializerSchema:
         """
@@ -653,7 +653,7 @@ def create_super_user():
 
     except Exception as exc:
         msg = f"{exc.args[0]}"
-        logger.warning("Could not create super user. Error: %s", msg)
+        logger.warning("Could not create super user. Error: {}", msg)
     finally:
         db_session.close_all()
 
@@ -708,7 +708,7 @@ def create_permissions():
         db_session.commit()
     except Exception as exc:
         msg = f"{exc.args[0]}"
-        logger.warning("Could not create permissions. Error: %s", msg)
+        logger.warning("Could not create permissions. Error: {}", msg)
     finally:
         db_session.close_all()
 
@@ -782,7 +782,7 @@ def create_initial_data():
 
     except Exception as exc:
         msg = f"{exc.args[0]}"
-        logger.warning("Could not create initial data. Error: %s", msg)
+        logger.warning("Could not create initial data. Error: {}", msg)
     finally:
         db_session.close_all()
 
@@ -1022,7 +1022,7 @@ class GroupService:
                     authenticated_user,
                     db_session,
                 )
-                logger.info("Updates group. %s", str(group))
+                logger.info("Updates group. {}", str(group))
             return self.serialize_group(group)
 
         except HTTPException as http_exc:
@@ -1031,7 +1031,7 @@ class GroupService:
         except Exception as exc:
             db_session.close()
             msg = f"{exc.args[0]}"
-            logger.warning("Could not update group. Error: %s", msg)
+            logger.warning("Could not update group. Error: {}", msg)
         return self.serialize_group(group)
 
     def get_group(self, group_id: int, db_session: Session) -> GroupSerializerSchema:

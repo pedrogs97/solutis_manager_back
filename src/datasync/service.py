@@ -53,7 +53,7 @@ def set_last_sync(count_new_values: int, elapsed_time: float, model: str) -> Non
         db_session.commit()
 
     except TypeError as err:
-        logger.warning("Error: %s", err.args[0])
+        logger.warning("Error: {}", err.args[0])
     finally:
         db_session.close()
 
@@ -108,7 +108,7 @@ def totvs_to_employee_schema(
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
-        logger.warning("Error: Field: %s", error_msg)
+        logger.warning("Error: Field: {}", error_msg)
         return None
 
 
@@ -127,7 +127,7 @@ def totvs_to_educational_level_schema(
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
-        logger.warning("Error: Field: %s", error_msg)
+        logger.warning("Error: Field: {}", error_msg)
         return None
 
 
@@ -146,7 +146,7 @@ def totvs_to_marital_status_schema(
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
-        logger.warning("Error: Field: %s", error_msg)
+        logger.warning("Error: Field: {}", error_msg)
         return None
 
 
@@ -165,7 +165,7 @@ def totvs_to_gender_schema(
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
-        logger.warning("Error: Field: %s", error_msg)
+        logger.warning("Error: Field: {}", error_msg)
         return None
 
 
@@ -184,7 +184,7 @@ def totvs_to_nationality_schema(
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
-        logger.warning("Error: Field: %s", error_msg)
+        logger.warning("Error: Field: {}", error_msg)
         return None
 
 
@@ -204,7 +204,7 @@ def totvs_to_cost_center_schema(
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
-        logger.warning("Error: Field: %s", error_msg)
+        logger.warning("Error: Field: {}", error_msg)
         return None
 
 
@@ -232,7 +232,7 @@ def totvs_to_asset_type_schema(
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
-        logger.warning("Error: Field: %s", error_msg)
+        logger.warning("Error: Field: {}", error_msg)
         return None
 
 
@@ -298,7 +298,7 @@ def totvs_to_asset_schema(
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
-        logger.warning("Error: Field: %s", error_msg)
+        logger.warning("Error: Field: {}", error_msg)
         return None
 
 
@@ -317,7 +317,7 @@ def totvs_to_role_schema(
         )
     except ValidationError as err:
         error_msg = f"Field: {err.args[0]} Message: {err.args[1]}"
-        logger.warning("Error: Field: %s", error_msg)
+        logger.warning("Error: Field: {}", error_msg)
         return None
 
 
@@ -381,20 +381,20 @@ def insert(schema: BaseTotvsSchema, model_type: Type, identifier="code") -> None
             )
         current_info = query.first()
         if current_info:
-            logger.info("Update: %s", str(new_info))
+            logger.info("Update: {}", str(new_info))
             for key, value in schema_dict.items():
                 if key != identifier:
                     setattr(current_info, key, value)
             db_session.add(current_info)
             db_session.commit()
         else:
-            logger.info("New: %s", str(new_info))
+            logger.info("New: {}", str(new_info))
             db_session.add(new_info)
             db_session.commit()
     except IntegrityError as err:
-        logger.warning("Error: %s", err.args[0])
+        logger.warning("Error: {}", err.args[0])
     except Exception as err:
-        logger.error("Error: %s", err.args[0])
+        logger.error("Error: {}", err.args[0])
     finally:
         db_session.close()
 
@@ -426,12 +426,16 @@ def update_employee_legal_person(
         "employer_address": employee_legal_person.employer_address,
         "employer_name": employee_legal_person.employer_name,
         "employer_contract_object": employee_legal_person.employer_contract_object,
-        "employer_contract_date": employee_legal_person.employer_contract_date.isoformat()
-        if employee_legal_person.employer_contract_date
-        else None,
-        "employer_end_contract_date": employee_legal_person.employer_end_contract_date.isoformat()
-        if employee_legal_person.employer_end_contract_date
-        else None,
+        "employer_contract_date": (
+            employee_legal_person.employer_contract_date.isoformat()
+            if employee_legal_person.employer_contract_date
+            else None
+        ),
+        "employer_end_contract_date": (
+            employee_legal_person.employer_end_contract_date.isoformat()
+            if employee_legal_person.employer_end_contract_date
+            else None
+        ),
         "updated_at": datetime.now().isoformat(),
     }
     json_old_legal_person = json.dumps(old_legal_person)
@@ -564,9 +568,9 @@ def update_employee_totvs(totvs_employees: List[EmployeeTotvsSchema]):
 
         db_session.add_all(updates)
         db_session.commit()
-        logger.info("Update Employee from TOTVS. Total=%s", str(len(updates)))
+        logger.info("Update Employee from TOTVS. Total={}", str(len(updates)))
     except Exception as err:
-        logger.error("Error: %s", err.args[0])
+        logger.error("Error: {}", err.args[0])
     finally:
         db_session.close()
 
@@ -701,8 +705,8 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
         db_session.add_all(updates)
         db_session.commit()
         db_session.flush()
-        logger.info("Update Assets from TOTVS. Total=%s", str(len(updates)))
+        logger.info("Update Assets from TOTVS. Total={}", str(len(updates)))
     except Exception as err:
-        logger.error("Error: %s", err.args[0])
+        logger.error("Error: {}", err.args[0])
     finally:
         db_session.close()

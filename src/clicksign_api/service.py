@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 
 import requests
 from sqlalchemy.orm import Session
+from loguru import logger
 
 from src.config import CLICKSIGN_TOKEN, CLICKSIGN_URL, DISABLE_CLICKSIGN
 from src.lending.services.lending import LendingService
@@ -39,8 +40,6 @@ class ClickSignService:
         },
     }
 
-    logger = logging.getLogger(__name__)
-
     def __create_envelop(self, signer_email: str) -> Optional[str]:
         """
         Create a new envelope
@@ -69,11 +68,9 @@ class ClickSignService:
         response_json = response.json()
         if response.status_code != 201:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.log(
-                logging.ERROR,
-                f"Error creating envelope: {error}",
-            )
+            logger.error("Error creating envelope: {}", error)
             return None
+        logger.info("Envelope created successfully: {}", response_json["data"]["id"])
         return response_json["data"]["id"]
 
     def __create_document(
@@ -109,11 +106,9 @@ class ClickSignService:
         response_json = response.json()
         if response.status_code != 201:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.log(
-                logging.ERROR,
-                f"Error creating document: {error}",
-            )
+            logger.error("Error creating document: {}", error)
             return None
+        logger.info("Document created successfully: {}", response_json["data"]["id"])
         return response_json["data"]["id"]
 
     def __cancel_document(self, envelope_id: str, document_id: str) -> bool:
@@ -154,10 +149,7 @@ class ClickSignService:
         document_canceled = response.status_code == 204
         if not document_canceled:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.log(
-                logging.ERROR,
-                f"Error canceling document: {error}",
-            )
+            logger.error("Error canceling document: {}", error)
 
         return document_canceled
 
@@ -209,10 +201,14 @@ class ClickSignService:
         response_json = response.json()
         if response.status_code != 201:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.error(
-                f"Error creating signer: {error}'. {taxpayer_id} - {mask_taxpayer_id(taxpayer_id)}",
+            logger.error(
+                "Error creating signer: {}. {} - {}",
+                error,
+                taxpayer_id,
+                mask_taxpayer_id(taxpayer_id),
             )
             return None
+        logger.info("Signer created successfully: {}", response_json["data"]["id"])
         return response_json["data"]["id"]
 
     def __get_signers(self, envelope_id: str) -> Optional[List[dict]]:
@@ -233,9 +229,7 @@ class ClickSignService:
 
         if response.status_code != 200:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.error(
-                f"Error listing signers: {error}",
-            )
+            logger.error("Error listing signers: {}", error)
             return None
 
         return [
@@ -262,9 +256,7 @@ class ClickSignService:
 
         if response.status_code != 204:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.error(
-                f"Error deleting signer: {error}",
-            )
+            logger.error("Error deleting signer: {}", error)
 
     def __add_requirements(self, envelope_id: str, doc_id: str, signer_id: str) -> None:
         """
@@ -308,10 +300,7 @@ class ClickSignService:
 
         if response.status_code != 201:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.log(
-                logging.ERROR,
-                f"Error add requirements: {error}",
-            )
+            logger.error("Error add requirements: {}", error)
 
     def __add_authorization(
         self, envelope_id: str, doc_id: str, signer_id: str
@@ -357,10 +346,7 @@ class ClickSignService:
 
         if response.status_code != 201:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.log(
-                logging.ERROR,
-                f"Error add authorization: {error}",
-            )
+            logger.error("Error add authorization: {}", error)
 
     def __add_observers(self, envelop_id: str) -> None:
         """
@@ -399,10 +385,7 @@ class ClickSignService:
             response_json = response.json()
             if response.status_code != 201:
                 error = response_json.get("errors", self.DEFAULT_ERROR)
-                self.logger.log(
-                    logging.ERROR,
-                    f"Error add observers: {error}",
-                )
+                logger.error("Error add observers: {}", error)
 
     def __activate_envelope(self, envelope_id: str) -> None:
         """
@@ -430,10 +413,7 @@ class ClickSignService:
 
         if response.status_code != 200:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.log(
-                logging.ERROR,
-                f"Error add requirements: {error}",
-            )
+            logger.error("Error add requirements: {}", error)
 
     def __send_notification(self, envelope_id: str, signer_id: str) -> None:
         """
@@ -448,7 +428,7 @@ class ClickSignService:
         notification_obj = {
             "data": {
                 "type": "notifications",
-                "attributes": {},
+                "attributes": {"message": None},
             }
         }
         payload = json.dumps(notification_obj)
@@ -459,10 +439,7 @@ class ClickSignService:
 
         if response.status_code != 201:
             error = response_json.get("errors", self.DEFAULT_ERROR)
-            self.logger.log(
-                logging.ERROR,
-                f"Error add requirements: {error}",
-            )
+            logger.error("Error add requirements: {}", error)
 
     def send_document_to_sign(
         self,
@@ -514,8 +491,8 @@ class ClickSignService:
 
         principal_signer_data = self.MAPPING_PRINCIPAL_SIGNERS.get(principal_signer)
         if not principal_signer_data:
-            self.logger.error(
-                f"Principal signer data not found for email: {principal_signer}"
+            logger.error(
+                "Principal signer data not found for email: {}", principal_signer
             )
             return None, None
 
@@ -536,8 +513,10 @@ class ClickSignService:
         signers_to_notify = [signer_id, principal_signer_id]
 
         if len(witnesses) > 2:
-            self.logger.warning(
-                f"Maximum 2 witnesses allowed, but {len(witnesses)} provided. Using first 2."
+            logger.warning(
+                "Maximum 2 witnesses allowed, but {} provided. Using first 2.".format(
+                    len(witnesses)
+                )
             )
             witnesses = witnesses[:2]
 
@@ -551,10 +530,7 @@ class ClickSignService:
                 if not all(
                     [witness_email, witness_name, witness_birthday, witness_taxpayer_id]
                 ):
-                    self.logger.log(
-                        logging.ERROR,
-                        "Missing witness information. Skipping witness.",
-                    )
+                    logger.error("Missing witness information. Skipping witness.")
                     continue
 
                 witness_id = self.__create_signer(
@@ -626,8 +602,10 @@ class ClickSignService:
 
         lending = LendingService().get_lending(lending_id, db_session)
         if not lending:
-            self.logger.error(
-                f"Lending with ID {lending_id} not found. Cannot recreate document.",
+            logger.error(
+                "Lending with ID {} not found. Cannot recreate document.".format(
+                    lending_id
+                )
             )
             return None
 
@@ -640,9 +618,7 @@ class ClickSignService:
             )
             signer_id = signer.get("id")
             if not signer_id or not new_document_id:
-                self.logger.error(
-                    "Missing signer information. Skipping signer.",
-                )
+                logger.error("Missing signer information. Skipping signer.")
                 continue
             if is_diff_signer and signer["email"] == lending.employee_signer:
                 lending = LendingService().get_lending(lending_id, db_session)
@@ -662,7 +638,7 @@ class ClickSignService:
                     lending.employee.taxpayer_identification,
                 )
                 if not signer_id:
-                    self.logger.error(
+                    logger.error(
                         "Failed to create principal signer. Skipping signer.",
                     )
                     continue
@@ -681,7 +657,7 @@ class ClickSignService:
                     principal_signer_dict.get("taxpayer_id", ""),
                 )
                 if not signer_id:
-                    self.logger.error(
+                    logger.error(
                         "Failed to create principal signer. Skipping signer.",
                     )
                     continue
