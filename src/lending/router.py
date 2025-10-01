@@ -301,7 +301,6 @@ async def post_lending_attach(
         )
     attachment_service = LendingAttachmentService(db_session)
     await attachment_service.upload_attachment(lending_id, attachment)
-    db_session.close()
     return JSONResponse(
         content={"message": "Attachment uploaded successfully"},
         status_code=status.HTTP_200_OK,

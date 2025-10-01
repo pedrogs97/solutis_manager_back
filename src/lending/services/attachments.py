@@ -4,6 +4,7 @@ import os
 from typing import Optional, Union
 
 from fastapi import HTTPException, UploadFile, status
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG
@@ -56,25 +57,35 @@ class LendingAttachmentService:
             lending_id (int): ID of the lending record
             attachment (UploadFile): Attachment data to be added
         """
-        current_lending = self.lending_service.get_lending_or_404(
-            lending_id, self.db_session
-        )
-        new_attachment = LendingAttachments(lending_id=current_lending.id)
-        self.db_session.add(new_attachment)
-        self.db_session.commit()
-        self.db_session.refresh(new_attachment)
-        lending_number = current_lending.number or self.__generate_code(
-            self.db_session, current_lending.asset
-        )
-        new_file_name = f"{lending_number} - {new_attachment.id}.{attachment.filename.split('.')[-1]}"
-        UPLOAD_DIR = CONTRACT_UPLOAD_DIR
+        try:
+            current_lending = self.lending_service.get_lending_or_404(
+                lending_id, self.db_session
+            )
+            new_attachment = LendingAttachments(lending_id=current_lending.id)
+            self.db_session.add(new_attachment)
+            self.db_session.commit()
+            self.db_session.refresh(new_attachment)
+            lending_number = current_lending.number or self.__generate_code(
+                self.db_session, current_lending.asset
+            )
+            new_file_name = f"{lending_number} - {new_attachment.id}.{attachment.filename.split('.')[-1]}"
+            UPLOAD_DIR = CONTRACT_UPLOAD_DIR
 
-        if DEBUG:
-            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "lending_attach")
-        file_path = await upload_file(
-            new_file_name, "lending_attach", attachment.file.read(), UPLOAD_DIR
-        )
-        new_attachment.file_name = new_file_name
-        new_attachment.path = file_path
-        self.db_session.add(new_attachment)
-        self.db_session.commit()
+            if DEBUG:
+                UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "lending_attach")
+            file_path = await upload_file(
+                new_file_name, "lending_attach", attachment.file.read(), UPLOAD_DIR
+            )
+            new_attachment.file_name = new_file_name
+            new_attachment.path = file_path
+            self.db_session.add(new_attachment)
+            self.db_session.commit()
+        except Exception as exc:
+            self.db_session.rollback()
+            logger.error(f"Error uploading attachment: {str(exc)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"field": "lendingId", "error": "Error uploading attachment."},
+            ) from exc
+        finally:
+            self.db_session.close()
