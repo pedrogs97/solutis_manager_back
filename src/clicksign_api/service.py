@@ -149,7 +149,7 @@ class ClickSignService:
         if not document_canceled:
             error = response_json.get("errors", self.DEFAULT_ERROR)
             logger.error("Error canceling document: {}", error)
-
+        logger.info("Document canceled successfully: {}", document_id)
         return document_canceled
 
     def __create_signer(
@@ -439,6 +439,7 @@ class ClickSignService:
         if response.status_code != 201:
             error = response_json.get("errors", self.DEFAULT_ERROR)
             logger.error("Error add requirements: {}", error)
+        logger.info("Notification sent successfully to signer: {}", signer_id)
 
     def send_document_to_sign(
         self,

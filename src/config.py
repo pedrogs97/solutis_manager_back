@@ -91,6 +91,7 @@ PERMISSIONS = {
             {"name": "document", "label": "Documentos"},
             {"name": "workload", "label": "Lotação"},
             {"name": "witness", "label": "Testemunha"},
+            {"name": "attachment", "label": "Anexos de Comodato"},
         ],
         "label": "Comodato",
     },
