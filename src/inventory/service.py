@@ -1,6 +1,5 @@
 """Inventory service"""
 
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import List, Tuple
 
@@ -8,7 +7,7 @@ from fastapi import HTTPException, status
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
-from sqlalchemy import desc
+from sqlalchemy import asc
 from sqlalchemy.orm import Session, with_loader_criteria
 from sqlalchemy.sql.expression import and_, or_
 
@@ -322,7 +321,7 @@ class InventoryService:
                         ),
                     )
 
-        employees_answer = employees_answer.order_by(desc(InventoryModel.created_at))
+        employees_answer = employees_answer.order_by(asc(InventoryModel.created_at))
         # filtro pelo ano do inventário
         params = Params(page=page, size=size)
         paginated = paginate(
