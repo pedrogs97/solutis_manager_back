@@ -1,11 +1,11 @@
 meta {
-  name: Reprove step
+  name: Set responsible
   type: http
-  seq: 5
+  seq: 3
 }
 
-post {
-  url: {{PROCUREMENT_BASE_URL}}/approval/step/approve/
+put {
+  url: http://localhost:8000/api/approval/steps/responsible/
   body: json
   auth: inherit
 }
@@ -16,8 +16,10 @@ headers {
 
 body:json {
   {
+    "name": "name",
+    "email": "email",
     "workflowId": 1,
-    "isApproved": false
+    "stepId": 1
   }
 }
 

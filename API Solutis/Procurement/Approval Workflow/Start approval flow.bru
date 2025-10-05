@@ -1,0 +1,27 @@
+meta {
+  name: Start approval flow
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{PROCUREMENT_BASE_URL}}/approval/start/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "supplierId": 1,
+    "approverName": "name",
+    "approverEmail": "email.com"
+  }
+}
+
+settings {
+  encodeUrl: false
+}
