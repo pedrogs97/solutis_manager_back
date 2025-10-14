@@ -6,7 +6,7 @@ from datetime import datetime
 from json import loads
 from os import listdir
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Tuple
 
 import aiofiles
 import jinja2

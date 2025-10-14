@@ -1,7 +1,6 @@
 """Database connection"""
 
 import pymssql
-from loguru import logger
 from sqlalchemy import NullPool, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker

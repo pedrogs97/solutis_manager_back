@@ -1,7 +1,6 @@
 """Global configs and constants"""
 
 import os
-from datetime import datetime
 
 from dotenv import load_dotenv
 
