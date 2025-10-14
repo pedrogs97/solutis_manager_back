@@ -163,3 +163,9 @@ class NewTermContextSchema(BaseSchema):
     detail: List[dict]
     date: str
     location: str
+
+
+class SignLendingDocSchema(BaseSchema):
+    """Sign lending document schema"""
+
+    lending_id: int = Field(alias="lendingId")

@@ -23,6 +23,7 @@ from src.document.schemas import (
     NewRevokeTermDocSchema,
     NewTermDocSchema,
     RecrateLendingDocSchema,
+    SignLendingDocSchema,
 )
 from src.document.service import DocumentService
 
@@ -373,4 +374,31 @@ def get_download_verification_document(
         filename=document.file_name,
         headers=headers,
         media_type="application/pdf; charset=utf-8",
+    )
+
+
+@document_router.post("/send/clicksign/")
+def send_document_clicksign(
+    body: SignLendingDocSchema,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "add"})
+    ),
+):
+    """Send document to ClickSign for signing"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    document_service.sign_document(
+        body.lending_id,
+        db_session,
+    )
+
+    db_session.close()
+    return JSONResponse(
+        content={"message": "Documento enviado para assinatura."},
+        status_code=status.HTTP_200_OK,
     )

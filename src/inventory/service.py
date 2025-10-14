@@ -213,6 +213,7 @@ class InventoryService:
         inventory = InventoryModel(
             employee_id=employee_id,
             phone=data.phone,
+            manager=data.manager,
             accepted_term_at=currente_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             year=currente_datetime.year,
             extra_items=data.extra_items,
@@ -334,7 +335,14 @@ class InventoryService:
                         "registration": employee.registration,
                         "phone": employee.cell_phone,
                         "email": employee.email,
-                        "manager": employee.manager,
+                        "manager": next(
+                            (
+                                inventory.manager
+                                for inventory in employee.inventories
+                                if inventory.year == year_filter
+                            ),
+                            employee.manager,
+                        ),
                     },
                     "lendings": [
                         {

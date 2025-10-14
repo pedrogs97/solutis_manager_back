@@ -665,34 +665,12 @@ class DocumentService:
                 )
 
             filename = f"{new_code}.pdf"
-            envelope_id, document_id = self.clicksign_service.send_document_to_sign(
-                filename,
-                contract_path,
-                current_lending.signer_email,
-                current_lending.principal_email_signer,
-                employee.full_name,
-                employee.taxpayer_identification,
-                employee.birthday.isoformat(),
-                [
-                    {
-                        "full_name": witness1.employee.full_name,
-                        "taxpayer_id": witness1.employee.taxpayer_identification,
-                        "birthday": witness1.employee.birthday.isoformat(),
-                        "email": witness1.employee.email,
-                    },
-                    {
-                        "full_name": witness2.employee.full_name,
-                        "taxpayer_id": witness2.employee.taxpayer_identification,
-                        "birthday": witness2.employee.birthday.isoformat(),
-                        "email": witness2.employee.email,
-                    },
-                ],
-            )
+
             new_doc = DocumentModel(
                 path=contract_path,
                 file_name=filename,
-                sign_doc_id=document_id,
-                sign_envelope_id=envelope_id,
+                sign_doc_id=None,
+                sign_envelope_id=None,
             )
             new_doc.doc_type = doc_type
 
@@ -755,6 +733,15 @@ class DocumentService:
                 .filter(LendingModel.id == recreate_lending_doc.lending_id)
                 .first()
             )
+            if not current_lending:
+                db_session.close()
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail={
+                        "field": "lendingId",
+                        "error": "Contrato de Comodato não encontrado",
+                    },
+                )
 
             workload = current_lending.workload
 
@@ -1100,34 +1087,11 @@ class DocumentService:
             )
 
         filename = f"{code} - distrato.pdf"
-        envelope_id, document_id = self.clicksign_service.send_document_to_sign(
-            filename,
-            contract_path,
-            revoke_lending_doc.employee_signer,
-            revoke_lending_doc.principal_signer,
-            employee.full_name,
-            employee.taxpayer_identification,
-            employee.birthday.isoformat(),
-            [
-                {
-                    "full_name": witness1.employee.full_name,
-                    "taxpayer_id": witness1.employee.taxpayer_identification,
-                    "birthday": witness1.employee.birthday.isoformat(),
-                    "email": witness1.employee.email,
-                },
-                {
-                    "full_name": witness2.employee.full_name,
-                    "taxpayer_id": witness2.employee.taxpayer_identification,
-                    "birthday": witness2.employee.birthday.isoformat(),
-                    "email": witness2.employee.email,
-                },
-            ],
-        )
         new_doc = DocumentModel(
             path=contract_path,
             file_name=filename,
-            sign_doc_id=document_id,
-            sign_envelope_id=envelope_id,
+            sign_doc_id=None,
+            sign_envelope_id=None,
         )
 
         new_doc.doc_type = doc_type
@@ -1497,15 +1461,6 @@ class DocumentService:
         )
 
         filename = f"{new_code}.pdf"
-        # envelope_id, document_id = self.clicksign_service.send_document_to_sign(
-        #     filename,
-        #     contract_path,
-        #     current_term.signer_email,
-        #     current_term.principal_email_signer,
-        #     employee.full_name,
-        #     employee.taxpayer_identification,
-        #     employee.birthday.isoformat(),
-        # )
         new_doc = DocumentModel(
             path=contract_path,
             file_name=filename,
@@ -1605,21 +1560,12 @@ class DocumentService:
         )
 
         filename = f"{code} - distrato.pdf"
-        envelope_id, document_id = self.clicksign_service.send_document_to_sign(
-            filename,
-            contract_path,
-            revoke_term_doc.employee_signer,
-            revoke_term_doc.principal_signer,
-            employee.full_name,
-            employee.taxpayer_identification,
-            employee.birthday.isoformat(),
-        )
 
         new_doc = DocumentModel(
             path=contract_path,
             file_name=filename,
-            sign_doc_id=document_id,
-            sign_envelope_id=envelope_id,
+            sign_doc_id=None,
+            sign_envelope_id=None,
         )
 
         new_doc.doc_type = doc_type
@@ -1996,4 +1942,64 @@ class DocumentService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={"field": "lendingId", "message": "Comodato sem número"},
+            ) from error
+
+    def sign_document(self, lending_id: int, db_session: Session) -> None:
+        """Sign document"""
+        try:
+            lending = self.__get_lending_or_404(lending_id, db_session)
+
+            if not lending.document and not lending.document_revoke:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "field": "lendingId",
+                        "error": "Comodato sem contrato para assinatura",
+                    },
+                )
+
+            document = (
+                lending.document
+                if not lending.document_revoke
+                else lending.document_revoke
+            )
+            employee = lending.employee
+            witness1 = lending.witnesses[0]
+            witness2 = lending.witnesses[1]
+
+            envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+                document.file_name,
+                document.path,
+                lending.signer_email,
+                lending.principal_email_signer,
+                employee.full_name,
+                employee.taxpayer_identification,
+                employee.birthday.isoformat(),
+                [
+                    {
+                        "full_name": witness1.employee.full_name,
+                        "taxpayer_id": witness1.employee.taxpayer_identification,
+                        "birthday": witness1.employee.birthday.isoformat(),
+                        "email": witness1.employee.email,
+                    },
+                    {
+                        "full_name": witness2.employee.full_name,
+                        "taxpayer_id": witness2.employee.taxpayer_identification,
+                        "birthday": witness2.employee.birthday.isoformat(),
+                        "email": witness2.employee.email,
+                    },
+                ],
+            )
+
+            document.sign_envelope_id = envelope_id
+            document.sign_doc_id = document_id
+            db_session.add(document)
+            db_session.commit()
+            logger.info("Document sent to sign. {}", str(document))
+        except Exception as error:
+            db_session.rollback()
+            logger.error("Error sign document {}", error)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={"field": "lendingId", "message": "Erro ao assinar contrato"},
             ) from error

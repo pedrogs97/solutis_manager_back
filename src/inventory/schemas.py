@@ -72,6 +72,7 @@ class AnswerInventorySerializer(BaseSchema):
     """Answer inventory serializer"""
 
     phone: str
+    manager: Optional[str] = ""
     lendings: List[AnswerInventoryLendingSerializer] = []
     terms: List[AnswerInventoryTermSerializer] = []
     extra_assets: List[AnswerInventoryExtraAssetSerializer] = Field(

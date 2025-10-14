@@ -21,6 +21,7 @@ class InventoryModel(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     accepted_term_at = Column("accepted_term_at", DateTime, nullable=True)
     phone = Column("phone", String(16), nullable=True)
+    manager = Column("manager", String(100), nullable=True)
     year = Column("year", Integer, nullable=False)
     created_at = Column("created_at", DateTime, default=func.now())
     extra_items = Column("extra_items", String(500), nullable=True)
