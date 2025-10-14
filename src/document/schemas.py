@@ -168,4 +168,4 @@ class NewTermContextSchema(BaseSchema):
 class SignLendingDocSchema(BaseSchema):
     """Sign lending document schema"""
 
-    lending_id: int = Field(alias="lendingId")
+    document_id: int = Field(alias="documentId")

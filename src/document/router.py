@@ -393,7 +393,7 @@ def send_document_clicksign(
         )
 
     document_service.sign_document(
-        body.lending_id,
+        body.document_id,
         db_session,
     )
 

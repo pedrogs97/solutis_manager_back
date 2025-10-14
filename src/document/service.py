@@ -54,6 +54,7 @@ from src.utils import (
     upload_file,
 )
 from src.verification.models import VerificationAnswerModel
+from src.document.enums import DocumentTypeEnum
 
 service_log = LogService()
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
@@ -1944,52 +1945,103 @@ class DocumentService:
                 detail={"field": "lendingId", "message": "Comodato sem número"},
             ) from error
 
-    def sign_document(self, lending_id: int, db_session: Session) -> None:
+    def sign_document(self, document_id: int, db_session: Session) -> None:
         """Sign document"""
         try:
-            lending = self.__get_lending_or_404(lending_id, db_session)
+            document = self.__get_document_or_404(document_id, db_session)
+            lending = None
+            term = None
 
-            if not lending.document and not lending.document_revoke:
+            if document.doc_type_id == DocumentTypeEnum.LENDING:
+                lending = (
+                    db_session.query(LendingModel)
+                    .filter(LendingModel.document_id == document.id)
+                    .first()
+                )
+            elif document.doc_type_id == DocumentTypeEnum.REVOKE_LENDING:
+                lending = (
+                    db_session.query(LendingModel)
+                    .filter(LendingModel.document_revoke_id == document.id)
+                    .first()
+                )
+            elif document.doc_type_id == DocumentTypeEnum.TERM:
+                term = (
+                    db_session.query(TermModel)
+                    .filter(TermModel.document_id == document.id)
+                    .first()
+                )
+            elif document.doc_type_id == DocumentTypeEnum.REVOKE_TERM:
+                term = (
+                    db_session.query(TermModel)
+                    .filter(TermModel.document_revoke_id == document.id)
+                    .first()
+                )
+            else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
-                        "field": "lendingId",
-                        "error": "Comodato sem contrato para assinatura",
+                        "field": "documentId",
+                        "message": "Tipo de documento inválido para assinatura",
                     },
                 )
 
-            document = (
-                lending.document
-                if not lending.document_revoke
-                else lending.document_revoke
-            )
-            employee = lending.employee
-            witness1 = lending.witnesses[0]
-            witness2 = lending.witnesses[1]
+            if document.doc_type_id in [
+                DocumentTypeEnum.LENDING,
+                DocumentTypeEnum.REVOKE_LENDING,
+            ]:
 
-            envelope_id, document_id = self.clicksign_service.send_document_to_sign(
-                document.file_name,
-                document.path,
-                lending.signer_email,
-                lending.principal_email_signer,
-                employee.full_name,
-                employee.taxpayer_identification,
-                employee.birthday.isoformat(),
-                [
-                    {
-                        "full_name": witness1.employee.full_name,
-                        "taxpayer_id": witness1.employee.taxpayer_identification,
-                        "birthday": witness1.employee.birthday.isoformat(),
-                        "email": witness1.employee.email,
+                employee = lending.employee
+                witness1 = lending.witnesses[0]
+                witness2 = lending.witnesses[1]
+
+                envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+                    document.file_name,
+                    document.path,
+                    lending.signer_email,
+                    lending.principal_email_signer,
+                    employee.full_name,
+                    employee.taxpayer_identification,
+                    employee.birthday.isoformat(),
+                    [
+                        {
+                            "full_name": witness1.employee.full_name,
+                            "taxpayer_id": witness1.employee.taxpayer_identification,
+                            "birthday": witness1.employee.birthday.isoformat(),
+                            "email": witness1.employee.email,
+                        },
+                        {
+                            "full_name": witness2.employee.full_name,
+                            "taxpayer_id": witness2.employee.taxpayer_identification,
+                            "birthday": witness2.employee.birthday.isoformat(),
+                            "email": witness2.employee.email,
+                        },
+                    ],
+                )
+            elif document.doc_type_id in [
+                DocumentTypeEnum.TERM,
+                DocumentTypeEnum.REVOKE_TERM,
+            ]:
+
+                employee = term.employee
+
+                envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+                    document.file_name,
+                    document.path,
+                    term.signer_email,
+                    term.principal_email_signer,
+                    employee.full_name,
+                    employee.taxpayer_identification,
+                    employee.birthday.isoformat(),
+                    [],
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "field": "documentId",
+                        "message": "Tipo de documento inválido para assinatura",
                     },
-                    {
-                        "full_name": witness2.employee.full_name,
-                        "taxpayer_id": witness2.employee.taxpayer_identification,
-                        "birthday": witness2.employee.birthday.isoformat(),
-                        "email": witness2.employee.email,
-                    },
-                ],
-            )
+                )
 
             document.sign_envelope_id = envelope_id
             document.sign_doc_id = document_id
