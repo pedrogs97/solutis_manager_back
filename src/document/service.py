@@ -880,27 +880,10 @@ class DocumentService:
                 )
 
             filename = f"{code}.pdf"
-            new_document_id = self.clicksign_service.send_recreated_document_to_sign(
-                doc.sign_doc_id,
-                doc.sign_envelope_id,
-                filename,
-                contract_path,
-                recreate_lending_doc.employee_signer,
-                recreate_lending_doc.principal_signer,
-                current_lending.id,
-                db_session,
-            )
-
-            if not new_document_id:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Erro ao recriar o contrato. Tente novamente.",
-                )
-
             new_doc = DocumentModel(
                 path=contract_path,
                 file_name=filename,
-                sign_doc_id=new_document_id,
+                sign_doc_id=None,
                 sign_envelope_id=doc.sign_envelope_id,
             )
 
@@ -1259,21 +1242,10 @@ class DocumentService:
             )
 
         filename = f"{code} - distrato.pdf"
-
-        new_document_id = self.clicksign_service.send_recreated_document_to_sign(
-            doc.sign_doc_id,
-            doc.sign_envelope_id,
-            filename,
-            contract_path,
-            recreate_lending_doc.employee_signer,
-            recreate_lending_doc.principal_signer,
-            current_lending.id,
-            db_session,
-        )
         new_doc = DocumentModel(
             path=contract_path,
             file_name=filename,
-            sign_doc_id=new_document_id,
+            sign_doc_id=None,
             sign_envelope_id=doc.sign_envelope_id,
         )
 
