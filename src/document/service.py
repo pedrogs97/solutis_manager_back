@@ -2,6 +2,7 @@
 
 import locale
 import os
+import traceback
 from datetime import date
 from typing import Dict, List, Optional, Union
 
@@ -19,6 +20,7 @@ from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.clicksign_api.service import ClickSignService
 from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
+from src.document.enums import DocumentTypeEnum
 from src.document.filters import DocumentFilter
 from src.document.models import DocumentModel, DocumentTypeModel
 from src.document.schemas import (
@@ -54,7 +56,6 @@ from src.utils import (
     upload_file,
 )
 from src.verification.models import VerificationAnswerModel
-from src.document.enums import DocumentTypeEnum
 
 service_log = LogService()
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
@@ -714,6 +715,7 @@ class DocumentService:
             return self.serialize_document(new_doc)
         except Exception as e:
             db_session.rollback()
+            logger.error("An exception occurred:\n{}", traceback.format_exc())
             logger.error("Error creating contract: {}", e)
             raise
 
@@ -2023,6 +2025,11 @@ class DocumentService:
         except Exception as error:
             db_session.rollback()
             logger.error("Error sign document {}", error)
+            logger.error("Document ID {}", document_id)
+            logger.error("document {}", str(document))
+            logger.error("document type {}", str(document.doc_type))
+            logger.error("lending {}", str(lending))
+            logger.error("employee {}", str(employee))
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={"field": "lendingId", "message": "Erro ao assinar contrato"},

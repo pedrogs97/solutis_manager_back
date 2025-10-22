@@ -80,6 +80,9 @@ class LendingAttachmentService:
             new_attachment.path = file_path
             self.db_session.add(new_attachment)
             self.db_session.commit()
+            logger.info(
+                f"Attachment {new_attachment.id} uploaded. Lending {current_lending.id} - {lending_number}"
+            )
         except Exception as exc:
             self.db_session.rollback()
             logger.error(f"Error uploading attachment: {str(exc)}")
