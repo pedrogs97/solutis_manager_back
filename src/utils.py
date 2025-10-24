@@ -10,6 +10,7 @@ from typing import Tuple
 
 import aiofiles
 import jinja2
+from loguru import logger
 
 from src.config import CONTRACT_UPLOAD_DIR, TEMPLATE_DIR, TERM_UPLOAD_DIR, TMP_DIR
 from src.document.schemas import (
@@ -86,10 +87,14 @@ async def upload_file(
 def get_str_base64_image(file_name: str) -> str:
     """Get image base64 string"""
     str_base64 = ""
+    logger.info(f"Getting base64 for image: {file_name}")
     with open(file_name, "rb") as image:
+        file_bytes = image.read()
+        logger.info(f"Read {len(file_bytes)} bytes from image file.")
         str_base64 = (
-            str(base64.b64encode(image.read())).replace("b'", "").replace("'", "")
+            str(base64.b64encode(file_bytes)).replace("b'", "").replace("'", "")
         )
+    logger.info(f"Generated base64 string of length: {len(str_base64)}")
     return str_base64
 
 
