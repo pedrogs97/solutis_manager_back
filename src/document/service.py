@@ -777,7 +777,11 @@ class DocumentService:
             verification_answers = self.__get_verification_answers(
                 lending_verification_answers
             )
-
+            lending_attachments_str = [
+                {"file": get_image_to_pdf(attach.path)}
+                for attach in lending_attachments
+            ]
+            logger.info("Lending attachments str: {}", len(lending_attachments_str))
             if employee.legal_person:
                 contract_path = create_lending_contract_pj(
                     NewLendingPjContextSchema(
@@ -874,10 +878,7 @@ class DocumentService:
                         location=current_lending.location,
                         bu=current_lending.bu,
                         verifications=verification_answers,
-                        attachments_files=[
-                            {"file": get_image_to_pdf(attach.path)}
-                            for attach in lending_attachments
-                        ],
+                        attachments_files=lending_attachments_str,
                     )
                 )
 
