@@ -697,8 +697,6 @@ class DocumentService:
             current_lending.document = new_doc
             current_lending.number = new_code
             current_lending.status = lending_pending
-            current_lending.witnesses.append(witness1)
-            current_lending.witnesses.append(witness2)
 
             db_session.add(current_lending)
             db_session.commit()
@@ -922,8 +920,6 @@ class DocumentService:
             current_lending.principal_email_signer = (
                 recreate_lending_doc.principal_signer
             )
-            current_lending.witnesses.append(witness1)
-            current_lending.witnesses.append(witness2)
 
             db_session.add(current_lending)
             db_session.commit()
@@ -1155,6 +1151,8 @@ class DocumentService:
 
         employee = current_lending.employee
 
+        current_lending.witnesses.reverse()
+
         witness1 = current_lending.witnesses[0]
 
         witness2 = current_lending.witnesses[1]
@@ -1290,8 +1288,6 @@ class DocumentService:
         current_lending.document = new_doc
         current_lending.signer_email = recreate_lending_doc.employee_signer
         current_lending.principal_email_signer = recreate_lending_doc.principal_signer
-        current_lending.witnesses.append(witness1)
-        current_lending.witnesses.append(witness2)
 
         db_session.add(current_lending)
         db_session.commit()
