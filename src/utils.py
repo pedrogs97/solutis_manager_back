@@ -218,13 +218,13 @@ def create_revoke_lending_contract(context: NewLendingContextSchema) -> str:
         bu=context.bu,
     )
 
-    lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
+    lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "revoke")
 
     if not os.path.exists(lending_path):
         os.mkdir(lending_path)
 
     template_path = os.path.join(lending_path, f"template_{context.number}.html")
-    contract_path = os.path.join(lending_path, f"{context.number}.pdf")
+    contract_path = os.path.join(lending_path, f"{context.number} - distrato.pdf")
 
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)
@@ -343,7 +343,7 @@ def create_revoke_lending_contract_pj(context: NewLendingPjContextSchema) -> str
         bu=context.bu,
     )
 
-    lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
+    lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "revoke")
 
     if not os.path.exists(lending_path):
         os.mkdir(lending_path)
@@ -352,7 +352,7 @@ def create_revoke_lending_contract_pj(context: NewLendingPjContextSchema) -> str
         os.mkdir(TMP_DIR)
 
     template_path = os.path.join(TMP_DIR, f"template_{context.number}.html")
-    contract_path = os.path.join(lending_path, f"{context.number}.pdf")
+    contract_path = os.path.join(lending_path, f"{context.number} - distrato.pdf")
 
     with open(template_path, "w", encoding="utf-8") as html_file:
         html_file.write(output_text)

@@ -1683,7 +1683,7 @@ class DocumentService:
 
         code = lending.number
 
-        file_name = f"{code}.pdf"
+        file_name = f"{code} - distrato.pdf"
 
         UPLOAD_DIR = CONTRACT_UPLOAD_DIR
 
