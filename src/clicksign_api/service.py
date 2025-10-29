@@ -365,7 +365,6 @@ class ClickSignService:
             "carla.anunciacao@solutis.com.br",
             "tais.santos@solutis.com.br",
             "tailon.souza@solutis.com.br",
-            "kecia.sousa@solutis.com.br",
         ]
 
         for observer in observers_to_add:

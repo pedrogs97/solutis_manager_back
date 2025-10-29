@@ -697,6 +697,8 @@ class DocumentService:
             current_lending.document = new_doc
             current_lending.number = new_code
             current_lending.status = lending_pending
+            current_lending.witnesses.append(witness1)
+            current_lending.witnesses.append(witness2)
 
             db_session.add(current_lending)
             db_session.commit()
@@ -920,6 +922,8 @@ class DocumentService:
             current_lending.principal_email_signer = (
                 recreate_lending_doc.principal_signer
             )
+            current_lending.witnesses.append(witness1)
+            current_lending.witnesses.append(witness2)
 
             db_session.add(current_lending)
             db_session.commit()
@@ -971,7 +975,10 @@ class DocumentService:
 
         asset = current_lending.asset
 
-        code = current_lending.number
+        code = current_lending.number or self.__generate_code(
+            db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
+            current_lending.asset,
+        )
 
         workload = current_lending.workload
 
@@ -1283,6 +1290,8 @@ class DocumentService:
         current_lending.document = new_doc
         current_lending.signer_email = recreate_lending_doc.employee_signer
         current_lending.principal_email_signer = recreate_lending_doc.principal_signer
+        current_lending.witnesses.append(witness1)
+        current_lending.witnesses.append(witness2)
 
         db_session.add(current_lending)
         db_session.commit()
@@ -1370,6 +1379,8 @@ class DocumentService:
         lending.signed_date = date.today()
         lending.document = new_doc
         lending.status = lending_signed
+        if lending.number is None:
+            lending.number = code
         db_session.add(lending)
         db_session.commit()
 
