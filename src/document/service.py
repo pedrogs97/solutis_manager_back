@@ -760,7 +760,12 @@ class DocumentService:
                 current_lending.ms_office,
             )
 
-            code = current_lending.number
+            code = current_lending.number or self.__generate_code(
+                db_session.query(DocumentModel)
+                .order_by(DocumentModel.id.desc())
+                .first(),
+                current_lending.asset,
+            )
 
             lending_attachments = (
                 db_session.query(LendingAttachments)
@@ -1153,7 +1158,10 @@ class DocumentService:
             current_lending.ms_office,
         )
 
-        code = current_lending.number
+        code = current_lending.number or self.__generate_code(
+            db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first(),
+            current_lending.asset,
+        )
 
         if employee.legal_person:
             contract_path = create_revoke_lending_contract_pj(

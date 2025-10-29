@@ -457,11 +457,12 @@
                 </div>
             {% endif %}
             {% if attachments %}
+                <p>Anexos</p>
                 <div class="page-break"></div>
                 <div class="container">
-                    <div class="centered-container">
+                    <div class="image_wrapper">
                         {% for attachment in attachments %}
-                            <img src="{{ attachment.file }}" alt="Attachment" />
+                        <img src="{{ attachment.file }}" alt="Attachment" width="auto" height="auto" />
                         {% endfor %}
                     </div>
                 </div>

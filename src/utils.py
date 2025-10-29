@@ -41,7 +41,7 @@ def generate_pdf_from_html(
             "WeasyPrint não está disponível. "
             "Instale as dependências necessárias para gerar PDFs."
         )
-    HTML(filename=html_file_path).write_pdf(pdf_output_path)
+    HTML(filename=html_file_path).write_pdf(pdf_output_path, optimize_images=True)
 
 
 def get_file_paths(directory: str):
@@ -87,14 +87,11 @@ async def upload_file(
 def get_str_base64_image(file_name: str) -> str:
     """Get image base64 string"""
     str_base64 = ""
-    logger.info(f"Getting base64 for image: {file_name}")
     with open(file_name, "rb") as image:
         file_bytes = image.read()
-        logger.info(f"Read {len(file_bytes)} bytes from image file.")
         str_base64 = (
             str(base64.b64encode(file_bytes)).replace("b'", "").replace("'", "")
         )
-    logger.info(f"Generated base64 string of length: {len(str_base64)}")
     return str_base64
 
 
@@ -102,11 +99,15 @@ def get_image_to_pdf(file_name: str) -> str:
     """Get image base64 string"""
     str_base64 = ""
     file_extension = file_name.split(".")[-1]
+    logger.info(f"Getting base64 for image: {file_name} - extension: {file_extension}")
     with open(file_name, "rb") as image:
+        file_bytes = image.read()
+        logger.info(f"Read {len(file_bytes)} bytes from image file.")
         str_base64 = (
-            str(base64.b64encode(image.read())).replace("b'", "").replace("'", "")
+            str(base64.b64encode(file_bytes)).replace("b'", "").replace("'", "")
         )
-    return f"data:image/{file_extension};base64,{str_base64}"
+    logger.info(f"Generated base64 string of length: {len(str_base64)}")
+    return f"data:image/png;base64,{str_base64}"
 
 
 SIGNED_DATE_IMAGE = "src/static/images/signed.png"
@@ -128,6 +129,7 @@ def create_lending_contract(context: NewLendingContextSchema) -> str:
     n_glpi_file = get_str_base64_image(GLPI_IMAGE)
     n_termo_file = get_str_base64_image(N_TERM_IMAGE)
     logo_file = get_str_base64_image(LOGO_IMAGE)
+    logger.debug(context.attachments_files)
     output_text = template.render(
         number=context.number,
         glpi_number=context.glpi_number,
