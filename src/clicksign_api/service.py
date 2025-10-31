@@ -517,7 +517,7 @@ class ClickSignService:
                     len(witnesses)
                 )
             )
-            witnesses = witnesses[:2]
+            witnesses = witnesses[-2:]
 
         if len(witnesses) > 0:
             for witness in witnesses:

@@ -1979,8 +1979,8 @@ class DocumentService:
                 DocumentTypeEnum.LENDING,
                 DocumentTypeEnum.REVOKE_LENDING,
             ]:
-
                 employee = lending.employee
+                lending.witnesses.reverse()
                 witness1 = lending.witnesses[0]
                 witness2 = lending.witnesses[1]
 
