@@ -15,6 +15,7 @@ from pydantic import ValidationError
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
+from src.asset.enums import AssetStatusEnum
 from src.asset.models import AssetModel, AssetStatusModel
 from src.asset.service import AssetService
 from src.auth.models import UserModel
@@ -1106,7 +1107,9 @@ class DocumentService:
         logger.info("New Document. {}", str(new_doc))
 
         AssetService().update_asset_status(
-            asset, db_session.query(AssetStatusModel).get(1), db_session
+            asset,
+            db_session.query(AssetStatusModel).get(AssetStatusEnum.DISPONIVEL.value),
+            db_session,
         )
 
         current_lending.document_revoke = new_doc
@@ -1384,6 +1387,75 @@ class DocumentService:
             "lending",
             "document",
             f"Importação de Contrato {type_doc}",
+            new_doc.id,
+            authenticated_user,
+            db_session,
+        )
+        logger.info("Upload Document signed. {}", str(new_doc))
+
+        return self.serialize_document(new_doc)
+
+    async def upload_contract_fix(
+        self,
+        contract: UploadFile,
+        type_doc: str,
+        lendingId: int,
+        db_session: Session,
+        authenticated_user: UserModel,
+    ) -> DocumentSerializerSchema:
+        """Upload contract to fix"""
+
+        doc_type = (
+            db_session.query(DocumentTypeModel)
+            .filter(DocumentTypeModel.name == type_doc)
+            .first()
+        )
+
+        lending = self.__get_lending_or_404(lendingId, db_session)
+
+        code = lending.number
+
+        file_name = f"{code}.pdf"
+
+        UPLOAD_DIR = CONTRACT_UPLOAD_DIR
+
+        if DEBUG:
+            UPLOAD_DIR = os.path.join(BASE_DIR, "storage", "contracts")
+
+        file_path = await upload_file(
+            file_name, "lending", contract.file.read(), UPLOAD_DIR
+        )
+
+        new_doc = DocumentModel(path=file_path, file_name=file_name)
+        new_doc.doc_type = doc_type
+
+        db_session.add(new_doc)
+        db_session.commit()
+
+        if lending.document:
+            old_doc = lending.document
+            old_doc.deleted = True
+            db_session.add(old_doc)
+            db_session.commit()
+            db_session.flush()
+            service_log.set_log(
+                "lending",
+                "document",
+                f"Exclusão de Contrato {old_doc.doc_type}",
+                old_doc.id,
+                authenticated_user,
+                db_session,
+            )
+            logger.info("Deleted Document. {}", str(old_doc))
+
+        lending.document = new_doc
+        db_session.add(lending)
+        db_session.commit()
+
+        service_log.set_log(
+            "lending",
+            "document",
+            f"Importação de Contrato {type_doc} corrigida",
             new_doc.id,
             authenticated_user,
             db_session,
@@ -1701,7 +1773,9 @@ class DocumentService:
         db_session.commit()
 
         AssetService().update_asset_status(
-            lending.asset, db_session.query(AssetStatusModel).get(1), db_session
+            lending.asset,
+            db_session.query(AssetStatusModel).get(AssetStatusEnum.DISPONIVEL.value),
+            db_session,
         )
         db_session.add(lending)
         db_session.commit()

@@ -114,6 +114,33 @@ async def post_import_contract(
     )
 
 
+@document_router.post("/contracts/upload-fix/")
+async def post_import_contract(
+    lendingId: Annotated[int, Form()],
+    file: UploadFile,
+    db_session: Session = Depends(get_db_session),
+    authenticated_user: Union[UserModel, None] = Depends(
+        PermissionChecker({"module": "lending", "model": "document", "action": "edit"})
+    ),
+):
+    """Upload new contract"""
+    if not authenticated_user:
+        db_session.close()
+        return JSONResponse(
+            content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+    serializer = await document_service.upload_contract_fix(
+        file, "Contrato de Comodato", lendingId, db_session, authenticated_user
+    )
+
+    db_session.close()
+    return JSONResponse(
+        content=serializer.model_dump(by_alias=True),
+        status_code=status.HTTP_200_OK,
+    )
+
+
 @document_router.post("/contracts/revoke/create/", response_class=FileResponse)
 def post_create_revoke_contract(
     data: NewRevokeContractDocSchema,

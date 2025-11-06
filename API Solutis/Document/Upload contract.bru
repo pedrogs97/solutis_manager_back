@@ -1,0 +1,31 @@
+meta {
+  name: Upload contract
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/documents/contracts/upload/
+  body: multipartForm
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+body:json {
+  {
+      "lendingId": 1530,
+  }
+}
+
+body:multipart-form {
+  lendingId: 1530 @contentType(int)
+  file: @file(C:\Users\pedro\Downloads\NTK4687.pdf)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
