@@ -106,6 +106,13 @@ class EmployeeModel(Base):
         server_onupdate=func.now(),
     )
     employee_old_legal_person = Column("employee_old_legal_person", JSON, nullable=True)
+    has_solutis_asset = Column(
+        "has_solutis_asset", Boolean, nullable=False, default=False
+    )
+    has_personal_asset = Column(
+        "has_personal_asset", Boolean, nullable=False, default=False
+    )
+    has_other_asset = Column("has_other_asset", Boolean, nullable=False, default=False)
 
     def __str__(self) -> str:
         return f"{self.code} - {self.full_name}"

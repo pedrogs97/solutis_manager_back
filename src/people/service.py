@@ -211,6 +211,9 @@ class EmployeeService:
                 if employee.employer_end_contract_date
                 else None
             ),
+            has_solutis_asset=employee.has_solutis_asset,
+            has_personal_asset=employee.has_personal_asset,
+            has_other_asset=employee.has_other_asset,
         )
 
     def create_employee(
@@ -277,6 +280,9 @@ class EmployeeService:
             employer_contract_date=data.employer_contract_date,
             employer_end_contract_date=data.employer_end_contract_date,
             employer_name=data.employer_name,
+            has_solutis_asset=data.has_solutis_asset,
+            has_personal_asset=data.has_personal_asset,
+            has_other_asset=data.has_other_asset,
         )
 
         new_emplyoee.role = role

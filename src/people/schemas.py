@@ -147,6 +147,18 @@ class NewEmployeeSchema(BaseSchema):
         alias="employerEndContractDate",
         default=None,
     )
+    has_solutis_asset: Optional[bool] = Field(
+        alias="hasSolutisAsset",
+        default=False,
+    )
+    has_personal_asset: Optional[bool] = Field(
+        alias="hasPersonalAsset",
+        default=False,
+    )
+    has_other_asset: Optional[bool] = Field(
+        alias="hasOtherAsset",
+        default=False,
+    )
 
 
 class UpdateEmployeeSchema(BaseSchema):
@@ -228,6 +240,18 @@ class UpdateEmployeeSchema(BaseSchema):
         alias="employerEndContractDate",
         default=None,
     )
+    has_solutis_asset: Optional[bool] = Field(
+        alias="hasSolutisAsset",
+        default=False,
+    )
+    has_personal_asset: Optional[bool] = Field(
+        alias="hasPersonalAsset",
+        default=False,
+    )
+    has_other_asset: Optional[bool] = Field(
+        alias="hasOtherAsset",
+        default=False,
+    )
 
 
 class EmployeeSerializerSchema(BaseSchema):
@@ -280,6 +304,18 @@ class EmployeeSerializerSchema(BaseSchema):
     employer_end_contract_date: Optional[str] = Field(
         serialization_alias="employerEndContractDate",
         default=None,
+    )
+    has_solutis_asset: Optional[bool] = Field(
+        alias="hasSolutisAsset",
+        default=False,
+    )
+    has_personal_asset: Optional[bool] = Field(
+        alias="hasPersonalAsset",
+        default=False,
+    )
+    has_other_asset: Optional[bool] = Field(
+        alias="hasOtherAsset",
+        default=False,
     )
 
 
