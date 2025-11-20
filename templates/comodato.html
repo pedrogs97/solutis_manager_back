@@ -265,8 +265,12 @@
                 flex-direction: column;
                 align-items: center;
                 row-gap: 12px;
-                margin-left: auto;
-                margin-right: auto;
+                margin-top: 1.5in;
+
+                img {
+                    max-width: 100%;
+                    height: auto;
+                }
             }
         </style>
     </head>
@@ -471,7 +475,7 @@
                 <div class="container">
                     <div class="image-wrapper">
                         {% for attachment in attachments %}
-                        <img src="{{ attachment.file }}" alt="Attachment" width="auto" height="auto" />
+                        <img src="{{ attachment.file }}" alt="Attachment" />
                         {% endfor %}
                     </div>
                 </div>

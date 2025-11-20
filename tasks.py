@@ -149,6 +149,10 @@ def __contract():
     n_termo_encoded_string = (
         str(base64.b64encode(n_termo_file.read())).replace("b'", "").replace("'", "")
     )
+    attachment_file = open("./src/static/images/note.jpeg", "rb")
+    attachment_encoded_string = (
+        str(base64.b64encode(attachment_file.read())).replace("b'", "").replace("'", "")
+    )
     output_text = template.render(
         number="35161343241",
         glpi_number="GLPI 41325",
@@ -501,6 +505,7 @@ def __contract():
                 ],
             },
         ],
+        attachments=[{"file": f"data:image/jpeg;base64,{attachment_encoded_string}"}],
     )
 
     if not os.path.exists(CONTRACT_UPLOAD_TEST_DIR):
@@ -938,12 +943,12 @@ def test(cmd):
     Convert html to pdf using weasyprint
     """
     cmd.run("echo conversion started")
-    __term()
-    __termination_term()
+    # __term()
+    # __termination_term()
     __contract()
-    __termination()
-    __contract_pj()
-    __termination_pj()
+    # __termination()
+    # __contract_pj()
+    # __termination_pj()
     cmd.run("echo conversion finished")
 
 
