@@ -608,7 +608,7 @@ class DocumentService:
                             else ""
                         ),
                         company=employee.employer_name,
-                        project=current_lending.project,
+                        project=current_lending.project or "Não informado",
                         location=current_lending.location,
                         contract_date=employee.employer_contract_date.strftime(
                             DEFAULT_DATE_FORMAT
@@ -656,7 +656,7 @@ class DocumentService:
                         cnpj=employee.employer_number,
                         company_address=employee.employer_address,
                         company=employee.employer_name,
-                        project=current_lending.project,
+                        project=current_lending.project or "Não informado",
                         location=current_lending.location,
                         bu=current_lending.bu,
                         verifications=verification_answers,
