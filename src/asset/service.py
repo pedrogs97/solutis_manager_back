@@ -473,7 +473,7 @@ class AssetService:
             )
             asset_list = (
                 db_session.query(AssetModel)
-                .filter(AssetModel.id.in_(list_ids))
+                .filter(AssetModel.id.in_(list_ids), AssetModel.active == True)
                 .union(asset_list)
             )
 
