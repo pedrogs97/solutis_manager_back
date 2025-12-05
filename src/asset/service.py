@@ -463,6 +463,7 @@ class AssetService:
 
         asset_list = asset_filters.filter(
             db_session.query(AssetModel)
+            .filter(AssetModel.active == True)
             .outerjoin(AssetTypeModel)
             .outerjoin(AssetStatusModel)
         ).order_by(desc(AssetModel.id))
