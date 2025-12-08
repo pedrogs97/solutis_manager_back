@@ -1,0 +1,20 @@
+meta {
+  name: Sync TOTVS
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/lendings/
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

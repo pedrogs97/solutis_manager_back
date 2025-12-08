@@ -1,0 +1,20 @@
+meta {
+  name: Check SQL Server
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://127.0.0.1:8000/sqlserver/check/
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{TOKEN}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

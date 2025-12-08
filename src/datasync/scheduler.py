@@ -29,6 +29,7 @@ from src.datasync.schemas import (
     EmployeeTotvsSchema,
 )
 from src.datasync.service import (
+    delete_asset_totvs,
     insert,
     set_last_sync,
     totvs_to_asset_schema,
@@ -111,6 +112,8 @@ class SchedulerService:
         ORDER BY IDPATRIMONIO DESC) as d
     ON d.IDPATRIMONIO = p.IDPATRIMONIO
     WHERE (p.CODCOLIGADA = 1)"""
+
+    SQL_IPATRIMONIO_TO_DELETE = """SELECT IDPATRIMONIO FROM [SINESTRO].[CorporeRM].[dbo].[IPATRIMONIO] WHERE IDPATRIMONIO = {code}"""
 
     SQL_IGRUPOPATRIMONIO = """SELECT IDGRUPOPATRIMONIO, CODGRUPOPATRIMONIO, DESCRICAO
     FROM [SINESTRO].[CorporeRM].[dbo].[IGRUPOPATRIMONIO]
@@ -365,6 +368,17 @@ class SchedulerService:
         set_last_sync(len(new_changes), elapsed_time, "role")
         logger.info("Retrive role from TOTVS end.")
 
+    def _delete_asset_totvs(self):
+        """Excute procedure to delete TOVTS asset data"""
+        logger.info("Delete asset from TOTVS start.")
+        start = time()
+        delete_asset_totvs(self.SQL_IPATRIMONIO_TO_DELETE)
+        end = time()
+        elapsed_time = end - start
+        logger.info(self.TIME_INFO, str(elapsed_time))
+        set_last_sync(0, elapsed_time, "delete_asset")
+        logger.info("Delete asset from TOTVS end.")
+
     def read_totvs_db(self):
         """Excute procedure to retrive TOVTS data"""
         logger.info("Retrive from TOTVS start.")
@@ -376,6 +390,7 @@ class SchedulerService:
         self._get_role_totvs()
         self._get_educational_level_totvs()
         self._get_asset_totvs()
+        self._delete_asset_totvs()
         self._get_employees_totvs()
         logger.info("Retrive from TOTVS end.")
 

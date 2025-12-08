@@ -12,7 +12,9 @@ from sqlalchemy.orm import Session
 
 from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
 from src.backends import get_db_session
+from src.database import ExternalDatabase
 from src.datasync.models import (
+    AssetTOTVSModel,
     AssetTypeTOTVSModel,
     EmployeeEducationalLevelTOTVSModel,
     EmployeeGenderTOTVSModel,
@@ -704,6 +706,33 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
         db_session.commit()
         db_session.flush()
         logger.info("Update Assets from TOTVS. Total={}", str(len(updates)))
+    except Exception as err:
+        logger.error("Error: {}", err.args[0])
+    finally:
+        db_session.close()
+
+
+def delete_asset_totvs(sql_to_delete: str):
+    """Deletes assets from totvs"""
+    external_db = ExternalDatabase()
+    cursor = external_db.get_cursor()
+    db_session = get_db_session()
+    try:
+        all_assets_code = db_session.query(AssetTOTVSModel.code).all()
+        for asset_code in all_assets_code:
+            cursor.execute(sql_to_delete, (asset_code.code,))
+            rows = cursor.fetchall()
+            if not rows:
+                db_session.query(AssetTOTVSModel).filter(
+                    AssetTOTVSModel.code == asset_code.code
+                ).delete()
+                db_session.query(AssetModel).filter(
+                    AssetModel.code == asset_code.code
+                ).delete()
+                db_session.flush()
+                db_session.commit()
+                logger.info("Delete Asset from TOTVS. Code={}", asset_code.code)
+
     except Exception as err:
         logger.error("Error: {}", err.args[0])
     finally:
