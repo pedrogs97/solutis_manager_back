@@ -2,7 +2,7 @@
 
 import json
 from datetime import date, datetime
-from typing import List, Optional, Type, Union
+from typing import Callable, List, Optional, Type, Union
 
 from loguru import logger
 from pydantic_core import ValidationError
@@ -712,16 +712,47 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
         db_session.close()
 
 
-def delete_asset_totvs(sql_to_delete: str):
-    """Deletes assets from totvs"""
+def delete_asset_totvs(
+    sql_to_delete: str, params: Union[tuple, list, dict, callable, None] = None
+):
+    """Deletes assets from totvs.
+
+    The function receives a SQL string to be executed against the external SQL Server
+    database. The SQL can contain a single parameter placeholder (pymssql uses `%s`).
+
+    - If `params` is `None`, the asset code will be used as the single parameter.
+    - If `params` is a callable, it will be called with the asset code and must
+      return a tuple/list/dict of parameters to pass to `cursor.execute`.
+    - If `params` is a tuple/list/dict, it will be passed directly to
+      `cursor.execute` for every asset (it can be a fixed parameter set).
+
+    Examples:
+        sql = "SELECT 1 FROM tabela WHERE codigo = %s"
+        delete_asset_totvs(sql)  # uses each asset code as parameter
+
+        sql = "SELECT 1 FROM tabela WHERE codigo = %s AND ativo = %s"
+        delete_asset_totvs(sql, lambda code: (code, 1))
+
+    Note: pymssql expects `%s` placeholders for parameters.
+    """
     external_db = ExternalDatabase()
+    cnxn = external_db.get_connection()
     cursor = external_db.get_cursor()
     db_session = get_db_session()
     try:
         all_assets_code = db_session.query(AssetTOTVSModel.code).all()
         for asset_code in all_assets_code:
-            cursor.execute(sql_to_delete, (asset_code.code,))
+            # decide which parameters to pass to the external SQL
+            if params is None:
+                exec_params = (asset_code.code,)
+            elif callable(params):
+                exec_params = params(asset_code.code)
+            else:
+                exec_params = params
+
+            cursor.execute(sql_to_delete, exec_params)
             rows = cursor.fetchall()
+
             if not rows:
                 db_session.query(AssetTOTVSModel).filter(
                     AssetTOTVSModel.code == asset_code.code
@@ -732,8 +763,18 @@ def delete_asset_totvs(sql_to_delete: str):
                 db_session.flush()
                 db_session.commit()
                 logger.info("Delete Asset from TOTVS. Code={}", asset_code.code)
-
     except Exception as err:
         logger.error("Error: {}", err.args[0])
     finally:
+        # close external connection/cursor if present
+        try:
+            if cursor is not None:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            if cnxn is not None:
+                cnxn.close()
+        except Exception:
+            pass
         db_session.close()
