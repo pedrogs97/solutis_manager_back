@@ -37,7 +37,7 @@ class RecrateLendingDocSchema(BaseSchema):
     """Recrate contract info schema"""
 
     lending_id: int = Field(alias="lendingId")
-    document_id: int = Field(alias="documentId")
+    document_id: Optional[int] = Field(alias="documentId", default=None)
     type: str = "revoke"
     principal_signer: str = Field(alias="principalSigner")
     employee_signer: str = Field(alias="employeeSigner")

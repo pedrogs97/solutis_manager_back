@@ -526,7 +526,7 @@ class DocumentService:
 
             asset = current_lending.asset
 
-            new_code = current_lending or self.__generate_code(
+            new_code = current_lending.number or self.__generate_code(
                 db_session.query(DocumentModel)
                 .order_by(DocumentModel.id.desc())
                 .first(),
@@ -789,7 +789,7 @@ class DocumentService:
                 {"file": get_image_to_pdf(attach.path)}
                 for attach in lending_attachments
             ]
-            logger.info("Lending attachments str: {}", len(lending_attachments_str))
+
             if employee.legal_person:
                 contract_path = create_lending_contract_pj(
                     NewLendingPjContextSchema(
@@ -898,9 +898,9 @@ class DocumentService:
                 db_session.commit()
             else:
                 type_str = (
-                    "Comodato"
+                    "Contrato de Comodato"
                     if current_lending.document_revoke_id is None
-                    else "Distrato"
+                    else "Distrato de Comodato"
                 )
                 doc_type = (
                     db_session.query(DocumentTypeModel)
@@ -923,7 +923,7 @@ class DocumentService:
             service_log.set_log(
                 "lending",
                 "document",
-                f"Reriação de {doc.doc_type}",
+                f"Reriação de {new_doc.doc_type}",
                 new_doc.id,
                 authenticated_user,
                 db_session,

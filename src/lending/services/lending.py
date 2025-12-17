@@ -17,6 +17,7 @@ from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.config import DEFAULT_DATE_FORMAT
 from src.datasync.models import CostCenterTOTVSModel
+from src.document.models import DocumentModel
 from src.lending.filters import LendingFilter, WorkloadFilter
 from src.lending.models import (
     LendingModel,
