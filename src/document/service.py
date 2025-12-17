@@ -526,7 +526,7 @@ class DocumentService:
 
             asset = current_lending.asset
 
-            new_code = self.__generate_code(
+            new_code = current_lending or self.__generate_code(
                 db_session.query(DocumentModel)
                 .order_by(DocumentModel.id.desc())
                 .first(),
@@ -728,9 +728,11 @@ class DocumentService:
     ) -> DocumentSerializerSchema:
         """Recreate new contract, not signed"""
         try:
-            doc = self.__get_document_or_404(
-                recreate_lending_doc.document_id, db_session
-            )
+            doc = None
+            if recreate_lending_doc.document_id:
+                doc = self.__get_document_or_404(
+                    recreate_lending_doc.document_id, db_session
+                )
 
             current_lending = (
                 db_session.query(LendingModel)
@@ -887,20 +889,32 @@ class DocumentService:
                         attachments_files=lending_attachments_str,
                     )
                 )
-
             filename = f"{code}.pdf"
+
+            if doc:
+                doc_type = doc.doc_type
+                doc.deleted = True
+                db_session.add(doc)
+                db_session.commit()
+            else:
+                type_str = (
+                    "Comodato"
+                    if current_lending.document_revoke_id is None
+                    else "Distrato"
+                )
+                doc_type = (
+                    db_session.query(DocumentTypeModel)
+                    .filter(DocumentTypeModel.name == type_str)
+                    .first()
+                )
+
             new_doc = DocumentModel(
                 path=contract_path,
                 file_name=filename,
                 sign_doc_id=None,
-                sign_envelope_id=doc.sign_envelope_id,
+                sign_envelope_id=doc.sign_envelope_id if doc else None,
+                doc_type=doc_type,
             )
-
-            new_doc.doc_type = doc.doc_type
-
-            doc.deleted = True
-            db_session.add(doc)
-            db_session.commit()
 
             db_session.add(new_doc)
             db_session.commit()

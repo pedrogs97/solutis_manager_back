@@ -1,7 +1,7 @@
 """Lenging service"""
 
 import locale
-from typing import List
+from typing import List, Optional, Union
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -330,6 +330,35 @@ class LendingService:
             witnesses,
         )
 
+    def __generate_code(
+        self,
+        db_session: Session,
+        asset: Optional[AssetModel] = None,
+        type_code="lending",
+    ) -> str:
+        """Generate new code for document"""
+        new_code = 1
+        last_doc: Union[DocumentModel, None] = (
+            db_session.query(DocumentModel).order_by(DocumentModel.id.desc()).first()
+        )
+        if not asset and type_code == "lending":
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"field": "assetId", "error": "Ativo não encontrado"},
+            )
+
+        if last_doc:
+            last_code = last_doc.id
+            new_code = last_code + 1
+        str_code = str(new_code)
+
+        if type_code == "lending":
+            acronym = asset.type.acronym if asset.type else asset.description[:3]
+        else:
+            acronym = ""
+
+        return acronym + str_code.zfill(6 - len(str_code))
+
     def create_lending(
         self,
         new_lending: NewLendingSchema,
@@ -363,6 +392,7 @@ class LendingService:
                 ms_office=new_lending.ms_office,
                 principal_email_signer=new_lending.principal_signer,
                 signer_email=new_lending.employee_signer,
+                number=self.__generate_code(db_session, asset),
             )
 
             AssetService().update_asset_status(
