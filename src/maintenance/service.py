@@ -1,7 +1,7 @@
 """Maintenance service"""
 
 import os
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import List
 
 from fastapi import UploadFile, status
@@ -12,6 +12,7 @@ from loguru import logger
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
+from src.asset.enums import AssetStatusEnum
 from src.asset.models import AssetModel, AssetStatusModel
 from src.asset.schemas import AssetShortSerializerSchema
 from src.asset.service import AssetService
@@ -310,8 +311,16 @@ class MaintenanceService:
             glpi_number=data.glpi_number,
             supplier_service_order=supplier_so,
             supplier_number=data.supplier_number,
-            open_date_glpi=data.open_date_glpi,
-            open_date_supplier=data.open_date_supplier,
+            open_date_glpi=(
+                datetime.strptime(data.open_date_glpi, "%d/%m/%Y")
+                if data.open_date_glpi
+                else None
+            ),
+            open_date_supplier=(
+                datetime.strptime(data.open_date_supplier, "%d/%m/%Y")
+                if data.open_date_supplier
+                else None
+            ),
             incident_description=data.incident_description,
             resolution=data.resolution,
             value=data.value,
@@ -323,7 +332,10 @@ class MaintenanceService:
         new_maintenance.asset = asset
         new_maintenance.employee = employee
         AssetService().update_asset_status(
-            asset, db_session.query(AssetStatusModel).get(9), db_session, True
+            asset,
+            db_session.query(AssetStatusModel).get(AssetStatusEnum.MANUTENCAO.value),
+            db_session,
+            True,
         )
         db_session.add(new_maintenance)
         db_session.commit()
@@ -401,7 +413,18 @@ class MaintenanceService:
             maintenance.status_id = 3
 
         if data.open_date_supplier:
-            maintenance.open_date_supplier = data.open_date_supplier
+            maintenance.open_date_supplier = (
+                datetime.strptime(data.open_date_supplier, "%d/%m/%Y")
+                if data.open_date_supplier
+                else None
+            )
+
+        if data.open_date_glpi:
+            maintenance.open_date_glpi = (
+                datetime.strptime(data.open_date_glpi, "%d/%m/%Y")
+                if data.open_date_glpi
+                else None
+            )
 
         if data.supplier_number:
             maintenance.supplier_number = data.supplier_number
@@ -723,7 +746,10 @@ class UpgradeService:
         new_upgrade.asset = asset
         new_upgrade.employee = employee
         AssetService().update_asset_status(
-            asset, db_session.query(AssetStatusModel).get(10), db_session, True
+            asset,
+            db_session.query(AssetStatusModel).get(AssetStatusEnum.MELHORIA.value),
+            db_session,
+            True,
         )
         db_session.add(new_upgrade)
         db_session.commit()

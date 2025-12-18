@@ -39,8 +39,8 @@ class NewMaintenanceSchema(BaseSchema):
     asset_id: int = Field(alias="assetId")
     employee_id: int = Field(alias="employeeId")
     glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
-    open_date_glpi: Optional[date] = Field(alias="openDateGlpi", default=None)
-    open_date_supplier: Optional[date] = Field(alias="openDateSupplier", default=None)
+    open_date_glpi: Optional[str] = Field(alias="openDateGlpi", default=None)
+    open_date_supplier: Optional[str] = Field(alias="openDateSupplier", default=None)
     supplier_number: Optional[str] = Field(alias="supplierNumber", default=None)
     incident_description: Optional[str] = Field(
         alias="incidentDescription", default=None
@@ -55,7 +55,8 @@ class UpdateMaintenanceSchema(BaseSchema):
 
     criticality_id: Optional[int] = Field(alias="criticalityId", default=None)
     close: Optional[bool] = False
-    open_date_supplier: Optional[date] = Field(alias="openDateSupplier", default=None)
+    open_date_glpi: Optional[str] = Field(alias="openDateGlpi", default=None)
+    open_date_supplier: Optional[str] = Field(alias="openDateSupplier", default=None)
     supplier_number: Optional[str] = Field(alias="supplierNumber", default=None)
     resolution: Optional[str] = None
     in_progress: Optional[bool] = Field(alias="inProgress", default=False)
