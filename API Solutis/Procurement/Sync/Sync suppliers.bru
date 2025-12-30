@@ -1,0 +1,16 @@
+meta {
+  name: Sync suppliers
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{PROCUREMENT_BASE_URL}}/sync/suppliers/
+  body: none
+  auth: none
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
