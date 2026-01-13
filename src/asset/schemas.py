@@ -292,8 +292,11 @@ class NewAssetSchema(BaseSchema):
 
     @field_validator("imei")
     @classmethod
-    def validate_imei(cls, value: str) -> str:
+    def validate_imei(cls, value: Optional[str] = None) -> Optional[str]:
         """Validate imei"""
+        if not value:
+            return value
+
         db_session = get_db_session()
         if db_session.query(
             db_session.query(AssetModel).filter(AssetModel.imei == value).exists()
