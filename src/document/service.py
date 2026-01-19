@@ -608,7 +608,7 @@ class DocumentService:
                             else ""
                         ),
                         company=employee.employer_name,
-                        project=current_lending.project or "Não informado",
+                        project=current_lending.project or self.NOT_PROVIDE,
                         location=current_lending.location,
                         contract_date=employee.employer_contract_date.strftime(
                             DEFAULT_DATE_FORMAT
@@ -635,7 +635,7 @@ class DocumentService:
                         national_identification=employee.national_identification,
                         address=employee.address,
                         nationality=employee.nationality.description,
-                        role=employee.role.name,
+                        role=employee.role.name if employee.role else self.NOT_PROVIDE,
                         marital_status=employee.marital_status.description,
                         cc=current_lending.cost_center.code,
                         manager=current_lending.manager,
@@ -656,7 +656,7 @@ class DocumentService:
                         cnpj=employee.employer_number,
                         company_address=employee.employer_address,
                         company=employee.employer_name,
-                        project=current_lending.project or "Não informado",
+                        project=current_lending.project or self.NOT_PROVIDE,
                         location=current_lending.location,
                         bu=current_lending.bu,
                         verifications=verification_answers,
@@ -862,9 +862,7 @@ class DocumentService:
                         address=employee.address,
                         nationality=employee.nationality.description,
                         role=(
-                            employee.role.name
-                            if employee.role
-                            else employee.job_position
+                            employee.role.name if employee.role else self.NOT_PROVIDE
                         ),
                         marital_status=employee.marital_status.description,
                         cc=current_lending.cost_center.code,
@@ -1073,7 +1071,7 @@ class DocumentService:
                     national_identification=employee.national_identification,
                     address=employee.address,
                     nationality=employee.nationality.description,
-                    role=employee.role.name,
+                    role=employee.role.name if employee.role else self.NOT_PROVIDE,
                     marital_status=employee.marital_status.description,
                     cc=current_lending.cost_center.code,
                     manager=current_lending.manager,
@@ -1092,9 +1090,9 @@ class DocumentService:
                         ),
                     ],
                     cnpj=employee.employer_number,
-                    company_address=employee.employer_address,
+                    company_address=employee.employer_address or self.NOT_PROVIDE,
                     company=employee.employer_name,
-                    project=current_lending.project,
+                    project=current_lending.project or self.NOT_PROVIDE,
                     location=current_lending.location,
                     bu=current_lending.bu,
                 )
@@ -1251,7 +1249,7 @@ class DocumentService:
                     national_identification=employee.national_identification,
                     address=employee.address,
                     nationality=employee.nationality.description,
-                    role=employee.role.name if employee.role else employee.job_position,
+                    role=employee.role.name if employee.role else self.NOT_PROVIDE,
                     marital_status=employee.marital_status.description,
                     cc=current_lending.cost_center.code,
                     manager=current_lending.manager,
