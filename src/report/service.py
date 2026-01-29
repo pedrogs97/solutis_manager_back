@@ -48,7 +48,7 @@ class ReportService:
     LENDING_COLS = [
         DEFAULT_INIT_COL,
         ("C5", "COLABORADOR"),
-        ("D5", "CHAPA"),
+        ("D5", "CPF"),
         ("E5", "CARGO"),
         ("F5", "PROJETO"),
         ("G5", "BU"),
@@ -139,7 +139,7 @@ class ReportService:
 
         return {
             "employee": lending.employee.full_name,
-            "code": str_registration,
+            "code": lending.employee.taxpayer_identification or str_registration,
             "role": (
                 lending.employee.role.name
                 if lending.employee.role
