@@ -166,13 +166,13 @@ class EmployeeService:
                 else None
             ),
             nationality=(
-                EmployeeNationalitySerializerSchema(**employee.nationality._dict_)
+                EmployeeNationalitySerializerSchema(**employee.nationality.__dict__)
                 if employee.nationality
                 else None
             ),
             marital_status=(
                 EmployeeMatrimonialStatusSerializerSchema(
-                    **employee.marital_status._dict_
+                    **employee.marital_status.__dict__
                 )
                 if employee.marital_status
                 else None
