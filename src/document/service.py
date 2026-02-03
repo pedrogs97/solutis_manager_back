@@ -478,6 +478,66 @@ class DocumentService:
 
         return witnesses_validated
 
+    def __validate_lending_contract_context(
+        self,
+        employee: EmployeeModel,
+        workload,
+        cost_center,
+        witnesses: Optional[List[WitnessModel]] = None,
+    ) -> List[dict]:
+        """Validate required contract context to avoid runtime errors."""
+        errors: List[dict] = []
+
+        if not cost_center:
+            errors.append(
+                {"field": "costCenterId", "error": "Centro de custo não encontrado"}
+            )
+
+        if not workload:
+            errors.append({"field": "workloadId", "error": "Lotação não encontrada"})
+
+        if not employee.nationality:
+            errors.append(
+                {"field": "nationality", "error": "Nacionalidade não informada"}
+            )
+
+        if not employee.marital_status:
+            errors.append(
+                {"field": "maritalStatus", "error": "Estado civil não informado"}
+            )
+
+        if employee.legal_person:
+            if not employee.role and not employee.job_position:
+                errors.append({"field": "role", "error": "Cargo não informado"})
+            if not employee.employer_contract_date:
+                errors.append(
+                    {
+                        "field": "employerContractDate",
+                        "error": "Data do contrato PJ não informada",
+                    }
+                )
+            if not employee.employer_number:
+                errors.append(
+                    {"field": "employerNumber", "error": "CNPJ não informado"}
+                )
+            if not employee.employer_name:
+                errors.append(
+                    {"field": "employerName", "error": "Razão social não informada"}
+                )
+        else:
+            if not employee.role:
+                errors.append({"field": "role", "error": "Cargo não informado"})
+
+        if witnesses is not None and len(witnesses) < 2:
+            errors.append(
+                {
+                    "field": "witnessesId",
+                    "error": "Necessário informar 2 testemunhas",
+                }
+            )
+
+        return errors
+
     def serialize_document(self, doc: DocumentModel) -> DocumentSerializerSchema:
         """Serialize document"""
         return DocumentSerializerSchema(
@@ -536,6 +596,18 @@ class DocumentService:
             workload = current_lending.workload
 
             employee = current_lending.employee
+
+            validation_errors = self.__validate_lending_contract_context(
+                employee=employee,
+                workload=workload,
+                cost_center=current_lending.cost_center,
+                witnesses=current_lending.witnesses,
+            )
+
+            if validation_errors:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=validation_errors
+                )
 
             witness1 = current_lending.witnesses[0]
 
@@ -752,6 +824,18 @@ class DocumentService:
             workload = current_lending.workload
 
             employee = current_lending.employee
+
+            validation_errors = self.__validate_lending_contract_context(
+                employee=employee,
+                workload=workload,
+                cost_center=current_lending.cost_center,
+                witnesses=current_lending.witnesses,
+            )
+
+            if validation_errors:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=validation_errors
+                )
 
             witness1 = current_lending.witnesses[0]
 
@@ -997,6 +1081,18 @@ class DocumentService:
 
         employee = current_lending.employee
 
+        validation_errors = self.__validate_lending_contract_context(
+            employee=employee,
+            workload=workload,
+            cost_center=current_lending.cost_center,
+            witnesses=current_lending.witnesses,
+        )
+
+        if validation_errors:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=validation_errors
+            )
+
         revoke_witnesses = self.__validate_witnesses(
             revoke_lending_doc.witnesses_id, db_session
         )
@@ -1169,6 +1265,18 @@ class DocumentService:
         workload = current_lending.workload
 
         employee = current_lending.employee
+
+        validation_errors = self.__validate_lending_contract_context(
+            employee=employee,
+            workload=workload,
+            cost_center=current_lending.cost_center,
+            witnesses=current_lending.witnesses,
+        )
+
+        if validation_errors:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=validation_errors
+            )
 
         current_lending.witnesses.reverse()
 

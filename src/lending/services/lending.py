@@ -77,11 +77,17 @@ class LendingService:
                 if employee.role
                 else None
             ),
-            nationality=EmployeeNationalitySerializerSchema(
-                **employee.nationality.__dict__
+            nationality=(
+                EmployeeNationalitySerializerSchema(**employee.nationality._dict_)
+                if employee.nationality
+                else None
             ),
-            marital_status=EmployeeMatrimonialStatusSerializerSchema(
-                **employee.marital_status.__dict__
+            marital_status=(
+                EmployeeMatrimonialStatusSerializerSchema(
+                    **employee.marital_status._dict_
+                )
+                if employee.marital_status
+                else None
             ),
             gender=EmployeeGenderSerializerSchema(**employee.gender.__dict__),
             educational_level=(

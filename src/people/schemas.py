@@ -259,8 +259,8 @@ class EmployeeSerializerSchema(BaseSchema):
 
     id: int
     role: Optional[EmployeeRoleSerializerSchema]
-    nationality: EmployeeNationalitySerializerSchema
-    marital_status: EmployeeMatrimonialStatusSerializerSchema = Field(
+    nationality: Optional[EmployeeNationalitySerializerSchema]
+    marital_status: Optional[EmployeeMatrimonialStatusSerializerSchema] = Field(
         serialization_alias="maritalStatus"
     )
     gender: EmployeeGenderSerializerSchema
