@@ -313,11 +313,14 @@ class NewAssetSchema(BaseSchema):
     def validate_register_number(cls, value: Optional[str] = None) -> Optional[str]:
         """Validate register number"""
         db_session = get_db_session()
-        if db_session.query(
-            db_session.query(AssetModel)
-            .filter(AssetModel.register_number == value)
-            .exists()
-        ).scalar():
+        if (
+            value
+            and db_session.query(
+                db_session.query(AssetModel)
+                .filter(AssetModel.register_number == value)
+                .exists()
+            ).scalar()
+        ):
             db_session.close()
             raise HTTPException(
                 status_code=400,
