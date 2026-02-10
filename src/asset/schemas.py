@@ -310,7 +310,7 @@ class NewAssetSchema(BaseSchema):
 
     @field_validator("register_number")
     @classmethod
-    def validate_register_number(cls, value: str) -> str:
+    def validate_register_number(cls, value: Optional[str] = None) -> Optional[str]:
         """Validate register number"""
         db_session = get_db_session()
         if db_session.query(
