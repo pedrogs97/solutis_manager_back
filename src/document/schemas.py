@@ -80,7 +80,7 @@ class NewLendingContextSchema(BaseSchema):
     role: str
     marital_status: str
     cc: str
-    manager: str
+    manager: Optional[str] = None
     business_executive: str
     project: str
     workload: str

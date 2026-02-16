@@ -22,7 +22,7 @@ from src.datasync.models import (
     EmployeeRoleTOTVSModel,
 )
 from src.lending.models import LendingModel
-from src.lending.schemas import CostCenterSerializerSchema
+from src.lending.schemas.v1 import CostCenterSerializerSchema
 from src.lending.services.lending import LendingService
 from src.log.services import LogService
 from src.people.filters import (

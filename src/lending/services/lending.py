@@ -25,7 +25,7 @@ from src.lending.models import (
     WitnessModel,
     WorkloadModel,
 )
-from src.lending.schemas import (
+from src.lending.schemas.v1 import (
     CostCenterSerializerSchema,
     CreateWitnessSchema,
     LendingSerializerSchema,

@@ -14,7 +14,7 @@ from src.auth.models import UserModel
 from src.config import DEFAULT_DATE_FORMAT
 from src.datasync.models import CostCenterTOTVSModel
 from src.lending.models import WorkloadModel
-from src.lending.schemas import CostCenterSerializerSchema, WorkloadSerializerSchema
+from src.lending.schemas.v1 import CostCenterSerializerSchema, WorkloadSerializerSchema
 from src.log.services import LogService
 from src.people.models import EmployeeModel
 from src.people.schemas import (

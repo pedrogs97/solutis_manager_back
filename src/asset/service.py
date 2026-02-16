@@ -39,7 +39,7 @@ from src.auth.models import UserModel
 from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
 from src.invoice.models import InvoiceModel
 from src.lending.models import LendingModel
-from src.lending.schemas import (
+from src.lending.schemas.v1 import (
     CostCenterSerializerSchema,
     LendingAssetHistorySerializerSchema,
 )

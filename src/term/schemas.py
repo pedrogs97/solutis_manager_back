@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import Field
 
-from src.lending.schemas import CostCenterSerializerSchema, WorkloadSerializerSchema
+from src.lending.schemas.v1 import CostCenterSerializerSchema, WorkloadSerializerSchema
 from src.people.schemas import EmployeeSerializerSchema, EmployeeShortSerializerSchema
 from src.schemas import BaseSchema
 from src.term.enums import SizesEnum

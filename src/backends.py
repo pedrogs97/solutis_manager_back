@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from src.auth.models import PermissionModel, TokenModel, UserModel
 from src.auth.schemas import PermissionSchema
+from src.auth.types import PermissionDict
 from src.config import (
     ACCESS_TOKEN_EXPIRE_HOURS,
     ALGORITHM,
@@ -56,7 +57,7 @@ def get_user(
 
     if not user:
         return None
-    if not verify_password(password, user.password):
+    if not verify_password(password, str(user.password)):
         return None
     return user
 
@@ -65,7 +66,7 @@ def get_user_from_refresh(
     refresh_token: str, db_session: Session
 ) -> Union[UserModel, None]:
     """Returns authenticated user if exists"""
-    token_decoded = jwt.decode(refresh_token, SECRET_KEY, algorithms=ALGORITHM)
+    token_decoded = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
     user = (
         db_session.query(UserModel)
         .filter(
@@ -79,7 +80,7 @@ def get_user_from_refresh(
 def logout_user(token: str, db_session: Session) -> None:
     """Logouts user"""
     try:
-        token_decoded = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        token_decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user = get_current_user(token_decoded, db_session)
         old_token = (
             db_session.query(TokenModel).filter(TokenModel.user_id == user.id).first()
@@ -209,7 +210,7 @@ def token_is_valid(token: Union[TokenModel, dict]) -> bool:
 def refresh_token_has_expired(token_str: str) -> bool:
     """Verifies refresh token validity"""
     try:
-        token_decoded = jwt.decode(token_str, SECRET_KEY, algorithms=ALGORITHM)
+        token_decoded = jwt.decode(token_str, SECRET_KEY, algorithms=[ALGORITHM])
         if "exp" not in token_decoded:
             return True
     except ExpiredSignatureError:
@@ -224,7 +225,13 @@ class PermissionChecker:
     """Dependence class for check permissions"""
 
     def __init__(
-        self, required_permissions: Union[PermissionSchema, List[PermissionSchema]]
+        self,
+        required_permissions: Union[
+            PermissionSchema,
+            List[PermissionSchema],
+            PermissionDict,
+            List[PermissionDict],
+        ],
     ) -> None:
         self.required_permissions = required_permissions
 
@@ -263,7 +270,7 @@ class PermissionChecker:
         db_session: Annotated[Session, Depends(get_db_session)],
     ) -> Union[UserModel, None]:
         try:
-            token_decoded = jwt.decode(str(token), SECRET_KEY, algorithms=ALGORITHM)
+            token_decoded = jwt.decode(str(token), SECRET_KEY, algorithms=[ALGORITHM])
             if not token_is_valid(token_decoded):
                 return None
             user = get_current_user(token_decoded, db_session)

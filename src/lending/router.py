@@ -17,7 +17,7 @@ from src.config import (
     PAGINATION_NUMBER,
 )
 from src.lending.filters import LendingFilter, WitnessFilter, WorkloadFilter
-from src.lending.schemas import (
+from src.lending.schemas.v1 import (
     CreateWitnessSchema,
     NewLendingSchema,
     UpdateLendingSchema,

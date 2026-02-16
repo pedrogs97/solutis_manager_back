@@ -19,7 +19,15 @@ from src.asset.router import asset_router
 from src.auth.router import auth_router
 from src.auth.service import create_initial_data, create_permissions, create_super_user
 from src.backends import get_db_session
-from src.config import BASE_API, BASE_DIR, DB_SERVER, ORIGINS, SCHEDULER_ACTIVE
+from src.config import (
+    BASE_API,
+    BASE_API_V2,
+    BASE_DIR,
+    DB_SERVER,
+    DEBUG,
+    ORIGINS,
+    SCHEDULER_ACTIVE,
+)
 from src.database import ExternalDatabase, get_database_url
 from src.datasync.router import datasync_router
 from src.datasync.scheduler import SchedulerService
@@ -28,6 +36,7 @@ from src.exceptions import default_response_exception
 from src.inventory.router import inventory_router
 from src.invoice.router import invoice_router
 from src.lending.router import lending_router
+from src.lending.router_v2 import lending_router_v2
 from src.log.router import log_router
 from src.maintenance.router import maintenance_router
 from src.maintenance.service import MaintenanceService, UpgradeService
@@ -41,13 +50,14 @@ tracemalloc.start()
 if not os.path.exists(f"{BASE_DIR}/logs/"):
     os.makedirs(f"{BASE_DIR}/logs/")
 
+log_level = "DEBUG" if DEBUG else "INFO"
 # Configurar loguru
 logger.remove()  # Remove handler padrão
 logger.add(
     f"{BASE_DIR}/logs/{{time:YYYY-MM-DD}}.log",
     rotation="00:00",  # Rotaciona à meia-noite
     retention="30 days",  # Mantém logs por 30 dias
-    level="INFO",
+    level=log_level,
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}",
     backtrace=True,
     diagnose=True,
@@ -188,6 +198,8 @@ appAPI.include_router(term_router, prefix=BASE_API)
 appAPI.include_router(report_router, prefix=BASE_API)
 appAPI.include_router(inventory_router, prefix=BASE_API)
 appAPI.include_router(proxy_router, prefix=BASE_API)
+# Include v2 lending router
+appAPI.include_router(lending_router_v2, prefix=BASE_API_V2)
 
 
 @appAPI.get("/health/", tags=["Service"])
