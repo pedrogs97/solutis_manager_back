@@ -238,6 +238,7 @@ class VerificationService:
         data: NewVerificationAnswerSchema,
         db_session: Session,
         authenticated_user: UserModel,
+        auto_commit: bool = True,
     ) -> List[VerificationAnswerSerializerSchema]:
         """Creates new answer verification"""
 
@@ -265,7 +266,6 @@ class VerificationService:
             new_answers.append(new_answer_verification)
 
         db_session.add_all(new_answers)
-        db_session.commit()
         db_session.flush()
 
         service_log.set_log(
@@ -275,7 +275,12 @@ class VerificationService:
             lending.id,
             authenticated_user,
             db_session,
+            auto_commit=False,
         )
+        if auto_commit:
+            db_session.commit()
+        else:
+            db_session.flush()
         logger.info("New answers verification. {}", str(len(new_answers)))
 
         return [

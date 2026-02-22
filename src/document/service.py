@@ -14,48 +14,34 @@ from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
-
 from src.asset.enums import AssetStatusEnum
 from src.asset.models import AssetModel, AssetStatusModel
 from src.asset.service import AssetService
 from src.auth.models import UserModel
 from src.clicksign_api.service import ClickSignService
-from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG, DEFAULT_DATE_FORMAT
+from src.config import (BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG,
+                        DEFAULT_DATE_FORMAT)
 from src.document.enums import DocumentTypeEnum
 from src.document.filters import DocumentFilter
 from src.document.models import DocumentModel, DocumentTypeModel
-from src.document.schemas import (
-    DocumentSerializerSchema,
-    NewLendingContextSchema,
-    NewLendingDocSchema,
-    NewLendingPjContextSchema,
-    NewRevokeContractDocSchema,
-    NewRevokeTermDocSchema,
-    NewTermContextSchema,
-    NewTermDocSchema,
-    RecrateLendingDocSchema,
-    VerificationContextSchema,
-    WitnessContextSchema,
-)
-from src.lending.models import (
-    LendingAttachments,
-    LendingModel,
-    LendingStatusModel,
-    WitnessModel,
-)
+from src.document.schemas import (DocumentSerializerSchema,
+                                  NewLendingContextSchema, NewLendingDocSchema,
+                                  NewLendingPjContextSchema,
+                                  NewRevokeContractDocSchema,
+                                  NewRevokeTermDocSchema, NewTermContextSchema,
+                                  NewTermDocSchema, RecrateLendingDocSchema,
+                                  VerificationContextSchema,
+                                  WitnessContextSchema)
+from src.lending.models import (LendingAttachments, LendingModel,
+                                LendingStatusModel, WitnessModel)
 from src.log.services import LogService
 from src.people.models import EmployeeModel
 from src.term.models import TermItemModel, TermModel, TermStatusModel
-from src.utils import (
-    create_lending_contract,
-    create_lending_contract_pj,
-    create_revoke_lending_contract,
-    create_revoke_lending_contract_pj,
-    create_term,
-    create_verification_document,
-    get_image_to_pdf,
-    upload_file,
-)
+from src.utils import (create_lending_contract, create_lending_contract_pj,
+                       create_revoke_lending_contract,
+                       create_revoke_lending_contract_pj, create_term,
+                       create_verification_document, get_image_to_pdf,
+                       upload_file)
 from src.verification.models import VerificationAnswerModel
 
 service_log = LogService()
@@ -497,9 +483,7 @@ class DocumentService:
             errors.append({"field": "workloadId", "error": "Lotação não encontrada"})
 
         if not employee.nationality:
-            errors.append(
-                {"field": "nationality", "error": "Nacionalidade não informada"}
-            )
+            errors.append({"field": "nationality", "error": "Nacionalidade não informada"})
 
         if not employee.marital_status:
             errors.append(
@@ -553,6 +537,7 @@ class DocumentService:
         type_doc: str,
         db_session: Session,
         authenticated_user: UserModel,
+        auto_commit: bool = True,
     ) -> DocumentSerializerSchema:
         """Create new contract, not signed"""
         try:
@@ -575,7 +560,6 @@ class DocumentService:
             )
 
             if not current_lending:
-                db_session.close()
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail={
@@ -603,7 +587,6 @@ class DocumentService:
                 cost_center=current_lending.cost_center,
                 witnesses=current_lending.witnesses,
             )
-
             if validation_errors:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail=validation_errors
@@ -747,7 +730,6 @@ class DocumentService:
             new_doc.doc_type = doc_type
 
             db_session.add(new_doc)
-            db_session.commit()
             db_session.flush()
 
             service_log.set_log(
@@ -757,11 +739,11 @@ class DocumentService:
                 new_doc.id,
                 authenticated_user,
                 db_session,
+                auto_commit=False,
             )
             logger.info("New Document. {}", str(new_doc))
 
             db_session.add(asset)
-            db_session.commit()
             db_session.flush()
 
             current_lending.document = new_doc
@@ -769,7 +751,6 @@ class DocumentService:
             current_lending.status = lending_pending
 
             db_session.add(current_lending)
-            db_session.commit()
             db_session.flush()
 
             service_log.set_log(
@@ -779,12 +760,19 @@ class DocumentService:
                 current_lending.id,
                 authenticated_user,
                 db_session,
+                auto_commit=False,
             )
             logger.info("New Document add to Lending. {}", str(current_lending))
 
+            if auto_commit:
+                db_session.commit()
+            else:
+                db_session.flush()
+
             return self.serialize_document(new_doc)
         except Exception as e:
-            db_session.rollback()
+            if auto_commit:
+                db_session.rollback()
             logger.error("An exception occurred:\n{}", traceback.format_exc())
             logger.error("Error creating contract: {}", e)
             raise
@@ -828,7 +816,6 @@ class DocumentService:
                 cost_center=current_lending.cost_center,
                 witnesses=current_lending.witnesses,
             )
-
             if validation_errors:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail=validation_errors
@@ -1091,6 +1078,17 @@ class DocumentService:
             revoke_lending_doc.witnesses_id, db_session
         )
 
+        validation_errors = self.__validate_lending_contract_context(
+            employee=employee,
+            workload=workload,
+            cost_center=current_lending.cost_center,
+            witnesses=revoke_witnesses,
+        )
+        if validation_errors:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=validation_errors
+            )
+
         witness1 = revoke_witnesses[0]
 
         witness2 = revoke_witnesses[1]
@@ -1273,6 +1271,17 @@ class DocumentService:
             )
 
         current_lending.witnesses.reverse()
+
+        validation_errors = self.__validate_lending_contract_context(
+            employee=employee,
+            workload=workload,
+            cost_center=current_lending.cost_center,
+            witnesses=current_lending.witnesses,
+        )
+        if validation_errors:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=validation_errors
+            )
 
         witness1 = current_lending.witnesses[0]
 

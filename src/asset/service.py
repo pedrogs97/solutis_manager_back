@@ -608,14 +608,17 @@ class AssetService:
         asset_status: AssetStatusModel,
         db_session: Session,
         only_history: bool = False,
+        auto_commit: bool = True,
     ) -> None:
         """Update asset status"""
         if not only_history:
             asset.status = asset_status
 
             db_session.add(asset)
-            db_session.commit()
-            db_session.flush()
+            if auto_commit:
+                db_session.commit()
+            else:
+                db_session.flush()
 
         historic = AssetStatusHistoricModel(
             asset_id=asset.id,
@@ -623,8 +626,10 @@ class AssetService:
         )
 
         db_session.add(historic)
-        db_session.commit()
-        db_session.flush()
+        if auto_commit:
+            db_session.commit()
+        else:
+            db_session.flush()
 
     def __extract_data_from_row(
         self,

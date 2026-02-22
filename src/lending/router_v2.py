@@ -10,14 +10,17 @@ lending_router_v2 = APIRouter(prefix="/lendings", tags=["Lending V2"])
 
 @lending_router_v2.post("/")
 async def post_create_lending_flow_route(
-    controller: LendingController = Depends(),
+    controller: LendingController = Depends(LendingController.from_multipart),
 ):
     """
     Creates a lending, uploads attachments, and generates a contract in a single flow.
     """
-    result = await controller.create_lending_flow()
+    try:
+        result = await controller.create_lending_flow()
 
-    return JSONResponse(
-        content=result,
-        status_code=status.HTTP_201_CREATED,
-    )
+        return JSONResponse(
+            content=result,
+            status_code=status.HTTP_201_CREATED,
+        )
+    finally:
+        controller.db_session.close()

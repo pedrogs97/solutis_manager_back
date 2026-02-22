@@ -6,22 +6,14 @@ from fastapi import APIRouter, Depends, Form, Query, UploadFile, status
 from fastapi.responses import JSONResponse, Response
 from fastapi_filter import FilterDepends
 from sqlalchemy.orm import Session
-
 from src.auth.models import UserModel
 from src.backends import PermissionChecker, get_db_session
-from src.config import (
-    MAX_PAGINATION_NUMBER,
-    NOT_ALLOWED,
-    PAGE_NUMBER_DESCRIPTION,
-    PAGE_SIZE_DESCRIPTION,
-    PAGINATION_NUMBER,
-)
+from src.config import (MAX_PAGINATION_NUMBER, NOT_ALLOWED,
+                        PAGE_NUMBER_DESCRIPTION, PAGE_SIZE_DESCRIPTION,
+                        PAGINATION_NUMBER)
 from src.lending.filters import LendingFilter, WitnessFilter, WorkloadFilter
-from src.lending.schemas.v1 import (
-    CreateWitnessSchema,
-    NewLendingSchema,
-    UpdateLendingSchema,
-)
+from src.lending.schemas.v1 import (CreateWitnessSchema, NewLendingSchema,
+                                    UpdateLendingSchema)
 from src.lending.services.attachments import LendingAttachmentService
 from src.lending.services.lending import LendingService
 
@@ -166,7 +158,7 @@ def patch_lending_route(
     data: UpdateLendingSchema,
     db_session: Session = Depends(get_db_session),
     authenticated_user: Union[UserModel, None] = Depends(
-        PermissionChecker({"module": "lending", "model": "lending", "action": "view"})
+        PermissionChecker({"module": "lending", "model": "lending", "action": "edit"})
     ),
 ):
     """
@@ -299,9 +291,12 @@ async def post_lending_attach(
         return JSONResponse(
             content=NOT_ALLOWED, status_code=status.HTTP_401_UNAUTHORIZED
         )
-    attachment_service = LendingAttachmentService(db_session)
-    await attachment_service.upload_attachment(lending_id, attachment)
-    return JSONResponse(
-        content={"message": "Attachment uploaded successfully"},
-        status_code=status.HTTP_200_OK,
-    )
+    try:
+        attachment_service = LendingAttachmentService(db_session)
+        await attachment_service.upload_attachment(lending_id, attachment)
+        return JSONResponse(
+            content={"message": "Attachment uploaded successfully"},
+            status_code=status.HTTP_200_OK,
+        )
+    finally:
+        db_session.close()

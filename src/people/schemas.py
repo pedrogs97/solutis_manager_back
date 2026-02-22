@@ -4,7 +4,6 @@ from datetime import date
 from typing import Optional
 
 from pydantic import Field
-
 from src.schemas import BaseSchema
 
 
@@ -259,9 +258,10 @@ class EmployeeSerializerSchema(BaseSchema):
 
     id: int
     role: Optional[EmployeeRoleSerializerSchema]
-    nationality: Optional[EmployeeNationalitySerializerSchema]
+    nationality: Optional[EmployeeNationalitySerializerSchema] = None
     marital_status: Optional[EmployeeMatrimonialStatusSerializerSchema] = Field(
-        serialization_alias="maritalStatus"
+        serialization_alias="maritalStatus",
+        default=None,
     )
     gender: EmployeeGenderSerializerSchema
     educational_level: Optional[EmployeeEducationalLevelSerializerSchema] = Field(

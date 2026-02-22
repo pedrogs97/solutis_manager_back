@@ -371,6 +371,7 @@ class LendingService:
         new_lending: NewLendingSchema,
         db_session: Session,
         authenticated_user: UserModel,
+        auto_commit: bool = True,
     ):
         """Creates new lending"""
         try:
@@ -403,11 +404,13 @@ class LendingService:
             )
 
             AssetService().update_asset_status(
-                asset, db_session.query(AssetStatusModel).get(2), db_session
+                asset,
+                db_session.query(AssetStatusModel).get(2),
+                db_session,
+                auto_commit=auto_commit,
             )
 
             db_session.add(asset)
-            db_session.commit()
             db_session.flush()
 
             new_lending_db.employee = employee
@@ -418,7 +421,6 @@ class LendingService:
 
             new_lending_db.witnesses = witnesses
             db_session.add(new_lending_db)
-            db_session.commit()
             db_session.flush()
 
             service_log.set_log(
@@ -428,12 +430,14 @@ class LendingService:
                 new_lending_db.id,
                 authenticated_user,
                 db_session,
+                auto_commit=auto_commit,
             )
             logger.info("New Lending. {}", str(new_lending_db))
 
             return self.serialize_lending(new_lending_db)
         except TypeError as error:
-            db_session.rollback()
+            if auto_commit:
+                db_session.rollback()
             logger.error("Error creating lending. {}", error)
             raise HTTPException(
                 detail={
@@ -460,11 +464,8 @@ class LendingService:
         """Update a lending"""
         lending = self.get_lending_or_404(lending_id, db_session)
 
-        lending.observations = data.observations
-
-        for key, value in data.model_dump().items():
-            if value is not None:
-                setattr(lending, key, value)
+        for key, value in data.model_dump(exclude_unset=True).items():
+            setattr(lending, key, value)
 
         db_session.add(lending)
         db_session.commit()

@@ -16,6 +16,7 @@ class LogService:
         identifier: int,
         user: UserModel,
         db_session: Session,
+        auto_commit: bool = True,
     ):
         """Set a log from a operation"""
         new_log = LogModel(
@@ -27,4 +28,7 @@ class LogService:
         )
 
         db_session.add(new_log)
-        db_session.commit()
+        if auto_commit:
+            db_session.commit()
+        else:
+            db_session.flush()

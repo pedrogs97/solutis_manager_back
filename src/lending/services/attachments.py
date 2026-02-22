@@ -49,7 +49,9 @@ class LendingAttachmentService:
 
         return acronym + str_code.zfill(6 - len(str_code))
 
-    async def upload_attachment(self, lending_id: int, attachment: UploadFile):
+    async def upload_attachment(
+        self, lending_id: int, attachment: UploadFile, auto_commit: bool = True
+    ):
         """
         Adds an attachment to a lending record.
 
@@ -57,14 +59,14 @@ class LendingAttachmentService:
             lending_id (int): ID of the lending record
             attachment (UploadFile): Attachment data to be added
         """
+        file_path = None
         try:
             current_lending = self.lending_service.get_lending_or_404(
                 lending_id, self.db_session
             )
             new_attachment = LendingAttachments(lending_id=current_lending.id)
             self.db_session.add(new_attachment)
-            self.db_session.commit()
-            self.db_session.refresh(new_attachment)
+            self.db_session.flush()
             lending_number = current_lending.number or self.__generate_code(
                 self.db_session, current_lending.asset
             )
@@ -79,16 +81,30 @@ class LendingAttachmentService:
             new_attachment.file_name = new_file_name
             new_attachment.path = file_path
             self.db_session.add(new_attachment)
-            self.db_session.commit()
+            if auto_commit:
+                self.db_session.commit()
+            else:
+                self.db_session.flush()
             logger.info(
                 f"Attachment {new_attachment.id} uploaded. Lending {current_lending.id} - {lending_number}"
             )
+        except HTTPException:
+            if auto_commit:
+                self.db_session.rollback()
+            raise
         except Exception as exc:
-            self.db_session.rollback()
+            if auto_commit:
+                self.db_session.rollback()
+            if file_path and os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    logger.warning(
+                        "Unable to remove attachment file after failure: {}",
+                        file_path,
+                    )
             logger.error(f"Error uploading attachment: {str(exc)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={"field": "lendingId", "error": "Error uploading attachment."},
             ) from exc
-        finally:
-            self.db_session.close()

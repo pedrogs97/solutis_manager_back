@@ -1,9 +1,11 @@
 """Tests for lending controller"""
 
 import asyncio
+import json
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from fastapi import HTTPException
 from fastapi import UploadFile
 
 from src.lending.controllers.lending import LendingController
@@ -85,3 +87,132 @@ def test_create_lending_flow_successful(mock_db_session, mock_authenticated_user
     assert "document" in result
     assert "verfication" in result
     assert result["lending"] == {"id": 1}
+
+
+def test_create_lending_flow_propagates_http_exception(
+    mock_db_session, mock_authenticated_user
+):
+    """Ensure business HTTP errors are not masked as generic 500."""
+    lending_data = NewLendingDataSchema(
+        employeeId=1,
+        assetId=1,
+        workloadId=1,
+        costCenterId=1,
+        manager="Test Manager",
+        witnessesId=[2, 3],
+        location="Test Location",
+        bu=LendingBUEnum.ADS,
+        principalSigner="principal@example.com",
+        employeeSigner="employee@example.com",
+        businessExecutive="Executive",
+    )
+
+    lending_controller = LendingController(
+        data=lending_data,
+        attachments=[],
+        db_session=mock_db_session,
+        authenticated_user=mock_authenticated_user,
+    )
+    lending_controller.lending_service = MagicMock()
+    lending_controller.document_service = MagicMock()
+    lending_controller.attachment_service = MagicMock()
+    lending_controller.attachment_service.upload_attachment = AsyncMock()
+
+    lending_controller.lending_service.create_lending.side_effect = HTTPException(
+        status_code=400, detail={"field": "assetId", "error": "Ativo já vinculado"}
+    )
+
+    with pytest.raises(HTTPException) as exception_info:
+        asyncio.run(lending_controller.create_lending_flow())
+
+    assert exception_info.value.status_code == 400
+    assert exception_info.value.detail == {
+        "field": "assetId",
+        "error": "Ativo já vinculado",
+    }
+
+
+def test_create_lending_flow_returns_422_on_validation_error(
+    mock_db_session, mock_authenticated_user
+):
+    """Ensure validation errors are returned as 422, not generic 500."""
+    lending_data = NewLendingDataSchema(
+        employeeId=1,
+        assetId=1,
+        workloadId=1,
+        costCenterId=1,
+        manager="Test Manager",
+        witnessesId=[2, 3],
+        location="Test Location",
+        bu=LendingBUEnum.ADS,
+        principalSigner="principal@example.com",
+        employeeSigner="employee@example.com",
+        businessExecutive="Executive",
+    )
+
+    lending_controller = LendingController(
+        data=lending_data,
+        attachments=[],
+        db_session=mock_db_session,
+        authenticated_user=mock_authenticated_user,
+    )
+    lending_controller.data = MagicMock()
+    lending_controller.data.model_dump.return_value = {}
+    lending_controller.lending_service = MagicMock()
+    lending_controller.document_service = MagicMock()
+    lending_controller.attachment_service = MagicMock()
+    lending_controller.attachment_service.upload_attachment = AsyncMock()
+
+    with pytest.raises(HTTPException) as exception_info:
+        asyncio.run(lending_controller.create_lending_flow())
+
+    assert exception_info.value.status_code == 422
+    lending_controller.lending_service.create_lending.assert_not_called()
+
+
+def test_from_multipart_parses_json_and_builds_controller(
+    mock_db_session, mock_authenticated_user
+):
+    """Ensure multipart `data` JSON is parsed into NewLendingDataSchema."""
+    data = json.dumps(
+        {
+            "employeeId": 1,
+            "assetId": 1,
+            "workloadId": 1,
+            "costCenterId": 1,
+            "manager": "Test Manager",
+            "witnessesId": [2, 3],
+            "location": "Test Location",
+            "bu": "ADS",
+            "principalSigner": "principal@example.com",
+            "employeeSigner": "employee@example.com",
+            "businessExecutive": "Executive",
+        }
+    )
+
+    controller = LendingController.from_multipart(
+        data=data,
+        attachments=[],
+        db_session=mock_db_session,
+        authenticated_user=mock_authenticated_user,
+    )
+
+    assert isinstance(controller, LendingController)
+    assert isinstance(controller.data, NewLendingDataSchema)
+    assert controller.data.employee_id == 1
+    assert controller.attachments == []
+
+
+def test_from_multipart_raises_422_for_invalid_json(
+    mock_db_session, mock_authenticated_user
+):
+    """Ensure malformed JSON in multipart `data` returns HTTP 422."""
+    with pytest.raises(HTTPException) as exception_info:
+        LendingController.from_multipart(
+            data="{invalid",
+            attachments=[],
+            db_session=mock_db_session,
+            authenticated_user=mock_authenticated_user,
+        )
+
+    assert exception_info.value.status_code == 422

@@ -12,8 +12,18 @@ Este endpoint orquestra a criação de um novo comodato, o upload de arquivos an
 
 A requisição deve ser do tipo `multipart/form-data` e conter os seguintes campos:
 
--   `data` (JSON): Objeto seguindo o schema `NewLendingDataSchema`.
+-   `data` (JSON string): String JSON contendo o objeto que segue o schema `NewLendingDataSchema`.
 -   `attachments` (array de `UploadFile`, opcional): Lista de arquivos a serem anexados ao comodato.
+
+Exemplo de envio com `curl`:
+
+```bash
+curl -X POST "http://localhost:8080/api/v2/lendings/" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -F 'data={"employeeId":1,"assetId":1,"workloadId":1,"costCenterId":1,"manager":"Gestor","location":"Salvador - BA","bu":"ADS","principalSigner":"principal@solutis.com.br","employeeSigner":"employee@solutis.com.br","businessExecutive":"Executivo","witnessesId":[2,3],"msOffice":false,"legalPerson":false}' \
+  -F "attachments=@/caminho/arquivo1.pdf" \
+  -F "attachments=@/caminho/arquivo2.pdf"
+```
 
 #### Exemplo de `data`
 

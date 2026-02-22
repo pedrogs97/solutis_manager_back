@@ -16,16 +16,20 @@ def test_create_lending_flow_route_success():
     Test the successful creation of a lending flow via the v2 router.
     """
     mock_controller = MagicMock(spec=LendingController)
+    mock_controller.db_session = MagicMock()
     mock_controller.create_lending_flow = AsyncMock(
         return_value={"lending": {"id": 1}, "document": {"id": 1}}
     )
-    appAPI.dependency_overrides[LendingController] = lambda: mock_controller
+    appAPI.dependency_overrides[LendingController.from_multipart] = (
+        lambda: mock_controller
+    )
 
     response = client.post("/api/v2/lendings/")
 
     assert response.status_code == 201
     assert response.json() == {"lending": {"id": 1}, "document": {"id": 1}}
     mock_controller.create_lending_flow.assert_awaited_once()
+    mock_controller.db_session.close.assert_called_once()
     appAPI.dependency_overrides = {}
 
 
@@ -38,7 +42,7 @@ def test_create_lending_flow_route_unauthenticated():
     def _raise_unauthorized():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
-    appAPI.dependency_overrides[LendingController] = _raise_unauthorized
+    appAPI.dependency_overrides[LendingController.from_multipart] = _raise_unauthorized
 
     response = client.post("/api/v2/lendings/")
 

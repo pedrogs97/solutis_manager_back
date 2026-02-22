@@ -98,14 +98,14 @@ class LendingAssetHistorySerializerSchema(BaseSchema):
 class UpdateLendingSchema(BaseSchema):
     """Update lending"""
 
-    observations: Optional[str]
+    observations: Optional[str] = None
     ms_office: Optional[bool] = Field(alias="msOffice", default=None)
     manager: Optional[str] = None
     project: Optional[str] = None
     business_executive: Optional[str] = Field(alias="businessExecutive", default=None)
     glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
-    principal_signer: Optional[str] = Field(alias="principalSigner")
-    employee_signer: Optional[str] = Field(alias="employeeSigner")
+    principal_signer: Optional[str] = Field(alias="principalSigner", default=None)
+    employee_signer: Optional[str] = Field(alias="employeeSigner", default=None)
 
 
 class NewLendingSchema(BaseSchema):
