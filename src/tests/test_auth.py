@@ -51,6 +51,9 @@ class TestAuthModule(TestBase):
         user_id = data["id"]
         token = data["access_token"]
         token_type = data["token_type"]
+        assert len(token) <= 255
+        with pytest.raises(jwt.PyJWTError):
+            jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         response = self.client.get(
             f"{BASE_API}/auth/users/{user_id}/",
             headers={"Authorization": f"{token_type} {token}"},

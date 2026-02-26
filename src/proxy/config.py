@@ -27,6 +27,10 @@ FORWARD_HEADERS = [
     "accept",
     "user-agent",
     "x-requested-with",
+    "x-authenticated-user-id",
+    "x-authenticated-user-email",
+    "x-authenticated-user-full-name",
+    "x-authenticated-user-group",
 ]
 
 

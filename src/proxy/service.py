@@ -2,26 +2,28 @@
 
 import asyncio
 from typing import Any, Dict, Optional
+from urllib.parse import quote
 
 import httpx
 from fastapi import HTTPException, Request, status
 from fastapi.responses import Response
 from loguru import logger
-
 from src.auth.models import UserModel
-from src.proxy.config import (
-    EXTERNAL_SERVICE_RETRY_ATTEMPTS,
-    EXTERNAL_SERVICE_TIMEOUT,
-    FORWARD_HEADERS,
-    get_external_service_url,
-    is_valid_service,
-)
+from src.proxy.config import (EXTERNAL_SERVICE_RETRY_ATTEMPTS,
+                              EXTERNAL_SERVICE_TIMEOUT, FORWARD_HEADERS,
+                              get_external_service_url, is_valid_service)
 
 # Constants
 INSUFFICIENT_PERMISSIONS_MSG = "Insufficient permissions"
 DEFAULT_MEDIA_TYPE = "application/json"
 PROXY_ERROR_PREFIX = "Proxy error: "
 HTTP_ERROR_LOG_MSG = "HTTP error occurred: {}"
+AUTH_CONTEXT_HEADERS = (
+    "x-authenticated-user-id",
+    "x-authenticated-user-email",
+    "x-authenticated-user-full-name",
+    "x-authenticated-user-group",
+)
 
 
 class ProxyService:
@@ -40,25 +42,61 @@ class ProxyService:
                     filtered_headers[header_name] = headers[header_name]
         return filtered_headers
 
+    def _build_authenticated_headers(self, current_user: UserModel) -> Dict[str, str]:
+        """Build authenticated user headers injected by the trusted proxy.
+
+        Values are URL-encoded (RFC 5987) so non-ASCII characters
+        (common in Portuguese names) survive the ASCII-only HTTP header
+        transport.  The downstream service must URL-decode them.
+        """
+        full_name = (
+            current_user.employee.full_name
+            if current_user.employee and current_user.employee.full_name
+            else "Usuario"
+        )
+        group_name = current_user.group.name if current_user.group else ""
+        return {
+            "x-authenticated-user-id": str(current_user.id),
+            "x-authenticated-user-email": quote(
+                str(current_user.email or "").strip(), safe="@."
+            ),
+            "x-authenticated-user-full-name": quote(
+                str(full_name).strip(), safe=""
+            ),
+            "x-authenticated-user-group": quote(
+                str(group_name).strip(), safe=""
+            ),
+        }
+
+    def _prepare_proxy_headers(
+        self, request_headers: Dict[str, str], current_user: UserModel
+    ) -> Dict[str, str]:
+        """Prepare headers forwarded to upstream service."""
+        headers = dict(request_headers)
+        for header_name in AUTH_CONTEXT_HEADERS:
+            headers.pop(header_name, None)
+        headers.update(self._build_authenticated_headers(current_user))
+        return headers
+
     def _handle_request_errors(self, attempt: int, url: str, error: Exception):
         """Handle request errors with appropriate exceptions"""
         if isinstance(error, httpx.TimeoutException):
-            logger.warning("Timeout on attempt %d for {}", attempt + 1, url)
+            logger.warning("Timeout on attempt {} for {}", attempt + 1, url)
             if attempt == self.retry_attempts - 1:
                 raise HTTPException(
                     status_code=status.HTTP_504_GATEWAY_TIMEOUT,
                     detail="External service timeout",
                 )
         elif isinstance(error, httpx.ConnectError):
-            logger.error("Connection error on attempt %d for {}", attempt + 1, url)
+            logger.error("Connection error on attempt {} for {}", attempt + 1, url)
             if attempt == self.retry_attempts - 1:
                 raise HTTPException(
                     status_code=status.HTTP_502_BAD_GATEWAY,
                     detail="Unable to connect to external service",
                 )
         else:
-            logger.error(
-                "Unexpected error on attempt %d for {}: {}",
+            logger.exception(
+                "Unexpected error on attempt {} for {}: {}",
                 attempt + 1,
                 url,
                 error,
@@ -114,7 +152,7 @@ class ProxyService:
             for attempt in range(self.retry_attempts):
                 try:
                     logger.info(
-                        "Proxying {} request to {} (attempt %d)",
+                        "Proxying {} request to {} (attempt {})",
                         method,
                         url,
                         attempt + 1,
@@ -125,7 +163,7 @@ class ProxyService:
                     )
 
                     logger.info(
-                        "External service responded with status %d",
+                        "External service responded with status {}",
                         response.status_code,
                     )
                     return response
@@ -244,7 +282,7 @@ class ProxyService:
         """Handle GET proxy request with validation"""
         self.validate_user_permissions(current_user)
 
-        headers = dict(request.headers)
+        headers = self._prepare_proxy_headers(dict(request.headers), current_user)
         params = dict(request.query_params)
 
         try:
@@ -273,6 +311,7 @@ class ProxyService:
         self.validate_user_permissions(current_user)
 
         headers, json_data, data = await self.handle_request_body(request)
+        headers = self._prepare_proxy_headers(headers, current_user)
 
         try:
             response = await self.post(
@@ -300,6 +339,7 @@ class ProxyService:
         self.validate_user_permissions(current_user)
 
         headers, json_data, data = await self.handle_request_body(request)
+        headers = self._prepare_proxy_headers(headers, current_user)
 
         try:
             response = await self.put(
@@ -327,6 +367,7 @@ class ProxyService:
         self.validate_user_permissions(current_user)
 
         headers, json_data, data = await self.handle_request_body(request)
+        headers = self._prepare_proxy_headers(headers, current_user)
 
         try:
             response = await self.patch(
@@ -353,7 +394,7 @@ class ProxyService:
         """Handle DELETE proxy request with validation"""
         self.validate_user_permissions(current_user)
 
-        headers = dict(request.headers)
+        headers = self._prepare_proxy_headers(dict(request.headers), current_user)
         params = dict(request.query_params)
 
         try:

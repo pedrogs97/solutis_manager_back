@@ -1,6 +1,7 @@
 """Base backends"""
 
 import asyncio
+import secrets
 import smtplib
 import time
 from datetime import datetime, timedelta
@@ -13,7 +14,7 @@ import jwt
 from fastapi import Depends, status
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import ExpiredSignatureError, PyJWTError
+from jwt.exceptions import ExpiredSignatureError
 from loguru import logger
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -32,7 +33,7 @@ from src.config import (
     TEMPLATE_DIR,
 )
 from src.database import Session_db
-from src.exceptions import get_user_exception, token_exception
+from src.exceptions import token_exception
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -70,29 +71,34 @@ def get_user_from_refresh(
     user = (
         db_session.query(UserModel)
         .filter(
-            UserModel.id == token_decoded["sub"],
+            UserModel.id == int(token_decoded["sub"]),
         )
         .first()
     )
     return user
 
 
+def generate_access_token(db_session: Session) -> str:
+    """Generates a short opaque access token."""
+    while True:
+        access_token = secrets.token_urlsafe(24)
+        token_exists = (
+            db_session.query(TokenModel.id)
+            .filter(TokenModel.token == access_token)
+            .first()
+        )
+        if not token_exists:
+            return access_token
+
+
 def logout_user(token: str, db_session: Session) -> None:
     """Logouts user"""
-    try:
-        token_decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user = get_current_user(token_decoded, db_session)
-        old_token = (
-            db_session.query(TokenModel).filter(TokenModel.user_id == user.id).first()
-        )
+    old_token = db_session.query(TokenModel).filter(TokenModel.token == token).first()
+    if not old_token:
+        raise token_exception()
 
-        if not old_token:
-            raise token_exception()
-
-        db_session.delete(old_token)
-        db_session.commit()
-    except PyJWTError:
-        logger.warning("Failed logout")
+    db_session.delete(old_token)
+    db_session.commit()
 
 
 def get_user_token(user: UserModel, db_session: Session) -> dict:
@@ -118,20 +124,14 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
 
     refresh_expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     refresh_expire_timestamp = time.mktime(refresh_expire.timetuple())
+    full_name = user.employee.full_name if user.employee else "Usuário"
     if not token_is_valid(old_token):
-        encode = {
-            "iat": datetime.now().timestamp(),
-            "exp": access_expire_timestamp,
-            "sub": user.id,
-            "type": "access",
-        }
-
-        token = jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+        token = generate_access_token(db_session)
 
         refresh_encode = {
             "iat": datetime.now().timestamp(),
             "exp": refresh_expire_timestamp,
-            "sub": user.id,
+            "sub": str(user.id),
             "type": "refresh",
         }
 
@@ -156,7 +156,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
             "id": user.id,
             "group": user.group.name,
             "email": user.email,
-            "full_name": user.employee.full_name if user.employee else "Usuário",
+            "full_name": full_name,
             "access_token": token,
             "refresh_token": refresh_token,
             "token_type": "Bearer",
@@ -168,7 +168,7 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
         "id": user.id,
         "group": user.group.name,
         "email": user.email,
-        "full_name": user.employee.full_name if user.employee else "Usuário",
+        "full_name": full_name,
         "access_token": old_token.token,
         "refresh_token": old_token.refresh_token,
         "token_type": "Bearer",
@@ -177,34 +177,11 @@ def get_user_token(user: UserModel, db_session: Session) -> dict:
     }
 
 
-def get_current_user(token: dict, db_session: Session) -> UserModel:
-    """Returns current user from token"""
-    try:
-        user_id: int = token.get("sub")
-        if user_id is None:
-            raise get_user_exception()
-
-        user_db = db_session.query(UserModel).filter(UserModel.id == user_id).first()
-
-        if not user_db:
-            raise get_user_exception()
-
-        return user_db
-    except jwt.ExpiredSignatureError as exc:
-        db_session.close()
-        raise get_user_exception() from exc
-
-
-def token_is_valid(token: Union[TokenModel, dict]) -> bool:
-    """Verifies token validity"""
-    if token and isinstance(token, TokenModel):
-        return token.expires_in > datetime.utcnow()
-
-    if isinstance(token, dict) and token and "exp" in token:
-        return (
-            token["exp"] > datetime.utcnow().timestamp() and token["type"] == "access"
-        )
-    return False
+def token_is_valid(token: Union[TokenModel, None]) -> bool:
+    """Verifies opaque access token validity."""
+    if not token or not isinstance(token, TokenModel):
+        return False
+    return token.expires_in > datetime.utcnow()
 
 
 def refresh_token_has_expired(token_str: str) -> bool:
@@ -269,19 +246,23 @@ class PermissionChecker:
         token: Annotated[str, Depends(oauth2_bearer)],
         db_session: Annotated[Session, Depends(get_db_session)],
     ) -> Union[UserModel, None]:
-        try:
-            token_decoded = jwt.decode(str(token), SECRET_KEY, algorithms=[ALGORITHM])
-            if not token_is_valid(token_decoded):
-                return None
-            user = get_current_user(token_decoded, db_session)
-
-            if not self.has_permissions(user):
-                return None
-
-            return user
-        except jwt.ExpiredSignatureError:
+        token_db = db_session.query(TokenModel).filter(
+            TokenModel.token == str(token)
+        ).first()
+        if not token_is_valid(token_db):
             logger.warning("Invalid token")
             return None
+
+        user = (
+            db_session.query(UserModel).filter(UserModel.id == token_db.user_id).first()
+        )
+        if not user:
+            return None
+
+        if not self.has_permissions(user):
+            return None
+
+        return user
 
 
 # pylint: disable=too-few-public-methods
