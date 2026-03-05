@@ -238,9 +238,13 @@ def totvs_to_asset_type_schema(
 
 def get_pattern(description: str, pattern: str) -> str:
     """Returns a pattern from description"""
+    PATTER_MAPPER = {
+        "0001": "PADRÃO STUDIO",
+        "0002": "PADRÃO ESCRITÓRIO",
+    }
     if description and pattern and description.upper().startswith("MACBOOK"):
         return "MACBOOK"
-    return pattern or ""
+    return PATTER_MAPPER.get(pattern, "")
 
 
 def totvs_to_asset_schema(
@@ -253,7 +257,7 @@ def totvs_to_asset_schema(
     ATIVO, DATAAQUISICAO, PATRIMONIO, QUANTIDADE, UNIDADE, OBSERVACOES,
     CODIGOBARRA, CENTROCUSTO, VALORBASE, VRDEPACUCORRIGIDA, SERIE,
     IMEI, ACESSORIOS, OPERADORA, SISTEMAOPERACIONAL, PACOTEOFFICE,
-    PADRAOEQUIP, GARANTIA, LINHA, FORNECEDOR, NOTA, DEPRECIACAO
+    PADRAOEQUIP01, GARANTIA, LINHA, FORNECEDOR, NOTA, DEPRECIACAO
     """
     try:
         acquisition_date: datetime = row["DATAAQUISICAO"]
@@ -269,7 +273,7 @@ def totvs_to_asset_schema(
             invoice_number=row["NOTA"] if row["NOTA"] is not None else "",
             assurance_date=assurance_date,
             observations=row["OBSERVACOES"] if row["OBSERVACOES"] is not None else "",
-            pattern=get_pattern(row["DESCRICAO"], row["PADRAOEQUIP"]),
+            pattern=get_pattern(row["DESCRICAO"], row["PADRAOEQUIP01"]),
             operational_system=(
                 row["SISTEMAOPERACIONAL"]
                 if row["SISTEMAOPERACIONAL"] is not None
