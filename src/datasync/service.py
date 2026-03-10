@@ -239,8 +239,8 @@ def totvs_to_asset_type_schema(
 def get_pattern(description: str, pattern: str) -> str:
     """Returns a pattern from description"""
     PATTER_MAPPER = {
-        "0001": "PADRÃO STUDIO",
-        "0002": "PADRÃO ESCRITÓRIO",
+        "001": "PADRÃO STUDIO",
+        "002": "PADRÃO ESCRITÓRIO",
     }
     if description and pattern and description.upper().startswith("MACBOOK"):
         return "MACBOOK"
