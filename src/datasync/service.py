@@ -256,7 +256,7 @@ def totvs_to_asset_schema(
     IDPATRIMONIO, DESCRICAO, TIPO,
     ATIVO, DATAAQUISICAO, PATRIMONIO, QUANTIDADE, UNIDADE, OBSERVACOES,
     CODIGOBARRA, CENTROCUSTO, VALORBASE, VRDEPACUCORRIGIDA, SERIE,
-    IMEI, ACESSORIOS, OPERADORA, SISTEMAOPERACIONAL, PACOTEOFFICE,
+    IMEI, ACESSORIOS01, OPERADORA, SISTEMAOPERACIONAL, PACOTEOFFICE,
     PADRAOEQUIP01, GARANTIA, LINHA, FORNECEDOR, NOTA, DEPRECIACAO
     """
     try:
@@ -280,7 +280,7 @@ def totvs_to_asset_schema(
                 else ""
             ),
             serial_number=row["SERIE"] if row["SERIE"] is not None else "",
-            imei=row["IMEI"] if row["IMEI"] is not None else "",
+            imei=row["IMEI"] or row["IMEI02"] or "",
             acquisition_date=acquisition_date,
             value=(
                 float(str(row["VALORBASE"]).replace(",", "."))
@@ -289,8 +289,8 @@ def totvs_to_asset_schema(
             ),
             ms_office=row["PACOTEOFFICE"] == "SIM",
             line_number=row["LINHA"] if row["LINHA"] is not None else "",
-            operator=row["OPERADORA"] if row["OPERADORA"] is not None else "",
-            accessories=row["ACESSORIOS"] if row["ACESSORIOS"] is not None else "",
+            operator=row["OPERADORA01"] if row["OPERADORA01"] is not None else "",
+            accessories=row["ACESSORIOS01"] if row["ACESSORIOS01"] is not None else "",
             quantity=int(row["QUANTIDADE"]) if row["QUANTIDADE"] is not None else 0,
             unit=row["UNIDADE"] if row["UNIDADE"] is not None else "",
             active=row["ATIVO"] is not None and row["ATIVO"] == 1,
