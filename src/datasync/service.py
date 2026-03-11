@@ -247,6 +247,16 @@ def get_pattern(description: str, pattern: str) -> str:
     return PATTER_MAPPER.get(pattern, "")
 
 
+def get_accessories(description: str) -> str:
+    """Returns accessories from description"""
+    ACCESSORIES_MAPPER = {
+        "001": "CARREGADOR",
+        "002": "FONTE DE ENERGIA",
+        "003": "CPU, TECLADO, MOUSE, FONTE DE ENERGIA",
+    }
+    return ACCESSORIES_MAPPER.get(description, "")
+
+
 def totvs_to_asset_schema(
     row,
 ) -> Union[AssetTotvsSchema, None]:
@@ -290,7 +300,7 @@ def totvs_to_asset_schema(
             ms_office=row["PACOTEOFFICE"] == "SIM",
             line_number=row["LINHA"] if row["LINHA"] is not None else "",
             operator=row["OPERADORA01"] if row["OPERADORA01"] is not None else "",
-            accessories=row["ACESSORIOS01"] if row["ACESSORIOS01"] is not None else "",
+            accessories=get_accessories(row["ACESSORIOS01"] or ""),
             quantity=int(row["QUANTIDADE"]) if row["QUANTIDADE"] is not None else 0,
             unit=row["UNIDADE"] if row["UNIDADE"] is not None else "",
             active=row["ATIVO"] is not None and row["ATIVO"] == 1,
