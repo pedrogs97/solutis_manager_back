@@ -10,7 +10,6 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
-
 from src.asset.models import AssetModel, AssetStatusModel, AssetTypeModel
 from src.asset.schemas import AssetShortSerializerSchema
 from src.asset.service import AssetService
@@ -19,31 +18,22 @@ from src.config import DEFAULT_DATE_FORMAT
 from src.datasync.models import CostCenterTOTVSModel
 from src.document.models import DocumentModel
 from src.lending.filters import LendingFilter, WorkloadFilter
-from src.lending.models import (
-    LendingModel,
-    LendingStatusModel,
-    WitnessModel,
-    WorkloadModel,
-)
-from src.lending.schemas.v1 import (
-    CostCenterSerializerSchema,
-    CreateWitnessSchema,
-    LendingSerializerSchema,
-    NewLendingSchema,
-    UpdateLendingSchema,
-    WitnessSerializerSchema,
-    WorkloadSerializerSchema,
-)
+from src.lending.models import (LendingModel, LendingStatusModel, WitnessModel,
+                                WorkloadModel)
+from src.lending.schemas.v1 import (CostCenterSerializerSchema,
+                                    CreateWitnessSchema,
+                                    LendingSerializerSchema, NewLendingSchema,
+                                    UpdateLendingSchema,
+                                    WitnessSerializerSchema,
+                                    WorkloadSerializerSchema)
 from src.log.services import LogService
 from src.people.models import EmployeeModel
-from src.people.schemas import (
-    EmployeeEducationalLevelSerializerSchema,
-    EmployeeGenderSerializerSchema,
-    EmployeeMatrimonialStatusSerializerSchema,
-    EmployeeNationalitySerializerSchema,
-    EmployeeRoleSerializerSchema,
-    EmployeeSerializerSchema,
-)
+from src.people.schemas import (EmployeeEducationalLevelSerializerSchema,
+                                EmployeeGenderSerializerSchema,
+                                EmployeeMatrimonialStatusSerializerSchema,
+                                EmployeeNationalitySerializerSchema,
+                                EmployeeRoleSerializerSchema,
+                                EmployeeSerializerSchema)
 
 service_log = LogService()
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
@@ -183,7 +173,9 @@ class LendingService:
         """Serialize workload"""
         return WorkloadSerializerSchema(**workload.__dict__)
 
-    def __validate_nested(self, data: NewLendingSchema, db_session: Session) -> tuple:
+    def __validate_nested(
+        self, data: NewLendingSchema, db_session: Session, auto_commit: bool = True
+    ) -> tuple:
         """Validates employee, asset, workload, cost center and document values"""
         errors = []
         if data.employee_id:
@@ -310,7 +302,8 @@ class LendingService:
                 else:
                     new_witness = WitnessModel(employee=employee_obj)
                     db_session.add(new_witness)
-                    db_session.commit()
+                    if auto_commit:
+                        db_session.commit()
                     db_session.flush()
                     witnesses.append(new_witness)
 
@@ -323,7 +316,6 @@ class LendingService:
                 )
 
         if errors:
-            db_session.close()
             raise HTTPException(
                 detail=errors,
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -381,7 +373,7 @@ class LendingService:
                 workload,
                 cost_center,
                 witnesses,
-            ) = self.__validate_nested(new_lending, db_session)
+            ) = self.__validate_nested(new_lending, db_session, auto_commit=auto_commit)
 
             lending_pending = (
                 db_session.query(LendingStatusModel)

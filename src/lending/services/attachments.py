@@ -6,7 +6,6 @@ from typing import Optional, Union
 from fastapi import HTTPException, UploadFile, status
 from loguru import logger
 from sqlalchemy.orm import Session
-
 from src.config import BASE_DIR, CONTRACT_UPLOAD_DIR, DEBUG
 from src.lending.models import AssetModel, DocumentModel, LendingAttachments
 from src.lending.services.lending import LendingService

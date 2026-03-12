@@ -2,7 +2,7 @@
 
 import asyncio
 import json
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -122,14 +122,72 @@ def test_create_lending_flow_propagates_http_exception(
         status_code=400, detail={"field": "assetId", "error": "Ativo já vinculado"}
     )
 
-    with pytest.raises(HTTPException) as exception_info:
-        asyncio.run(lending_controller.create_lending_flow())
+    with patch("src.lending.controllers.lending.logger.warning") as mock_warning:
+        with pytest.raises(HTTPException) as exception_info:
+            asyncio.run(lending_controller.create_lending_flow())
 
     assert exception_info.value.status_code == 400
     assert exception_info.value.detail == {
         "field": "assetId",
         "error": "Ativo já vinculado",
     }
+    mock_warning.assert_called_once()
+
+
+def test_create_lending_flow_propagates_document_validation_http_exception(
+    mock_db_session, mock_authenticated_user
+):
+    """Ensure contract-generation validation errors return as HTTP 400."""
+    lending_data = NewLendingDataSchema(
+        employeeId=1,
+        assetId=1,
+        workloadId=1,
+        costCenterId=1,
+        manager="Test Manager",
+        witnessesId=[2, 3],
+        location="Test Location",
+        bu=LendingBUEnum.ADS,
+        principalSigner="principal@example.com",
+        employeeSigner="employee@example.com",
+        businessExecutive="Executive",
+    )
+
+    lending_controller = LendingController(
+        data=lending_data,
+        attachments=[],
+        db_session=mock_db_session,
+        authenticated_user=mock_authenticated_user,
+    )
+    lending_controller.lending_service = MagicMock()
+    lending_controller.document_service = MagicMock()
+    lending_controller.attachment_service = MagicMock()
+    lending_controller.attachment_service.upload_attachment = AsyncMock()
+
+    mock_lending = MagicMock()
+    mock_lending.id = 1
+    lending_controller.lending_service.create_lending.return_value = mock_lending
+    lending_controller.document_service.create_contract.side_effect = HTTPException(
+        status_code=400,
+        detail=[
+            {
+                "field": "attachments",
+                "error": "Arquivo de anexo não encontrado para geração do contrato.",
+            }
+        ],
+    )
+
+    with patch("src.lending.controllers.lending.logger.warning") as mock_warning:
+        with pytest.raises(HTTPException) as exception_info:
+            asyncio.run(lending_controller.create_lending_flow())
+
+    assert exception_info.value.status_code == 400
+    assert exception_info.value.detail == [
+        {
+            "field": "attachments",
+            "error": "Arquivo de anexo não encontrado para geração do contrato.",
+        }
+    ]
+    mock_warning.assert_called_once()
 
 
 def test_create_lending_flow_returns_422_on_validation_error(

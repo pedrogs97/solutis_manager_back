@@ -134,7 +134,12 @@ class LendingController:
                     for verification in new_verification
                 ],
             }
-        except HTTPException:
+        except HTTPException as error:
+            logger.warning(
+                "Lending flow failed with HTTP {}: {}",
+                error.status_code,
+                error.detail,
+            )
             raise
         except ValidationError as error:
             logger.warning(f"Validation error creating lending flow: {error}")

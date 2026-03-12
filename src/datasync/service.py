@@ -75,11 +75,11 @@ def totvs_to_employee_schema(
         street = str(row["RUA"]).strip()
         num = str(row["NUMERO"]).strip() if row["NUMERO"] else ""
         comp = str(row["COMPLEMENTO"]).strip() if row["COMPLEMENTO"] else ""
-        neighborhood = str(row["BAIRRO"]).strip() if row["COMPLEMENTO"] else ""
+        neighbourhood = str(row["BAIRRO"]).strip() if row["COMPLEMENTO"] else ""
         state = str(row["ESTADO"]).strip()
         country = str(row["PAIS"]).strip().replace(":", "").replace(".", "")
 
-        address = f"{street};{num};{comp};{neighborhood};{city};{state};{country};{cep}"
+        address = f"{street};{num};{comp};{neighbourhood};{city};{state};{country};{cep}"
         birthday_datetime: datetime = row["DTNASCIMENTO"]
         admission_datetime: datetime = row["ADMISSAO"]
         return EmployeeTotvsSchema(

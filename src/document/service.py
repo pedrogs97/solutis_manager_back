@@ -2,7 +2,6 @@
 
 import locale
 import os
-import traceback
 from datetime import date
 from typing import Dict, List, Optional, Union
 
@@ -229,7 +228,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -246,7 +245,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -263,7 +262,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -280,7 +279,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -302,7 +301,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -321,7 +320,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -332,7 +331,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -349,7 +348,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -371,7 +370,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -393,7 +392,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -408,7 +407,7 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
@@ -418,11 +417,74 @@ class DocumentService:
             detail.append(
                 {
                     "key": "Valor R$",
-                    "value": locale.currency(asset.value, grouping=True, symbol=False),
+                    "value": self.__format_currency_value(asset.value),
                 }
             )
 
         return detail
+
+    def __format_currency_value(self, value: Optional[float]) -> str:
+        """Format monetary value for contracts without raising runtime errors."""
+        if value is None:
+            return self.NOT_PROVIDE
+
+        try:
+            return locale.currency(value, grouping=True, symbol=False)
+        except (TypeError, ValueError):
+            logger.warning(
+                "Invalid asset value for contract currency formatting: {}", value
+            )
+            return self.NOT_PROVIDE
+
+    def __build_lending_attachments_context(
+        self, lending_attachments: List[LendingAttachments]
+    ) -> List[dict]:
+        """Convert lending attachments to base64 image payload expected by templates."""
+        attachments_files: List[dict] = []
+        for attachment in lending_attachments:
+            if not attachment.path:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=[
+                        {
+                            "field": "attachments",
+                            "error": "Anexo sem caminho de arquivo válido.",
+                        }
+                    ],
+                )
+
+            if not os.path.exists(attachment.path):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=[
+                        {
+                            "field": "attachments",
+                            "error": (
+                                "Arquivo de anexo não encontrado para geração do contrato."
+                            ),
+                        }
+                    ],
+                )
+
+            try:
+                attachments_files.append({"file": get_image_to_pdf(attachment.path)})
+            except (OSError, ValueError, TypeError) as error:
+                logger.warning(
+                    "Unable to process lending attachment '{}': {}",
+                    attachment.path,
+                    error,
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=[
+                        {
+                            "field": "attachments",
+                            "error": "Não foi possível processar um dos anexos do comodato.",
+                        }
+                    ],
+                ) from error
+
+        return attachments_files
 
     def __validate_witnesses(
         self, witnesses: List[int], db_session: Session
@@ -483,7 +545,9 @@ class DocumentService:
             errors.append({"field": "workloadId", "error": "Lotação não encontrada"})
 
         if not employee.nationality:
-            errors.append({"field": "nationality", "error": "Nacionalidade não informada"})
+            errors.append(
+                {"field": "nationality", "error": "Nacionalidade não informada"}
+            )
 
         if not employee.marital_status:
             errors.append(
@@ -568,6 +632,32 @@ class DocumentService:
                     },
                 )
 
+            dependency_errors: List[dict] = []
+            if not doc_type:
+                dependency_errors.append(
+                    {
+                        "field": "general",
+                        "error": f"Tipo de documento '{type_doc}' não encontrado.",
+                    }
+                )
+            if not lending_pending:
+                dependency_errors.append(
+                    {
+                        "field": "general",
+                        "error": "Status de comodato 'Arquivo pendente' não encontrado.",
+                    }
+                )
+            if not current_lending.asset:
+                dependency_errors.append(
+                    {"field": "assetId", "error": "Ativo não encontrado"}
+                )
+
+            if dependency_errors:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=dependency_errors,
+                )
+
             asset = current_lending.asset
 
             new_code = current_lending.number or self.__generate_code(
@@ -614,6 +704,9 @@ class DocumentService:
             )
             verification_answers = self.__get_verification_answers(
                 lending_verification_answers
+            )
+            attachments_files = self.__build_lending_attachments_context(
+                lending_attachments
             )
             if new_lending_doc.legal_person:
                 contract_path = create_lending_contract_pj(
@@ -670,10 +763,7 @@ class DocumentService:
                         ),
                         bu=current_lending.bu,
                         verifications=verification_answers,
-                        attachments_files=[
-                            {"file": get_image_to_pdf(attach.path)}
-                            for attach in lending_attachments
-                        ],
+                        attachments_files=attachments_files,
                     )
                 )
             else:
@@ -712,10 +802,7 @@ class DocumentService:
                         location=current_lending.location,
                         bu=current_lending.bu,
                         verifications=verification_answers,
-                        attachments_files=[
-                            {"file": get_image_to_pdf(attach.path)}
-                            for attach in lending_attachments
-                        ],
+                        attachments_files=attachments_files,
                     )
                 )
 
@@ -770,11 +857,19 @@ class DocumentService:
                 db_session.flush()
 
             return self.serialize_document(new_doc)
-        except Exception as e:
+        except HTTPException as error:
             if auto_commit:
                 db_session.rollback()
-            logger.error("An exception occurred:\n{}", traceback.format_exc())
-            logger.error("Error creating contract: {}", e)
+            logger.warning(
+                "Contract creation failed with HTTP {}: {}",
+                error.status_code,
+                error.detail,
+            )
+            raise
+        except Exception as error:
+            if auto_commit:
+                db_session.rollback()
+            logger.exception("Unexpected error creating contract: {}", error)
             raise
 
     def recreate_contract(
@@ -853,10 +948,9 @@ class DocumentService:
             verification_answers = self.__get_verification_answers(
                 lending_verification_answers
             )
-            lending_attachments_str = [
-                {"file": get_image_to_pdf(attach.path)}
-                for attach in lending_attachments
-            ]
+            lending_attachments_str = self.__build_lending_attachments_context(
+                lending_attachments
+            )
 
             if employee.legal_person:
                 contract_path = create_lending_contract_pj(
@@ -909,10 +1003,7 @@ class DocumentService:
                         ),
                         bu=current_lending.bu,
                         verifications=verification_answers,
-                        attachments_files=[
-                            {"file": get_image_to_pdf(attach.path)}
-                            for attach in lending_attachments
-                        ],
+                        attachments_files=lending_attachments_str,
                     )
                 )
             else:
@@ -2212,7 +2303,6 @@ class DocumentService:
                 DocumentTypeEnum.TERM,
                 DocumentTypeEnum.REVOKE_TERM,
             ]:
-
                 employee = term.employee
 
                 envelope_id, document_id = self.clicksign_service.send_document_to_sign(
