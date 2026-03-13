@@ -84,53 +84,52 @@ class LendingController:
         """
         created_file_paths: List[str] = []
         try:
-            with self.db_session.begin():
-                lending_data = NewLendingSchema(**self.data.model_dump(by_alias=True))
-                new_lending = self.lending_service.create_lending(
-                    lending_data,
-                    self.db_session,
-                    self.authenticated_user,
-                    auto_commit=False,
-                )
+            lending_data = NewLendingSchema(**self.data.model_dump(by_alias=True))
+            new_lending = self.lending_service.create_lending(
+                lending_data,
+                self.db_session,
+                self.authenticated_user,
+                auto_commit=False,
+            )
 
-                if self.attachments:
-                    for attachment in self.attachments:
-                        uploaded_path = await self.attachment_service.upload_attachment(
-                            new_lending.id,
-                            attachment,
-                            auto_commit=False,
-                        )
-                        if uploaded_path:
-                            created_file_paths.append(uploaded_path)
+            if self.attachments:
+                for attachment in self.attachments:
+                    uploaded_path = await self.attachment_service.upload_attachment(
+                        new_lending.id,
+                        attachment,
+                        auto_commit=False,
+                    )
+                    if uploaded_path:
+                        created_file_paths.append(uploaded_path)
 
-                doc_data = NewLendingDocSchema(
+            doc_data = NewLendingDocSchema(
+                lendingId=new_lending.id,
+                legalPerson=self.data.legal_person or False,
+            )
+            new_document = self.document_service.create_contract(
+                doc_data,
+                "Contrato de Comodato",
+                self.db_session,
+                self.authenticated_user,
+                auto_commit=False,
+            )
+            if new_document.path:
+                created_file_paths.append(new_document.path)
+
+            new_verification = []
+            if self.data.verification_answers:
+                verification_data = NewVerificationAnswerSchema(
                     lendingId=new_lending.id,
-                    legalPerson=self.data.legal_person or False,
+                    **self.data.verification_answers.model_dump(by_alias=True),
                 )
-                new_document = self.document_service.create_contract(
-                    doc_data,
-                    "Contrato de Comodato",
+                new_verification = self.verification_service.create_answer_verification(
+                    verification_data,
                     self.db_session,
                     self.authenticated_user,
                     auto_commit=False,
                 )
-                if new_document.path:
-                    created_file_paths.append(new_document.path)
 
-                new_verification = []
-                if self.data.verification_answers:
-                    verification_data = NewVerificationAnswerSchema(
-                        lendingId=new_lending.id,
-                        **self.data.verification_answers.model_dump(by_alias=True),
-                    )
-                    new_verification = (
-                        self.verification_service.create_answer_verification(
-                            verification_data,
-                            self.db_session,
-                            self.authenticated_user,
-                            auto_commit=False,
-                        )
-                    )
+            self.db_session.commit()
 
             return {
                 "lending": new_lending.model_dump(by_alias=True),
