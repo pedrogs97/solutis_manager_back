@@ -42,7 +42,22 @@ class LendingAttachmentService:
         str_code = str(new_code)
 
         if type_code == "lending":
-            acronym = asset.type.acronym if asset.type else asset.description[:3]
+            asset_type = getattr(asset, "type", None)
+            if asset_type and getattr(asset_type, "acronym", None):
+                acronym = asset_type.acronym
+            else:
+                description = getattr(asset, "description", None) or ""
+                if not description:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            "field": "assetId",
+                            "error": (
+                                "Ativo sem sigla de tipo e sem descrição para gerar código."
+                            ),
+                        },
+                    )
+                acronym = description[:3]
         else:
             acronym = ""
 
@@ -50,7 +65,7 @@ class LendingAttachmentService:
 
     async def upload_attachment(
         self, lending_id: int, attachment: UploadFile, auto_commit: bool = True
-    ):
+    ) -> Optional[str]:
         """
         Adds an attachment to a lending record.
 
@@ -87,6 +102,7 @@ class LendingAttachmentService:
             logger.info(
                 f"Attachment {new_attachment.id} uploaded. Lending {current_lending.id} - {lending_number}"
             )
+            return file_path
         except HTTPException:
             if auto_commit:
                 self.db_session.rollback()

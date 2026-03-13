@@ -1,6 +1,7 @@
 """Lending controller"""
 
-from typing import Annotated, List, Optional, Union
+import os
+from typing import Annotated, Any, List, Optional, Tuple, Union
 
 from fastapi import Depends, File, Form, HTTPException, UploadFile, status
 from loguru import logger
@@ -81,6 +82,7 @@ class LendingController:
         """
         Orchestrates the creation of a lending, its contract, and attaches files.
         """
+        created_file_paths: List[str] = []
         try:
             with self.db_session.begin():
                 lending_data = NewLendingSchema(**self.data.model_dump(by_alias=True))
@@ -93,11 +95,13 @@ class LendingController:
 
                 if self.attachments:
                     for attachment in self.attachments:
-                        await self.attachment_service.upload_attachment(
+                        uploaded_path = await self.attachment_service.upload_attachment(
                             new_lending.id,
                             attachment,
                             auto_commit=False,
                         )
+                        if uploaded_path:
+                            created_file_paths.append(uploaded_path)
 
                 doc_data = NewLendingDocSchema(
                     lendingId=new_lending.id,
@@ -110,6 +114,8 @@ class LendingController:
                     self.authenticated_user,
                     auto_commit=False,
                 )
+                if new_document.path:
+                    created_file_paths.append(new_document.path)
 
                 new_verification = []
                 if self.data.verification_answers:
@@ -130,26 +136,107 @@ class LendingController:
                 "lending": new_lending.model_dump(by_alias=True),
                 "document": new_document.model_dump(by_alias=True),
                 "verfication": [
-                    verification.model_dump(by_alias=True)
+                    (
+                        verification
+                        if isinstance(verification, dict)
+                        else verification.model_dump(by_alias=True)
+                    )
                     for verification in new_verification
                 ],
             }
         except HTTPException as error:
+            self._cleanup_files(created_file_paths)
+            fields, reasons = self._extract_error_summary(error.detail)
             logger.warning(
-                "Lending flow failed with HTTP {}: {}",
+                "Falha no fluxo de criação de comodato. status_code={}, campos={}, motivos={}",
                 error.status_code,
-                error.detail,
+                fields,
+                reasons,
             )
             raise
         except ValidationError as error:
-            logger.warning(f"Validation error creating lending flow: {error}")
+            self._cleanup_files(created_file_paths)
+            fields, reasons = self._extract_error_summary(error.errors())
+            logger.warning(
+                "Erro de validação no fluxo de criação de comodato. campos={}, motivos={}",
+                fields,
+                reasons,
+            )
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=error.errors(),
             ) from error
         except Exception as error:
-            logger.exception(f"Error creating lending flow: {error}")
+            self._cleanup_files(created_file_paths)
+            logger.exception(
+                "Erro inesperado no fluxo de criação de comodato. tipo={}, motivo={}",
+                type(error).__name__,
+                str(error),
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An error occurred while creating the lending flow.",
+                detail="Ocorreu um erro ao criar o fluxo de comodato.",
             ) from error
+
+    @staticmethod
+    def _extract_error_summary(detail: Any) -> Tuple[List[str], List[str]]:
+        """Extrai resumo de erros para logs: campos e motivos."""
+        fields: List[str] = []
+        reasons: List[str] = []
+
+        def _append(field: Optional[str], reason: Optional[str]) -> None:
+            if field and field not in fields:
+                fields.append(field)
+            if reason and reason not in reasons:
+                reasons.append(reason)
+
+        if isinstance(detail, dict):
+            _append(
+                detail.get("field"),
+                detail.get("error") or detail.get("message") or str(detail),
+            )
+            return fields, reasons
+
+        if isinstance(detail, list):
+            for item in detail:
+                if isinstance(item, dict):
+                    loc = item.get("loc")
+                    field = None
+                    if isinstance(loc, (list, tuple)) and loc:
+                        field = str(loc[-1])
+                    elif isinstance(loc, str):
+                        field = loc
+                    else:
+                        field = item.get("field")
+                    _append(
+                        field,
+                        item.get("msg") or item.get("error") or item.get("message"),
+                    )
+                else:
+                    _append("general", str(item))
+            return fields, reasons
+
+        _append("general", str(detail))
+        return fields, reasons
+
+    def _cleanup_files(self, file_paths: List[str]) -> None:
+        """Remove arquivos criados durante o fluxo quando a transação falha."""
+        for file_path in file_paths:
+            if not file_path:
+                continue
+            if not isinstance(file_path, (str, bytes, os.PathLike)):
+                continue
+
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    logger.warning(
+                        "Arquivo removido por rollback do fluxo de comodato: {}",
+                        file_path,
+                    )
+            except OSError as cleanup_error:
+                logger.error(
+                    "Falha ao remover arquivo após rollback do fluxo de comodato. path={}, erro={}",
+                    file_path,
+                    str(cleanup_error),
+                )

@@ -126,7 +126,22 @@ class DocumentService:
         str_code = str(new_code)
 
         if type_code == "lending":
-            acronym = asset.type.acronym if asset.type else asset.description[:3]
+            asset_type = getattr(asset, "type", None)
+            if asset_type and getattr(asset_type, "acronym", None):
+                acronym = asset_type.acronym
+            else:
+                description = getattr(asset, "description", None) or ""
+                if not description:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            "field": "assetId",
+                            "error": (
+                                "Ativo sem sigla de tipo e sem descrição para gerar código."
+                            ),
+                        },
+                    )
+                acronym = description[:3]
         else:
             acronym = ""
 
@@ -595,6 +610,25 @@ class DocumentService:
             file_name=doc.file_name,
         )
 
+    def __cleanup_generated_contract_file(self, file_path: Optional[str]) -> None:
+        """Remove contrato gerado no filesystem quando ocorre falha no fluxo."""
+        if not file_path:
+            return
+
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                logger.warning(
+                    "Arquivo de contrato removido após falha no fluxo: {}",
+                    file_path,
+                )
+        except OSError as cleanup_error:
+            logger.error(
+                "Falha ao remover arquivo de contrato após erro. path={}, erro={}",
+                file_path,
+                str(cleanup_error),
+            )
+
     def create_contract(
         self,
         new_lending_doc: NewLendingDocSchema,
@@ -604,6 +638,7 @@ class DocumentService:
         auto_commit: bool = True,
     ) -> DocumentSerializerSchema:
         """Create new contract, not signed"""
+        contract_path: Optional[str] = None
         try:
             doc_type = (
                 db_session.query(DocumentTypeModel)
@@ -858,6 +893,7 @@ class DocumentService:
 
             return self.serialize_document(new_doc)
         except HTTPException as error:
+            self.__cleanup_generated_contract_file(contract_path)
             if auto_commit:
                 db_session.rollback()
             logger.warning(
@@ -867,6 +903,7 @@ class DocumentService:
             )
             raise
         except Exception as error:
+            self.__cleanup_generated_contract_file(contract_path)
             if auto_commit:
                 db_session.rollback()
             logger.exception("Unexpected error creating contract: {}", error)

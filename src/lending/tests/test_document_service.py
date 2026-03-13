@@ -73,14 +73,19 @@ def test_build_lending_attachments_context_returns_400_for_missing_file():
     assert exception_info.value.detail[0]["field"] == "attachments"
 
 
-def test_generate_code_uses_safe_default_when_asset_has_no_type_or_description():
+def test_generate_code_returns_400_when_asset_has_no_type_or_description():
     service = DocumentService()
     asset = SimpleNamespace(type=None, description=None)
     last_doc = SimpleNamespace(id=41)
 
-    code = service._DocumentService__generate_code(last_doc=last_doc, asset=asset)
+    with pytest.raises(HTTPException) as exception_info:
+        service._DocumentService__generate_code(last_doc=last_doc, asset=asset)
 
-    assert code == "DOC0042"
+    assert exception_info.value.status_code == 400
+    assert exception_info.value.detail == {
+        "field": "assetId",
+        "error": "Ativo sem sigla de tipo e sem descrição para gerar código.",
+    }
 
 
 def test_create_contract_logs_warning_when_http_exception_occurs():
