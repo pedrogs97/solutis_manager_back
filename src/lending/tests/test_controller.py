@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, call, patch
 import pytest
 from fastapi import HTTPException
 from fastapi import UploadFile
+from pydantic import ValidationError
 
 from src.lending.controllers.lending import LendingController
 from src.lending.enums import LendingBUEnum
@@ -88,9 +89,8 @@ def test_create_lending_flow_successful(mock_db_session, mock_authenticated_user
     lending_controller.document_service.create_contract.assert_called_once()
     _, document_kwargs = lending_controller.document_service.create_contract.call_args
     assert document_kwargs["auto_commit"] is False
-    assert mock_db_session.begin.called
-    begin_exit_args = mock_db_session.begin.return_value.__exit__.call_args.args
-    assert begin_exit_args == (None, None, None)
+    mock_db_session.commit.assert_called_once()
+    mock_db_session.rollback.assert_not_called()
 
     assert "lending" in result
     assert "document" in result
@@ -426,9 +426,8 @@ def test_create_lending_flow_returns_500_on_unexpected_document_exception(
     assert exception_args[0].startswith("Erro inesperado no fluxo de criação de comodato.")
     assert "RuntimeError" in exception_args
     assert "template render failed" in exception_args
-    assert mock_db_session.begin.called
-    begin_exit_args = mock_db_session.begin.return_value.__exit__.call_args.args
-    assert begin_exit_args[0] is RuntimeError
+    mock_db_session.rollback.assert_called_once()
+    mock_db_session.commit.assert_not_called()
 
 
 def test_create_lending_flow_propagates_verification_http_exception(
@@ -678,6 +677,54 @@ def test_create_lending_flow_returns_422_on_validation_error(
 
     assert exception_info.value.status_code == 422
     lending_controller.lending_service.create_lending.assert_not_called()
+    mock_db_session.rollback.assert_called_once()
+    mock_db_session.commit.assert_not_called()
+
+
+def test_create_lending_flow_rolls_back_transaction_on_business_http_exception(
+    mock_db_session, mock_authenticated_user
+):
+    """Ensure DB transaction rolls back when service raises HTTPException."""
+    lending_data = NewLendingDataSchema(
+        employeeId=1,
+        assetId=1,
+        workloadId=1,
+        costCenterId=1,
+        manager="Test Manager",
+        witnessesId=[2, 3],
+        location="Test Location",
+        bu=LendingBUEnum.ADS,
+        principalSigner="principal@example.com",
+        employeeSigner="employee@example.com",
+        businessExecutive="Executive",
+    )
+    attachments = [UploadFile(filename="test1.jpg", file=MagicMock())]
+
+    lending_controller = LendingController(
+        data=lending_data,
+        attachments=attachments,
+        db_session=mock_db_session,
+        authenticated_user=mock_authenticated_user,
+    )
+    lending_controller.lending_service = MagicMock()
+    lending_controller.document_service = MagicMock()
+    lending_controller.attachment_service = MagicMock()
+    lending_controller.attachment_service.upload_attachment = AsyncMock(
+        side_effect=HTTPException(
+            status_code=400,
+            detail={"field": "attachments", "error": "Anexo inválido"},
+        )
+    )
+
+    mock_lending = MagicMock()
+    mock_lending.id = 1
+    lending_controller.lending_service.create_lending.return_value = mock_lending
+
+    with pytest.raises(HTTPException):
+        asyncio.run(lending_controller.create_lending_flow())
+
+    mock_db_session.rollback.assert_called_once()
+    mock_db_session.commit.assert_not_called()
 
 
 def test_from_multipart_raises_422_for_invalid_schema_data(

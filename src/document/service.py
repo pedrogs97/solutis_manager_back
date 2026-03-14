@@ -2260,12 +2260,14 @@ class DocumentService:
             db_session.rollback()
             logger.error("Error download verification document {}", error)
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={"field": "lendingId", "message": "Comodato sem número"},
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"field": "lendingId", "error": "Comodato sem número"},
             ) from error
 
     def sign_document(self, document_id: int, db_session: Session) -> None:
         """Sign document"""
+        signed_doc_id = None
+        envelope_id = None
         try:
             document = self.__get_document_or_404(document_id, db_session)
             lending = None
@@ -2300,7 +2302,7 @@ class DocumentService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "field": "documentId",
-                        "message": "Tipo de documento inválido para assinatura",
+                        "error": "Tipo de documento inválido para assinatura",
                     },
                 )
 
@@ -2313,7 +2315,10 @@ class DocumentService:
                 witness1 = lending.witnesses[0]
                 witness2 = lending.witnesses[1]
 
-                envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+                (
+                    envelope_id,
+                    signed_doc_id,
+                ) = self.clicksign_service.send_document_to_sign(
                     document.file_name,
                     document.path,
                     lending.signer_email,
@@ -2342,7 +2347,10 @@ class DocumentService:
             ]:
                 employee = term.employee
 
-                envelope_id, document_id = self.clicksign_service.send_document_to_sign(
+                (
+                    envelope_id,
+                    signed_doc_id,
+                ) = self.clicksign_service.send_document_to_sign(
                     document.file_name,
                     document.path,
                     term.signer_email,
@@ -2357,24 +2365,29 @@ class DocumentService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "field": "documentId",
-                        "message": "Tipo de documento inválido para assinatura",
+                        "error": "Tipo de documento inválido para assinatura",
                     },
                 )
 
             document.sign_envelope_id = envelope_id
-            document.sign_doc_id = document_id
+            document.sign_doc_id = signed_doc_id
             db_session.add(document)
             db_session.commit()
             logger.info("Document sent to sign. {}", str(document))
+        except HTTPException:
+            db_session.rollback()
+            raise
         except Exception as error:
             db_session.rollback()
             logger.error("Error sign document {}", error)
-            logger.error("Document ID {}", document_id)
+            logger.error("Signed Document ID {}", signed_doc_id)
+            logger.error("Document ID {}", document.id)
+            logger.error("Envelope ID {}", envelope_id)
             logger.error("document {}", str(document))
             logger.error("document type {}", str(document.doc_type))
             logger.error("lending {}", str(lending))
             logger.error("employee {}", str(employee))
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={"field": "lendingId", "message": "Erro ao assinar contrato"},
+                detail={"field": "lendingId", "error": "Erro ao assinar contrato"},
             ) from error

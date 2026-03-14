@@ -442,16 +442,20 @@ class LendingService:
             logger.info("New Lending. {}", str(new_lending_db))
 
             return self.serialize_lending(new_lending_db)
+        except HTTPException:
+            if auto_commit:
+                db_session.rollback()
+            raise
         except TypeError as error:
             if auto_commit:
                 db_session.rollback()
             logger.error("Error creating lending. {}", error)
             raise HTTPException(
                 detail={
-                    "field": "employeeId",
-                    "error": "Erro ao criar contrato de comodato",
+                    "field": "general",
+                    "error": "Dados inválidos para criar contrato de comodato",
                 },
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status_code=status.HTTP_400_BAD_REQUEST,
             ) from error
 
     def get_lending(
