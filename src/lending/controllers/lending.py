@@ -27,8 +27,8 @@ class LendingController:
     def __init__(
         self,
         data: NewLendingDataSchema,
+        db_session: Session,
         attachments: Optional[List[UploadFile]] = None,
-        db_session: Session = Depends(get_db_session),
         authenticated_user: Union[UserModel, None] = Depends(
             PermissionChecker(
                 {"module": "lending", "model": "lending", "action": "add"}
@@ -54,7 +54,7 @@ class LendingController:
         data: Annotated[str, Form(...)],
         attachments: Annotated[
             List[UploadFile], File(description="Anexos do contrato")
-        ] = None,
+        ] = [],
         db_session: Session = Depends(get_db_session),
         authenticated_user: Union[UserModel, None] = Depends(
             PermissionChecker(
@@ -145,78 +145,32 @@ class LendingController:
             }
         except HTTPException as error:
             self._cleanup_files(created_file_paths)
-            fields, reasons = self._extract_error_summary(error.detail)
-            logger.warning(
-                "Falha no fluxo de criação de comodato. status_code={}, campos={}, motivos={}",
+            logger.error(
+                "Falha no fluxo de criação de comodato. status_code={}",
                 error.status_code,
-                fields,
-                reasons,
             )
+            self.db_session.rollback()
             raise
         except ValidationError as error:
             self._cleanup_files(created_file_paths)
-            fields, reasons = self._extract_error_summary(error.errors())
-            logger.warning(
-                "Erro de validação no fluxo de criação de comodato. campos={}, motivos={}",
-                fields,
-                reasons,
+            logger.error(
+                "Erro de validação no fluxo de criação de comodato.",
             )
+            self.db_session.rollback()
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=error.errors(),
             ) from error
         except Exception as error:
             self._cleanup_files(created_file_paths)
-            logger.exception(
-                "Erro inesperado no fluxo de criação de comodato. tipo={}, motivo={}",
-                type(error).__name__,
-                str(error),
+            logger.error(
+                "Erro inesperado no fluxo de criação de comodato.",
             )
+            self.db_session.rollback()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Ocorreu um erro ao criar o fluxo de comodato.",
             ) from error
-
-    @staticmethod
-    def _extract_error_summary(detail: Any) -> Tuple[List[str], List[str]]:
-        """Extrai resumo de erros para logs: campos e motivos."""
-        fields: List[str] = []
-        reasons: List[str] = []
-
-        def _append(field: Optional[str], reason: Optional[str]) -> None:
-            if field and field not in fields:
-                fields.append(field)
-            if reason and reason not in reasons:
-                reasons.append(reason)
-
-        if isinstance(detail, dict):
-            _append(
-                detail.get("field"),
-                detail.get("error") or detail.get("message") or str(detail),
-            )
-            return fields, reasons
-
-        if isinstance(detail, list):
-            for item in detail:
-                if isinstance(item, dict):
-                    loc = item.get("loc")
-                    field = None
-                    if isinstance(loc, (list, tuple)) and loc:
-                        field = str(loc[-1])
-                    elif isinstance(loc, str):
-                        field = loc
-                    else:
-                        field = item.get("field")
-                    _append(
-                        field,
-                        item.get("msg") or item.get("error") or item.get("message"),
-                    )
-                else:
-                    _append("general", str(item))
-            return fields, reasons
-
-        _append("general", str(detail))
-        return fields, reasons
 
     def _cleanup_files(self, file_paths: List[str]) -> None:
         """Remove arquivos criados durante o fluxo quando a transação falha."""
