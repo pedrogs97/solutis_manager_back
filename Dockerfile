@@ -21,6 +21,7 @@ COPY ./alembic /solutis-agile/alembic
 COPY ./alembic.ini /solutis-agile
 COPY ./tasks.py /solutis-agile
 COPY ./templates /solutis-agile/templates
+COPY ./requirements.txt /solutis-agile
 
 WORKDIR /solutis-agile
 
