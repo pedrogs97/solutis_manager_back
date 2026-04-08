@@ -40,14 +40,19 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 \
     && apt-get install -y libjpeg-dev libopenjp2-7-dev libffi-dev
 
+# # Install Poetry and Python dependencies
+# RUN curl -sSL https://install.python-poetry.org | python3 - \
+#     && poetry self add poetry-plugin-export \
+#     && poetry export -f requirements.txt --output requirements.txt --without-hashes \
+#     && pip install --upgrade pip \
+#     && pip install --no-cache-dir --upgrade -r requirements.txt \
+#     && pip uninstall poetry -y \
+#     && rm requirements.txt
+
 # Install Poetry and Python dependencies
-RUN curl -sSL https://install.python-poetry.org | python3 - \
-    && poetry self add poetry-plugin-export \
-    && poetry export -f requirements.txt --output requirements.txt --without-hashes \
-    && pip install --upgrade pip \
-    && pip install --no-cache-dir --upgrade -r requirements.txt \
-    && pip uninstall poetry -y \
-    && rm requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir --upgrade -r requirements.txt
+
 
 # Install Microsoft SQL Server tools
 RUN export DEBIAN_FRONTEND=noninteractive \
