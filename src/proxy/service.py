@@ -1,6 +1,7 @@
 """Proxy service for external API with permission validation"""
 
 import asyncio
+import json
 from typing import Any, Dict, Optional
 from urllib.parse import quote
 
@@ -9,6 +10,7 @@ from fastapi import HTTPException, Request, status
 from fastapi.responses import Response
 from loguru import logger
 from src.auth.models import UserModel
+from src.config import NOT_ALLOWED
 from src.proxy.config import (EXTERNAL_SERVICE_RETRY_ATTEMPTS,
                               EXTERNAL_SERVICE_TIMEOUT, FORWARD_HEADERS,
                               get_external_service_url, is_valid_service)
@@ -37,9 +39,10 @@ class ProxyService:
         """Filter headers to forward only allowed ones"""
         filtered_headers = {}
         if headers:
+            normalized_headers = {key.lower(): value for key, value in headers.items()}
             for header_name in FORWARD_HEADERS:
-                if header_name in headers:
-                    filtered_headers[header_name] = headers[header_name]
+                if header_name in normalized_headers:
+                    filtered_headers[header_name] = normalized_headers[header_name]
         return filtered_headers
 
     def _build_authenticated_headers(self, current_user: UserModel) -> Dict[str, str]:
@@ -239,11 +242,11 @@ class ProxyService:
         return await self._make_request("DELETE", service_name, path, headers, params)
 
     def validate_user_permissions(self, current_user: UserModel):
-        """Validate user permissions and raise exception if insufficient"""
+        """Validate authentication context before proxying request."""
         if not current_user:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=INSUFFICIENT_PERMISSIONS_MSG,
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=NOT_ALLOWED,
             )
 
     def create_response(self, response: httpx.Response) -> Response:
@@ -258,19 +261,25 @@ class ProxyService:
     async def handle_request_body(self, request: Request):
         """Extract and handle request body based on content type"""
         headers = dict(request.headers)
+        content_type = str(headers.get("content-type", "")).lower()
+        raw_body = await request.body()
+
+        if not raw_body:
+            return headers, None, None
 
         try:
-            if headers.get("content-type", "").startswith(DEFAULT_MEDIA_TYPE):
-                json_data = await request.json()
-                data = None
-            else:
-                json_data = None
-                data = await request.body()
-        except Exception:
-            json_data = None
-            data = await request.body()
+            if (
+                content_type.startswith(DEFAULT_MEDIA_TYPE)
+                or content_type.endswith("+json")
+            ):
+                return headers, json.loads(raw_body.decode("utf-8")), None
+        except (ValueError, UnicodeDecodeError):
+            logger.warning(
+                "Failed to parse JSON body for content-type '{}', forwarding raw body",
+                content_type,
+            )
 
-        return headers, json_data, data
+        return headers, None, raw_body
 
     async def proxy_get_request(
         self,
