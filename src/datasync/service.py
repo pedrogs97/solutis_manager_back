@@ -79,7 +79,9 @@ def totvs_to_employee_schema(
         state = str(row["ESTADO"]).strip()
         country = str(row["PAIS"]).strip().replace(":", "").replace(".", "")
 
-        address = f"{street};{num};{comp};{neighbourhood};{city};{state};{country};{cep}"
+        address = (
+            f"{street};{num};{comp};{neighbourhood};{city};{state};{country};{cep}"
+        )
         birthday_datetime: datetime = row["DTNASCIMENTO"]
         admission_datetime: datetime = row["ADMISSAO"]
         return EmployeeTotvsSchema(
@@ -244,6 +246,10 @@ def get_pattern(description: str, pattern: str) -> str:
     }
     if description and pattern and description.upper().startswith("MACBOOK"):
         return "MACBOOK"
+
+    if pattern in PATTER_MAPPER.values():
+        return pattern
+
     return PATTER_MAPPER.get(pattern, "")
 
 
@@ -254,6 +260,9 @@ def get_accessories(description: str) -> str:
         "002": "FONTE DE ENERGIA",
         "003": "CPU, TECLADO, MOUSE, FONTE DE ENERGIA",
     }
+    if description in ACCESSORIES_MAPPER.values():
+        return description
+
     return ACCESSORIES_MAPPER.get(description, "")
 
 
@@ -658,6 +667,13 @@ def update_asset_totvs(totvs_assets: List[AssetTotvsSchema]):
                     )
                     .first()
                 )
+
+                if not asset_type:
+                    asset_type = (
+                        db_session.query(AssetTypeModel)
+                        .filter(AssetTypeModel.name == totvs_asset.type)
+                        .first()
+                    )
             else:
                 asset_simple_description = asset_description_splited[0]
                 asset_type = (

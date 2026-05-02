@@ -82,8 +82,8 @@ class NewTermSchema(BaseSchema):
     value: Optional[float] = None
     line_number: Optional[str] = Field(alias="lineNumber", default=None)
     operator: Optional[str] = None
-    principal_signer: Optional[str] = Field(alias="principalSigner")
-    employee_signer: Optional[str] = Field(alias="employeeSigner")
+    principal_signer: Optional[str] = Field(alias="principalSigner", default=None)
+    employee_signer: Optional[str] = Field(alias="employeeSigner", default=None)
 
 
 class TermEmployeeHistorySerializerSchema(BaseSchema):

@@ -96,5 +96,54 @@
         "code": "0016",
         "name": "MOBILIÁRIO",
         "acronym": "MBO"
+    },
+    {
+        "table": "asset_type",
+        "id": 17,
+        "code": "0017",
+        "name": "COMPUTADORES E PERIFERICOS",
+        "acronym": "CPS"
+    },
+    {
+        "table": "asset_type",
+        "id": 18,
+        "code": "0018",
+        "name": "MAQUINAS E EQUIPAMENTOS",
+        "acronym": "MEO"
+    },
+    {
+        "table": "asset_type",
+        "id": 19,
+        "code": "0019",
+        "name": "MOVEIS E UTENSILIOS",
+        "acronym": "MOU"
+    },
+    {
+        "table": "asset_type",
+        "id": 20,
+        "code": "0020",
+        "name": "VEICULOS",
+        "acronym": "VCL"
+    },
+    {
+        "table": "asset_type",
+        "id": 21,
+        "code": "0021",
+        "name": "INSTALAÇÕES",
+        "acronym": "INS"
+    },
+    {
+        "table": "asset_type",
+        "id": 22,
+        "code": "0022",
+        "name": "BENFEITORIAS EM IMÓVEIS",
+        "acronym": "BNI"
+    },
+    {
+        "table": "asset_type",
+        "id": 23,
+        "code": "0023",
+        "name": "SOFTWARES ADMINISTRATIVOS",
+        "acronym": "SFA"
     }
 ]
