@@ -23,6 +23,7 @@ from src.asset.scripts import (
     fix_asset_historic,
     fix_asset_pattern_ios,
     fix_asset_status,
+    fix_asset_type,
 )
 from src.asset.service import AssetService
 from src.auth.models import UserModel
@@ -365,4 +366,6 @@ async def get_run_fix_assets_status_route(
         fix_asset_historic(db_session)
     elif script == "fix_asset_pattern_ios":
         fix_asset_pattern_ios(db_session)
+    elif script == "fix_asset_type":
+        fix_asset_type(db_session)
     return JSONResponse(content="OK", status_code=status.HTTP_200_OK)

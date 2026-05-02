@@ -4,7 +4,8 @@ from loguru import logger
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import and_, or_
 
-from src.asset.models import AssetModel, AssetStatusHistoricModel
+from src.asset.models import AssetModel, AssetStatusHistoricModel, AssetTypeModel
+from src.datasync.models import AssetTOTVSModel
 from src.lending.models import LendingModel
 
 
@@ -101,4 +102,41 @@ def fix_asset_pattern_ios(db_session: Session):
     db_session.commit()
     print("All assets pattern fixed!")
     logger.info("All assets pattern fixed!")
+    db_session.close_all()
+
+
+def fix_asset_type(db_session: Session):
+    """Fix asset type"""
+    all_assets_to_update = db_session.query(AssetModel).filter(
+        AssetModel.type.is_(None),
+        AssetModel.active == 1,
+    )
+
+    print(f"Updating {all_assets_to_update.count()} assets type...")
+    logger.info("Updating {} assets type...", all_assets_to_update.count())
+    assets_to_update = []
+    for asset in all_assets_to_update.all():
+        asset_totvs = (
+            db_session.query(AssetTOTVSModel)
+            .filter(AssetTOTVSModel.code == asset.code)
+            .first()
+        )
+        if not asset_totvs:
+            continue
+        asset_type = (
+            db_session.query(AssetTypeModel)
+            .filter(AssetTypeModel.code == asset_totvs.type)
+            .first()
+        )
+        if not asset_type:
+            continue
+        asset.type_id = asset_type.id
+        assets_to_update.append(asset)
+        print(asset.code)
+        logger.info(asset.code)
+        break
+    db_session.bulk_save_objects(assets_to_update)
+    db_session.commit()
+    print("All assets type fixed!")
+    logger.info("All assets type fixed!")
     db_session.close_all()
