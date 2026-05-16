@@ -1,4 +1,4 @@
-FROM python:3.9.18-slim-bullseye
+FROM python:3.13-slim-bookworm
 
 USER 0
 
@@ -13,7 +13,7 @@ ENV PYTHONPATH='/'
 ENV XDG_RUNTIME_DIR="/solutis-agile/src"
 ENV RUNLEVEL=3
 
-COPY ./poetry.lock /solutis-agile
+COPY ./uv.lock /solutis-agile
 COPY ./pyproject.toml /solutis-agile
 COPY ./README.md /solutis-agile/README.md
 COPY ./src /solutis-agile/src
@@ -36,7 +36,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 # Install WeasyPrint and dependencies
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y weasyprint \
-    && apt-get install -y python3-dev python3.9-dev default-libmysqlclient-dev build-essential \
+    && apt-get install -y python3-dev default-libmysqlclient-dev build-essential \
     && apt-get install -y python3-pip \
     && apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 \
     && apt-get install -y libjpeg-dev libopenjp2-7-dev libffi-dev
