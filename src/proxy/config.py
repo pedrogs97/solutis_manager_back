@@ -4,6 +4,7 @@ import os
 
 SERVICE_HOSTS = {
     "procurement": os.getenv("PROCUREMENT_SERVICE_HOST", "http://localhost:8001/api"),
+    "report": os.getenv("REPORT_SERVICE_HOST", "http://localhost:8002/api"),
     "default": os.getenv("EXTERNAL_SERVICE_HOST", "http://localhost:8001"),
 }
 
