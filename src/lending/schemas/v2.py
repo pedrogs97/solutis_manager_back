@@ -1,3 +1,5 @@
+"""Lending schemas v2"""
+
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -32,7 +34,7 @@ class NewLendingDataSchema(BaseModel):
     observations: Optional[str] = None
     glpi_number: Optional[str] = Field(alias="glpiNumber", default=None)
     project: Optional[str] = None
-    business_executive: str = Field(alias="businessExecutive", default=None)
+    business_executive: Optional[str] = Field(alias="businessExecutive", default=None)
     location: str
     bu: LendingBUEnum
     ms_office: bool = Field(alias="msOffice", default=False)

@@ -37,7 +37,6 @@ dependencies = [
     "openpyxl>=3.1.4",
     "weasyprint>=65.1",
     "loguru>=0.7.3",
-    "uvicorn[standard]",
 ]
 
 [tool.pyrefly]

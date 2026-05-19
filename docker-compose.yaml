@@ -13,7 +13,7 @@ services:
       - /mnt/storage:/storage
       - .logs:/solutis-agile/logs
       - ./.env:/solutis-agile/.env
-    command: sh -c "uvicorn src.main:appAPI --host 0.0.0.0 --port 8080 --reload"
+    command: sh -c "uv run uvicorn src.main:appAPI --host 0.0.0.0 --port 8080 --reload"
     restart: always
     env_file:
       - ./.env
