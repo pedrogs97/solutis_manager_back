@@ -102,6 +102,19 @@ class LendingController:
                     if uploaded_path:
                         created_file_paths.append(uploaded_path)
 
+            new_verification = []
+            if self.data.verification_answers:
+                verification_data = NewVerificationAnswerSchema(
+                    lendingId=new_lending.id,
+                    **self.data.verification_answers.model_dump(by_alias=True),
+                )
+                new_verification = self.verification_service.create_answer_verification(
+                    verification_data,
+                    self.db_session,
+                    self.authenticated_user,
+                    auto_commit=False,
+                )
+
             doc_data = NewLendingDocSchema(
                 lendingId=new_lending.id,
                 legalPerson=self.data.legal_person or False,
@@ -115,19 +128,6 @@ class LendingController:
             )
             if new_document.path:
                 created_file_paths.append(new_document.path)
-
-            new_verification = []
-            if self.data.verification_answers:
-                verification_data = NewVerificationAnswerSchema(
-                    lendingId=new_lending.id,
-                    **self.data.verification_answers.model_dump(by_alias=True),
-                )
-                new_verification = self.verification_service.create_answer_verification(
-                    verification_data,
-                    self.db_session,
-                    self.authenticated_user,
-                    auto_commit=False,
-                )
 
             self.db_session.commit()
 
