@@ -278,7 +278,7 @@ def create_lending_contract_pj(context: NewLendingPjContextSchema) -> str:
         bu=context.bu,
         object=context.object,
         verifications=context.verifications,
-        attachments_files=context.attachments_files,
+        attachments=context.attachments_files,
     )
 
     lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "lending")
@@ -344,7 +344,7 @@ def create_revoke_lending_contract_pj(context: NewLendingPjContextSchema) -> str
         location=context.location,
         bu=context.bu,
         verifications=context.verifications,
-        attachments_files=context.attachments_files,
+        attachments=context.attachments_files,
     )
 
     lending_path = os.path.join(CONTRACT_UPLOAD_DIR, "revoke")

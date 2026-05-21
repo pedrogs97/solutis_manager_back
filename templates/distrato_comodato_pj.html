@@ -243,6 +243,21 @@
             .verification-label {
                 margin-left: 5px;
             }
+
+            .attachment-container {
+                display: block;
+                width: 100%;
+                text-align: center;
+                page-break-inside: avoid;
+                margin-top: 0.5in;
+            }
+
+            .attachment-container img {
+                max-width: 100%;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+            }
         </style>
     </head>
     <body class="container">
@@ -410,14 +425,14 @@
             </div>
             {% if attachments %}
                 <div class="page-break"></div>
-            {% endif %}
-            <div class="container">
-                <div class="centered-container">
+                <div class="container">
                     {% for attachment in attachments %}
-                        <img src="{{ attachment.file }}" alt="Attachment" style="max-width: 100%; height: auto;"/>
+                        <div class="attachment-container">
+                            <img src="{{ attachment.file }}" alt="Attachment" />
+                        </div>
                     {% endfor %}
                 </div>
-            </div>
+            {% endif %}
         </div>
     </div>
     </body>

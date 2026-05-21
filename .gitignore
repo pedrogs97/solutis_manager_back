@@ -52,3 +52,5 @@ ENV/
 # storage
 **/storage
 **/contracts
+
+.vscode/*
