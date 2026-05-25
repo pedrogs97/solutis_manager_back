@@ -249,17 +249,6 @@ class ProxyService:
                 detail=NOT_ALLOWED,
             )
 
-    def validate_master_password_if_needed(self, service_name: str, path: str, request: Request):
-        """Validate master password for sensitive operations on evaluations."""
-        if service_name == "procurement" and path.startswith("v1/evaluation/evaluations/"):
-            from src.config import PASSWORD_SUPER_USER
-            master_password = request.headers.get("x-master-password")
-            if not master_password or master_password != PASSWORD_SUPER_USER:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Senha master incorreta ou não fornecida",
-                )
-
     def create_response(self, response: httpx.Response) -> Response:
         """Create FastAPI Response from httpx Response"""
         headers = dict(response.headers)
@@ -362,7 +351,6 @@ class ProxyService:
     ) -> Response:
         """Handle PUT proxy request with validation"""
         self.validate_user_permissions(current_user)
-        self.validate_master_password_if_needed(service_name, path, request)
 
         headers, json_data, data = await self.handle_request_body(request)
         headers = self._prepare_proxy_headers(headers, current_user)
@@ -391,7 +379,6 @@ class ProxyService:
     ) -> Response:
         """Handle PATCH proxy request with validation"""
         self.validate_user_permissions(current_user)
-        self.validate_master_password_if_needed(service_name, path, request)
 
         headers, json_data, data = await self.handle_request_body(request)
         headers = self._prepare_proxy_headers(headers, current_user)
@@ -420,7 +407,6 @@ class ProxyService:
     ) -> Response:
         """Handle DELETE proxy request with validation"""
         self.validate_user_permissions(current_user)
-        self.validate_master_password_if_needed(service_name, path, request)
 
         headers = self._prepare_proxy_headers(dict(request.headers), current_user)
         params = dict(request.query_params)
