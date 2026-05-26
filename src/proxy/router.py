@@ -21,7 +21,10 @@ proxy_router = APIRouter(prefix="/proxy", tags=["proxy"])
 
 
 PROXY_PERMISSIONS = {
-    "read": PermissionSchema(module="procurement", model="supplier", action="view"),
+    "read": [
+        PermissionSchema(module="procurement", model="supplier", action="view"),
+        PermissionSchema(module="report", model="report", action="view"),
+    ],
     "write": [
         PermissionSchema(module="procurement", model="supplier", action="add"),
         PermissionSchema(module="procurement", model="supplier", action="edit"),
