@@ -14,7 +14,7 @@ from src.backends import (
     oauth2_bearer,
     token_is_valid,
 )
-from src.config import NOT_ALLOWED
+from src.config import NOT_ALLOWED, SECRET_KEY
 from src.proxy.service import INSUFFICIENT_PERMISSIONS_MSG, proxy_service
 
 proxy_router = APIRouter(prefix="/proxy", tags=["proxy"])
@@ -107,6 +107,31 @@ async def proxy_get(
     authorized_user = authorize_proxy_access(current_user, "read")
     return await proxy_service.proxy_get_request(
         service_name, path, request, authorized_user
+    )
+
+
+@proxy_router.post(
+    "/procurement/v1/approval/step/approve/",
+    summary="Public proxy endpoint to approve or reprove a supplier workflow step",
+)
+async def proxy_public_approve(
+    request: Request,
+):
+    """
+    Public proxy endpoint to approve or reprove a supplier workflow step.
+    Bypasses user login checks and injects system headers. Downstream service
+    handles verification of the approval token.
+    """
+
+    class SystemUser:
+        id = 0
+        email = "system@solutis.com.br"
+        group = type("Group", (), {"name": "system"})()
+        employee = type("Employee", (), {"full_name": "System"})()
+
+    system_user = SystemUser()
+    return await proxy_service.proxy_post_request(
+        "procurement", "v1/approval/step/approve/", request, system_user
     )
 
 
