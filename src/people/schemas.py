@@ -75,9 +75,10 @@ class NewEmployeeSchema(BaseSchema):
     """New employee schema"""
 
     role: Optional[int] = None
-    job_position: str = Field(
+    job_position: Optional[str] = Field(
         alias="jobPosition",
         serialization_alias="job_position",
+        default=None,
     )
     nationality_id: int = Field(
         alias="nationalityId",

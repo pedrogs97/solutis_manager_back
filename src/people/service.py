@@ -82,6 +82,11 @@ class EmployeeService:
         """Validates role, nationality, marital status and gender values"""
         errors = []
         role = None
+        nationality = None
+        marital_status = None
+        gender = None
+        educational_level = None
+
         if data.role:
             role = (
                 db_session.query(EmployeeRoleTOTVSModel)
@@ -154,7 +159,7 @@ class EmployeeService:
         str_code = str(new_code)
         return "".join(
             random.choice(last_employee.full_name.replace(" ", "")) for _ in range(3)
-        ) + str_code.zfill(16 - len(str_code))
+        ) + str_code.zfill(13)
 
     def serialize_employee(self, employee: EmployeeModel) -> EmployeeSerializerSchema:
         """Serialize employee"""
@@ -279,7 +284,7 @@ class EmployeeService:
             birthday=data.birthday,
             manager=data.manager,
             legal_person=True,
-            job_position=data.job_position.upper(),
+            job_position=data.job_position.upper() if data.job_position else None,
             employer_number=data.employer_number,
             employer_address=data.employer_address,
             employer_contract_object=data.employer_contract_object,
